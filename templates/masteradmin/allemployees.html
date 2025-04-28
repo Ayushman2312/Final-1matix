@@ -1,0 +1,328 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <!-- Sales Metrics -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Total Employees</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">0</p>
+
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-semibold mb-1">Recently Added</h3>
+                    <p class="text-[#FF9800]  text-xl font-semibold">0</p>
+                    <p class="text-[#b3b3b3] text-xs mt-1">View Details →</p>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-semibold mb-1">Suspended</h3>
+                    <p class="text-[#F44336] text-xl font-semibold">0</p>
+
+                    <p class="text-[#b3b3b3] text-xs mt-1">1 high priority</p>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Resigned</h3>
+                    <p class="text-[#4CAF50] text-lg font-semibold">0</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+            </div>
+
+            <!-- Connect with Employee Button -->
+            <button onclick="toggleConnectPanel()" class="mb-4 flex items-center space-x-2 bg-[#2196F3] text-white px-4 py-2 rounded-lg hover:bg-[#1976D2] transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span>Connect with Employees</span>
+            </button>
+
+            <!-- Connect Panel Modal -->
+            <div id="connectPanel" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+                <div class="min-h-screen px-4 text-center">
+                    <div class="fixed inset-0" aria-hidden="true">
+                        <div class="absolute inset-0 bg-[#000000] opacity-75"></div>
+                    </div>
+
+                    <!-- Modal panel -->
+                    <div class="inline-block w-full max-w-2xl my-8 text-left align-middle transition-all transform bg-[#212121] shadow-xl rounded-2xl">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-white">Connect with Employees</h3>
+                                <button onclick="toggleConnectPanel()" class="text-gray-400 hover:text-white transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Search Bar -->
+                            <div class="relative mb-6">
+                                <input type="text" id="employeeSearch" onkeyup="searchEmployees()" placeholder="Search employees..." class="w-full bg-[#2a2a2a] text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2196F3] transition-all duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+
+                            <!-- Employee Selection Area -->
+                            <div class="max-h-60 overflow-y-auto mb-6 bg-[#2a2a2a] rounded-lg">
+                                <div id="employeeList" class="p-2 space-y-2">
+                                    {% for employee in employees %}
+                                    <div class="employee-item flex items-center justify-between p-3 bg-[#333333] rounded-lg hover:bg-[#404040] transition-all duration-300">
+                                        <div class="flex items-center space-x-3">
+                                            <input type="checkbox" name="employee" value="{{ employee.id }}" class="rounded bg-[#404040] border-none focus:ring-2 focus:ring-[#2196F3]">
+                                            <div>
+                                                <p class="text-white text-sm">{{ employee.first_name }} {{ employee.last_name }}</p>
+                                                <p class="text-[#b3b3b3] text-xs">{{ employee.email }}</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-[#2196F3] text-xs">{{ employee.department.name }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Message Area -->
+                            <div class="mb-6">
+                                <label class="block text-[#b3b3b3] text-sm mb-2">Message</label>
+                                <textarea id="connectMessage" rows="4" class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2196F3] transition-all duration-300" placeholder="Type your message here..."></textarea>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex justify-end space-x-3">
+                                <button onclick="toggleConnectPanel()" class="px-4 py-2 text-[#b3b3b3] hover:text-white transition-colors">
+                                    Cancel
+                                </button>
+                                <button onclick="sendMessage()" class="px-4 py-2 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2] transition-all duration-300">
+                                    Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function toggleConnectPanel() {
+                    const panel = document.getElementById('connectPanel');
+                    panel.classList.toggle('hidden');
+                }
+
+                function searchEmployees() {
+                    const input = document.getElementById('employeeSearch');
+                    const filter = input.value.toUpperCase();
+                    const employeeList = document.getElementById('employeeList');
+                    const employees = employeeList.getElementsByClassName('employee-item');
+
+                    for (let i = 0; i < employees.length; i++) {
+                        const txtValue = employees[i].textContent || employees[i].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            employees[i].style.display = "";
+                        } else {
+                            employees[i].style.display = "none";
+                        }
+                    }
+                }
+
+                async function sendMessage() {
+                    const message = document.getElementById('connectMessage').value;
+                    const selectedEmployees = Array.from(document.querySelectorAll('input[name="employee"]:checked')).map(cb => cb.value);
+                    
+                    if (!message || selectedEmployees.length === 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Please select at least one employee and enter a message',
+                            background: '#212121',
+                            color: '#ffffff'
+                        });
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/masteradmin/send_employee_notification/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: JSON.stringify({
+                                employee_ids: selectedEmployees,
+                                message: message
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.status === 'success') {
+                            toggleConnectPanel();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Messages sent successfully',
+                                background: '#212121',
+                                color: '#ffffff'
+                            });
+                        } else {
+                            throw new Error(data.message || 'Failed to send messages');
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to send messages',
+                            background: '#212121',
+                            color: '#ffffff'
+                        });
+                    }
+                }
+
+                // Helper function to get CSRF token
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+            </script>
+            <!-- Quick Action Buttons -->
+            <div class="bg-[#212121] rounded-xl p-6 mb-5 hover:shadow-xl transition-all duration-300">
+                <div class="flex justify-between items-center cursor-pointer" onclick="toggleAddEmployee()">
+                    <h2 class="text-xl font-semibold text-white">Add New Employee</h2>
+                    <svg id="toggleArrow" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white transform transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+
+                <div id="addEmployeeContent" class="hidden mt-6 transition-all duration-300 opacity-0 transform -translate-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div class="relative">
+                                <label for="employeeEmail" class="text-[#b3b3b3] text-sm mb-1 block">Email Address</label>
+                                <input type="email" id="employeeEmail" 
+                                    class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2196F3] transition-all duration-300"
+                                    placeholder="employee@company.com" required>
+                                <div class="absolute right-3 top-9">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#b3b3b3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="relative">
+                                <label for="departmentSelect" class="text-[#b3b3b3] text-sm mb-1 block">Policy</label>
+                                <select id="departmentSelect"
+                                    class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#2196F3] transition-all duration-300"
+                                    required>
+                                    <option id="department" value="">Select Policy</option>
+                                    {% for department in departments %}
+                                        <option value="{{ department.id }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-between space-y-4">
+                            <div class="bg-[#2a2a2a] rounded-lg p-4">
+                                <h3 class="text-white text-sm font-bold mb-2">Important Notes:</h3>
+                                <ul class="text-[#b3b3b3] text-sm space-y-2">
+                                    <li class="flex items-center space-x-2">
+                                        <svg class="h-4 w-4 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Employee will receive OTP on email</span>
+                                    </li>
+                                    <li class="flex items-center space-x-2">
+                                        <svg class="h-4 w-4 text-[#4CAF50]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>Passcode must be unique</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <button onclick="sendOtp()" 
+                                class="w-full bg-gradient-to-r from-[#2196F3] to-[#1976D2] text-white py-3 rounded-lg hover:from-[#1976D2] hover:to-[#1565C0] transition-all duration-300 flex items-center justify-center space-x-2">
+                                <span>Send OTP</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Recent Orders -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 overflow-x-auto h-[300px]">
+                <h3 class="text-[#ffffff] text-lg font-bold mb-4 border-b-2 border-[#2196F3] pb-2">Employees</h3>
+
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-[#2a2a2a]">
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name / Mobile</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Department</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Salary</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-[#252525] divide-y divide-gray-200">
+                        {% for employee in employees %}
+                        <tr class="hover:bg-[#333333] transition-colors duration-200 relative">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ employee.name }}<br>{{ employee.phone_number }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ employee.department }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ employee.salary }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ employee.email }}</td>
+                            {% if employee.is_active == True %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Active</td>
+                            {% elif employee.is_active == False %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Inactive</td>
+                            {% elif employee.is_rejected == True %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Rejected</td>
+                            {% endif %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white relative group">
+                                <button class="focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                                    </svg>
+                                </button>
+                                <div class="absolute right-0 mt-2 w-48 bg-[#2a2a2a] rounded-lg shadow-lg hidden group-hover:block z-50">
+                                    {% if employee.is_active == False %}
+                                    <a href="{% url 'mark_employee_as_active' employee.id %}" class="block px-4 py-2 text-sm text-green-500 hover:bg-[#343434]">Mark as Active</a>
+                                    <a href="{% url 'reject_employee' employee.id %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-[#343434]">Reject</a>
+                                    {% elif employee.is_active == True %}
+                                    <a href="{% url 'mark_employee_as_inactive' employee.id %}" class="block px-4 py-2 text-sm text-orange-500 hover:bg-[#343434]">Suspend</a>
+                                    {% endif %}
+                                    <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#343434]">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-4">
+                    {% if employees.has_other_pages %}
+                        <div class="flex justify-between items-center">
+                            {% if employees.has_previous %}
+                                <a href="?page={{ employees.previous_page_number }}" class="text-blue-500 hover:underline" onclick="return paginate({{ employees.previous_page_number }});">Previous</a>
+                            {% endif %}
+                            <span class="text-gray-400">Page {{ employees.number }} of {{ employees.paginator.num_pages }}</span>
+                            {% if employees.has_next %}
+                                <a href="?page={{ employees.next_page_number }}" class="text-blue-500 hover:underline" onclick="return paginate({{ employees.next_page_number }});">Next</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script src="{% static 'js/employee.js' %}?v=3"></script>
+{% endblock %}

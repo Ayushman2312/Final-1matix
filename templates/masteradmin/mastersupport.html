@@ -1,0 +1,226 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Total Support</h3>
+                    <p class="text-[#4CAF50] text-lg font-semibold">0</p>
+                    <button onclick="showMeetings('total')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View All →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Active Support</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">0</p>
+                    <button onclick="showMeetings('active')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Active →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Inactive Support</h3>
+                    <p class="text-[#FF9800] text-lg font-semibold">0</p>
+                    <button onclick="showMeetings('inactive')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Inactive →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Suspended Support</h3>
+                    <p class="text-[#F44336] text-lg font-semibold">0</p>
+                    <button onclick="showMeetings('suspended')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Suspended →</button>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex sm:grid sm:grid-cols-6 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
+                <button onclick="showCreateSupportPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FF9800]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Create Support</span>
+                </button>
+
+                <!-- Create Support Popup -->
+                <div id="createSupportPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                    <div class="bg-[#212121] rounded-lg p-6 w-96">
+                        <h3 class="text-lg font-bold text-white mb-4">Create Support</h3>
+                        <form id="createSupportForm" method="post" action="{% url 'add_support' %}">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2" for="supportTitle">Support email</label>
+                                <input type="email" id="supportTitle" name="email" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2196F3]" placeholder="Enter support email" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2" for="departmentSelect">Select Department</label>
+                                <select id="departmentSelect" name="department" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2196F3]" required>
+                                    <option value="" disabled selected>Select Department</option>
+                                    {% for department in support_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2" for="policySelect">Select Policy</label>
+                                <select id="policySelect" name="policy" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2196F3]" required>
+                                    <option value="" disabled selected>Select Policy</option>
+                                    {% for policy in policies %}
+                                    <option value="{{ policy.id }}">{{ policy.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" onclick="closeCreateSupportPopup()" class="bg-red-500 text-white rounded-lg px-4 py-2 mr-2">Cancel</button>
+                                <button type="submit" class="bg-[#2196F3] text-white rounded-lg px-4 py-2">Create</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <button onclick="showConnectCustomerPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#2196F3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a8 8 0 00-8 8h16a8 8 0 00-8-8z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Connect Customer</span>
+                </button>
+
+                <!-- Connect Customer Popup -->
+                <div id="connectCustomerPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                    <div class="bg-[#212121] rounded-lg p-6 w-96">
+                        <h3 class="text-lg font-bold text-white mb-4">Connect Customer</h3>
+                        <form id="connectCustomerForm">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2" for="supportUsers">Select Support Users</label>
+                                <div class="relative">
+                                    <input type="text" id="supportSearch" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-[#2196F3]" placeholder="Search support users..." oninput="filterSupportUsers(this.value)">
+                                    <select id="supportSelect" name="support_ids" multiple class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2196F3] max-h-32 overflow-y-auto" required aria-required="true">
+                                        {% for support in support_users %}
+                                            <option value="{{ support.id }}">{{ support.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-300 mb-2" for="message">Message</label>
+                                <textarea id="message" name="message" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2196F3] h-24" placeholder="Enter your message" required></textarea>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" onclick="closeConnectCustomerPopup()" class="bg-red-500 text-white rounded-lg px-4 py-2 mr-2">Cancel</button>
+                                <button type="submit" class="bg-[#2196F3] text-white rounded-lg px-4 py-2">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+                <button onclick="showSendReportsPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Reports</span>
+                </button>
+
+                <button onclick="showRaiseComplaintPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FF9800]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Raise Complaint</span>
+                </button>
+
+                <button onclick="showConnectDepartmentPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#00BCD4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h3a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Connect Department</span>
+                </button>
+
+                <button onclick="showAskFeedbackPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#E91E63]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Ask Feedback</span>
+                </button>
+            </div>
+            <!-- Recent Orders -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 overflow-x-auto h-[300px]">
+                <h3 class="text-[#ffffff] text-lg font-bold mb-4 border-b-2 border-[#2196F3] pb-2">All Supports</h3>
+
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-[#2a2a2a]">
+                            <th class="px-4 py-3 text-left text-[0.8rem] font-medium text-gray-300 uppercase tracking-wider">Name / Mobile</th>
+                            <th class="px-4 py-3 text-left text-[0.8rem] font-medium text-gray-300 uppercase tracking-wider">Department</th>
+                            <th class="px-4 py-3 text-left text-[0.8rem] font-medium text-gray-300 uppercase tracking-wider">Salary</th>
+                            <th class="px-4 py-3 text-left text-[0.8rem] font-medium text-gray-300 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-[0.8rem] font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-[0.8rem] font-medium text-gray-300 uppercase tracking-wider"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-[#252525] divide-y divide-gray-200">
+                        {% for support in support_users %}
+                        <tr class="hover:bg-[#333333] transition-colors duration-200 relative">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ support.name }}<br>{{ support.phone_number }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ support.support_department }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">
+                                <span class="salary-display cursor-pointer" data-support-id="{{ support.id }}" onclick="editSalary(this)">
+                                    {{ support.salary|default:"Set Salary" }}
+                                </span>
+                                <input type="number" 
+                                       class="salary-input hidden bg-[#333333] text-white px-2 py-1 rounded w-full" 
+                                       value="{{ support.salary|default:'' }}"
+                                       onblur="saveSalary(this, '{{ support.id }}')"
+                                       onkeypress="handleSalaryKeyPress(event, this)">
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ support.email }}</td>
+                            {% if support.is_active == True %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Active</td>
+                            {% elif employee.is_active == False %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Inactive</td>
+                            {% elif employee.is_rejected == True %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Rejected</td>
+                            {% endif %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white relative group">
+
+                                <button class="focus:outline-none">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                                    </svg>
+                                </button>
+                                <div class="absolute right-0 mt-2 w-48 bg-[#2a2a2a] rounded-lg shadow-lg hidden group-hover:block z-50">
+                                    {% if support.is_active == False %}
+                                    <a href="{% url 'mark_support_as_active' support.id %}" class="block px-4 py-2 text-sm text-green-500 hover:bg-[#343434]">Mark as Active</a>
+                                    <a href="{% url 'reject_support' support.id %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-[#343434]">Reject</a>
+                                    {% elif support.is_active == True %}
+                                    <a href="{% url 'suspend_support' support.id %}" class="block px-4 py-2 text-sm text-orange-500 hover:bg-[#343434]">Suspend</a>
+                                    {% endif %}
+                                    <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#343434]">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-4">
+                    {% if support_users.has_other_pages %}
+                        <div class="flex justify-between items-center">
+                            {% if support_users.has_previous %}
+                                <a href="?page={{ support_users.previous_page_number }}" class="text-blue-500 hover:underline" onclick="return paginate({{ support_users.previous_page_number }});">Previous</a>
+                            {% endif %}
+                            <span class="text-gray-400">Page {{ support_users.number }} of {{ support_users.paginator.num_pages }}</span>
+                            {% if support_users.has_next %}
+                                <a href="?page={{ support_users.next_page_number }}" class="text-blue-500 hover:underline" onclick="return paginate({{ support_users.next_page_number }});">Next</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+    </div>
+    <script src="{% static 'js/mastersupport.js' %}?v=4"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+{% endblock %}

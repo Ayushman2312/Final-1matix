@@ -1,0 +1,818 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+    <script src="{% static 'js/script.js' %}?v=1"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .filter-btn.active {
+            background-color: #333333;
+            border: 1px solid #4CAF50;
+        }
+    </style>
+            <!-- Search and Filter Section -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+                <div class="col-span-2 sm:col-span-2">
+                    <div class="relative">
+                        <input type="search" placeholder="Search users..." class="w-full bg-[#212121] text-[#ffffff] rounded-xl px-4 py-3 hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#2a2a2a] text-sm">
+                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#b3b3b3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative group">
+                    <button class="w-full bg-[#212121] rounded-xl px-4 py-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a] flex items-center gap-2 justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#00BCD4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <span class="text-[rgb(237,226,226,1)] text-sm">Filters</span>
+                    </button>
+                    <div class="absolute top-full left-0 mt-2 w-48 bg-[#212121] rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50">
+                        <div class="py-2">
+                            <button class="filter-btn w-full px-4 py-2 text-left text-sm text-[rgb(237,226,226,1)] hover:bg-[#2a2a2a] transition-colors duration-300" onclick="filterAgents('all')">All</button>
+                            <button class="filter-btn w-full px-4 py-2 text-left text-sm text-[rgb(237,226,226,1)] hover:bg-[#2a2a2a] transition-colors duration-300" onclick="filterAgents('pending')">Pending</button>
+                            <button class="filter-btn w-full px-4 py-2 text-left text-sm text-[rgb(237,226,226,1)] hover:bg-[#2a2a2a] transition-colors duration-300" onclick="filterAgents('active')">Active</button>
+                            <button class="filter-btn w-full px-4 py-2 text-left text-sm text-[rgb(237,226,226,1)] hover:bg-[#2a2a2a] transition-colors duration-300" onclick="filterAgents('rejected')">Rejected</button>
+                        </div>
+                    </div>
+                </div>
+            </div>          
+            <!-- Registered Agents -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <!-- User Type Selection -->
+                <div class="flex mb-4">
+                    <button onclick="switchUserType('agent')" class="flex-1 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300 mr-2 user-type-btn active">Agents</button>
+                    <button onclick="switchUserType('employee')" class="flex-1 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300 mr-2 user-type-btn">Employees</button>
+                    <button onclick="switchUserType('support')" class="flex-1 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300 user-type-btn">Support</button>
+                </div>
+
+                <!-- Agents List -->
+                <div id="agentsList" class="user-section">
+                    <h3 class="text-[#ffffff] text-sm font-bold mb-3">Registered Agents</h3>
+                    <div class="space-y-3">
+                        {% for agent in agents|dictsortreversed:"created_at" %}
+                        <div class="flex justify-between items-center p-3 bg-[#252525] rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                {% if agent.photo %}
+                                    <img src="{{ agent.photo.url }}" alt="{{ agent.name }}" class="w-10 h-10 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-10 h-10 bg-[#333333] rounded-full"></div>
+                                {% endif %}
+                                <div>
+                                    <p class="text-white text-xs">{{ agent.name }}</p>
+                                    <p class="text-[#b3b3b3] text-[11px]">{{ agent.email }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="viewAgentDetails('{{ agent.id }}')" class="text-[#2196F3] hover:text-[#1976D2] transition-colors duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                                {% if agent.is_approved == False and agent.is_rejected == False %}
+                                <button onclick="approveAgent('{% url 'approve_agent' agent.id %}')" class="text-[#4CAF50] hover:text-[#45a049] transition-colors duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </button>
+                                <button onclick="rejectAgent('{{ agent.id }}')" class="text-[#F44336] hover:text-[#D32F2F] transition-colors duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                {% elif agent.is_rejected == True %}
+                                <span class="text-[#F44336] text-xs">Rejected</span>
+                                {% else %}
+                                <span class="text-[#4CAF50] text-xs">Approved</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="agentModal-{{ agent.id }}" class="hidden inset-0 bg-[#212121] bg-opacity-50 z-50 overflow-hidden">
+                            <div class="flex items-center justify-center min-h-screen px-4 py-8">
+                                <div class="bg-[#212121] rounded-xl p-6 max-w-7xl w-full mx-auto relative">
+                                    <!-- Header -->
+                                    <div class="flex justify-between items-center mb-6">
+                                        <h2 class="text-white text-xl font-bold">Agent Details</h2>
+                                        <button onclick="closeAgentModal('{{ agent.id }}')" class="text-[#b3b3b3] hover:text-white transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Main Content -->
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <!-- Left Column -->
+                                        <div class="space-y-6">
+                                            <!-- Personal Information -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Personal Information</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Name: {{ agent.name }}</p>
+                                                    <div class="relative inline-block">
+                                                        <button onclick="toggleEmailPopup('{{ agent.id }}')" class="text-[#1976D2] text-[12px] flex items-center">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                            </svg>
+                                                        </button>
+                                                        <div id="emailPopup-{{ agent.id }}" class="hidden absolute z-10 bg-[#2d2d2d] p-3 rounded-lg shadow-lg -top-2 left-24">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-white text-[12px]">{{ agent.email }}</span>
+                                                                <button onclick="toggleEmailPopup('{{ agent.id }}')" class="text-[#b3b3b3] hover:text-white ml-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <script>
+                                                        function toggleEmailPopup(agentId) {
+                                                            const popup = document.getElementById(`emailPopup-${agentId}`);
+                                                            popup.classList.toggle('hidden');
+                                                        }
+                                                    </script>
+                                                    <p class="text-white text-[12px]">Phone: {{ agent.phone_number }}</p>
+                                                    <p class="text-white text-[12px]">DOB: {{ agent.dob }}</p>
+                                                    <p class="text-white text-[12px]">Address: {{ agent.address }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Identity Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Identity Details</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">PAN: {{ agent.pan_number }}</p>
+                                                    <p class="text-white text-[12px]">Aadhar: {{ agent.aadhar_number }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Bank Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Bank Details</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Account Holder: {{ agent.bank_account_holder_name }}</p>
+                                                    <p class="text-white text-[12px]">Account Number: {{ agent.bank_account_number }}</p>
+                                                    <p class="text-white text-[12px]">Bank Name: {{ agent.bank_name }}</p>
+                                                    <p class="text-white text-[12px]">Branch: {{ agent.branch_name }}</p>
+                                                    <p class="text-white text-[12px]">IFSC: {{ agent.bank_ifsc_code }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Column -->
+                                        <div class="space-y-6 -ml-20">
+                                            <!-- Professional Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Professional Details</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Department: {{ agent.department }}</p>
+                                                    <p class="text-white text-[12px]">Qualification: {{ agent.qualification }}</p>
+                                                    <p class="text-white text-[12px]">Agent ID: {{ agent.agent_passcode }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- References -->
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <!-- Family References -->
+                                                <div>
+                                                    <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Family References</h3>
+                                                    {% for family in agent.agentfamily_set.all %}
+                                                    <div class="bg-transparent p-4 rounded-lg space-y-2 mb-4">
+                                                        <p class="text-white text-[12px]">Name: {{ family.name }}</p>
+                                                        <div class="relative inline-block">
+                                                        <button onclick="toggleEmailPopup('family-{{ agent.id }}-{{ forloop.counter }}')" class="text-[#1976D2] text-[12px] flex items-center">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                            </svg>
+                                                        </button>
+                                                        <div id="emailPopup-family-{{ agent.id }}-{{ forloop.counter }}" class="hidden absolute z-10 bg-[#2d2d2d] p-3 rounded-lg shadow-lg -top-2 left-24">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-white text-[12px]">{{ family.email }}</span>
+                                                                <button onclick="toggleEmailPopup('family-{{ agent.id }}-{{ forloop.counter }}')" class="text-[#b3b3b3] hover:text-white ml-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                        <p class="text-white text-[12px]">Phone: {{ family.phone_number }}</p>
+                                                        <p class="text-white text-[12px]">Address: {{ family.address }}</p>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+
+                                                <!-- Corporate References -->
+                                                <div>
+                                                    <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Corporate References</h3>
+                                                    {% for corporate in agent.agentcorporate_set.all %}
+                                                    <div class="bg-transparent p-4 rounded-lg space-y-2 mb-4">
+                                                        <p class="text-white text-[12px]">Name: {{ corporate.name }}</p>
+                                                        <div class="relative inline-block">
+                                                            <button onclick="toggleEmailPopup('corporate-{{ agent.id }}-{{ forloop.counter }}')" class="text-[#1976D2] text-[12px] flex items-center">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                                </svg>
+                                                            </button>
+                                                            <div id="emailPopup-corporate-{{ agent.id }}-{{ forloop.counter }}" class="hidden absolute z-10 bg-[#2d2d2d] p-3 rounded-lg shadow-lg -top-2 left-24">
+                                                                <div class="flex items-center justify-between">
+                                                                    <span class="text-white text-[12px]">{{ corporate.email }}</span>
+                                                                    <button onclick="toggleEmailPopup('corporate-{{ agent.id }}-{{ forloop.counter }}')" class="text-[#b3b3b3] hover:text-white ml-2">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <p class="text-white text-[12px]">Phone: {{ corporate.phone_number }}</p>
+                                                        <p class="text-white text-[12px]">Address: {{ corporate.address }}</p>
+                                                    </div>
+                                                    {% empty %}
+                                                    <p class="text-white text-[12px]">No corporate references found</p>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Documents Section -->
+                                    <div class="mt-6">
+                                        <h3 class="text-[#b3b3b3] text-sm mb-3">Submitted Documents</h3>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                            {% if agent.photo %}
+                                            <a href="{{ agent.photo.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Photo</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.qualification_file %}
+                                            <a href="{{ agent.qualification_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Qualification Document</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.cancelled_cheque_file %}
+                                            <a href="{{ agent.cancelled_cheque_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Cancelled Cheque</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.offer_letter_file %}
+                                            <a href="{{ agent.offer_letter_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Offer Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.bank_statement_file %}
+                                            <a href="{{ agent.bank_statement_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Bank Statement</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.increment_letter_file %}
+                                            <a href="{{ agent.increment_letter_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Increment Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.pay_slip_file %}
+                                            <a href="{{ agent.pay_slip_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Pay Slip</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.experience_letter_file %}
+                                            <a href="{{ agent.experience_letter_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Experience Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.leave_letter_file %}
+                                            <a href="{{ agent.leave_letter_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Leave Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.addhar_card_file %}
+                                            <a href="{{ agent.addhar_card_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Aadhar Card</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if agent.pan_card_file %}
+                                            <a href="{{ agent.pan_card_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">PAN Card</span>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Employees List -->
+                <div id="employeesList" class="user-section hidden">
+                    <h3 class="text-[#ffffff] text-sm font-bold mb-3">Registered Employees</h3>
+                    <div class="space-y-3">
+                        {% for employee in employees %}
+                        <div class="flex justify-between items-center p-3 bg-[#252525] rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                {% if employee.photo %}
+                                    <img src="{{ employee.photo.url }}" alt="{{ employee.name }}" class="w-10 h-10 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-10 h-10 bg-[#333333] rounded-full"></div>
+                                {% endif %}
+                                <div>
+                                    <p class="text-white text-xs">{{ employee.name }}</p>
+                                    <p class="text-[#b3b3b3] text-[11px]">{{ employee.email }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="viewEmployeeDetails('{{ employee.id }}')" class="text-[#2196F3] hover:text-[#1976D2] transition-colors duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                                {% if employee.is_approved == False and employee.is_rejected == False %}
+                                    <button onclick="approveEmployee('{{ employee.id }}')" class="text-[#4CAF50] hover:text-[#45a049] transition-colors duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="rejectEmployee('{{ employee.id }}')" class="text-[#F44336] hover:text-[#D32F2F] transition-colors duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                {% elif employee.is_rejected == True %}
+                                    <span class="text-[#F44336] text-xs">Rejected</span>
+                                {% else %}
+                                    <span class="text-[#4CAF50] text-xs">Approved</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="employeeModal-{{ employee.id }}" class="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-hidden">
+                            <div class="flex items-center justify-center min-h-screen px-4 py-8">
+                                <div class="bg-[#212121] rounded-xl p-6 max-w-7xl w-full mx-auto relative">
+                                    <!-- Header -->
+                                    <div class="flex justify-between items-center mb-6">
+                                        <h2 class="text-white text-xl font-bold">Employee Details</h2>
+                                        <button onclick="closeEmployeeModal('{{ employee.id }}')" class="text-[#b3b3b3] hover:text-white transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Main Content -->
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <!-- Left Column -->
+                                        <div class="space-y-6">
+                                            <!-- Personal Information -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Personal Information</h3>
+                                                <div class="bg-[#252525] p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Name: {{ employee.name }}</p>
+                                                    <p class="text-white text-[12px]">Email: {{ employee.email }}</p>
+                                                    <p class="text-white text-[12px]">Phone: {{ employee.phone_number }}</p>
+                                                    <p class="text-white text-[12px]">DOB: {{ employee.dob }}</p>
+                                                    <p class="text-white text-[12px]">Address: {{ employee.address }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Identity Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Identity Details</h3>
+                                                <div class="bg-[#252525] p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">PAN: {{ employee.pan_number }}</p>
+                                                    <p class="text-white text-[12px]">Aadhar: {{ employee.aadhar_number }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Bank Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Bank Details</h3>
+                                                <div class="bg-[#252525] p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Account Holder: {{ employee.bank_account_holder_name }}</p>
+                                                    <p class="text-white text-[12px]">Account Number: {{ employee.bank_account_number }}</p>
+                                                    <p class="text-white text-[12px]">Bank Name: {{ employee.bank_name }}</p>
+                                                    <p class="text-white text-[12px]">Branch: {{ employee.branch_name }}</p>
+                                                    <p class="text-white text-[12px]">IFSC: {{ employee.bank_ifsc_code }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Column -->
+                                        <div class="space-y-6">
+                                            <!-- Professional Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Professional Details</h3>
+                                                <div class="bg-[#252525] p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Department: {{ employee.department }}</p>
+                                                    <p class="text-white text-[12px]">Qualification: {{ employee.qualification }}</p>
+                                                    <p class="text-white text-[12px]">Employee ID: {{ employee.employee_passcode }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- References -->
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <!-- Family References -->
+                                                <div>
+                                                    <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Family References</h3>
+                                                    {% for family in employee.employeefamily_set.all %}
+                                                    <div class="bg-[#252525] p-4 rounded-lg space-y-2 mb-4">
+                                                        <p class="text-white text-[12px]">Name: {{ family.name }}</p>
+                                                        <p class="text-white text-[12px]">Email: {{ family.email }}</p>
+                                                        <p class="text-white text-[12px]">Phone: {{ family.phone_number }}</p>
+                                                        <p class="text-white text-[12px]">Address: {{ family.address }}</p>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+
+                                                <!-- Corporate References -->
+                                                <div>
+                                                    <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Corporate References</h3>
+                                                    {% for corporate in employee.employeecorporate_set.all %}
+                                                    <div class="bg-[#252525] p-4 rounded-lg space-y-2 mb-4">
+                                                        <p class="text-white text-[12px]">Name: {{ corporate.name }}</p>
+                                                        <p class="text-white text-[12px]">Email: {{ corporate.email }}</p>
+                                                        <p class="text-white text-[12px]">Phone: {{ corporate.phone_number }}</p>
+                                                        <p class="text-white text-[12px]">Address: {{ corporate.address }}</p>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Documents Section -->
+                                    <div class="mt-6">
+                                        <h3 class="text-[#b3b3b3] text-sm mb-3">Submitted Documents</h3>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                            {% if employee.photo %}
+                                            <a href="{{ employee.photo.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Photo</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.qualification_file %}
+                                            <a href="{{ employee.qualification_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Qualification Document</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.cancelled_cheque_file %}
+                                            <a href="{{ employee.cancelled_cheque_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Cancelled Cheque</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.offer_letter_file %}
+                                            <a href="{{ employee.offer_letter_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Offer Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.bank_statement_file %}
+                                            <a href="{{ employee.bank_statement_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Bank Statement</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.increment_letter_file %}
+                                            <a href="{{ employee.increment_letter_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Increment Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.pay_slip_file %}
+                                            <a href="{{ employee.pay_slip_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Pay Slip</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.experience_letter_file %}
+                                            <a href="{{ employee.experience_letter_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Experience Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.leave_letter_file %}
+                                            <a href="{{ employee.leave_letter_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Leave Letter</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.addhar_card_file %}
+                                            <a href="{{ employee.addhar_card_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Aadhar Card</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if employee.pan_card_file %}
+                                            <a href="{{ employee.pan_card_file.url }}" target="_blank" class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">PAN Card</span>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Support Users List -->
+                <div id="supportList" class="user-section hidden">
+                    <h3 class="text-[#ffffff] text-sm font-bold mb-3">Support Users</h3>
+                    <div class="space-y-3">
+                        {% for support in supports %}
+                        <div class="flex justify-between items-center p-3 bg-[#252525] rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                {% if support.photo %}
+                                    <img src="{{ support.photo.url }}" alt="{{ support.name }}" class="w-10 h-10 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-10 h-10 bg-[#333333] rounded-full"></div>
+                                {% endif %}
+                                <div>
+                                    <p class="text-white text-xs">{{ support.name|default:"No Name" }}</p>
+                                    <p class="text-[#b3b3b3] text-[11px]">{{ support.email }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="viewSupportDetails('{{ support.id }}')" class="text-[#2196F3] hover:text-[#1976D2] transition-colors duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                                {% if support.is_approved == False and support.is_rejected == False %}
+                                    <button onclick="approveSupport('{% url 'approve_support' support.id %}')" class="text-[#4CAF50] hover:text-[#45a049] transition-colors duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </button>
+                                    <button onclick="rejectSupport('{{ support.id }}')" class="text-[#F44336] hover:text-[#D32F2F] transition-colors duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                {% elif support.is_rejected == True %}
+                                    <span class="text-[#F44336] text-xs">Rejected</span>
+                                {% else %}
+                                    <span class="text-[#4CAF50] text-xs">Approved</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="supportModal-{{ support.id }}" class="hidden inset-0 bg-[#212121] bg-opacity-50 z-50 overflow-hidden">
+                            <div class="flex items-center justify-center min-h-screen px-4 py-8">
+                                <div class="bg-[#212121] rounded-xl p-6 max-w-7xl w-full mx-auto relative">
+                                    <!-- Header -->
+                                    <div class="flex justify-between items-center mb-6">
+                                        <h2 class="text-white text-xl font-bold">Support User Details</h2>
+                                        <button onclick="closeSupportModal('{{ support.id }}')" class="text-[#b3b3b3] hover:text-white transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Main Content -->
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <!-- Left Column -->
+                                        <div class="space-y-6">
+                                            <!-- Personal Information -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Personal Information</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Name: {{ support.name }}</p>
+                                                    <div class="relative inline-block">
+                                                        <button onclick="toggleEmailPopup('{{ support.id }}')" class="text-[#1976D2] text-[12px] flex items-center">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                            </svg>
+                                                        </button>
+                                                        <div id="emailPopup-{{ support.id }}" class="hidden absolute z-10 bg-[#2d2d2d] p-3 rounded-lg shadow-lg -top-2 left-24">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-white text-[12px]">{{ support.email }}</span>
+                                                                <button onclick="toggleEmailPopup('{{ support.id }}')" class="text-[#b3b3b3] hover:text-white ml-2">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <p class="text-white text-[12px]">Phone: {{ support.phone_number }}</p>
+                                                    <p class="text-white text-[12px]">DOB: {{ support.dob }}</p>
+                                                    <p class="text-white text-[12px]">Address: {{ support.address }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Identity Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Identity Details</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">PAN: {{ support.pan_number }}</p>
+                                                    <p class="text-white text-[12px]">Aadhar: {{ support.aadhar_number }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Bank Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Bank Details</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Account Holder: {{ support.bank_account_holder_name }}</p>
+                                                    <p class="text-white text-[12px]">Account Number: {{ support.bank_account_number }}</p>
+                                                    <p class="text-white text-[12px]">Bank Name: {{ support.bank_name }}</p>
+                                                    <p class="text-white text-[12px]">Branch: {{ support.branch_name }}</p>
+                                                    <p class="text-white text-[12px]">IFSC: {{ support.bank_ifsc_code }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Family References -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Family References</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Reference 1 Name: {{ support.family_reference_1_name }}</p>
+                                                    <p class="text-white text-[12px]">Reference 1 Phone: {{ support.family_reference_1_phone }}</p>
+                                                    <p class="text-white text-[12px]">Reference 1 Relation: {{ support.family_reference_1_relation }}</p>
+                                                    <p class="text-white text-[12px]">Reference 2 Name: {{ support.family_reference_2_name }}</p>
+                                                    <p class="text-white text-[12px]">Reference 2 Phone: {{ support.family_reference_2_phone }}</p>
+                                                    <p class="text-white text-[12px]">Reference 2 Relation: {{ support.family_reference_2_relation }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Column -->
+                                        <div class="space-y-6">
+                                            <!-- Professional Details -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Professional Details</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Department: {{ support.department }}</p>
+                                                    <p class="text-white text-[12px]">Qualification: {{ support.qualification }}</p>
+                                                    <p class="text-white text-[12px]">Support ID: {{ support.support_passcode }}</p>
+                                                </div>
+                                            </div>
+
+                                            <!-- Corporate References -->
+                                            <div>
+                                                <h3 class="text-[#b3b3b3] text-sm font-medium mb-2">Corporate References</h3>
+                                                <div class="bg-transparent p-4 rounded-lg space-y-2">
+                                                    <p class="text-white text-[12px]">Reference 1 Name: {{ support.corporate_reference_1_name }}</p>
+                                                    <p class="text-white text-[12px]">Reference 1 Phone: {{ support.corporate_reference_1_phone }}</p>
+                                                    <p class="text-white text-[12px]">Reference 1 Company: {{ support.corporate_reference_1_company }}</p>
+                                                    <p class="text-white text-[12px]">Reference 2 Name: {{ support.corporate_reference_2_name }}</p>
+                                                    <p class="text-white text-[12px]">Reference 2 Phone: {{ support.corporate_reference_2_phone }}</p>
+                                                    <p class="text-white text-[12px]">Reference 2 Company: {{ support.corporate_reference_2_company }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Documents Section -->
+                                    <div class="mt-6">
+                                        <h3 class="text-[#b3b3b3] text-sm mb-3">Submitted Documents</h3>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                            {% if support.photo %}
+                                            <a href="{{ support.photo.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Photo</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if support.addhar_card_file %}
+                                            <a href="{{ support.addhar_card_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Aadhar Card</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if support.pan_card_file %}
+                                            <a href="{{ support.pan_card_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">PAN Card</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if support.resume_file %}
+                                            <a href="{{ support.resume_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Resume</span>
+                                            </a>
+                                            {% endif %}
+
+                                            {% if support.qualification_file %}
+                                            <a href="{{ support.qualification_file.url }}" download class="bg-[#252525] p-3 rounded-lg flex items-center space-x-2 hover:bg-[#2a2a2a] transition-colors">
+                                                <svg class="w-5 h-5 text-[#2196F3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <span class="text-white text-[12px]">Qualification Certificate</span>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if not agents and not employees and not support_users %}
+                <div class="text-center text-[#b3b3b3] py-4">
+                    No registered users found
+                </div>
+                {% endif %}
+            </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script src="{% static 'js/agent.js' %}?v=3"></script>
+    <script src="{% static 'js/agent_details.js' %}?v=3"></script>
+{% endblock %}

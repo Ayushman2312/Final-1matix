@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>UPI Payment</title>
+</head>
+<body class="bg-white min-h-screen flex items-start justify-center">
+    <div class="p-8 rounded-lg max-w-md w-full">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">UPI Payment</h1>
+            <p class="text-gray-600">Complete your payment using any UPI app</p>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex justify-center space-x-2 mb-2">
+                <span class="text-gray-600">Amount: </span>
+                <span class="font-bold">₹{{ amount }}</span>
+            </div>
+            <div class="flex justify-center space-x-2">
+                <span class="text-gray-600">Pay to: </span>
+                <span>{{ company.company_name }}</span>
+                <span>{{ invoice_id }}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            {% if qr_image_url %}
+            <div class="col-span-3 flex justify-center mb-4">
+                <img src="{{ qr_image_url }}" alt="UPI QR Code" class="w-48 h-48 md:w-48 md:h-48 object-contain">
+            </div>
+            {% endif %}
+            
+            <a href="phonepe://pay?pa={{ company.company_upi_id }}&pn={{ company.company_name|urlencode }}&am={{ amount }}&cu=INR&tn=Invoice%20Payment" class="text-black text-center py-3 px-2 rounded-lg hover:bg-purple-700 flex flex-col items-center md:hidden">
+                <img src="/media/masteradmin_web/PhonePe Payment Icon .svg" alt="PhonePe" class="w-10 h-10">
+                <span>PhonePe</span>
+            </a>
+            <a href="gpay://upi/pay?pa={{ company.company_upi_id }}&pn={{ company.company_name|urlencode }}&am={{ amount }}&cu=INR&tn=Invoice%20Payment" class="text-black text-center py-3 px-2 rounded-lg hover:bg-green-700 flex flex-col items-center md:hidden">
+                <img src="/media/masteradmin_web/Gpay Payment Icon.svg" alt="Google Pay" class="w-10 h-10">
+                <span>Google Pay</span>
+            </a>
+            <a href="paytmmp://pay?pa={{ company.company_upi_id }}&pn={{ company.company_name|urlencode }}&am={{ amount }}&cu=INR&tn=Invoice%20Payment" class="text-black text-center py-3 px-2 rounded-lg hover:bg-blue-700 flex flex-col items-center md:hidden">
+                <img src="/media/masteradmin_web/PayTm Payment.svg" alt="Paytm" class="w-10 h-10">
+                <span>Paytm</span>
+            </a>
+        </div>
+
+        <div class="text-center text-sm text-gray-500 mt-4">
+            <p>If you're on mobile, clicking on an app will open it directly.</p>
+            <p>On desktop, scan the QR code with your UPI app.</p>
+        </div>
+        
+        <div class="mt-12 border-t pt-8">
+            <p class="text-gray-600 text-center mb-4">If you have completed the payment, please upload the payment screenshot below</p>
+            <div class="flex flex-col items-center">
+                <form id="screenshot-form" method="POST" enctype="multipart/form-data" action="{% url 'upi_payment' company.company_id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_submitted" value="true">
+                    <label for="payment-screenshot" class="relative bg-blue-600 text-white px-10 py-3 rounded-full cursor-pointer hover:bg-blue-700 transition-all duration-300 shadow-lg flex items-center overflow-hidden">
+                        <div class="flex items-center transition-transform duration-500 upload-content">
+                            <span class="font-medium mr-4 text-lg">Upload</span>
+                            <div class="bg-blue-700 rounded-full p-1.5 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-all duration-500 success-content">
+                            <span class="font-medium mr-2 text-lg translate-y-full transition-transform duration-500">Uploading...</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 translate-y-full transition-transform duration-500 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </div>
+                    </label>
+                    <input type="file" id="payment-screenshot" name="payment_screenshot" accept="image/*" class="hidden" onchange="handleFileUpload(this)">
+                </form>
+            </div>
+            <style>
+                .uploading .upload-content {
+                    transform: translateY(-100%);
+                    opacity: 0;
+                }
+                .uploading .success-content {
+                    opacity: 1;
+                }
+                .uploading .success-content span,
+                .uploading .success-content svg {
+                    transform: translateY(0);
+                }
+            </style>
+        </div>
+    </div>
+
+    <!-- Thank you message (hidden by default) -->
+    <div id="thank-you-message" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg max-w-md w-full text-center shadow-xl">
+            <div class="mb-4 text-green-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Thank You!</h2>
+            <p class="text-gray-600 mb-6">Your screenshot has been submitted and will be reviewed shortly. Thank you for your interest.</p>
+            <button onclick="closeThankYouMessage()" class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-all duration-300">Close</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+</body>
+</html>

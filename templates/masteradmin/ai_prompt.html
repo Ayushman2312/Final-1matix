@@ -1,0 +1,261 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+        <!-- Create Prompt Section -->
+        <div class="bg-[#212121] rounded-xl p-6 mb-6 hover:shadow-xl transition-all duration-300">
+            <h2 class="text-[#ffffff] text-lg font-bold mb-4">Manage AI Prompt</h2>
+            
+            <form id="createPromptForm" class="space-y-4">
+                {% csrf_token %}
+                <!-- Action Identifier Input -->
+                <div>
+                    <label for="actionIdentifier" class="block text-[#b3b3b3] text-sm mb-2">
+                        Action Identifier 
+                    </label>
+                    <input type="text" 
+                           id="actionIdentifier" 
+                           class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 border border-[#404040] focus:border-[#2196F3] focus:outline-none transition-colors"
+                           placeholder="Enter Action Identifier">
+                </div>
+
+                <!-- Detailed Prompt Input -->
+                <div>
+                    <label for="detailedPrompt" class="block text-[#b3b3b3] text-sm mb-2">Detailed Prompt</label>
+                    <textarea id="detailedPrompt" 
+                              rows="4" 
+                              class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 border border-[#404040] focus:border-[#2196F3] focus:outline-none transition-colors"
+                              placeholder="Enter your detailed prompt here..."></textarea>
+                </div>
+
+                <!-- Close Identifier Input -->
+                <div>
+                    <label for="closeIdentifier" class="block text-[#b3b3b3] text-sm mb-2">
+                        Closing Identifier
+                    </label>
+                    <input type="text" 
+                           id="closeIdentifier" 
+                           class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 border border-[#404040] focus:border-[#2196F3] focus:outline-none transition-colors"
+                           placeholder="Enter Close Identifier">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" 
+                            class="w-1/4 bg-[rgb(37,99,235)] text-white py-2 px-4 rounded-lg hover:bg-[#1976D2] transition-all duration-300 flex items-center justify-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span>Create Prompt</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Add this section to display existing prompts -->
+        <div class="bg-[#212121] rounded-xl p-6 mb-6 hover:shadow-xl transition-all duration-300">
+            <h2 class="text-[#ffffff] text-lg font-bold mb-4">Existing Prompts</h2>
+            <div class="space-y-4">
+                {% for prompt in ai_prompts %}
+                <div class="bg-[#2a2a2a] p-4 rounded-lg">
+                    <h3 class="text-white font-medium mb-2">{{ prompt.platform }}</h3>
+                    <pre class="text-[#b3b3b3] text-sm whitespace-pre-wrap">{{ prompt.prompt }}</pre>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('createPromptForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const actionIdentifier = document.getElementById('actionIdentifier').value.trim();
+                const detailedPrompt = document.getElementById('detailedPrompt').value.trim();
+                const closeIdentifier = document.getElementById('closeIdentifier').value.trim();
+
+                // Basic validation
+                if (!actionIdentifier || !detailedPrompt || !closeIdentifier) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'All fields are required',
+                        icon: 'error',
+                        background: '#2a2a2a',
+                        color: '#ffffff'
+                    });
+                    return;
+                }
+
+                // Validate action identifier format and operation type
+                const isUpdate = actionIdentifier.startsWith('e-');
+                const isNew = actionIdentifier.startsWith('#');
+
+                if (!isUpdate && !isNew) {
+                    Swal.fire({
+                        title: 'Invalid Format',
+                        text: 'Action Identifier must start with # for new prompts or e- for updates',
+                        icon: 'error',
+                        background: '#2a2a2a',
+                        color: '#ffffff'
+                    });
+                    return;
+                }
+
+                // For updates, ensure platform name is provided
+                if (isUpdate && actionIdentifier.length <= 2) {
+                    Swal.fire({
+                        title: 'Invalid Format',
+                        text: 'Platform name is required for updates',
+                        icon: 'error',
+                        background: '#2a2a2a',
+                        color: '#ffffff'
+                    });
+                    return;
+                }
+
+                // Get the platform name from the action identifier
+                const platformName = isUpdate ? actionIdentifier.substring(2).trim() : actionIdentifier.substring(1).trim();
+                const expectedClose = `Done ${platformName}`;
+
+                if (closeIdentifier !== expectedClose) {
+                    Swal.fire({
+                        title: 'Invalid Format',
+                        text: `Close Identifier must be "${expectedClose}"`,
+                        icon: 'error',
+                        background: '#2a2a2a',
+                        color: '#ffffff'
+                    });
+                    return;
+                }
+
+                // Construct the full prompt text
+                const fullPrompt = `${actionIdentifier}\n${detailedPrompt}\n${closeIdentifier}`;
+
+                // Get CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                // Show loading state
+                Swal.fire({
+                    title: isUpdate ? 'Updating...' : 'Creating...',
+                    text: 'Please wait while we process your request',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    background: '#2a2a2a',
+                    color: '#ffffff'
+                });
+
+                // Send AJAX request
+                fetch('/masteradmin/ai_prompt/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        prompt: fullPrompt
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Server error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: isUpdate ? 'Prompt updated successfully!' : 'New prompt created successfully!',
+                            icon: 'success',
+                            background: '#2a2a2a',
+                            color: '#ffffff'
+                        }).then(() => {
+                            // Clear form
+                            document.getElementById('createPromptForm').reset();
+                            // Reload the page to show updated prompts
+                            location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'An error occurred');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message,
+                        icon: 'error',
+                        background: '#2a2a2a',
+                        color: '#ffffff'
+                    });
+                });
+            });
+
+            // Add CSRF token to form
+            function addCsrfToken() {
+                const form = document.getElementById('createPromptForm');
+                if (!form.querySelector('[name=csrfmiddlewaretoken]')) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = '{{ csrf_token }}';
+                    form.appendChild(csrfInput);
+                }
+            }
+
+            // Initialize when page loads
+            document.addEventListener('DOMContentLoaded', addCsrfToken);
+        </script>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize Sales Chart
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    borderColor: '#2196F3',
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#333333'
+                        },
+                        ticks: {
+                            color: '#b3b3b3'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#333333'
+                        },
+                        ticks: {
+                            color: '#b3b3b3'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}

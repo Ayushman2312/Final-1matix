@@ -1,0 +1,152 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Google Trends Analysis{% endblock %}
+
+{% block content %}
+<div class="min-h-screen px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-2xl font-medium text-gray-900 sm:text-5xl md:text-6xl mb-4">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-violet-500 to-indigo-600">
+                    Google Trends Analysis
+                </span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-lg text-gray-600 font-medium tracking-wide">
+                Discover search trends in India over the last 5 years with our advanced analytics tool
+            </p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="max-w-3xl mx-auto mb-12">
+            <form method="POST" class="flex justify-center items-center" id="trendsForm">
+                {% csrf_token %}
+                <div class="relative rounded-full overflow-hidden bg-white shadow-xl w-[50%]">
+                    <input
+                        class="input bg-transparent outline-none border-none pl-6 pr-10 py-3 w-full font-sans text-lg font-semibold"
+                        placeholder="Enter keyword..."
+                        name="keyword"
+                        type="text"
+                        value="{{ keyword|default:'' }}"
+                        required
+                    />
+                    <div class="absolute right-2 top-[0.4em]">
+                        <button type="submit"
+                            class="w-10 h-10 rounded-full bg-violet-500 group shadow-xl flex items-center justify-center relative overflow-hidden"
+                            id="submitBtn"
+                        >
+                            <svg
+                                class="relative z-10"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 64 64"
+                                height="20"
+                                width="20"
+                            >
+                                <path
+                                    fill-opacity="0.01"
+                                    fill="white"
+                                    d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 1.67708e-05L63.6689 29.0491Z"
+                                ></path>
+                                <path
+                                    stroke-linejoin="round"
+                                    stroke-linecap="round"
+                                    stroke-width="3.76603"
+                                    stroke="white"
+                                    d="M42.8496 18.7067L21.0628 44.6712"
+                                ></path>
+                                <path
+                                    stroke-linejoin="round"
+                                    stroke-linecap="round"
+                                    stroke-width="3.76603"
+                                    stroke="white"
+                                    d="M26.9329 20.0992L42.85 18.7067L44.2426 34.6238"
+                                ></path>
+                            </svg>
+                            <div
+                                class="w-full h-full rotate-45 absolute left-[32%] top-[32%] bg-black group-hover:-left-[100%] group-hover:-top-[100%] duration-1000"
+                            ></div>
+                            <div
+                                class="w-full h-full -rotate-45 absolute -left-[32%] -top-[32%] group-hover:left-[100%] group-hover:top-[100%] bg-black duration-1000"
+                            ></div>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {% if searched %}
+            <!-- Results Section -->
+            <div class="max-w-5xl mx-auto">
+                {% if error %}
+                    <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg mb-8">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-700">
+                                    {{ error }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% elif graph %}
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+                        <div class="p-6" id="graphContainer">
+                            <!-- Loading Spinner -->
+                            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 transition-opacity duration-300 hidden" id="loadingSpinner">
+                                <div class="animate-spin rounded-full h-12 w-12 border-4 border-violet-500 border-t-transparent"></div>
+                            </div>
+                            <img src="data:image/png;base64,{{ graph }}" 
+                                 alt="Google Trends Graph" 
+                                 id="trendGraph"
+                                 class="w-full h-auto rounded-lg"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="bg-indigo-50 rounded-2xl p-6 border border-indigo-100">
+                        <h3 class="text-xl font-semibold text-indigo-900 mb-3">
+                            About This Analysis
+                        </h3>
+                        <p class="text-indigo-700 leading-relaxed">
+                            This graph shows the search interest for "<span class="font-semibold">{{ keyword }}</span>" in India over the past 5 years. The values represent search interest relative to the highest point on the chart. A value of 100 is the peak popularity for the term.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('trendsForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const graphContainer = document.getElementById('graphContainer');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    form.addEventListener('submit', function(e) {
+        submitBtn.disabled = true;
+        
+        if (graphContainer) {
+            loadingSpinner.classList.remove('hidden');
+        }
+    });
+    
+    const trendGraph = document.getElementById('trendGraph');
+    if (trendGraph) {
+        trendGraph.addEventListener('load', function() {
+            if (loadingSpinner) {
+                loadingSpinner.classList.add('hidden');
+            }
+            submitBtn.disabled = false;
+        });
+    }
+});
+</script>
+{% endblock %} 

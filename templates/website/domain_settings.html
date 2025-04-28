@@ -1,0 +1,203 @@
+{% extends 'user_dashboard/base.html' %}
+
+{% block content %}
+<div class="px-4 py-8 max-w-6xl mx-auto">
+    <h2 class="text-3xl font-semibold text-gray-800 mb-8">Domain Settings</h2>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-6">
+                <label for="website" class="block text-sm font-medium text-gray-700 mb-2">Select Website</label>
+                <select name="website_id" id="website_selector" class="w-full md:w-[30%] px-5 py-3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                    {% for website in websites %}
+                        <option value="{{ website.id }}" {% if website.id == selected_website_id %}selected{% endif %}>
+                            {{ website.template.name }} - Created: {{ website.created_at|date:"M d, Y" }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <p class="mt-2 text-sm text-gray-500">
+                    Each website can have only one custom domain. If you add a new domain to a website that already has one, the old domain will be replaced.
+                </p>
+            </div>
+            
+            <div class="mb-6">
+                <label for="domain" class="block text-base font-semibold text-gray-800 mb-2">Custom Domain</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M6.5 10c-.223 0-.437.034-.65.065.069-.232.14-.468.254-.68.114-.308.292-.575.469-.844.148-.291.409-.488.601-.737.201-.242.475-.403.692-.604.213-.21.492-.315.714-.463.232-.133.434-.28.65-.35.208-.086.39-.16.539-.222.302-.125.474-.197.474-.197L9.758 4.03c0 0-.218.052-.364.089-.144.03-.308.097-.479.134-.368.077-.707.29-1.047.4-.332.136-.63.238-.926.405-.287.13-.536.332-.789.5-.224.15-.485.343-.694.522-.237.176-.427.452-.629.674-.202.222-.47.408-.652.674-.211.277-.367.577-.513.874-.127.314-.28.596-.377.908-.147.454-.201.943-.201 1.424 0 .481.094.942.201 1.404.107.331.163.708.303 1.014.153.324.301.65.477.94.283.512.607.977 1.054 1.413.455.419.99.748 1.543.986.55.244 1.113.337 1.683.337.571 0 1.134-.093 1.684-.337.553-.238 1.088-.567 1.543-.986.447-.436.771-.901 1.054-1.413.176-.29.324-.616.477-.94.14-.306.196-.683.303-1.014.107-.462.201-.923.201-1.404 0-.481-.094-.943-.201-1.424-.097-.312-.25-.594-.377-.908-.146-.297-.302-.597-.513-.874-.182-.266-.45-.452-.652-.674-.202-.222-.392-.498-.629-.674-.209-.179-.47-.372-.694-.522-.253-.168-.502-.37-.789-.5-.296-.167-.594-.269-.926-.405-.34-.11-.679-.323-1.047-.4-.171-.037-.335-.104-.479-.134-.146-.037-.364-.089-.364-.089l.274 1.914c0 0 .172.072.474.197.149.062.331.136.539.222.216.07.418.217.65.35.222.148.501.253.714.463.217.201.491.362.692.604.192.249.453.446.601.737.177.269.355.536.469.844.114.212.185.448.254.68-.213-.031-.427-.065-.65-.065-.604 0-1.108.171-1.597.403-.623.283-1.183.661-1.597 1.097-.414.436-.786.957-1.054 1.53-.261.631-.403 1.304-.403 2 0 .696.142 1.369.403 2 .268.573.64 1.094 1.054 1.53.414.436.974.814 1.597 1.097.489.232.993.403 1.597.403.604 0 1.108-.171 1.597-.403.623-.283 1.183-.661 1.597-1.097.414-.436.786-.957 1.054-1.53.261-.631.403-1.304.403-2 0-.696-.142-1.369-.403-2-.268-.573-.64-1.094-1.054-1.53-.414-.436-.974-.814-1.597-1.097-.489-.232-.993-.403-1.597-.403z"/>
+                        </svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        name="domain" 
+                        id="domain"
+                        class="w-full pl-10 pr-4 py-3 text-gray-800 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out shadow-sm hover:border-gray-400"
+                        placeholder="Enter your domain (e.g., example.com)"
+                        required
+                    >
+                </div>
+                <p class="mt-2 text-sm text-gray-500">Enter the domain name you want to connect to your website. Do not include www or http://</p>
+            </div>
+            
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-150 ease-in-out">
+                Add Domain
+            </button>
+        </form>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-6">Your Domains</h3>
+        {% if domains %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domain</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SSL</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for domain in domains %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ domain.domain }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ domain.website.template.name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                {% if domain.verification_status == 'verified' %}
+                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Verified</span>
+                                {% elif domain.verification_status == 'pending' %}
+                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
+                                {% else %}
+                                    <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Failed</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                {% if domain.ssl_status %}
+                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>
+                                {% else %}
+                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <div class="flex space-x-2">
+                                    {% if domain.verification_status == 'pending' %}
+                                        <a href="{% url 'domain_verification' domain.id %}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            Verify
+                                        </a>
+                                    {% endif %}
+                                    <form method="post" action="{% url 'delete_domain' domain.id %}" onsubmit="return confirm('Are you sure you want to delete this domain?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-gray-500">You haven't added any domains yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-6">My Websites</h3>
+        
+        {% if websites %}
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {% for website in websites %}
+                <div id="website-{{ website.id }}" class="website-item border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                    <div class="p-4 {% if website.id == selected_website_id %}bg-blue-50 border-blue-200{% endif %}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-medium text-gray-900">{{ website.template.name }}</h4>
+                                <p class="text-sm text-gray-500 mt-1">Created: {{ website.created_at|date:"M d, Y" }}</p>
+                                <p class="text-sm text-gray-500 mt-1">Pages: {{ website.pages.count }}</p>
+                                
+                                <div class="mt-2">
+                                    {% for domain in domains %}
+                                        {% if domain.website.id == website.id %}
+                                            {% if forloop.first %}
+                                                <p class="text-sm font-medium text-gray-700">Domain:</p>
+                                            {% endif %}
+                                            <p class="text-sm text-gray-600">
+                                                {{ domain.domain }}
+                                                {% if domain.verification_status == 'verified' %}
+                                                    <span class="text-green-600 text-xs ml-1"><i class="fas fa-check"></i></span>
+                                                {% elif domain.verification_status == 'pending' %}
+                                                    <span class="text-yellow-600 text-xs ml-1">(pending)</span>
+                                                {% else %}
+                                                    <span class="text-red-600 text-xs ml-1">(failed)</span>
+                                                {% endif %}
+                                            </p>
+                                            <!-- Add a hidden field to indicate this website has a domain -->
+                                            <input type="hidden" id="has-domain-{{ website.id }}" value="1">
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    <!-- Display "No domain connected" message by default, then hide it with JavaScript if domain found -->
+                                    <p class="text-sm text-gray-500 mt-2" id="no-domain-msg-{{ website.id }}">No domain connected</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-between items-center">
+                            <a href="{% url 'preview_website' website.id %}" class="text-blue-600 hover:text-blue-800 text-sm" target="_blank">
+                                <i class="fas fa-external-link-alt mr-1"></i> Preview
+                            </a>
+                            <button 
+                                type="button" 
+                                onclick="selectWebsiteForDomain({{ website.id }})"
+                                class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-medium rounded">
+                                Add Domain
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-500">No websites available. <a href="{% url 'select_template' %}" class="text-blue-600 hover:underline">Create one</a>.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function selectWebsiteForDomain(id) {
+        // Select the website in the dropdown
+        document.getElementById('website_selector').value = id;
+        
+        // Scroll to the domain form
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+        
+        // Focus on the domain input field
+        setTimeout(() => {
+            document.getElementById('domain').focus();
+        }, 500);
+    }
+
+    // Hide "No domain connected" message if domain found
+    document.addEventListener('DOMContentLoaded', function() {
+        // For each website card
+        {% for website in websites %}
+            if (document.getElementById('has-domain-{{ website.id }}')) {
+                // If a domain exists for this website, hide the "No domain" message
+                var noDomainMsg = document.getElementById('no-domain-msg-{{ website.id }}');
+                if (noDomainMsg) {
+                    noDomainMsg.style.display = 'none';
+                }
+            }
+        {% endfor %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Matrix - Master Admin Signup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .form-error {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .input-error {
+            border-color: #dc2626 !important;
+        }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 flex items-center justify-center p-4">
+    
+    <!-- Main Container -->
+    <div class="w-full max-w-6xl flex flex-col md:flex-row items-center justify-between gap-8 p-8">
+        
+        <!-- Left Side - Animation -->
+        <div class="w-full md:w-1/2" data-aos="fade-right">
+            <lottie-player 
+                src="https://assets2.lottiefiles.com/packages/lf20_jcikwtux.json"
+                background="transparent"
+                speed="1"
+                class="w-full max-w-lg mx-auto floating"
+                loop
+                autoplay>
+            </lottie-player>
+            <div class="text-center mt-6">
+                <h1 class="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 mb-4">
+                    Welcome Aboard
+                </h1>
+                <p class="text-gray-300 text-xl">Create your Master Admin account</p>
+            </div>
+        </div>
+
+        <!-- Right Side - Signup Form -->
+        <div class="w-full md:w-1/2 max-w-md" data-aos="fade-left">
+            <div class="backdrop-blur-lg bg-white/10 rounded-2xl p-8 shadow-xl">
+                <form id="signupForm" method="POST" action="{% url 'signup' %}" class="space-y-6" onsubmit="return validateForm(event)">
+                    {% csrf_token %}
+                    
+                    <!-- Email Field -->
+                    <div class="space-y-2">
+                        <label class="text-lg font-medium text-gray-200">Email Address</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </span>
+                            <input type="email" name="email" id="email" 
+                                class="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-800/50 border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-200 placeholder-gray-400 transition duration-200"
+                                placeholder="your.email@example.com">
+                            <div class="form-error hidden" id="emailError"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Number Field -->
+                    <div class="space-y-2">
+                        <label class="text-lg font-medium text-gray-200">Mobile Number</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-phone text-gray-400"></i>
+                            </span>
+                            <input type="tel" name="mobile" id="mobile" 
+                                class="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-800/50 border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-200 placeholder-gray-400 transition duration-200"
+                                placeholder="+1 (234) 567-8900">
+                            <div class="form-error hidden" id="mobileError"></div>
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="space-y-2">
+                        <label class="text-lg font-medium text-gray-200">Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </span>
+                            <input type="password" name="password" id="password"
+                                class="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-800/50 border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-200 placeholder-gray-400 transition duration-200"
+                                placeholder="••••••••">
+                            <div class="form-error hidden" id="passwordError"></div>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="space-y-2">
+                        <label class="text-lg font-medium text-gray-200">Confirm Password</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </span>
+                            <input type="password" name="confirmPassword" id="confirmPassword"
+                                class="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-800/50 border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-200 placeholder-gray-400 transition duration-200"
+                                placeholder="••••••••">
+                            <div class="form-error hidden" id="confirmPasswordError"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium text-lg transition duration-300 transform hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900">
+                        Create Account
+                    </button>
+
+                    <div class="text-center text-gray-400">
+                        Already have an account? 
+                        <a href="/user/login/" class="text-blue-400 hover:text-blue-300">Login here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/signup.js' %}?v=1.0.0"></script>
+</body>
+</html>

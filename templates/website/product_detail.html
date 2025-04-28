@@ -1,0 +1,182 @@
+{% extends "user_dashboard/base.html" %}
+{% load static %}
+{% load website_filters %}
+
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="{% url 'website_products' %}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-1"></i> Back to Products
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="border-b px-6 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">Product Details</h1>
+        </div>
+
+        <div class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column - Images -->
+                <div>
+                    <div class="bg-gray-100 rounded-lg overflow-hidden mb-4 h-64 flex items-center justify-center">
+                        {% if product.image1 %}
+                        <img id="main-image" src="{{ product.image1.url }}" alt="{{ product.title }}" class="h-full w-full object-contain">
+                        {% else %}
+                        <div class="flex items-center justify-center h-full w-full text-gray-400">
+                            <i class="fas fa-image fa-3x"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-2">
+                        {% if product.image1 %}
+                        <div class="thumbnail-container bg-gray-100 h-16 w-full rounded-md overflow-hidden cursor-pointer border-2 border-blue-500">
+                            <img src="{{ product.image1.url }}" alt="Thumbnail 1" class="h-full w-full object-cover thumbnail" data-src="{{ product.image1.url }}">
+                        </div>
+                        {% endif %}
+
+                        {% if product.image2 %}
+                        <div class="thumbnail-container bg-gray-100 h-16 w-full rounded-md overflow-hidden cursor-pointer">
+                            <img src="{{ product.image2.url }}" alt="Thumbnail 2" class="h-full w-full object-cover thumbnail" data-src="{{ product.image2.url }}">
+                        </div>
+                        {% endif %}
+
+                        {% if product.image3 %}
+                        <div class="thumbnail-container bg-gray-100 h-16 w-full rounded-md overflow-hidden cursor-pointer">
+                            <img src="{{ product.image3.url }}" alt="Thumbnail 3" class="h-full w-full object-cover thumbnail" data-src="{{ product.image3.url }}">
+                        </div>
+                        {% endif %}
+
+                        {% if product.image4 %}
+                        <div class="thumbnail-container bg-gray-100 h-16 w-full rounded-md overflow-hidden cursor-pointer">
+                            <img src="{{ product.image4.url }}" alt="Thumbnail 4" class="h-full w-full object-cover thumbnail" data-src="{{ product.image4.url }}">
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if product.video_link %}
+                    <div class="mt-4">
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Product Video</h3>
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg overflow-hidden">
+                            <iframe width="100%" height="200" src="https://www.youtube.com/embed/{{ product.video_link|slice:'32:' }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Right Column - Product Details -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ product.title }}</h2>
+                        <div class="flex items-center space-x-4 mt-1 mb-4">
+                            <span class="text-lg font-bold text-gray-900">₹{{ product.price }}</span>
+                            <span class="bg-{{ product.is_active|yesno:'green-100 text-green-800,gray-100 text-gray-800' }} text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                                {{ product.is_active|yesno:'Active,Draft' }}
+                            </span>
+                        </div>
+
+                        <div class="text-sm text-gray-500 mb-4">
+                            <p><strong>HSN Code:</strong> {{ product.hsn_code }}</p>
+                            <p><strong>GST:</strong> {{ product.gst_percentage }}%</p>
+                            <p><strong>Category:</strong> {{ product.category.name|default:'None' }}</p>
+                            <p><strong>Last Updated:</strong> {{ product.updated_at|date:"F j, Y" }}</p>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Description</h3>
+                            <div class="prose max-w-none text-gray-500">
+                                {{ product.description|linebreaks }}
+                            </div>
+                        </div>
+
+                        {% if product.specifications %}
+                        <div class="pt-4 border-t border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Specifications</h3>
+                            <div class="bg-white rounded-lg border border-gray-200">
+                                <div class="divide-y divide-gray-200">
+                                    {% for key, value in product.specifications.items %}
+                                    <div class="grid grid-cols-3 py-3 px-4 hover:bg-gray-50">
+                                        <div class="col-span-1 text-sm font-medium text-gray-500">{{ key }}</div>
+                                        <div class="col-span-2 text-sm text-gray-900">{{ value }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if product.variant_list %}
+                        <div class="pt-4 border-t border-gray-200 mt-4">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Product Variants</h3>
+                            <div class="space-y-6">
+                                {% for variant_type in product.variant_list %}
+                                <div class="mb-4">
+                                    <h4 class="font-medium text-gray-800 mb-2">{{ variant_type.name }}</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                {% for value in variant_type.values %}
+                                                <tr>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ value.value }}</td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                        {% if value.price %}₹{{ value.price }}{% else %}<span class="text-gray-400">Same as base (₹{{ product.price }})</span>{% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="pt-4 border-t border-gray-200 mt-4 flex space-x-3">
+                            <a href="{% url 'website_product_edit' product.product_id %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-edit mr-2"></i> Edit Product
+                            </a>
+                            <form method="POST" action="{% url 'website_product_delete' product.product_id %}" onsubmit="return confirm('Are you sure you want to delete this product?');" class="inline-block">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    <i class="fas fa-trash mr-2"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image gallery
+        const mainImage = document.getElementById('main-image');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', function() {
+                // Update main image
+                mainImage.src = this.getAttribute('data-src');
+                
+                // Update active thumbnail
+                document.querySelectorAll('.thumbnail-container').forEach(container => {
+                    container.classList.remove('border-2', 'border-blue-500');
+                });
+                this.parentElement.classList.add('border-2', 'border-blue-500');
+            });
+        });
+    });
+</script>
+{% endblock %} 

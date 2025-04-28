@@ -1,0 +1,192 @@
+{% extends "user_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Edit Page - {{ page.title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-5xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <a href="{% url 'manage_pages' website.id %}" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Back to Pages
+                    </a>
+                    <h1 class="text-2xl font-semibold text-gray-900 mt-2">Edit Page: {{ page.title }}</h1>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <a href="{% url 'preview_page' page.id %}" target="_blank" 
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Preview
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <!-- Tabs -->
+            <div class="border-b border-gray-200">
+                <nav class="flex -mb-px">
+                    <button id="tab-metadata" class="tab-button px-6 py-3 border-b-2 text-sm font-medium transition-colors duration-200 ease-in-out focus:outline-none text-blue-600 border-blue-600">
+                        Page Properties
+                    </button>
+                    <button id="tab-content" class="tab-button px-6 py-3 border-b-2 text-sm font-medium transition-colors duration-200 ease-in-out focus:outline-none text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300">
+                        Page Content
+                    </button>
+                </nav>
+            </div>
+            
+            <form method="post" action="{% url 'edit_page' page.id %}">
+                {% csrf_token %}
+                <input type="hidden" id="content-json" name="content" value="{{ page.content|safe }}">
+                
+                <!-- Page Properties Panel -->
+                <div id="panel-metadata" class="tab-panel p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
+                            <input type="text" id="title" name="title" required value="{{ page.title }}"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
+                            <div class="flex items-center">
+                                <span class="text-gray-500 mr-1">/</span>
+                                <input type="text" id="slug" name="slug" value="{{ page.slug }}"
+                                    class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">The URL path for this page</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <label for="template_file" class="block text-sm font-medium text-gray-700 mb-1">Page Template</label>
+                        <select id="template_file" name="template_file" required
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            {% for template_page in template_pages %}
+                            <option value="{{ template_page.file }}" {% if template_page.file == page.template_file %}selected{% endif %}>
+                                {{ template_page.name }} ({{ template_page.file }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="is_homepage" name="is_homepage" {% if page.is_homepage %}checked{% endif %}
+                                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label for="is_homepage" class="ml-2 text-sm font-medium text-gray-700">
+                                Set as homepage
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 ml-6">If checked, this page will become the homepage of your website</p>
+                    </div>
+                </div>
+                
+                <!-- Page Content Panel -->
+                <div id="panel-content" class="tab-panel p-5 hidden">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-medium text-gray-900 mb-1">Page Content</h2>
+                        <p class="text-sm text-gray-600">Edit the content for this page below. The content will be inserted into the selected template.</p>
+                    </div>
+                    
+                    <div id="json-editor" class="border border-gray-300 rounded-md overflow-hidden"></div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="bg-gray-50 px-5 py-3 flex justify-end space-x-3 border-t border-gray-200">
+                    <a href="{% url 'manage_pages' website.id %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/jsoneditor@9.7.4/dist/jsoneditor.min.js"></script>
+<link href="https://unpkg.com/jsoneditor@9.7.4/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Deactivate all tabs
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('text-blue-600', 'border-blue-600');
+                    btn.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'border-transparent');
+                });
+                
+                // Hide all panels
+                tabPanels.forEach(panel => {
+                    panel.classList.add('hidden');
+                });
+                
+                // Activate clicked tab
+                button.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300', 'border-transparent');
+                button.classList.add('text-blue-600', 'border-blue-600');
+                
+                // Show corresponding panel
+                const panelId = button.id.replace('tab-', 'panel-');
+                document.getElementById(panelId).classList.remove('hidden');
+            });
+        });
+        
+        // JSON Editor setup
+        const container = document.getElementById('json-editor');
+        const options = {
+            mode: 'tree',
+            modes: ['tree', 'view', 'form', 'code', 'text'],
+            onChangeJSON: function(json) {
+                document.getElementById('content-json').value = JSON.stringify(json);
+            }
+        };
+        
+        const editor = new JSONEditor(container, options);
+        
+        // Load initial content
+        try {
+            const initialContent = {{ page.content|safe|default:"{}" }};
+            editor.set(initialContent);
+        } catch (e) {
+            editor.set({});
+            console.error('Error loading content:', e);
+        }
+        
+        // Slug generation from title
+        const titleInput = document.getElementById('title');
+        const slugInput = document.getElementById('slug');
+        
+        titleInput.addEventListener('blur', function() {
+            if (slugInput.value === '') {
+                // Convert title to slug format
+                const slug = titleInput.value
+                    .toLowerCase()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+                
+                slugInput.value = slug;
+            }
+        });
+    });
+</script>
+{% endblock %} 

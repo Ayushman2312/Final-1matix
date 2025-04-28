@@ -1,0 +1,957 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<div class="max-w-[100%] mx-[1.5rem] max-h-screen px-4 py-2 sm:px-6 lg:px-8 scrollbar-hide">
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto flex justify-between items-center mt-2">
+        <div class="text-xl font-semibold text-gray-800">HelpCenter</div>
+        {% comment %} <a href="/user/dashboard" class="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 rounded-md">Exit to Dashboard</a> {% endcomment %}
+    </div>
+
+    <!-- Hero Section -->
+    <div class="max-w-3xl mx-auto text-center -mb-[1.7rem]">
+        <h1 class="text-3xl font-[600] text-gray-900 mb-8">Hello, how can we help you?</h1>
+        
+        <!-- Search Bar -->
+        {% comment %} <div class="relative w-4/5 mx-auto">
+            <input type="text" placeholder="Search your keyword here..." 
+                   class="w-full px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <button class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </button>
+        </div> {% endcomment %}
+    </div>
+
+    <!-- Pricing Section -->
+    <div class="max-w-7xl mx-auto mt-[4.2rem] mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Billing -->
+            <div id="billingBox" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('billingBox'); showBillingSection()">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Billing</h3>
+                        <p class="text-gray-500 text-xs">Any billing query</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Support -->
+            <div id="supportBox" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('supportBox'); openSupportModal('Customer Support')">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Customer Support</h3>
+                        <p class="text-gray-500 text-xs">Any billing query</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Problem -->
+            <div id="technicalBox" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('technicalBox')">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Technical Problem</h3>
+                        <p class="text-gray-500 text-xs">Any billing query</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Previous Tickets -->
+            <div id="ticketsBox" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('ticketsBox')">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Previous Tickets</h3>
+                        <p class="text-gray-500 text-xs">Any billing query</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Training -->
+            <div id="trainingBox" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('trainingBox'); openTrainingModal()">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Request Training</h3>
+                        <p class="text-gray-500 text-xs">Any billing query</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancellation -->
+            <div id="cancellationBox" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('cancellationBox'); showSubscriptionSection()">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Manage Subscription</h3>
+                        <p class="text-gray-500 text-xs">Any billing query</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedbackBox" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('feedbackBox'); openFeedbackModal()">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Feedback</h3>
+                        <p class="text-gray-500 text-xs">Share your thoughts</p>
+                    </div>
+                </div>
+            </div>
+            <div id="feedbackBox2" class="bg-white rounded-lg p-4 shadow-[0_0px_4px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-[rgb(230,228,232)] transition-colors" onclick="selectBox('feedbackBox2'); openFeedbackModal()">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span class="text-purple-600 font-medium">W</span>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 font-medium text-sm">Feedback</h3>
+                        <p class="text-gray-500 text-xs">Share your thoughts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function selectBox(boxId) {
+            // Remove selected class from all boxes
+            const allBoxes = document.querySelectorAll('[id$="Box"]');
+            allBoxes.forEach(box => {
+                box.classList.remove('bg-[rgb(230,228,232)]');
+                box.classList.add('bg-white');
+            });
+            
+            // Add selected class to clicked box
+            const selectedBox = document.getElementById(boxId);
+            selectedBox.classList.remove('bg-white');
+            selectedBox.classList.add('bg-[rgb(230,228,232)]');
+        }
+    </script>
+
+    <!-- Popular Articles -->
+    <div class="max-w-7xl w-full mx-auto">
+        <div class="flex flex-col lg:flex-row gap-6 relative">
+            <!-- Articles Column -->
+            <div class="flex-1 space-y-3">
+                <span class="text-lg font-semibold block mb-2">Popular Articles</span>
+                {% for article in articles %}
+                <div class="w-full lg:w-[67%] bg-white rounded-lg shadow-sm shadow-[0_0px_4px_rgba(0,0,0,0.1)]">
+                    <button class="w-full p-3 flex justify-between items-center" onclick="toggleAccordion(this)">
+                        <span class="text-gray-800 text-sm">{{ article.title }}</span>
+                        <svg class="w-4 h-4 text-gray-400 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="hidden px-3 pb-3 text-gray-600 text-sm">
+                        <p>{{ article.description|truncatewords:20 }}</p>
+                        <button onclick="showArticleModal(`{{ article.title }}`, `{{ article.image.url }}`, `{{ article.content|escapejs }}`)" class="mt-3 text-blue-500 underline hover:text-blue-700 text-sm">Read More</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Call Back Form -->
+            <div class="w-full lg:w-[24%] bg-white shadow-[0_0px_4px_rgba(0,0,0,0.1)] rounded-lg shadow-sm p-4 lg:sticky lg:top-4 mt-6 lg:mt-0">
+                <h3 class="text-lg font-semibold mb-3">Request a call back</h3>
+                <form class="space-y-3">
+                    <div>
+                        <input type="tel" placeholder="Enter mobile number" class="w-full px-3 py-1.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <button type="submit" class="w-full bg-black text-white py-1.5 text-sm rounded-lg hover:bg-gray-800 transition-colors">
+                        Submit
+                    </button>
+                </form>
+                <div class="mt-4">
+                    <p class="font-medium text-sm mb-1">Call support:</p>
+                    <p class="text-lg font-bold">+91-784 006 0066</p>
+                    <p class="text-xs text-gray-500">(11:00 am - 2:00 pm)</p>
+                    <p class="mt-3 text-xs">Email: hello@1matrix.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article Modal -->
+    <div id="articleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto relative">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="modalTitle" class="text-2xl font-bold"></h2>
+                        <button onclick="closeArticleModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <img id="modalImage" class="w-full h-64 object-contain rounded mb-4" src="" alt="">
+                    <div id="modalContent" class="prose max-w-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Support Modal -->
+    <div id="supportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 transition-opacity duration-300 opacity-0">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800" id="supportModalTitle">Customer</h2>
+                        <button onclick="closeSupportModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="supportForm" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-1">Choose Department</label>
+                                <select id="supportDepartment" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    {% for department in support_departments %}
+                                    <option value="{{ department.name }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-700 mb-1">Priority</label>
+                                <select id="supportPriority" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="normal">Normal</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm text-gray-700 mb-1">Write your message</label>
+                            <textarea id="supportMessage" rows="4" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm text-gray-700 mb-1">Enter Mobile Number</label>
+                            <input type="tel" id="supportMobile" placeholder="Enter mobile number" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm text-gray-700 mb-1">Choose file</label>
+                            <input type="file" id="supportFile" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Training Modal -->
+    <div id="trainingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 transition-opacity duration-300 opacity-0">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Request Training</h2>
+                        <button onclick="closeTrainingModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="trainingForm" class="space-y-6">
+                        <div>
+                            <button type="button" class="bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 text-sm">Complete Training</button>
+                            <span class="inline-block mx-3 text-sm">or</span>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm mb-2">Choose Apps</p>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Home</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Profile</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Analytics</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Calendar</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Time</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Documents</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Mail</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Notifications</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Settings</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Users</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Preferences</span>
+                                </div>
+                                <div class="border border-gray-300 rounded w-12 h-12 flex items-center justify-center cursor-pointer relative group">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">Help</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <input type="tel" id="trainingMobile" placeholder="Enter Mobile Number" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Modal with Star Icons -->
+    <div id="feedbackModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 transition-opacity duration-300 opacity-0">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg w-full max-w-md transform scale-95 transition-transform duration-300">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">Feedback</h2>
+                        <button onclick="closeFeedbackModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="feedbackForm" class="space-y-4">
+                        <!-- Star Rating -->
+                        <div class="flex justify-start space-x-2 mb-4">
+                            <span class="star cursor-pointer text-5xl text-gray-300" data-rating="1">★</span>
+                            <span class="star cursor-pointer text-5xl text-gray-300" data-rating="2">★</span>
+                            <span class="star cursor-pointer text-5xl text-gray-300" data-rating="3">★</span>
+                            <span class="star cursor-pointer text-5xl text-gray-300" data-rating="4">★</span>
+                            <span class="star cursor-pointer text-5xl text-gray-300" data-rating="5">★</span>
+                        </div>
+                        <input type="hidden" id="feedbackRating" value="0">
+                        
+                        <!-- Message -->
+                        <div>
+                            <textarea id="feedbackMessage" rows="4" placeholder="Write your message" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                        </div>
+                        
+                        <!-- Name -->
+                        <div>
+                            <input type="text" id="feedbackName" placeholder="Enter your name" class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Billing Section -->
+    <div id="billingSection" class="max-w-7xl w-full mx-auto hidden">
+        <div class="bg-gray-50 rounded-lg p-6 relative">
+            <!-- Close Button -->
+            <button onclick="closeBillingSection()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            
+            <!-- Invoices Header -->
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Invoices you paid in the last 30 days</h2>
+            <p class="text-sm text-gray-600 mb-6">Select one of the invoices to check the refundable services. For more details, check our 
+                <a href="#" class="text-indigo-600 font-medium">Refund Policy <svg class="inline-block w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg></a>
+            </p>
+            
+            <!-- Invoices Table -->
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <!-- Table Header -->
+                <div class="grid grid-cols-4 gap-4 px-6 py-4 border-b border-gray-200">
+                    <div class="text-sm font-medium text-gray-900">Service</div>
+                    <div class="text-sm font-medium text-gray-900">Paid at</div>
+                    <div class="text-sm font-medium text-gray-900">Payment ID</div>
+                    <div class="text-sm font-medium text-gray-900">Amount</div>
+                </div>
+                
+                <!-- Table Row -->
+                <div class="grid grid-cols-4 gap-4 px-6 py-4 hover:bg-gray-50">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-gray-900">KVM 2</span>
+                        <span class="text-xs text-gray-500">1matrix.cloud</span>
+                    </div>
+                    <div class="text-sm text-gray-900 self-center">2025-03-17</div>
+                    <div class="text-sm text-gray-900 self-center">H_21827175</div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-900">₹ 6,230.40</span>
+                        <div class="flex space-x-2">
+                            <button class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Management Section -->
+    <div id="subscriptionSection" class="max-w-7xl w-full mx-auto hidden">
+        <div class="bg-white rounded-lg p-6 relative shadow-sm">
+            <!-- Close Button -->
+            <button onclick="closeSubscriptionSection()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            
+            <!-- Subscriptions Header -->
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Manage Your Subscriptions</h2>
+            <p class="text-sm text-gray-600 mb-6">Review and manage all your active subscriptions</p>
+            
+            <!-- Subscriptions Table -->
+            <div class="rounded-lg border border-gray-200 overflow-hidden">
+                <!-- Table Header -->
+                <div class="grid grid-cols-6 gap-4 px-6 py-3 border-b border-gray-200 bg-gray-50">
+                    <div class="text-sm font-medium text-gray-700">Service</div>
+                    <div class="text-sm font-medium text-gray-700">Type</div>
+                    <div class="text-sm font-medium text-gray-700">Start Date</div>
+                    <div class="text-sm font-medium text-gray-700">End Date</div>
+                    <div class="text-sm font-medium text-gray-700">Amount</div>
+                    <div class="text-sm font-medium text-gray-700">Actions</div>
+                </div>
+                
+                <!-- Table Row -->
+                <div class="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-gray-50">
+                    <div class="text-sm text-gray-900">KVM 2</div>
+                    <div class="text-sm text-gray-600">Premium</div>
+                    <div class="text-sm text-gray-600">2023-11-17</div>
+                    <div class="text-sm text-gray-600">2024-11-17</div>
+                    <div class="text-sm text-gray-900">₹6,230.40</div>
+                    <div class="relative group">
+                        <button class="text-gray-700 hover:text-gray-900">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 13a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2zM5 13a1 1 0 100-2 1 1 0 000 2z"/>
+                            </svg>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                            <div class="py-1">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Upgrade</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cancel</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ECS</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showArticleModal(title, imageUrl, content) {
+            const modal = document.getElementById('articleModal');
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalImage').src = imageUrl;
+            document.getElementById('modalContent').innerHTML = content;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        }
+
+        function closeArticleModal() {
+            const modal = document.getElementById('articleModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('articleModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeArticleModal();
+            }
+        });
+    </script>
+    
+
+    <script>
+        function toggleAccordion(element) {
+            const content = element.nextElementSibling;
+            const arrow = element.querySelector('svg');
+            
+            content.classList.toggle('hidden');
+            arrow.classList.toggle('rotate-180');
+        }
+    </script>
+
+    <script>
+        function openSupportModal(type) {
+            const modal = document.getElementById('supportModal');
+            const modalTitle = document.getElementById('supportModalTitle');
+            const departmentSelect = document.getElementById('supportDepartment');
+            
+            // Set title and pre-select department based on clicked support type
+            modalTitle.textContent = type;
+            
+            // Pre-select the department in dropdown
+            for(let i = 0; i < departmentSelect.options.length; i++) {
+                if(departmentSelect.options[i].value.toLowerCase() === type.toLowerCase()) {
+                    departmentSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            // Show modal with fade-in effect
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.querySelector('.flex > div').classList.add('scale-100');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        function closeSupportModal() {
+            const modal = document.getElementById('supportModal');
+            const modalContent = modal.querySelector('.flex > div');
+            
+            // Hide with animation
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }, 300);
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('supportModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSupportModal();
+            }
+        });
+        
+        // Handle form submission
+        document.getElementById('supportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const department = document.getElementById('supportDepartment').value;
+            const priority = document.getElementById('supportPriority').value;
+            const message = document.getElementById('supportMessage').value;
+            const mobile = document.getElementById('supportMobile').value;
+            const file = document.getElementById('supportFile').files[0];
+            
+            // Validate form
+            if (!message || !mobile) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Create FormData object
+            const formData = new FormData();
+            formData.append('department', department);
+            formData.append('priority', priority); 
+            formData.append('message', message);
+            formData.append('mobile_number', mobile);
+            if (file) {
+                formData.append('attachment', file);
+            }
+
+            // Send data to backend
+            fetch('/user/create-ticket/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Your support request has been submitted. We will get back to you soon.');
+                    closeSupportModal();
+                } else {
+                    alert('Error submitting request. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting request. Please try again.');
+            });
+        });
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+    <script>
+        function openTrainingModal() {
+            const modal = document.getElementById('trainingModal');
+            if (!modal) return;
+            
+            // Show modal with fade-in effect
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.querySelector('.flex > div').classList.add('scale-100');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        function closeTrainingModal() {
+            const modal = document.getElementById('trainingModal');
+            if (!modal) return;
+            
+            const modalContent = modal.querySelector('.flex > div');
+            
+            // Hide with animation
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }, 300);
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('trainingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTrainingModal();
+            }
+        });
+        
+        // Handle form submission
+        document.getElementById('trainingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const mobile = document.getElementById('trainingMobile').value;
+            
+            // Validate form
+            if (!mobile) {
+                alert('Please enter your mobile number');
+                return;
+            }
+            
+            // Here you would typically send the data to your backend
+            // For now, just show a success message and close the modal
+            alert('Your training request has been submitted. We will get back to you soon.');
+            closeTrainingModal();
+        });
+    </script>
+
+    <script>
+        function openFeedbackModal() {
+            const modal = document.getElementById('feedbackModal');
+            if (!modal) return;
+            
+            // Reset form
+            document.getElementById('feedbackForm').reset();
+            document.getElementById('feedbackRating').value = "0";
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.classList.remove('text-[#6633FF]');
+                star.classList.add('text-gray-300');
+            });
+            
+            // Show modal with fade-in effect
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.querySelector('.flex > div').classList.add('scale-100');
+            }, 10);
+            
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        function closeFeedbackModal() {
+            const modal = document.getElementById('feedbackModal');
+            if (!modal) return;
+            
+            const modalContent = modal.querySelector('.flex > div');
+            
+            // Hide with animation
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('scale-100');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // Restore scrolling
+            }, 300);
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('feedbackModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFeedbackModal();
+            }
+        });
+        
+        // Star rating functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('.star');
+            const ratingInput = document.getElementById('feedbackRating');
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = this.getAttribute('data-rating');
+                    ratingInput.value = rating;
+                    
+                    // Update star colors
+                    stars.forEach(s => {
+                        const starRating = s.getAttribute('data-rating');
+                        if (starRating <= rating) {
+                            s.classList.remove('text-gray-300');
+                            s.classList.add('text-[#6633FF]');
+                        } else {
+                            s.classList.remove('text-[#6633FF]');
+                            s.classList.add('text-gray-300');
+                        }
+                    });
+                });
+                
+                // Hover effects
+                star.addEventListener('mouseenter', function() {
+                    const rating = this.getAttribute('data-rating');
+                    stars.forEach(s => {
+                        const starRating = s.getAttribute('data-rating');
+                        if (starRating <= rating) {
+                            s.classList.add('text-[#6633FF]/80');
+                        }
+                    });
+                });
+                
+                star.addEventListener('mouseleave', function() {
+                    const selectedRating = ratingInput.value;
+                    stars.forEach(s => {
+                        const starRating = s.getAttribute('data-rating');
+                        s.classList.remove('text-[#6633FF]/80');
+                        
+                        if (starRating <= selectedRating) {
+                            s.classList.add('text-[#6633FF]');
+                        } else {
+                            s.classList.add('text-gray-300');
+                        }
+                    });
+                });
+            });
+        });
+        
+        // Handle form submission with AJAX
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const rating = document.getElementById('feedbackRating').value;
+            const message = document.getElementById('feedbackMessage').value;
+            const name = document.getElementById('feedbackName').value;
+            
+            // Validate form
+            if (rating === "0") {
+                alert('Please select a rating');
+                return;
+            }
+            
+            if (!message) {
+                alert('Please enter your message');
+                return;
+            }
+            
+            if (!name) {
+                alert('Please enter your name');
+                return;
+            }
+            
+            // Show loading state
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Submitting...';
+            submitButton.disabled = true;
+            
+            // AJAX POST request
+            fetch('/user/api/feedback/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    rating: rating,
+                    message: message,
+                    name: name
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Success handling
+                alert('Thank you for your feedback!');
+                closeFeedbackModal();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was a problem submitting your feedback. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            });
+        });
+        
+        // Helper function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+    <script>
+        // Get the elements
+        const articlesSection = document.querySelector('.max-w-7xl.w-full.mx-auto:not(#billingSection):not(#subscriptionSection)');
+        const billingSection = document.getElementById('billingSection');
+        const subscriptionSection = document.getElementById('subscriptionSection');
+        
+        function showBillingSection() {
+            // Hide the articles section
+            articlesSection.classList.add('hidden');
+            subscriptionSection.classList.add('hidden');
+            
+            // Show the billing section
+            billingSection.classList.remove('hidden');
+        }
+        
+        function closeBillingSection() {
+            // Hide the billing section
+            billingSection.classList.add('hidden');
+            
+            // Show the articles section
+            articlesSection.classList.remove('hidden');
+        }
+        
+        function showSubscriptionSection() {
+            // Hide the articles section and billing section
+            articlesSection.classList.add('hidden');
+            billingSection.classList.add('hidden');
+            
+            // Show the subscription section
+            subscriptionSection.classList.remove('hidden');
+        }
+        
+        function closeSubscriptionSection() {
+            // Hide the subscription section
+            subscriptionSection.classList.add('hidden');
+            
+            // Show the articles section
+            articlesSection.classList.remove('hidden');
+        }
+    </script>
+</div>
+{% endblock %}

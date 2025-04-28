@@ -1,0 +1,69 @@
+{% extends "website/template1/base.html" %}
+{% load static %}
+
+{% block title %}Cancellation & Refund Policy - {{ global_content.site_name }}{% endblock %}
+
+{% block body_class %}bg-gray-50{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16">
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Cancellation & Refund Policy</h1>
+        
+        {% if global_content.refund_policy %}
+            <div class="prose max-w-none">
+                {{ global_content.refund_policy|linebreaks }}
+            </div>
+        {% else %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            No cancellation and refund policy has been added yet. Please edit your website content to add it.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prose max-w-none text-gray-500">
+                <p>This document outlines our policies regarding cancellations, returns, and refunds. You should customize this to reflect your actual policies.</p>
+                
+                <h2>Order Cancellation</h2>
+                <p>Orders can be cancelled within [X] hours of placing the order. After this period, the order may have already been processed and cannot be cancelled. To cancel an order, please contact our customer service team.</p>
+                
+                <h2>Return Policy</h2>
+                <p>We accept returns within [X] days of delivery if the product is in its original condition and packaging. Certain products such as [list any exceptions] are not eligible for return due to hygiene or other reasons.</p>
+                
+                <h2>Return Process</h2>
+                <p>To initiate a return, please contact our customer service with your order number and reason for return. Once approved, you will receive instructions on how to send the item back to us.</p>
+                
+                <h2>Refund Timeline</h2>
+                <p>Once we receive and inspect the returned item, we will notify you of the approval or rejection of your refund. If approved, your refund will be processed within [X] business days. The time it takes to appear in your account depends on your payment method and financial institution.</p>
+                
+                <h2>Refund Methods</h2>
+                <p>Refunds are typically processed to the original payment method. Store credit or exchange may be offered as alternatives in certain cases.</p>
+                
+                <h2>Damaged or Defective Items</h2>
+                <p>If you receive a damaged or defective item, please contact us within [X] days of delivery with photos of the damage. We will arrange for a replacement or refund at our discretion.</p>
+                
+                <h2>Cancellation of Services</h2>
+                <p>For subscription-based services, cancellation requests must be submitted at least [X] days before the next billing cycle. Refunds for unused portions of service may be provided on a prorated basis, depending on the terms of service.</p>
+                
+                <h2>Changes to Policy</h2>
+                <p>We reserve the right to modify this policy at any time. Changes will be effective immediately upon posting to our website.</p>
+            </div>
+        {% endif %}
+        
+        <div class="mt-8 text-center">
+            <a href="{{ website.get_public_url() }}" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                Return to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

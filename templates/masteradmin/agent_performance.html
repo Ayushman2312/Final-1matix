@@ -1,0 +1,123 @@
+{% extends 'masteradmin/base.html' %}
+
+{% block content %}
+<!-- Tabs for Top Performers -->
+<div class="mb-4 w-full flex">
+    <button onclick="showPerformers('sales')" id="salesTab" class="w-1/2 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300 mr-2">Top by Sales</button>
+    <button onclick="showPerformers('meetings')" id="meetingsTab" class="w-1/2 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] transition-all duration-300">Top by Meetings</button>
+</div>
+
+<!-- Performers List -->
+<div id="performersList" class="w-full">
+    <h3 class="text-[#ffffff] text-base font-bold mb-3">Top Performers</h3>
+    <div id="salesPerformers" class="bg-[#212121] text-white p-4 rounded-lg w-full">
+        <h4 class="text-lg font-bold">Sales Agents</h4>
+        <div class="grid grid-cols-3 gap-3">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                <p class="text-white text-xs">Sales 1st</p>
+                <button onclick="viewProfile('sales1')" class="text-[#2196F3] text-xs">View Profile</button>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                <p class="text-white text-xs">Sales 2nd</p>
+                <button onclick="viewProfile('sales2')" class="text-[#2196F3] text-xs">View Profile</button>
+            </div>
+            <div class="text-center">
+                <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                <p class="text-white text-xs">Sales 3rd</p>
+                <button onclick="viewProfile('sales3')" class="text-[#2196F3] text-xs">View Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meetings Performers -->
+    <div id="meetingsPerformers" class="grid grid-cols-3 gap-3 hidden">
+        <div class="text-center">
+            <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+            <p class="text-white text-xs">Meetings 1st</p>
+            <button onclick="viewProfile('meetings1')" class="text-[#2196F3] text-xs">View Profile</button>
+        </div>
+        <div class="text-center">
+            <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+            <p class="text-white text-xs">Meetings 2nd</p>
+            <button onclick="viewProfile('meetings2')" class="text-[#2196F3] text-xs">View Profile</button>
+        </div>
+        <div class="text-center">
+            <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+            <p class="text-white text-xs">Meetings 3rd</p>
+            <button onclick="viewProfile('meetings3')" class="text-[#2196F3] text-xs">View Profile</button>
+        </div>
+    </div>
+</div>
+
+<!-- Popup for View All -->
+<div id="viewAllPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 hidden backdrop-blur-sm">
+    <div class="bg-[#212121] rounded-2xl p-8 w-4/5 max-w-6xl transform scale-0 transition-all duration-300 ease-in-out shadow-2xl border border-gray-700 scrollbar-hide" id="popupContentContainer">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-white text-2xl font-bold">Top Performers</h3>
+            <button onclick="closeViewAllPopup()" class="text-gray-400 hover:text-white transition-colors z-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div id="popupContent" class="overflow-y-auto max-h-[70vh] scrollbar-hide">
+            <div class="flex items-center justify-between bg-[#333333] p-4 rounded-lg mb-2">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-[#444444] rounded-full"></div>
+                    <div>
+                        <h4 class="text-white font-semibold">Person Name</h4>
+                        <p class="text-gray-400 text-sm">Sales: $50,000 | Meetings: 25</p>
+                    </div>
+                </div>
+                <button class="text-[#2196F3] hover:underline">View Profile</button>
+            </div>
+        </div>
+        <div class="mt-6 flex justify-end relative">
+            <button onclick="closeViewAllPopup()" class="bg-[#2196F3] text-white py-2 px-6 rounded-lg hover:bg-[#1976D2] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-[#2196F3]/20 z-50">
+                <span>Close</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showPerformers(type) {
+    const salesPerformers = document.getElementById('salesPerformers');
+    const meetingsPerformers = document.getElementById('meetingsPerformers');
+    const salesTab = document.getElementById('salesTab');
+    const meetingsTab = document.getElementById('meetingsTab');
+
+    if (type === 'sales') {
+        salesPerformers.classList.remove('hidden');
+        meetingsPerformers.classList.add('hidden');
+        salesTab.classList.add('bg-[#2196F3]');
+        meetingsTab.classList.remove('bg-[#2196F3]');
+    } else {
+        salesPerformers.classList.add('hidden');
+        meetingsPerformers.classList.remove('hidden');
+        salesTab.classList.remove('bg-[#2196F3]');
+        meetingsTab.classList.add('bg-[#2196F3]');
+    }
+}
+
+function viewProfile(id) {
+    // Add your profile viewing logic here
+    console.log(`Viewing profile: ${id}`);
+}
+
+function closeViewAllPopup() {
+    const popup = document.getElementById('viewAllPopup');
+    const container = document.getElementById('popupContentContainer');
+    container.classList.remove('scale-100');
+    container.classList.add('scale-0');
+    setTimeout(() => {
+        popup.classList.add('hidden');
+    }, 300);
+}
+</script>
+{% endblock %}

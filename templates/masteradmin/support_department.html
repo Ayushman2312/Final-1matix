@@ -1,0 +1,111 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <!-- Quick Action Buttons -->
+            <div class="flex sm:grid sm:grid-cols-6 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
+                <button onclick="showCreateDepartmentPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Create Support Department</span>
+                </button>
+            </div>
+
+            <!-- Create Department Popup -->
+            <div id="createDepartmentPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-[#212121] rounded-xl p-6 w-full max-w-md">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-[#ffffff] text-lg font-bold">Create Department</h3>
+                        <button onclick="hideCreateDepartmentPopup()" class="text-[#b3b3b3] hover:text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form id="createDepartmentForm" class="space-y-4" onsubmit="event.preventDefault(); handleCreateDepartment();">
+                        {% csrf_token %}
+                        <div>
+                            <label for="name" class="block text-[#b3b3b3] text-sm mb-2">Department Name</label>
+                            <input type="text" id="name" name="name" class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                        </div>
+
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="hideCreateDepartmentPopup()" class="px-4 py-2 bg-[#2a2a2a] text-white rounded-lg hover:bg-[#343434] transition-all duration-300">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#45a049] transition-all duration-300">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            
+            <!-- Recent Support Department -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <h3 class="text-[#ffffff] text-base font-bold mb-3">Support Departments</h3>
+                <div class="space-y-2">
+                    {% for department in support_departments %}
+                    <div class="flex justify-between items-center p-2 bg-[#252525] rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-[#333333] rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm">{{ department.name }}</p>
+                                <p class="text-[#b3b3b3] text-xs">{{ department.name|truncatechars:50 }}</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="showEditDepartmentPopup('{{ department.id }}', '{{ department.name }}')" class="text-blue-500 hover:text-blue-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button onclick="showDeleteDepartmentPopup('{{ department.id }}', '{{ department.name }}')" class="text-red-500 hover:text-red-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Edit Department Modal -->
+            <div id="editDepartmentPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-[#212121] rounded-xl p-6 w-full max-w-md">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-[#ffffff] text-lg font-bold">Edit Department</h3>
+                        <button onclick="hideEditDepartmentPopup()" class="text-[#b3b3b3] hover:text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form id="editDepartmentForm" class="space-y-4" onsubmit="handleEditDepartment(event)">
+                        {% csrf_token %}
+                        <input type="hidden" id="edit_department_id" name="department_id">
+                        <input type="hidden" name="action" value="edit">
+                        <div>
+                            <label for="edit_department_name" class="block text-[#b3b3b3] text-sm mb-2">Department Name</label>
+                            <input type="text" id="edit_department_name" name="name" class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                        </div>
+
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="hideEditDepartmentPopup()" class="px-4 py-2 bg-[#2a2a2a] text-white rounded-lg hover:bg-[#343434] transition-all duration-300">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#45a049] transition-all duration-300">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    {% comment %} <script src="{% static 'js/department.js' %}?v=2"></script> {% endcomment %}
+    <script src="{% static 'js/support_department.js' %}?v=3"></script>
+{% endblock %}

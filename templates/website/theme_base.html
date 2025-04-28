@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ website.content.site_name|default:website.content.websiteName|default:"Website" }}{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">    
+    <!-- Favicon -->
+    {% if website.content.favicon %}
+    <link rel="icon" href="{{ website.content.favicon }}" type="image/x-icon">
+    {% endif %}
+    <!-- SEO Tags -->
+    <meta name="description" content="{{ page.content.meta_description|default:website.content.meta_description|default:website.content.description|default:'' }}">
+    <meta name="keywords" content="{{ page.content.meta_keywords|default:website.content.meta_keywords|default:'' }}">
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="{{ page.title|default:website.content.site_name|default:website.content.websiteName }}">
+    <meta property="og:description" content="{{ page.content.meta_description|default:website.content.meta_description|default:website.content.description|default:'' }}">
+    {% if page.content.featured_image or website.content.og_image %}
+    <meta property="og:image" content="{{ page.content.featured_image|default:website.content.og_image }}">
+    {% endif %}
+    <meta property="og:type" content="website">
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        {% if website.content.custom_css %}
+        {{ website.content.custom_css|safe }}
+        {% endif %}
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header>
+        {% block header %}
+            {% include "website/components/navigation.html" %}
+        {% endblock %}
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        {% block footer %}
+            {% include "website/components/footer.html" %}
+        {% endblock %}
+    </footer>
+    
+    <!-- Global Scripts -->
+    <script>
+        // Common functionality across all pages
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId !== '#') {
+                        const targetElement = document.querySelector(targetId);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+        });
+        
+        {% if website.content.custom_js %}
+        // Custom JavaScript from website settings
+        {{ website.content.custom_js|safe }}
+        {% endif %}
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html> 

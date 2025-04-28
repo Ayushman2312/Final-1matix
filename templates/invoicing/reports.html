@@ -1,0 +1,308 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% comment %} <title>Document</title> {% endcomment %}
+</head>
+<body class="bg-gray-50">
+    {% csrf_token %}
+    <div class="flex items-center space-x-3 max-w-[10%] justify-between mb-4">
+        <select id="companySelect" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="filterInvoicesByCompany()">
+            <option value="all">All Companies</option>
+            {% for company in companies %}
+                <option value="{{ company.company_id }}">{{ company.company_name }}</option>
+            {% endfor %}
+        </select>
+        <!-- Share Button -->
+        <button id="shareButton" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 ml-2">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+            Share
+        </button>
+
+        <!-- Share Modal -->
+        <div id="shareModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300">
+            <!-- Modal Backdrop -->
+            <div class="absolute inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm"></div>
+            
+            <!-- Modal Content -->
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-full max-w-md transition-all duration-300 scale-95 opacity-0">
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Share Report</h3>
+                        <button onclick="closeShareModal()" class="text-gray-400 hover:text-gray-500 transition-colors">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="shareForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number & Verification Word</label>
+                            <div class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                        </svg>
+                                    </span>
+                                    <input type="tel" id="recipientMobile" pattern="[0-9]{10}" required
+                                        class="block w-full pl-8 pr-2 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-1 focus:ring-blue-100 focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                                        placeholder="10-digit mobile">
+                                </div>
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </span>
+                                    <input type="text" id="securityCode" pattern="[A-Za-z]{4}" required
+                                        class="block w-full pl-8 pr-2 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-1 focus:ring-blue-100 focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                                        placeholder="4-letter word">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Select Companies</label>
+                            <div class="max-h-30 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                                <div class="flex items-center space-x-2 py-1 border-b border-gray-200">
+                                    <input type="checkbox" id="select_all" name="select_all"
+                                           class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                           onchange="toggleAllCompanies(this)">
+                                    <label for="select_all" class="text-sm font-medium text-gray-700">Select All</label>
+                                </div>
+                                {% for company in companies %}
+                                <div class="flex items-center space-x-2 py-1">
+                                    <input type="checkbox" id="company_{{ company.company_id }}" name="selected_companies" value="{{ company.company_id }}"
+                                           class="company-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                           onchange="updateSelectAll()">
+                                    <label for="company_{{ company.company_id }}" class="text-sm text-gray-700">{{ company.company_name }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Passcode</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-500">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </span>
+                                <input type="password" id="passcode" required
+                                    class="block w-full pl-8 pr-2 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-1 focus:ring-blue-100 focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                                    placeholder="Enter passcode">
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-2 rounded-lg">
+                            <p class="text-xs text-blue-700">
+                                <strong>Verification format:</strong> Mobile number + verification word (e.g. 1234567890TEST)
+                            </p>
+                        </div>
+
+                        <div class="flex justify-end space-x-2 pt-2">
+                            <button type="button" onclick="closeShareModal()" 
+                                class="px-3 py-1.5 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm">
+                                Cancel
+                            </button>
+                            <button type="submit" 
+                                class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm">
+                                Share Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %} <div id="recentInvoices" class="mt-4">
+        <h3 class="text-lg font-semibold mb-2">Recent Invoices</h3>
+        <div id="invoicesList">
+            {% for invoice in invoices|dictsortreversed:"invoice_created_at"|slice:":5" %}
+                <div class="invoice-item" data-company="{{ invoice.company.company_id }}">
+                    <p>{{ invoice.invoice_title }} - {{ invoice.invoice_created_at|date:"d/m/Y" }} - ₹{{ invoice.invoice_total }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function filterInvoicesByCompany() {
+            const selectedCompany = document.getElementById('companySelect').value;
+            const invoiceItems = document.querySelectorAll('.invoice-item');
+            
+            invoiceItems.forEach(item => {
+                if (selectedCompany === 'all' || item.dataset.company === selectedCompany) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script> {% endcomment %}
+    <div class="py-8 w-full max-w-9xl mx-auto">
+        <!-- Table Container -->
+        <div class="bg-white overflow-hidden">
+            <div class="sm:flex sm:items-center sm:justify-between p-4 flex-wrap">
+                <!-- Search Bar -->
+                <div class="relative flex-1 max-w-lg mb-4 sm:mb-0">
+                    <input type="text" placeholder="Search reports..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="absolute left-3 top-2.5">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-4">
+                    <!-- Date Range Filter -->
+                    <select id="dateRangeSelect" onchange="toggleDatePicker()" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Select Time Range</option>
+                        <option value="custom">Custom</option>
+                        <option value="last7">Last 7 Days</option>
+                    </select>
+
+                    <!-- Custom Date Range Picker -->
+                    <div id="customDateRange" class="hidden flex-col sm:flex-row gap-4 p-4 bg-gray-50 rounded-lg shadow-sm absolute z-10 mt-2 right-0">
+                        <!-- Close Icon -->
+                        <button onclick="closeDatePicker()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        
+                        <div class="flex flex-col">
+                            <label class="text-sm font-medium text-gray-700 mb-1">From</label>
+                            <input type="date" id="dateFrom" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-sm font-medium text-gray-700 mb-1">To</label>
+                            <input type="date" id="dateTo" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        </div>
+                        <button onclick="applyDateFilter()" class="self-end bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200">
+                            Apply Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <!-- Table -->
+            <div class="min-w-full overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Billing Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Screenshot</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for invoice in invoices|dictsortreversed:"invoice_created_at" %}
+                        <tr class="hover:bg-gray-50" data-company-id="{{ invoice.company.company_id }}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <div class="text-gray-900">{{ invoice.billing.billing_name }}</div>
+                                <div class="text-gray-500 text-xs">Company: {{ invoice.company.company_name }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ invoice.invoice_created_at|date:"d M Y" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ invoice.billing.billing_phone }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">₹{{ invoice.invoice_total }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                {% if invoice.invoice_type == 'Proforma Invoice' %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    PROFORMA
+                                </span>
+                                {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    INVOICE
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {% if invoice.payment_screenshot %}
+                                <button onclick="viewScreenshot('{{ invoice.payment_screenshot.url }}')" class="text-blue-600 hover:text-blue-900" title="View Screenshot">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </button>
+                                <!-- Modal/Popup for Screenshot -->
+                                <div id="screenshotModal-{{ invoice.invoice_id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+                                    <div class="relative bg-white rounded-lg shadow-xl max-w-3xl mx-auto my-8">
+                                        <button onclick="closeScreenshot('{{ invoice.invoice_id }}')" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                        <div class="p-4 flex items-center justify-center">
+                                            <img src="{{ invoice.payment_screenshot.url }}" alt="Payment Screenshot" class="max-w-full max-h-[70vh] object-contain">
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <span class="text-gray-500 text-sm">No Screenshot</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                {% if invoice.invoice_pdf %}
+                                <a href="{{ invoice.invoice_pdf.url }}" class="text-blue-600 hover:text-blue-900" download title="Download Invoice">
+                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                </a>
+                                {% endif %}
+                                
+                                {% if invoice.payment_screenshot %}
+                                <a href="{{ invoice.payment_screenshot.url }}" class="text-green-600 hover:text-green-900" download title="Download Payment Screenshot">
+                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4 4m0 0l4-4m-4 4V4"/>
+                                    </svg>
+                                </a>
+                                {% endif %}
+
+                                {% if not invoice.invoice_type == 'Proforma Invoice' %}
+                                    {% if invoice.payment_status %}
+                                    <button onclick="updatePaymentStatus('{{ invoice.invoice_id }}', false)" class="text-red-600 hover:text-red-900" title="Mark as Unpaid">
+                                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </button>
+                                    {% else %}
+                                    <button onclick="updatePaymentStatus('{{ invoice.invoice_id }}', true)" class="text-green-600 hover:text-green-900" title="Mark as Paid">
+                                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </button>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">No invoices found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/invoicing/reports.js' %}"></script>
+</body>
+</html>
+{% endblock %}

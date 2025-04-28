@@ -1,0 +1,38 @@
+{% extends "onematrix/base.html" %}
+
+{% block desktop_content %}
+<div class="container mx-auto px-4 py-12 max-w-6xl">
+    <div class="mb-8">
+        <a href="{% url 'faq-list' %}" class="inline-flex items-center text-gray-600 hover:text-black">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            Back to Categories
+        </a>
+    </div>
+
+    <div class="mb-12">
+        <h1 class="text-4xl font-bold mb-4">{{ category.name }}</h1>
+        <p class="text-xl text-gray-600">{{ category.description }}</p>
+    </div>
+
+    {% if items %}
+        <div class="space-y-6">
+            {% for item in items %}
+                <div class="bg-white rounded-xl shadow-md p-6" id="faq-{{ item.id }}">
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold">{{ item.question }}</h3>
+                    </div>
+                    <div class="prose max-w-none text-gray-700">
+                        {{ item.answer|linebreaks }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12 bg-white rounded-xl shadow-md">
+            <p class="text-xl text-gray-600">No questions are available in this category.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

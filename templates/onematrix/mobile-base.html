@@ -1,0 +1,359 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Matrix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'js/onematrix/style.css' %}">
+    <link rel="stylesheet" href="{% static 'js/onematrix/style2.css' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'light-gray': '#f5f5f7',
+                        'neon-green': '#c7fb55',
+                    },
+                    boxShadow: {
+                        'custom': '0 5px 15px rgba(0, 0, 0, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="{% static 'js/onematrix/script.js' %}"></script>
+</head>
+<body>
+    <section id="mobile-section" class="mobile-section">
+    <!-- Header Navigation - Now Sticky -->
+    <header class="sticky-header w-full mx-auto m-3 py-4 border-b border-gray-100" name="mobile-section" id="mainHeader">
+        <nav class="mx-auto px-4 flex justify-between items-center">
+            <div class="flex-1 flex justify-start lg:justify-start">
+                <!-- Empty div for spacing on mobile -->
+            </div>
+
+            <div class="flex justify-center">
+                <img src="/media/masteradmin_web/mobile-logo.png" alt="1Matrix Logo" class="h-6">
+            </div>
+
+            <!-- Desktop Menu -->
+            <div class="desktop-menu hidden lg:flex justify-center items-center space-x-8">
+                <a href="{% url 'home' %}" class="bg-[#F3F4F4] text-black font-medium px-5 py-2 rounded-full text-sm">Home</a>
+                <a href="{% url 'about-us' %}" class="bg-[#F3F4F4] text-black font-medium px-5 py-2 rounded-full text-sm">About Us</a>
+                <a href="{% url 'home' %}#pricing" class="bg-[#F3F4F4] text-black font-medium px-5 py-2 rounded-full text-sm">Pricing</a>
+                <a href="#" class="bg-[#F3F4F4] text-black font-medium px-5 py-2 rounded-full text-sm">Demo</a>
+                <a href="{% url 'contact-us' %}" class="bg-[#F3F4F4] text-black font-medium px-5 py-2 rounded-full text-sm">Contact</a>
+            </div>
+
+            <div class="flex-1 flex justify-end items-center space-x-4">
+                <a href="/user/login/" class="login-button hidden lg:inline-block bg-black text-white font-medium px-8 py-2 rounded-full text-sm hover:bg-gray-800 transition-colors duration-200">Login</a>
+                
+                <a href="#" class="cart-icon text-black hover:text-gray-600 mr-4 lg:mr-[60px]">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </a>
+                
+                <!-- Close Icon -->
+                <div class="close-icon" id="closeIcon"></div>
+                
+                <!-- Menu Toggle Button -->
+                <div class="menu-toggle" id="menuToggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobileMenu">
+        <!-- Close button -->
+        <div class="absolute top-8 right-8">
+            <button class="mobile-close-btn" id="mobileCloseBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <div class="mobile-menu-links">
+            <a href="{% url 'home' %}" class="mobile-menu-link">Home</a>
+            <a href="{% url 'about-us' %}" class="mobile-menu-link">About Us</a>
+            <a href="{% url 'home' %}#pricing" class="mobile-menu-link">Pricing</a>
+            <a href="#" class="mobile-menu-link">Demo</a>
+            <a href="{% url 'contact-us' %}" class="mobile-menu-link">Contact</a>
+        </div>
+        
+        <div class="mobile-menu-footer">
+            <a href="/user/login/" class="bg-black text-white font-medium px-8 py-3 rounded-full text-sm hover:bg-gray-800 transition-colors duration-200">Login</a>
+        </div>
+    </div>
+
+    <script>
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const closeIcon = document.getElementById('closeIcon');
+        const mobileCloseBtn = document.getElementById('mobileCloseBtn');
+        
+        menuToggle.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            closeIcon.classList.toggle('active');
+            document.body.classList.toggle('overflow-hidden');
+        });
+        
+        // Mobile close button functionality
+        mobileCloseBtn.addEventListener('click', function() {
+            menuToggle.classList.remove('active');
+            mobileMenu.classList.remove('active');
+            closeIcon.classList.remove('active');
+            document.body.classList.remove('overflow-hidden');
+        });
+        
+        // Close menu when a link is clicked
+        const mobileMenuLinks = document.querySelectorAll('.mobile-menu-link');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                menuToggle.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                closeIcon.classList.remove('active');
+                document.body.classList.remove('overflow-hidden');
+            });
+        });
+        
+        // Header shadow on scroll
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('mainHeader');
+            if (window.scrollY > 0) {
+                header.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.05)';
+            } else {
+                header.style.boxShadow = 'none';
+            }
+        });
+    </script>
+    {% block content %}
+    {% endblock %}
+    <footer class="w-[100%] bg-white pt-16 px-8">
+        <div class="w-full">
+            <!-- Top Section with Call to Action -->
+            <div class="rounded-[40px] max-w-6xl mx-auto bg-black text-white overflow-hidden relative mb-16">
+                <div class="p-8 md:p-16 flex flex-col md:flex-row justify-between items-start md:items-center relative z-10">
+                    <div class="mb-8 md:mb-0 max-w-md">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-semibold mb-3">Discover the Power of Enterprise Solutions</h2>
+                        <p class="text-sm sm:text-base md:text-lg text-gray-300">
+                            Leave your email address below, and our team will reach out to provide answers to your questions and support your enterprise journey.
+                        </p>
+                    </div>
+                    <div class="w-full md:w-auto">
+                        <div class="flex flex-col sm:flex-row">
+                            <input type="email" placeholder="Enter your mobile" class="w-full sm:w-64 px-4 py-3 rounded-full sm:rounded-r-none bg-[#1c1c1c] border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-gray-600 mb-2 sm:mb-0">
+                            <button class="bg-white text-black font-medium px-6 py-3 rounded-full sm:rounded-l-none sm:-ml-1 hover:bg-gray-100 transition-colors flex items-center justify-center">
+                                Send
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Paper airplane decoration -->
+                    <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 md:w-60 md:h-60 pointer-events-none">
+                        <img src="https://cdn-icons-png.flaticon.com/512/6134/6134346.png" alt="Paper airplane" class="w-full h-full object-contain opacity-10 transform -rotate-12">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section with Navigation -->
+            <div class="w-full rounded-t-[40px] px-6 py-10 bg-[#F1F1F1]">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10 w-full mx-auto">
+                    <!-- Left Column - Logo and Company Info -->
+                    <div class="mb-8 sm:mb-0">
+                        <div class="flex items-center mb-6">
+                            <span class="font-bold text-2xl sm:text-3xl">1Matrix</span>
+                        </div>
+                        <p class="text-gray-600 text-sm sm:text-base">
+                            Streamline your workflow and enhance productivity with our cutting-edge solutions.
+                        </p>
+                    </div>
+
+                    <!-- Middle Column - Links -->
+                    <div class="mb-8 sm:mb-0">
+                        <h3 class="font-semibold mb-4 text-lg">What we have?</h3>
+                        <ul class="space-y-3 text-sm sm:text-base">
+                            <li><a href="{% url 'contact-us' %}" class="text-gray-600 hover:text-black transition-colors">Customised Solution</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-black transition-colors">Features</a></li>
+                            <li><a href="#" class="text-gray-600 hover:text-black transition-colors" id="registeredProfessionalsLink">Registered Professionals</a></li>
+                            
+                            <!-- Professional Access Modal -->
+                            <div id="professionalAccessModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-300">
+                                <!-- Modal Backdrop -->
+                                <div class="absolute inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm"></div>
+                                
+                                <!-- Modal Content -->
+                                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl w-full max-w-md transition-all duration-300 scale-95 opacity-0">
+                                    <div class="p-6">
+                                        <div class="flex justify-between items-center mb-6">
+                                            <h3 class="text-xl font-semibold text-gray-800">Professional Access</h3>
+                                            <button onclick="closeProfessionalModal()" class="text-gray-400 hover:text-gray-500 transition-colors">
+                                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        
+                                        <div id="mobileNumberStep" class="space-y-6">
+                                            <div class="space-y-2">
+                                                <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
+                                                <div class="relative">
+                                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                                        </svg>
+                                                    </span>
+                                                    <input type="tel" id="professionalMobile" pattern="[0-9]{10}" required
+                                                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                                                        placeholder="Enter 10-digit mobile number">
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-end space-x-3 pt-4">
+                                                <button type="button" onclick="closeProfessionalModal()" 
+                                                    class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                                                    Cancel
+                                                </button>
+                                                <button type="button" onclick="validateMobileAndShowPasscode()" 
+                                                    class="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg transition-colors">
+                                                    Continue
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="passcodeStep" class="space-y-6 hidden">
+                                            <div class="space-y-2">
+                                                <label for="passcode" class="block text-sm font-medium text-gray-700">Passcode</label>
+                                                <div class="relative">
+                                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                        </svg>
+                                                    </span>
+                                                    <input type="password" id="professionalPasscode" required
+                                                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
+                                                        placeholder="Enter passcode">
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-end space-x-3 pt-4">
+                                                <button type="button" onclick="backToMobileStep()" 
+                                                    class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                                                    Back
+                                                </button>
+                                                <button type="button" onclick="verifyPasscode()" 
+                                                    class="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg transition-colors">
+                                                    Access
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <script>
+                                const professionalLink = document.getElementById('registeredProfessionalsLink');
+                                const professionalModal = document.getElementById('professionalAccessModal');
+                                const modalContent = professionalModal.querySelector('.transform');
+                                const mobileNumberStep = document.getElementById('mobileNumberStep');
+                                const passcodeStep = document.getElementById('passcodeStep');
+                                
+                                professionalLink.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    professionalModal.classList.remove('hidden');
+                                    setTimeout(() => {
+                                        professionalModal.classList.remove('opacity-0');
+                                        modalContent.classList.remove('opacity-0', 'scale-95');
+                                        modalContent.classList.add('opacity-100', 'scale-100');
+                                    }, 50);
+                                });
+                                
+                                function closeProfessionalModal() {
+                                    modalContent.classList.remove('opacity-100', 'scale-100');
+                                    modalContent.classList.add('opacity-0', 'scale-95');
+                                    professionalModal.classList.add('opacity-0');
+                                    setTimeout(() => {
+                                        professionalModal.classList.add('hidden');
+                                        // Reset form
+                                        mobileNumberStep.classList.remove('hidden');
+                                        passcodeStep.classList.add('hidden');
+                                        document.getElementById('professionalMobile').value = '';
+                                        document.getElementById('professionalPasscode').value = '';
+                                    }, 300);
+                                }
+                                
+                                function validateMobileAndShowPasscode() {
+                                    const mobileNumber = document.getElementById('professionalMobile').value;
+                                    const mobilePattern = /^[0-9]{10}$/;
+                                    
+                                    if (mobilePattern.test(mobileNumber)) {
+                                        mobileNumberStep.classList.add('hidden');
+                                        passcodeStep.classList.remove('hidden');
+                                    } else {
+                                        alert('Please enter a valid 10-digit mobile number');
+                                    }
+                                }
+                                
+                                function backToMobileStep() {
+                                    passcodeStep.classList.add('hidden');
+                                    mobileNumberStep.classList.remove('hidden');
+                                }
+                                
+                                function verifyPasscode() {
+                                    const passcode = document.getElementById('professionalPasscode').value;
+                                    // Here you would typically verify the passcode with your backend
+                                    // For now, we'll just close the modal
+                                    closeProfessionalModal();
+                                    // And redirect or perform the necessary action
+                                    // window.location.href = '/professionals-area';
+                                }
+                            </script>
+                        </ul>
+                    </div>
+
+                    <!-- Right Column - Contact and Email Form -->
+                    <div>
+                        <h3 class="font-semibold mb-4 text-lg">Contact us</h3>
+                        <a href="mailto:hello@1matrix.io" class="text-gray-600 mb-4 text-base hover:text-black transition-colors">hello@1matrix.io</a>
+                        
+                        <h3 class="font-bold mb-4 mt-8 text-xl sm:text-[1.3rem]">Interested how to optimise your business with Us?</h3>
+                        <div class="flex flex-col sm:flex-row">
+                            <input type="email" placeholder="Enter your email" class="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-full sm:rounded-r-none focus:outline-none focus:ring-2 focus:ring-gray-300 text-sm sm:text-base mb-2 sm:mb-0">
+                            <button class="bg-black text-white text-sm sm:text-base font-medium px-6 py-2.5 rounded-full sm:rounded-l-none hover:bg-gray-800 transition-colors flex items-center justify-center">
+                                Send
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1.5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Copyright Section -->
+                <div class="pt-6 mt-10 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center text-xs sm:text-sm md:text-base text-gray-500 max-w-6xl mx-auto">
+                    <p class="text-center md:text-left mb-4 md:mb-0">© 2025 1Matrix. All rights reserved. Brandise Box LLP</p>
+                    <div class="flex flex-wrap justify-center md:justify-end gap-4 md:space-x-6">
+                        <a href="{% url 'privacy-policy' %}" class="hover:text-gray-700 transition-colors">Privacy Policy</a>
+                        <a href="{% url 'terms-and-conditions' %}" class="hover:text-gray-700 transition-colors">Terms & Conditions</a>
+                        <a href="{% url 'cancellation' %}" class="hover:text-gray-700 transition-colors">Cancellation Policy</a>   
+                        <a href="{% url 'shipping_and_delivery' %}" class="hover:text-gray-700 transition-colors">Shipping & Delivery</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    </section>
+</body>
+</html>

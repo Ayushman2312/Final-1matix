@@ -1,0 +1,568 @@
+{% extends "onematrix/mobile-base.html" %}
+{% block content %}
+<script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Main Content -->
+        <main class="mx-4 md:mx-14 rounded-[40px] flex-grow bg-[#e7e7e7]">
+            <div class="max-w-6xl mx-auto px-4 py-16 md:py-24">
+                <!-- New Tag -->
+                <div class="flex justify-center mb-12">
+                    <span class="bg-white px-5 py-2 rounded-full">
+                        <span class="font-[800] mr-1 neon-green-badge">New</span> April update is here
+                    </span>
+                </div>
+
+                <!-- Hero Content -->
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
+                        Transform Your<br>Workflow With 1Matrix
+                    </h1>
+                    <p class="text-gray-600 max-w-xl mx-auto">
+                        Forget the patchwork. 1Matrix replaces chaos with clarity for modern entrepreneurs, ecom founders, and teams.
+                    </p>
+                    
+                    <!-- CTA Button -->
+                    <div class="mt-10 mb-20">
+                        <a href="#" class="try-free-btn">
+                            See the demo
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Feature Cards -->
+                <div class="flex justify-center mb-5">
+                    <img src="/media/home_banner.png" width="350" height="350" alt="Features showing Efficiency, Collaboration and Scalability" class="rounded-lg shadow-sm max-w-full sm:max-w-[60%] h-auto">
+                </div>
+
+                <!-- API Integration Section -->
+                <div class="py-12 md:py-20 rounded-3xl px-4 md:px-8 max-w-full mx-1">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl sm:text-4xl md:text-5xl font-[700] mb-4">
+                            Built For Chaos.<br>Designed For Control
+                        </h2>
+                        
+                        <p class="text-gray-600 max-w-2xl mx-auto text-base md:text-lg font-light">
+                            From Product Listings to HR, Billing to Trend Mining — 1Matrix brings everything your business needs into one powerful, intelligent workspace.
+                        </p>
+                    </div>
+                    
+                    <!-- Feature Box - UPDATED to match the first image -->
+                    <div class="mb-10">
+                        <!-- Feature cards in a row -->
+                        <div class="flex justify-center items-center flex-wrap gap-y-8 feature-box-container">
+                            <!-- Group Chat -->
+                            <div class="feature-box mx-2">
+                                <div class="feature-icon bg-blue-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B89F5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="2" ry="2"/>
+                                        <text x="50%" y="17" font-family="Arial" font-size="14" font-weight="bold" fill="#6B89F5" stroke="none" text-anchor="middle">AI</text>
+                                    </svg>
+                                </div>
+                                <span>AI Optimisation</span>
+                            </div>
+                            
+                            <!-- Instant Mail -->
+                            <div class="feature-box mx-2">
+                                <div class="feature-icon bg-green-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4CD97B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                        <polyline points="22,6 12,13 2,6"></polyline>
+                                    </svg>
+                                </div>
+                                <span>Product Research</span>
+                            </div>
+                            
+                            <div class="feature-box">
+                                <div class="feature-icon bg-red-80">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ff0000" class="bi bi-clipboard2-data" viewBox="0 0 16 16">
+                                        <path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5z"/>
+                                        <path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z"/>
+                                        <path d="M10 7a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0zm-6 4a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0zm4-3a1 1 0 0 0-1 1v3a1 1 0 1 0 2 0V9a1 1 0 0 0-1-1"/>
+                                    </svg>
+                                </div>
+                                <span>Data & Marketing</span>
+                            </div>
+                            
+                            <!-- Call Manage -->
+                            <div class="feature-box mx-2">
+                                <div class="feature-icon bg-orange-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-people-fill text-purple-500" viewBox="0 0 16 16">
+                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                                    </svg>
+                                </div>
+                                <span>HR & Attendance</span>
+                            </div>
+                            
+                            <!-- Teamwork -->
+                            <div class="feature-box mx-2">
+                                <div class="feature-icon bg-orange-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F9A65C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                </div>
+                                <span>Ecommerce Sorted</span>
+                            </div>
+                            <div class="feature-box mx-2">
+                                <div class="feature-icon bg-pink-50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F95CA0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                        <path d="M9 12l2 2 4-4"/>
+                                    </svg>
+                                </div>
+                                <span>Warranty & Support</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CTA Button -->
+                    <div class="text-center mb-8">
+                        <a href="#" class="get-started-btn inline-flex items-center">
+                            Get Started
+                        </a>
+                    </div>
+                    
+                    <!-- Benefits -->
+                    <div class="flex justify-center flex-wrap">
+                        <div class="benefit-item mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Free Signup</span>
+                        </div>
+                        
+                        <div class="benefit-item mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            <span>No Credit Card Required</span>
+                        </div>
+                        
+                        <div class="benefit-item mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Cancel Anytime</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Section -->
+                <div class="px-8">
+                    <!-- Pricing Toggle -->
+                    <div class="flex justify-center mb-12">
+                        <div class="border border-black rounded-full inline-flex p-2">
+                            <button onclick="togglePricing('monthly')" id="monthlyBtn" class="px-4 py-1 text-sm font-medium rounded-full bg-black text-white transition-colors duration-200">Monthly</button>
+                            <button onclick="togglePricing('yearly')" id="yearlyBtn" class="px-4 py-1 text-sm font-medium rounded-full transition-colors duration-200">Yearly</button>
+                        </div>
+                    </div>
+                    <script>
+                        function togglePricing(plan) {
+                            const monthlyBtn = document.getElementById('monthlyBtn');
+                            const yearlyBtn = document.getElementById('yearlyBtn');
+                            
+                            if (plan === 'monthly') {
+                                monthlyBtn.classList.add('bg-black', 'text-white');
+                                yearlyBtn.classList.remove('bg-black', 'text-white');
+                            } else {
+                                yearlyBtn.classList.add('bg-black', 'text-white');
+                                monthlyBtn.classList.remove('bg-black', 'text-white');
+                            }
+                            // Show/hide pricing elements based on selected plan
+                            const monthlyPrices = document.querySelectorAll('.monthly-price');
+                            const yearlyPrices = document.querySelectorAll('.yearly-price');
+                            
+                            if (plan === 'monthly') {
+                                monthlyPrices.forEach(el => el.classList.remove('hidden'));
+                                yearlyPrices.forEach(el => el.classList.add('hidden'));
+                            } else {
+                                monthlyPrices.forEach(el => el.classList.add('hidden'));
+                                yearlyPrices.forEach(el => el.classList.remove('hidden'));
+                            }
+                        }
+                    </script>
+
+                    <!-- Pricing Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                        <!-- Basic Plan - Plan Details Card -->
+                        <div>
+                            <div class="border-[1px] border-black rounded-3xl p-7 mb-4 flex items-center gap-4">
+                                <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center shadow-lg transform hover:translate-y-[-2px] transition-transform duration-200" style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-semibold">Basic</h3>
+                                    {% comment %} <p class="text-xs text-gray-500">Lorem ipsum dolor sit amet.</p> {% endcomment %}
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-3xl p-6 shadow-[0_3px_5px_rgba(0,0,0,0.1)]">
+                                <span class="mb-4 bg-[#EAECE9] rounded-full px-2 py-1 text-sm">Save up to 30%</span>
+                                <div class="flex items-baseline mb-6">
+                                    <span class="monthly-price text-4xl font-bold">₹1999.00</span>
+                                    <span class="yearly-price text-4xl font-bold hidden">₹1599.00</span>
+                                    <span class="monthly-price text-gray-500 ml-2">/ Month</span>
+                                    <span class="yearly-price text-gray-500 ml-2 hidden">Monthly Billed Annually</span>
+                                </div>
+                                {% comment %} <p class="text-sm text-gray-600 mb-8">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit etiam venenatis orci.
+                                </p> {% endcomment %}
+
+                                <button class="w-full py-3 mb-6 border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
+                                    Get Started
+                                </button>
+
+                                <div class="space-y-4 mb-6">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="monthly-price text-sm">AI Listing Limited to 30</span>
+                                        <span class="yearly-price text-sm hidden">AI Listing Limited to 50</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">Ai trends</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="monthly-price text-sm">Black Box 50 Request Monthly</span>
+                                        <span class="yearly-price text-sm hidden">Black Box 70 Request Monthly</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">Marketplace Fee Calculator</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">Invoicing</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="monthly-price text-sm">Data Miner- 15 request</span>
+                                        <span class="yearly-price text-sm hidden">Data Miner- 25 request</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Standard Plan - Plan Details Card -->
+                        <div>
+                            <div class="border-[1px] border-black rounded-3xl p-7 mb-4 flex items-center gap-4">
+                                <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center shadow-lg transform hover:translate-y-[-2px] transition-transform duration-200" style="box-shadow: 0 8px 16px rgba(0,0,0,0.2), inset 0 -2px 4px rgba(255,255,255,0.1)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-semibold">Standard</h3>
+                                    {% comment %} <p class="text-xs text-gray-500">Lorem ipsum dolor sit amet.</p> {% endcomment %}
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-3xl p-6 shadow-[0_3px_5px_rgba(0,0,0,0.1)]">
+                                <span class="mb-4 bg-[#EAECE9] rounded-full px-2 py-1 text-sm">Save up to 50%</span>
+                                <div class="flex items-baseline mb-6">
+                                    <span class="monthly-price text-4xl font-bold">₹2999.00</span>
+                                    <span class="yearly-price text-4xl font-bold hidden">₹2699.00</span>
+                                    <span class="monthly-price text-gray-500 ml-2">/ Month</span>
+                                    <span class="yearly-price text-gray-500 ml-2 hidden">Monthly Billed Annually</span>
+                                </div>
+                                {% comment %} <p class="text-sm text-gray-600 mb-6">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit etiam venenatis orci.
+                                </p> {% endcomment %}
+
+                                <button class="w-full py-3 mb-6 bg-[#c7fb55] rounded-full text-sm font-medium flex items-center justify-center gap-2 hover:brightness-95 transition-all">
+                                    Get Started
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+
+                                <div class="space-y-4 mb-6">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">All Basic subscription</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="monthly-price text-sm">AI Listing Limited to 150</span>
+                                        <span class="yearly-price text-sm hidden">AI Listing Limited to 200</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="monthly-price text-sm">Black Box 100 Request Monthly</span>
+                                        <span class="yearly-price text-sm hidden">Black Box 150 Request Monthly</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">HR Management- Onboarding, Attendance, Payroll, Exit</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="monthly-price text-sm">Data Miner- 40 Request/Monthly</span>
+                                        <span class="yearly-price text-sm hidden">Data Miner- 100 Request/Monthly</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">1 Custom Domain Website</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">All Pro subscription</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 yearly-price hidden">
+                                        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                                            <path d="M8 12L11 15L16 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <span class="text-sm">Warranty and Support System</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Virtual Medical Care Section -->
+            <div class="py-8 md:py-12 px-4 md:px-8 bg-[#E7E7E7]">
+                <div class="max-w-6xl mx-3">
+                    <!-- Header -->
+                    <div class="text-center mb-8 md:mb-10">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-2">Sorted. Simplified. Supercharged.</h2>
+                        <p class="text-gray-600 text-sm md:text-base">All your tools. All your data. All in one platform</p>
+                    </div>
+
+                    <!-- Main Layout -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+                        <!-- Left Column -->
+                        <div class="md:col-span-3 space-y-4">
+                            <!-- Integrations Card -->
+                            <div class="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6">
+                                <div class="flex space-x-2 mb-4">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <svg viewBox="0 0 24 24" class="h-4 w-4 text-blue-600" fill="currentColor">
+                                            <rect width="10" height="10" x="2" y="2" rx="1.5"/>
+                                            <rect width="10" height="10" x="2" y="12" rx="1.5"/>
+                                            <rect width="10" height="10" x="12" y="2" rx="1.5"/>
+                                            <rect width="10" height="10" x="12" y="12" rx="1.5"/>
+                                        </svg>
+                                    </div>
+                                    <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                        <svg viewBox="0 0 24 24" class="h-4 w-4 text-orange-500" fill="currentColor">
+                                            <circle cx="12" cy="12" r="9"/>
+                                            <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
+                                    </div>
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg viewBox="0 0 24 24" class="h-4 w-4 text-green-500" fill="currentColor">
+                                            <path d="M22 2L11 13l-4-4-6 6 4 4 6-6 11-11z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-semibold mb-2">Automation</h3>
+                                <p class="text-sm text-gray-700">Set triggers, connect tools, and automate your grind. No-code. No hassle. Just flows.</p>
+                            </div>
+
+                            <!-- Innovation Tags -->
+                            <div class="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6">
+                                <div class="flex flex-wrap gap-2">
+                                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-xs font-medium">
+                                        Trigger Based
+                                    </div>
+                                    
+                                    
+                                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-medium">
+                                        No-Code
+                                    </div>
+                                    
+                                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-xs font-medium mt-2">
+                                        Real-Time Sync
+                                    </div>
+                                    <div class="inline-flex items-center px-3 py-1 rounded-full bg-lime-100 text-lime-800 text-xs font-medium">
+                                        Cross-App Actions
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Middle Column -->
+                        <div class="md:col-span-4">
+                            <!-- DocHands Card -->
+                            <div class="bg-blue-100 rounded-2xl md:rounded-3xl h-[500px] md:h-full overflow-hidden relative">
+                                <div class="p-4 md:p-6">
+                                    <h3 class="text-2xl md:text-3xl font-bold text-blue-800">1Matrix</h3>
+                                </div>
+                                <img src="/media/img-image.webp" 
+                                     alt="Woman smiling" class="absolute bottom-0 w-full" style="height: calc(100% - 85px); object-fit: cover; object-position: center top;">
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="md:col-span-5">
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5">
+                                <!-- 95% Card -->
+                                <div class="col-span-2 md:col-span-3 bg-green-50 rounded-2xl md:rounded-3xl p-4 md:p-6">
+                                    <div class="flex flex-col items-center">
+                                        <div class="bg-pink-200 rounded-full w-10 h-10 flex items-center justify-center mb-3">
+                                            <svg class="h-6 w-6 text-pink-600" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <h2 class="text-5xl md:text-7xl font-bold mb-1">97%</h2>
+                                        <p class="text-xs text-center text-gray-700">of early users say they "finally feel in control" with 1Matrix's unified workflow system.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Dental Card -->
+                                <div class="col-span-2 bg-white rounded-2xl md:rounded-3xl overflow-hidden relative h-[200px] md:h-full">
+                                    <img src="/media/teeht.avif/"
+                                         alt="Dental smile" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+                                        <h3 class="text-white text-sm font-medium">Small tweaks. Big wins.<br>Tried AI trends yet? One-click data clarity</h3>
+                                    </div>
+                                </div>
+
+                                <!-- Weekly Journey -->
+                                <div class="col-span-2 md:col-span-5 bg-blue-50 rounded-2xl md:rounded-3xl p-4 md:p-6">
+                                    <h3 class="text-lg md:text-xl font-semibold mb-1">Weekly Snapshots</h3>
+                                    <p class="text-sm text-gray-700 mb-4">Workflow and Patient journey mapping within 02-03 Weeks.</p>
+                                    <div class="relative h-20">
+                                        <!-- Avatar circles -->
+                                        <div class="absolute w-8 md:w-10 h-8 md:h-10 rounded-full bg-cover bg-center border-2 border-white" 
+                                             style="background-image: url('https://randomuser.me/api/portraits/women/65.jpg'); top: 0; left: 10%"></div>
+                                        <div class="absolute w-8 md:w-10 h-8 md:h-10 rounded-full bg-cover bg-center border-2 border-white" 
+                                             style="background-image: url('https://randomuser.me/api/portraits/men/32.jpg'); top: 40%; left: 30%"></div>
+                                        <div class="absolute w-8 md:w-10 h-8 md:h-10 rounded-full bg-cover bg-center border-2 border-white" 
+                                             style="background-image: url('https://randomuser.me/api/portraits/women/44.jpg'); bottom: 0; left: 50%"></div>
+                                        <div class="absolute w-8 md:w-10 h-8 md:h-10 rounded-full bg-cover bg-center border-2 border-white" 
+                                             style="background-image: url('https://randomuser.me/api/portraits/women/47.jpg'); top: 10%; right: 25%"></div>
+                                        <div class="absolute w-8 md:w-10 h-8 md:h-10 rounded-full bg-cover bg-center border-2 border-white" 
+                                             style="background-image: url('https://randomuser.me/api/portraits/men/45.jpg'); top: 40%; right: 10%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Integrations Section -->
+            <div class="rounded-b-[40px] py-16 px-8 bg-[#E7E7E7]">
+                <div class="max-w-6xl mx-auto">
+                    <!-- Badge -->
+                    <div class="flex mb-12">
+                        <span class="bg-white px-5 py-2 rounded-full text-sm">
+                            1Matrix, Integrations
+                        </span>
+                    </div>
+                    
+                    <!-- Two column layout -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <!-- Left column - Heading -->
+                        <div>
+                            <h2 class="text-5xl font-[500] leading-tight mb-0">
+                                Integrated with tools that actually solve real problems
+                            </h2>
+                        </div>
+                        
+                        <!-- Right column - Description -->
+                        <div>
+                            <p class="text-gray-600">
+                                Why reinvent the wheel when you can roll with the best?
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Integration logos with descriptions -->
+                    <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-16 mt-20">
+                        <!-- PayPal -->
+                        <div class="flex flex-col items-start">
+                            <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                                <dotlottie-player src="https://lottie.host/9201b7e4-99fc-4615-aa64-a7b19d95e365/LnQugGJdFO.lottie" background="transparent" speed="1" style="width: 400px; height: 400px" autoplay loop></dotlottie-player>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">GST-Ready</h3>
+                            <p class="text-gray-600 mb-4">
+                                Seamless integration with your CA's toolkit — generate GST invoices, export directly for filing.
+                            </p>
+                        </div>
+                        
+                        <!-- Stripe -->
+                        <div class="flex flex-col items-start">
+                            <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                                <dotlottie-player src="https://lottie.host/60d89a6d-e41d-46c6-82ec-186dc1936550/vJKLEiIAIH.lottie" background="transparent" speed="1" style="width: 400px; height: 400px" loop autoplay></dotlottie-player>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">Payroll & Attendance</h3>
+                            <p class="text-gray-600 mb-4">
+                                No more Excel chaos. Auto-calculate salaries, deductions, bonuses & more.
+                            </p>
+                        </div>
+                        
+                        <!-- QuickBooks -->
+                        <div class="flex flex-col items-start">
+                            <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                                <dotlottie-player src="https://lottie.host/bf01d71b-0d6b-4c58-ba40-8e14c2720f85/wcClX68zJA.lottie" background="transparent" speed="1" style="width: 400px; height: 400px" loop autoplay></dotlottie-player>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">E-commerce, Sorted</h3>
+                            <p class="text-gray-600 mb-4">
+                                From listing creation to trends, keywords, product research — run your e-com empire like a pro.
+                            </p>
+                        </div>
+                        
+                        <!-- Wise -->
+                        <div class="flex flex-col items-start">
+                            <div class="w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                                <dotlottie-player src="https://lottie.host/d7fa5a15-deaa-4130-b3e2-21fbd0423ac9/DqrNtseTUl.lottie" background="transparent" speed="1" style="width: 400px; height: 400px" loop autoplay></dotlottie-player>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-2">Product Research</h3>
+                            <p class="text-gray-600 mb-4">
+                                From listing creation to trends, keywords, product research — run your e-com empire like a pro.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+{% endblock %}

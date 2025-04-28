@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance QR Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .scanner-active {
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #333;
+            border-radius: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { border-color: #333; }
+            50% { border-color: #4CAF50; }
+            100% { border-color: #333; }
+        }
+        
+        .detected {
+            border-color: #FF3B58 !important;
+            animation: none !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-md bg-white mx-auto shadow-lg rounded-lg p-6">
+            <div id="attendance-flow">
+                <!-- Step 1: Device Check -->
+                <div id="device-check" class="step active">
+                    <h2 class="text-2xl font-bold mb-4">Mark Attendance</h2>
+                    <p class="text-gray-600 mb-4">Checking device registration...</p>
+                </div>
+    
+                <!-- Step 2: Email Verification -->
+                <div id="email-verification" class="step hidden">
+                    <h2 class="text-2xl font-bold mb-4">Verify Your Email</h2>
+                    <div class="space-y-4">
+                        <input type="email" id="email-input" class="w-full p-2 border rounded" placeholder="Enter your email">
+                        <button onclick="attendanceFlow.sendOTP()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                            Send OTP
+                        </button>
+                    </div>
+                </div>
+    
+                <!-- Step 3: OTP Verification -->
+                <div id="otp-verification" class="step hidden">
+                    <h2 class="text-2xl font-bold mb-4">Enter OTP</h2>
+                    <div class="space-y-4">
+                        <input type="text" id="otp-input" class="w-full p-2 border rounded" placeholder="Enter OTP">
+                        <button onclick="attendanceFlow.verifyOTP()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                            Verify OTP
+                        </button>
+                    </div>
+                </div>
+    
+                <!-- Step 4: QR Scanner (using the implementation from file 2) -->
+                <div id="qr-scanner" class="step hidden">
+                    <h2 class="text-2xl font-bold mb-4">Scan QR Code</h2>
+                    <div class="space-y-4">
+                        <div id="video-container" class="w-full scanner-active">
+                            <video id="qr-video" class="w-full h-auto" playsinline autoplay></video>
+                        </div>
+                        <canvas id="qr-canvas" class="hidden"></canvas>
+                        <div id="scan-result" class="mt-4 text-center hidden">
+                            <div class="text-green-500 font-bold text-lg">QR Code detected!</div>
+                            <div id="result-content" class="text-gray-700 mt-2"></div>
+                        </div>
+                        <div id="scan-status" class="text-sm text-gray-500 text-center">
+                            Point camera at attendance QR code
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Success Message -->
+                <div id="success-message" class="step hidden">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold mb-2 mt-4">Attendance Marked!</h2>
+                        <p class="text-gray-600 mb-4" id="success-details">Your attendance has been recorded successfully.</p>
+                        <button onclick="window.location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            Done
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="error-message" class="step hidden">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold mb-2 mt-4">Error</h2>
+                        <p class="text-gray-600 mb-4" id="error-details">Failed to mark attendance.</p>
+                        <button onclick="window.location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/hr/mark_attendance.js' %}"></script>
+</body>
+</html>

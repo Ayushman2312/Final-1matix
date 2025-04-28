@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Matrix - Employee Notifications</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-[#1a1a1a] min-h-screen">
+    {% if request.session.employee_id %}
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar - 20% -->
+        <nav id="sidebar" class="w-full lg:w-1/5 bg-[#191919] text-[#ffffff] h-auto lg:fixed lg:h-screen p-4 animate__animated animate__slideInLeft hidden lg:block overflow-y-auto no-scrollbar">
+            <!-- Main Navigation Container -->
+            <div class="flex flex-col h-full">
+                <!-- Brand Section -->
+                <div class="flex items-center space-x-3 mb-8 p-2 bg-[#212121] rounded-lg hover:bg-[#252525] transition-all duration-300">
+                    <div class="relative w-12 h-12">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full animate-pulse"></div>
+                        <div class="absolute inset-0.5 bg-[#191919] rounded-full flex items-center justify-center">
+                            <img src="/media/masteradmin_web/1matrix_logo.jpg" alt="1Matrix Logo" class="w-10 h-10 rounded-full object-cover transform hover:scale-105 transition-transform duration-300">
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <p class="text-xs text-blue-400 font-medium tracking-wider">Employee Portal</p>
+                        <h2 class="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">1Matrix</h2>
+                        <p class="text-xs text-gray-400">by Brandise Box LLP</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <div class="flex-1 space-y-3">
+                    <!-- Notifications Link -->
+                    <a href="{% url 'master_notifications_support' %}" class="group flex items-center justify-between p-3 rounded-lg bg-[#212121] hover:bg-[#252525] transition-all duration-300 border-l-4 border-transparent hover:border-blue-500">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-[#2a2a2a] group-hover:bg-blue-500/20 flex items-center justify-center transition-colors duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                </svg>
+                            </div>
+                            <span class="font-medium group-hover:text-blue-400 transition-colors duration-300">Notifications</span>
+                        </div>
+                        {% if employee_notifications.count > 0 %}
+                            <span class="px-2 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs rounded-full font-medium animate-pulse">
+                                {{ employee_notifications.count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                    
+                    <!-- Profile Link -->
+                    <a href="{% url 'employee_profile' %}" class="group flex items-center p-3 rounded-lg bg-[#212121] hover:bg-[#252525] transition-all duration-300 border-l-4 border-transparent hover:border-purple-500">
+                        <div class="w-8 h-8 rounded-lg bg-[#2a2a2a] group-hover:bg-purple-500/20 flex items-center justify-center transition-colors duration-300 mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-400 group-hover:text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <span class="font-medium group-hover:text-purple-400 transition-colors duration-300">Profile</span>
+                    </a>
+
+                    <!-- Logout Link -->
+                    <a href="{% url 'logout' %}" class="group flex items-center p-3 rounded-lg bg-[#212121] hover:bg-[#252525] transition-all duration-300 border-l-4 border-transparent hover:border-red-500">
+                        <div class="w-8 h-8 rounded-lg bg-[#2a2a2a] group-hover:bg-red-500/20 flex items-center justify-center transition-colors duration-300 mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </div>
+                        <span class="font-medium group-hover:text-red-400 transition-colors duration-300">Logout</span>
+                    </a>
+                </div>
+
+                <!-- Recent Notifications Panel -->
+                <div class="mt-8 bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-[#ffffff] text-sm font-bold flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Recent Updates
+                        </h3>
+                        <button id="clearNotifications" class="text-xs px-2 py-1 rounded-md bg-[#2a2a2a] hover:bg-[#303030] text-gray-400 hover:text-white transition-all duration-300">
+                            Clear All
+                        </button>
+                    </div>
+                    <div id="notificationsContainer" class="space-y-2 h-[180px] overflow-y-auto custom-scrollbar">
+                        {% for notification in notifications|dictsortreversed:"created_at" %}
+                        <div class="notification-item p-3 bg-[#252525] rounded-lg transition-all duration-300 hover:bg-[#2a2a2a] hover:transform hover:scale-[1.02] cursor-pointer border border-transparent hover:border-blue-500/20" 
+                             onclick="showNotificationDetails('{{ notification.message }}', '{{ notification.created_at|date:"F j, Y H:i" }}', '{{ notification.department_type }}')">
+                            <p class="text-white text-sm">{{ notification.message }}</p>
+                            <p class="text-blue-400 text-xs mt-2 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {{ notification.created_at|timesince }} ago
+                            </p>
+                        </div>
+                        {% empty %}
+                        <div class="p-4 bg-[#252525] rounded-lg flex items-center justify-center border border-dashed border-gray-600">
+                            <p class="text-gray-400 text-sm">No new notifications</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Middle Section - 55% -->
+        <main class="w-full lg:w-[80%] p-4 lg:ml-[20%]">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-4 px-4">
+                <!-- Left icon -->
+                <div class="lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+
+                <!-- Center title -->
+                <div class="flex-1 text-center lg:hidden p-0 m-0">
+                    <img src="/media/masteradmin_web/1matrix_logo-bg.png" 
+                         alt="1Matrix Logo" 
+                         class="h-24 sm:h-24 md:h-24 mx-auto object-contain transition-transform duration-300 filter drop-shadow-lg"
+                         style="background: transparent; transform: scale(2);">
+                </div>
+
+                <!-- Right menu button -->
+                <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="flex justify-end mb-4">
+                <div class="relative">
+                    <a href="{% url 'master_notifications' %}" class="flex items-center space-x-2 p-2 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] text-white transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ employee_notifications.count }}</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <!-- Notifications Section -->
+            <div class="bg-[#212121] rounded-xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 mx-4 sm:mx-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                    <h3 class="text-[#ffffff] text-xl font-bold flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        All Messages
+                    </h3>
+                </div>
+
+                <div id="notificationsContainer" class="space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    {% for notification in employee_notifications %}
+                    <div class="p-4 bg-[#252525] rounded-lg hover:bg-[#2a2a2a] transition-all duration-300 transform hover:scale-[1.01]">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-10 h-10 bg-[#2196F3] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-white text-sm font-medium">{{ notification.message }}</p>
+                                    <p class="text-[#b3b3b3] text-xs mt-2 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {{ notification.created_at|timesince }} ago
+                                    </p>
+                                </div>
+                            </div>
+                            <button onclick="markAsRead('{{ notification.id }}')" class="text-[#b3b3b3] hover:text-white p-1 hover:bg-[#323232] rounded-full transition-all duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 bg-[#252525] rounded-lg flex flex-col items-center justify-center space-y-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-[#b3b3b3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <p class="text-white text-lg font-medium text-center">No notifications yet</p>
+                        <p class="text-[#b3b3b3] text-sm text-center">When you receive notifications, they will appear here</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/employee/master_notifications.js' %}?v=1"></script>
+    {% else %}
+    <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div class="w-full max-w-lg bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl animate__animated animate__fadeIn">
+            <div class="text-center space-y-6">
+                <!-- Logo -->
+                <div class="w-24 h-24 mx-auto rounded-full overflow-hidden animate__animated animate__bounceIn">
+                    <img src="/media/masteradmin_web/1matrix_logo.jpg" alt="1Matrix Logo" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Message -->
+                <div class="space-y-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">Access Restricted</h2>
+                    <p class="text-gray-300 text-sm md:text-base">
+                        Please log in to access your Employee profile and dashboard.
+                    </p>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-4 animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="{% url 'employee_login' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2] transition-all duration-300 transform hover:-translate-y-1">
+                        <span class="mr-2">Login to Continue</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Additional Info -->
+                <p class="text-sm text-gray-400 mt-8 animate__animated animate__fadeIn animate__delay-3s">
+                    If you're having trouble logging in, please contact your administrator.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

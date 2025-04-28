@@ -1,0 +1,30 @@
+.form-step {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.form-step.active {
+    display: block;
+    opacity: 1;
+}
+
+.step-indicator.active .step-circle {
+    border-color: #3b82f6;
+    background-color: #3b82f6;
+    color: white;
+}
+
+.step-indicator.completed .step-circle {
+    border-color: #22c55e;
+    background-color: #22c55e;
+    color: white;
+}
+
+.step-indicator.completed .step-circle::after {
+    content: '✓';
+}
+
+.step-line.active {
+    background-color: #3b82f6;
+}

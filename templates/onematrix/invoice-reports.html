@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>1Matrix - Invoice Reports</title>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'soft-purple': '#6B46C1',
+                        'light-purple': '#F3F0FF',
+                        'soft-green': '#E6F6EC',
+                        'text-green': '#16A34A'
+                    },
+                    boxShadow: {
+                        'invoice': '0 2px 4px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    {% if request.session.recipent_id %}
+    <div class="min-h-screen">
+        <!-- Top Navigation -->
+         <!-- Navigation Bar -->
+         <nav class="bg-soft-purple shadow-lg mb-8">
+            <div class="px-6 py-4">
+                <div class="mx-auto max-w-7xl flex items-center justify-between">
+                    <!-- Left side - Title -->
+                    <div>
+                        <h2 class="text-2xl font-semibold text-white">Financial Reports & Invoices</h2>
+                    </div>
+
+                    <!-- Right side - Filters -->
+                    <div class="flex items-center space-x-4">
+                        <select id="companySelect" class="bg-white/10 text-white px-4 py-2 text-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent appearance-none hover:bg-white/20 transition-colors">
+                            <option value="all" class="text-gray-900">All Companies</option>
+                            {% for company in companies %}
+                                <option value="{{ company.id }}" class="text-gray-900">{{ company.company_name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="flex items-center space-x-2 bg-white/10 rounded-lg p-2">
+                            <input type="date" id="startDate"
+                                class="bg-transparent text-white px-3 py-1 text-sm border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent placeholder-white/60"
+                                placeholder="Start Date">
+                                
+                            <span class="text-white/60">to</span>
+                            
+                            <input type="date" id="endDate"
+                                class="bg-transparent text-white px-3 py-1 text-sm border border-white/20 rounded-md focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent placeholder-white/60"
+                                placeholder="End Date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <!-- Main Content -->
+        <main class="max-w-8xl mx-auto px-6 py-8">
+            <!-- Section Title -->
+
+            {% comment %} <script>
+                function filterInvoices() {
+                    const selectedCompanyId = document.getElementById('companySelect').value;
+                    const startDate = document.getElementById('startDate').value;
+                    const endDate = document.getElementById('endDate').value;
+                    const invoiceRows = document.querySelectorAll('[data-company-id]');
+                    let visibleCount = 0;
+                    
+                    invoiceRows.forEach(row => {
+                        const invoiceDate = row.getAttribute('data-invoice-date');
+                        const companyId = row.getAttribute('data-company-id');
+                        
+                        const matchesCompany = selectedCompanyId === 'all' || companyId === selectedCompanyId;
+                        const matchesDate = isDateInRange(invoiceDate, startDate, endDate);
+                        
+                        if (matchesCompany && matchesDate) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+
+                    // Show/hide no results message
+                    const noResultsMessage = document.getElementById('noResultsMessage');
+                    if (noResultsMessage) {
+                        noResultsMessage.classList.toggle('hidden', visibleCount > 0);
+                    }
+                }
+
+                function isDateInRange(dateStr, startStr, endStr) {
+                    // If no dates are selected, show all
+                    if (!startStr && !endStr) return true;
+                    
+                    const date = new Date(dateStr);
+                    const start = startStr ? new Date(startStr) : null;
+                    const end = endStr ? new Date(endStr) : null;
+                    
+                    // Reset time portion for accurate date comparison
+                    if (date) date.setHours(0, 0, 0, 0);
+                    if (start) start.setHours(0, 0, 0, 0);
+                    if (end) end.setHours(0, 0, 0, 0);
+                    
+                    if (start && end) {
+                        return date >= start && date <= end;
+                    } else if (start) {
+                        return date >= start;
+                    } else if (end) {
+                        return date <= end;
+                    }
+                    return true;
+                }
+
+                // Remove duplicate event listeners and old function
+                document.addEventListener('DOMContentLoaded', function() {
+                    const companySelect = document.getElementById('companySelect');
+                    const startDate = document.getElementById('startDate');
+                    const endDate = document.getElementById('endDate');
+                    
+                    // Remove inline onchange handler and add single event listener
+                    if (companySelect) {
+                        companySelect.removeAttribute('onchange');
+                        companySelect.addEventListener('change', filterInvoices);
+                    }
+                    
+                    if (startDate) {
+                        startDate.addEventListener('change', filterInvoices);
+                    }
+                    
+                    if (endDate) {
+                        endDate.addEventListener('change', filterInvoices);
+                    }
+                });
+            </script> {% endcomment %}
+
+            <!-- Invoices List -->
+            <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr class="text-xs font-semibold text-gray-600 uppercase">
+                                    <!-- Billing Details Column -->
+                                    <th scope="col" class="w-1/6 px-6 py-4 text-left tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center justify-between">
+                                            <span>Billing Details</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </div>
+                                    </th>
+
+                                    <!-- State Column -->
+                                    <th scope="col" class="w-1/6 px-6 py-4 text-left tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center justify-between">
+                                            <span>State</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </div>
+                                    </th>
+
+                                    <!-- Invoice Date Column -->
+                                    <th scope="col" class="w-1/6 px-6 py-4 text-left tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center justify-between">
+                                            <span>Invoice Date</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </div>
+                                    </th>
+
+                                    <!-- Contact Column -->
+                                    <th scope="col" class="w-1/6 px-6 py-4 text-left tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center justify-between">
+                                            <span>Contact</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </div>
+                                    </th>
+
+                                    <!-- Invoice Amount Column -->
+                                    <th scope="col" class="w-1/6 px-6 py-4 text-left tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center justify-between">
+                                            <span>Invoice Amount</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </div>
+                                    </th>
+
+                                    <!-- Payment Status Column -->
+                                    <th scope="col" class="w-1/6 px-6 py-4 text-left tracking-wider whitespace-nowrap">
+                                        <div class="flex items-center justify-between">
+                                            <span>Payment Status</span>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
+                                            </svg>
+                                        </div>
+                                    </th>
+
+                                    <!-- Actions Column -->
+                                    <th scope="col" class="w-1/6 px-6 py-4 text-center tracking-wider whitespace-nowrap">
+                                        <span>Actions</span>
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <!-- Table Body -->
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for invoice in invoices|dictsortreversed:"invoice_created_at" %}
+                                <tr data-company-id="{{ invoice.company.id }}" data-invoice-date="{{ invoice.invoice_date|date:'Y-m-d' }}" class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-gray-900 text-sm">{{ invoice.billing.billing_name }}</span>
+                                            <span class="text-xs text-gray-500 mt-1">{{ invoice.company.company_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                                        {{ invoice.billing.billing_state }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                                        {{ invoice.invoice_created_at|date:"d M Y" }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                                        {{ invoice.billing.billing_phone }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                        ₹{{ invoice.invoice_total }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% if invoice.payment_status %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Paid
+                                        </span>
+                                        {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Unpaid
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button class="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Download
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="px-6 py-12">
+                                        <div class="text-center">
+                                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            <p class="text-gray-500 text-lg">No invoices available at this time</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- No Results Message -->
+                <div id="noResultsMessage" class="hidden mt-4">
+                    <div class="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+                        <p class="text-gray-500">No invoices found for the selected filters</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    {% else %}
+    <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4 text-center">
+            <div class="mb-6">
+                <svg class="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Access Restricted</h2>
+            <p class="text-gray-600 mb-6">You need to be a Registered Professional to access this section. Please register or login to continue.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Maintain existing functionality
+        function filterInvoicesByCompany() {
+            const selectedCompanyId = document.getElementById('companySelect').value;
+            const invoiceRows = document.querySelectorAll('[data-company-id]');
+            let visibleCount = 0;
+            
+            invoiceRows.forEach(row => {
+                if (selectedCompanyId === 'all' || row.dataset.companyId === selectedCompanyId) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        async function updatePaymentStatus(invoiceId, newStatus) {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            try {
+                const response = await fetch('/invoicing/update_payment_status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        invoice_id: invoiceId,
+                        status: newStatus
+                    })
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error updating payment status');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating payment status');
+            }
+        }
+
+        // Add smooth transitions for dropdowns
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('mouseover', function() {
+                this.classList.add('border-gray-300');
+            });
+            select.addEventListener('mouseout', function() {
+                if (!this.matches(':focus')) {
+                    this.classList.remove('border-gray-300');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

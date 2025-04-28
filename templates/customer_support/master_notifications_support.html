@@ -1,0 +1,532 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Matrix - Customer Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-[#1a1a1a] min-h-screen">
+    {% if request.session.support_id %}
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar - 20% -->
+        <nav id="sidebar" class="w-full lg:w-1/5 bg-[#191919] text-[#ffffff] h-auto lg:fixed lg:h-screen p-4 animate__animated animate__slideInLeft hidden lg:block overflow-y-auto no-scrollbar">
+            <div class="space-y-20">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="w-8 h-8 bg-[#333333] rounded-full flex items-center justify-center">
+                        <img src="/media/masteradmin_web/1matrix_logo-bg.png" 
+                         alt="1Matrix Logo" 
+                         class="h-24 sm:h-24 md:h-24 mx-auto object-contain transition-transform duration-300 filter drop-shadow-lg"
+                         style="background: transparent; transform: scale(2);">
+                    </div>
+                    <div>
+                        <p class="text-xs text-[#b3b3b3]">Customer Support</p>
+                        <h2 class="text-base font-bold">1Matrix</h2>
+                        <p class="text-xs text-[#b3b3b3]">by Brandise Box LLP</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <a href="{% url 'agent_profile' %}" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span>Profile</span>
+                    </a>
+
+                    <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Customers</span>
+                    </a>
+
+                    <a href="{% url 'meetings' %}" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Tickets</span>
+                    </a>
+
+                    <div class="pt-4 mt-4 border-t border-[#333333]">
+                        <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+
+                        <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Middle Section - 55% -->
+        <main class="w-full lg:w-[55%] p-4 lg:ml-[20%]">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-4 px-4">
+                <!-- Left icon -->
+                <div class="lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+
+                <!-- Center title -->
+                <div class="flex-1 text-center lg:hidden p-0 m-0">
+                    <img src="/media/masteradmin_web/1matrix_logo-bg.png" 
+                         alt="1Matrix Logo" 
+                         class="h-24 sm:h-24 md:h-24 mx-auto object-contain transition-transform duration-300 filter drop-shadow-lg"
+                         style="background: transparent; transform: scale(2);">
+                </div>
+
+                <!-- Right menu button -->
+                <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="flex justify-end mb-4">
+                <div class="relative">
+                    <a href="{% url 'master_notifications_support' %}" class="flex items-center space-x-2 p-2 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] text-white transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ support_notifications.count }}</span>
+                    </a>
+                </div>
+            </div>
+
+            <script>
+                // Get DOM elements
+                const notificationBtn = document.getElementById('notificationBtn');
+                const notificationPanel = document.getElementById('notificationPanel');
+                const notificationCount = document.getElementById('notificationCount');
+                
+                // Toggle notification panel visibility
+                notificationBtn.addEventListener('click', () => {
+                    notificationPanel.classList.toggle('hidden');
+                });
+
+                // Close notification panel when clicking outside
+                document.addEventListener('click', (event) => {
+                    if (!notificationBtn.contains(event.target) && 
+                        !notificationPanel.contains(event.target)) {
+                        notificationPanel.classList.add('hidden');
+                    }
+                });
+
+                // Function to update notification count
+                function updateNotificationCount(count) {
+                    notificationCount.textContent = count;
+                    if (count === 0) {
+                        notificationCount.classList.add('hidden');
+                    } else {
+                        notificationCount.classList.remove('hidden');
+                    }
+                }
+
+                // Function to add new notification
+                function addNotification(message, timestamp) {
+                    const notificationList = document.getElementById('notificationList');
+                    const notification = document.createElement('div');
+                    notification.className = 'bg-[#2a2a2a] p-3 rounded-lg';
+                    notification.innerHTML = `
+                        <p class="text-white text-sm">${message}</p>
+                        <span class="text-[#b3b3b3] text-xs">${timestamp}</span>
+                    `;
+                    notificationList.prepend(notification);
+                    
+                    // Update count
+                    const currentCount = parseInt(notificationCount.textContent);
+                    updateNotificationCount(currentCount + 1);
+                }
+
+                // Function to clear all notifications
+                function clearNotifications() {
+                    const notificationList = document.getElementById('notificationList');
+                    notificationList.innerHTML = '<p class="text-[#b3b3b3] text-sm">No notifications yet</p>';
+                    updateNotificationCount(0);
+                    
+                    // Store cleared notifications in localStorage
+                    const notifications = Array.from(notificationList.children).map(notification => {
+                        return {
+                            message: notification.querySelector('p')?.textContent,
+                            timestamp: notification.querySelector('span')?.textContent
+                        };
+                    });
+                    localStorage.setItem('clearedNotifications', JSON.stringify(notifications));
+                    localStorage.setItem('notificationsCleared', 'true');
+                    
+                    // Disable the clear notifications button
+                    const clearBtn = document.querySelector('[onclick="clearNotifications()"]');
+                    if (clearBtn) {
+                        clearBtn.disabled = true;
+                        clearBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+
+                // Optional: WebSocket connection for real-time notifications
+                // const ws = new WebSocket('your_websocket_url');
+                // ws.onmessage = (event) => {
+                //     const data = JSON.parse(event.data);
+                //     addNotification(data.message, 'Just now');
+                // };
+            </script>
+            <!-- Main Content -->
+            <!-- Back Button -->
+            <!-- Back Button -->
+            <!-- Notifications Section -->
+            <div class="bg-[#212121] rounded-xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 mx-4 sm:mx-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+                    <h3 class="text-[#ffffff] text-xl font-bold flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        All Messages
+                    </h3>
+                </div>
+
+                <div id="notificationsContainer" class="space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    {% for notification in agent_notifications %}
+                    <div class="p-4 bg-[#252525] rounded-lg hover:bg-[#2a2a2a] transition-all duration-300 transform hover:scale-[1.01]">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-10 h-10 bg-[#2196F3] rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-white text-sm font-medium">{{ notification.message }}</p>
+                                    <p class="text-[#b3b3b3] text-xs mt-2 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {{ notification.created_at|timesince }} ago
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="text-[#b3b3b3] hover:text-white p-1 hover:bg-[#323232] rounded-full transition-all duration-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 bg-[#252525] rounded-lg flex flex-col items-center justify-center space-y-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-[#b3b3b3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <p class="text-white text-lg font-medium text-center">No notifications yet</p>
+                        <p class="text-[#b3b3b3] text-sm text-center">When you receive notifications, they will appear here</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Section - 25% -->
+        <aside class="w-full lg:w-1/4 p-4 space-y-4">
+            <!-- Notifications Carousel -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-[#ffffff] text-sm font-bold">Recent Notifications</h3>
+                    <button id="clearNotifications" class="text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">Clear All</button>
+                </div>
+                <div id="notificationsContainer" class="space-y-2 h-[180px] sm:h-[200px] md:h-[220px] lg:h-[180px] overflow-y-auto custom-scrollbar">
+                    {% for notification in notifications|dictsortreversed:"created_at" %}
+                    <div class="notification-item p-2 bg-[#252525] rounded-lg transition-all duration-300 hover:bg-[#2a2a2a] opacity-100 cursor-pointer" onclick="showNotificationDetails('{{ notification.message }}', '{{ notification.created_at|date:"F j, Y H:i" }}', '{{ notification.department_type }}')">
+                        <p class="text-white text-xs sm:text-sm">{{ notification.message }}</p>
+                        <p class="text-[#b3b3b3] text-xs">{{ notification.created_at|timesince }} ago</p>
+                    </div>
+                    {% empty %}
+                    <div class="p-2 bg-[#252525] rounded-lg flex items-center justify-center">
+                        <p class="text-white text-xs sm:text-sm">No notifications</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Notification Details Modal -->
+            <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                <div class="bg-[#212121] rounded-xl p-6 max-w-md w-full mx-4 transform scale-0 transition-transform duration-300" id="modalContent">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-white text-lg font-bold">Notification Details</h3>
+                        <button onclick="closeNotificationModal()" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-[#b3b3b3] text-sm mb-1">Message:</p>
+                            <p class="text-white" id="modalMessage"></p>
+                        </div>
+                        <div>
+                            <p class="text-[#b3b3b3] text-sm mb-1">Date & Time:</p>
+                            <p class="text-white" id="modalDateTime"></p>
+                        </div>
+                        <div>
+                            <p class="text-[#b3b3b3] text-sm mb-1">Department:</p>
+                            <p class="text-white" id="modalDepartment"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function showNotificationDetails(message, datetime, department) {
+                    const modal = document.getElementById('notificationModal');
+                    const modalContent = document.getElementById('modalContent');
+                    
+                    // Set content
+                    document.getElementById('modalMessage').textContent = message;
+                    document.getElementById('modalDateTime').textContent = datetime;
+                    document.getElementById('modalDepartment').textContent = department;
+                    
+                    // Show modal with animation
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    setTimeout(() => {
+                        modalContent.classList.add('scale-100');
+                    }, 10);
+                }
+
+                function closeNotificationModal() {
+                    const modal = document.getElementById('notificationModal');
+                    const modalContent = document.getElementById('modalContent');
+                    
+                    // Hide with animation
+                    modalContent.classList.remove('scale-100');
+                    modalContent.classList.add('scale-0');
+                    setTimeout(() => {
+                        modal.classList.remove('flex');
+                        modal.classList.add('hidden');
+                    }, 300);
+                }
+
+                // Close modal when clicking outside
+                document.getElementById('notificationModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeNotificationModal();
+                    }
+                });
+            </script>
+
+            <script>
+                document.getElementById('clearNotifications').addEventListener('click', function() {
+                    const notifications = document.querySelectorAll('.notification-item');
+                    notifications.forEach((notification, index) => {
+                        setTimeout(() => {
+                            notification.style.transition = 'opacity 0.5s ease-out';
+                            notification.style.opacity = '0';
+                            setTimeout(() => {
+                                notification.remove();
+                                if (index === notifications.length - 1) {
+                                    // Add "No notifications" message after all notifications are removed
+                                    const container = document.getElementById('notificationsContainer');
+                                    const emptyMessage = document.createElement('div');
+                                    emptyMessage.className = 'p-2 bg-[#252525] rounded-lg flex items-center justify-center';
+                                    emptyMessage.innerHTML = '<p class="text-white text-xs sm:text-sm">No notifications</p>';
+                                    container.appendChild(emptyMessage);
+                                }
+                            }, 500);
+                        }, index * 200); // 200ms delay between each notification
+                    });
+                });
+            </script>
+
+            <!-- Top Performers -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                {% comment %} <h3 class="text-[#ffffff] text-base font-bold mb-3">Top Performers</h3> {% endcomment %}
+                
+                <!-- Tabs -->
+                <div class="flex mb-4">
+                    <button id="salesTab" class="flex-1 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300 mr-2">Top by Sales</button>
+                </div>
+
+                <!-- Sales Performers -->
+                <div id="salesPerformers" class="grid grid-cols-3 gap-3">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 1st</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 2nd</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 3rd</p>
+                    </div>
+                </div>
+
+                <!-- Meetings Performers -->
+
+                <!-- Popup for View All -->
+                <div id="viewAllPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 hidden backdrop-blur-sm">
+                    <div class="bg-[#212121] rounded-2xl p-8 w-4/5 max-w-6xl transform scale-0 transition-all duration-300 ease-in-out shadow-2xl border border-gray-700 scrollbar-hide" id="popupContentContainer">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-white text-2xl font-bold">Top Performers</h3>
+                            <button onclick="closeViewAllPopup()" class="text-gray-400 hover:text-white transition-colors z-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="popupContent" class="overflow-y-auto max-h-[70vh] scrollbar-hide">
+                            <div class="flex items-center justify-between bg-[#333333] p-4 rounded-lg mb-2">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-[#444444] rounded-full"></div>
+                                    <div>
+                                        <h4 class="text-white font-semibold">Person Name</h4>
+                                        <p class="text-gray-400 text-sm">Sales: $50,000 | Meetings: 25</p>
+                                    </div>
+                                </div>
+                                <button class="text-[#2196F3] hover:underline">View Profile</button>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end relative">
+                            <button onclick="closeViewAllPopup()" class="bg-[#2196F3] text-white py-2 px-6 rounded-lg hover:bg-[#1976D2] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-[#2196F3]/20 z-50">
+                                <span>Close</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <!-- Broadcast Message -->
+            <!-- Fixed floating button for mobile -->
+            <button onclick="toggleBroadcastPanel()" class="lg:hidden fixed bottom-4 right-4 w-12 h-12 bg-[#2196F3] rounded-full flex items-center justify-center shadow-lg hover:bg-[#1976D2] transition-all duration-300 z-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            </button>
+
+            <!-- Broadcast panel -->
+            <div id="broadcastPanel" class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 lg:block hidden">
+                <h3 class="text-[#ffffff] text-sm font-bold mb-3">Client Communication</h3>
+                <form class="space-y-3">
+                    <select class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="all">All Departments</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input type="text" placeholder="Client Name" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <input type="email" placeholder="Client Email" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    </div>
+                    <textarea placeholder="Client's Problem" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <textarea placeholder="Your Message" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <button type="submit" class="w-full bg-[#2196F3] text-white py-2 rounded-lg hover:bg-[#1976D2] transition-all duration-300 text-sm flex items-center justify-center gap-2">
+                        <span>Send Message</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Mobile broadcast panel -->
+            <div id="mobileBroadcastPanel" class="lg:hidden fixed bottom-20 right-4 w-80 bg-[#212121]/80 backdrop-blur-lg rounded-xl p-4 shadow-xl transition-all duration-300 hidden">
+                <h3 class="text-[#ffffff] text-sm font-bold mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                    Client Communication
+                </h3>
+                <form class="space-y-3">
+                    <select class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="all">All Departments</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <input type="text" placeholder="Client Name" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    <input type="email" placeholder="Client Email" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    <textarea placeholder="Client's Problem" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <textarea placeholder="Your Message" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <button type="submit" class="w-full bg-[#2196F3] text-white py-2 rounded-lg hover:bg-[#1976D2] transition-all duration-300 text-sm flex items-center justify-center gap-2">
+                        <span>Send Message</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </aside>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/agents/agent.js' %}?v=1"></script>
+    <script src="{% static 'js/agents/meeting.js' %}?v=1"></script>
+    {% else %}
+    <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div class="w-full max-w-lg bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl animate__animated animate__fadeIn">
+            <div class="text-center space-y-6">
+                <!-- Logo -->
+                <div class="w-24 h-24 mx-auto rounded-full overflow-hidden animate__animated animate__bounceIn">
+                    <img src="/media/masteradmin_web/1matrix_logo.jpg" alt="1Matrix Logo" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Message -->
+                <div class="space-y-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">Access Restricted</h2>
+                    <p class="text-gray-300 text-sm md:text-base">
+                        Please log in to access your agent profile and dashboard.
+                    </p>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-4 animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="{% url 'agent_login' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2] transition-all duration-300 transform hover:-translate-y-1">
+                        <span class="mr-2">Login to Continue</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Additional Info -->
+                <p class="text-sm text-gray-400 mt-8 animate__animated animate__fadeIn animate__delay-3s">
+                    If you're having trouble logging in, please contact your administrator.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
+
+

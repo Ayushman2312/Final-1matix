@@ -1,0 +1,117 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <!-- Sales Metrics -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Total Agents</h3>
+                    <p class="text-[#4CAF50] text-lg font-semibold">0</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Commission Agents</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">0</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-semibold mb-1">Suspended Agents</h3>
+                    <p class="text-[#FF9800] text-lg font-semibold">0</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-semibold mb-1">Inactive Agents</h3>
+                    <p class="text-[#F44336] text-xl font-semibold">0</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+            </div>
+
+
+            <div class="flex items-center space-x-4 mb-4">
+                <!-- Search Bar -->
+                <div class="relative flex-1">
+                    <input type="text" placeholder="Search Agents..." class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#2196F3] transition-all duration-300" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-3 top-2.5 h-5 w-5 text-[#b3b3b3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a7 7 0 100 14 7 7 0 000-14zm0 0l6 6" />
+                    </svg>
+                </div>
+
+                <!-- Filter Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center bg-[#212121] rounded-lg p-2 hover:bg-[#2a2a2a] transition-all duration-300">
+                        <span class="text-white">Filter</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#b3b3b3] ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-48 bg-[#2a2a2a] rounded-lg shadow-lg hidden group-hover:block">
+                        <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#343434]">Active</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#343434]">Inactive</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#343434]">Rejected</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Agents -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 overflow-x-auto h-[300px]">
+                <h3 class="text-[#ffffff] text-lg font-bold mb-4 border-b-2 border-[#2196F3] pb-2">All Agents</h3>
+
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-[#2a2a2a]">
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name / Mobile</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Department</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Commission</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Email</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-[#252525] divide-y divide-gray-200">
+                        {% for agent in agents %}
+                        <tr class="hover:bg-[#333333] transition-colors duration-200 relative">
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ agent.name }}<br>{{ agent.phone_number }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ agent.department }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ agent.commission_rate }}%</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">{{ agent.email }}</td>
+                            {% if agent.is_active == True %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Active</td>
+                            {% elif agent.is_active == False %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Inactive</td>
+                            {% elif agent.is_rejected == True %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white">Rejected</td>
+                            {% endif %}
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-white relative group">
+                                <button class="focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                                    </svg>
+                                </button>
+                                <div class="absolute right-0 mt-2 w-48 bg-[#2a2a2a] rounded-lg shadow-lg hidden group-hover:block z-50">
+                                    {% if agent.is_active == False %}
+                                    <a href="{% url 'mark_agent_as_active' agent.id %}" class="block px-4 py-2 text-sm text-green-500 hover:bg-[#343434]">Mark as Active</a>
+                                    <a href="{% url 'reject_agent' agent.id %}" class="block px-4 py-2 text-sm text-red-500 hover:bg-[#343434]">Reject</a>
+                                    {% elif agent.is_active == True %}
+                                    <a href="{% url 'mark_agent_as_inactive' agent.id %}" class="block px-4 py-2 text-sm text-orange-500 hover:bg-[#343434]">Suspend</a>
+                                    {% endif %}
+                                    <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#343434]">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-4">
+                    {% if agents.has_other_pages %}
+                        <div class="flex justify-between items-center">
+                            {% if agents.has_previous %}
+                                <a href="?page={{ agents.previous_page_number }}" class="text-blue-500 hover:underline" onclick="return paginate({{ agents.previous_page_number }});">Previous</a>
+                            {% endif %}
+                            <span class="text-gray-400">Page {{ agents.number }} of {{ agents.paginator.num_pages }}</span>
+                            {% if agents.has_next %}
+                                <a href="?page={{ agents.next_page_number }}" class="text-blue-500 hover:underline" onclick="return paginate({{ agents.next_page_number }});">Next</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+{% endblock %}

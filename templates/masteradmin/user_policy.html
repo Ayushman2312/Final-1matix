@@ -1,0 +1,203 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+<div class="flex sm:grid sm:grid-cols-6 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
+    <button onclick="showCreatePolicyPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+        <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+        </div>
+        <span class="text-[rgb(237,226,226,1)] text-xs">Create Policy</span>
+    </button>
+</div>
+
+<!-- Create Policy Popup -->
+<div id="createPolicyPopup" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-[#212121] rounded-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-[#ffffff] text-lg font-bold">Create User Policy</h3>
+            <button onclick="hideCreatePolicyPopup()" class="text-[#b3b3b3] hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <form id="createPolicyForm" class="space-y-4">
+            <div>
+                <label for="policy_name" class="block text-[#b3b3b3] text-sm mb-2">Policy Name</label>
+                <input type="text" id="policy_name" name="policy_name" class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+            </div>
+
+            <div>
+                <label for="policy_description" class="block text-[#b3b3b3] text-sm mb-2">Policy Description</label>
+                <textarea id="policy_description" name="policy_description" rows="4" class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="hideCreatePolicyPopup()" class="px-4 py-2 bg-[#2a2a2a] text-white rounded-lg hover:bg-[#343434] transition-all duration-300">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#45a049] transition-all duration-300">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- User Policies List -->
+<div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+    <h3 class="text-[#ffffff] text-base font-bold mb-3">User Policies</h3>
+    <div class="space-y-2">
+        {% for policy in user_policies %}
+        <div class="flex justify-between items-center p-2 bg-[#252525] rounded-lg">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-[#333333] rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-white text-sm">{{ policy.name }}</p>
+                    <p class="text-[#b3b3b3] text-xs">{{ policy.description|truncatechars:50 }}</p>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="showEditPolicyPopup('{{ policy.id }}', '{{ policy.name }}', '{{ policy.description }}')" class="text-blue-500 hover:text-blue-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+                <button onclick="showDeletePolicyPopup('{{ policy.id }}', '{{ policy.name }}')" class="text-red-500 hover:text-red-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/script.js' %}?v=2"></script>
+<script>
+function showDeletePolicyPopup(policyId, policyName) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Are you sure you want to delete the policy "${policyName}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deletePolicy(policyId);
+        }
+    });
+}
+
+function deletePolicy(policyId) {
+    fetch("/masteradmin/delete_user_policy/" + policyId + "/", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ policy_id: policyId })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success'
+            }).then(() => { 
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: data.message,
+                icon: 'error'
+            });
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Something went wrong',
+            icon: 'error'
+        });
+    });
+}
+
+function showCreatePolicyPopup() {
+    document.getElementById('createPolicyPopup').classList.remove('hidden');
+}
+
+function hideCreatePolicyPopup() {
+    document.getElementById('createPolicyPopup').classList.add('hidden');
+}
+
+document.getElementById('createPolicyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('policy_name').value,
+        description: document.getElementById('policy_description').value
+    };
+
+    try {
+        const response = await fetch("{% url 'user_policy' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            Swal.fire({
+                title: 'Success!',
+                text: data.message,
+                icon: 'success'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: data.message,
+                icon: 'error'
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error!',
+            text: 'Something went wrong',
+            icon: 'error'
+        });
+    }
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

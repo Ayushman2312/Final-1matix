@@ -1,0 +1,15 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+    <style>
+        .filter-btn.active {
+            background-color: #333333;
+            border: 1px solid #4CAF50;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script src="{% static 'js/agent.js' %}?v=3"></script>
+{% endblock %}
+
+     

@@ -1,0 +1,525 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %} 
+            <!-- Sales Metrics -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Total Agents</h3>
+                    <p class="text-[#4CAF50] text-lg font-semibold">{{total_agents}}</p>
+                    <button onclick="showAllAgentsPopup()" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View All →</button>
+                </div>
+
+                <!-- All Agents Popup Modal -->
+                <div id="allAgentsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                    <div class="bg-[#212121] rounded-xl p-6 w-[800px] max-h-[80vh] overflow-y-auto animate__animated animate__fadeIn">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-white text-xl font-semibold">All Agents</h2>
+                            <button onclick="closeAllAgentsPopup()" class="text-gray-400 hover:text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-[#2a2a2a] text-gray-300 text-sm">
+                                        <th class="p-3 text-left">Name</th>
+                                        <th class="p-3 text-left">Email</th>
+                                        <th class="p-3 text-left">Department</th>
+                                        <th class="p-3 text-left">Status</th>
+                                        <th class="p-3 text-left">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for agent in agents %}
+                                    <tr class="border-b border-[#333] text-white text-sm">
+                                        <td class="p-3">{{agent.name}}</td>
+                                        <td class="p-3">{{agent.email}}</td>
+                                        <td class="p-3">{{agent.department.name}}</td>
+                                        <td class="p-3">
+                                            {% if agent.is_active %}
+                                            <span class="px-2 py-1 bg-green-500 text-white rounded-full text-xs">Active</span>
+                                            {% else %}
+                                            <span class="px-2 py-1 bg-red-500 text-white rounded-full text-xs">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="p-3">
+                                            <button onclick="window.location.href='/agents/profile/{{agent.id}}'" class="text-blue-400 hover:text-blue-300 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="p-3 text-center text-gray-400">No agents found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function showAllAgentsPopup() {
+                        const modal = document.getElementById('allAgentsModal');
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+
+                    function closeAllAgentsPopup() {
+                        const modal = document.getElementById('allAgentsModal');
+                        modal.classList.remove('flex');
+                        modal.classList.add('hidden');
+                    }
+
+                    // Close modal when clicking outside
+                    document.getElementById('allAgentsModal').addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeAllAgentsPopup();
+                        }
+                    });
+                </script>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Active Agents</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">{{active_agents}}</p>
+                    <button onclick="showActiveAgentsPopup()" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Active →</button>
+                </div>
+
+                <!-- Active Agents Popup Modal -->
+                <div id="activeAgentsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                    <div class="bg-[#212121] rounded-xl p-6 w-[800px] max-h-[80vh] overflow-y-auto animate__animated animate__fadeIn">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-white text-xl font-semibold">Active Agents</h2>
+                            <button onclick="closeActiveAgentsPopup()" class="text-gray-400 hover:text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="bg-[#2a2a2a] text-gray-300 text-sm">
+                                        <th class="p-3 text-left">Name</th>
+                                        <th class="p-3 text-left">Email</th>
+                                        <th class="p-3 text-left">Department</th>
+                                        <th class="p-3 text-left">Status</th>
+                                        <th class="p-3 text-left">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for agent in agents_active %}
+                                    <tr class="border-b border-[#333] text-white text-sm">
+                                        <td class="p-3">{{agent.name}}</td>
+                                        <td class="p-3">{{agent.email}}</td>
+                                        <td class="p-3">{{agent.department.name}}</td>
+                                        <td class="p-3">
+                                            <span class="px-2 py-1 bg-green-500 text-white rounded-full text-xs">Active</span>
+                                        </td>
+                                        <td class="p-3">
+                                            <button onclick="window.location.href='/agents/profile/{{agent.id}}'" class="text-blue-400 hover:text-blue-300 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="p-3 text-center text-gray-400">No active agents found</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function showActiveAgentsPopup() {
+                        document.getElementById('activeAgentsModal').classList.remove('hidden');
+                        document.getElementById('activeAgentsModal').classList.add('flex');
+                    }
+
+                    function closeActiveAgentsPopup() {
+                        document.getElementById('activeAgentsModal').classList.remove('flex');
+                        document.getElementById('activeAgentsModal').classList.add('hidden');
+                    }
+                </script>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h3 class="text-[rgb(237,226,226,1)] text-sm font-semibold mb-1">Active Meeting</h3>
+                            <p class="text-[#FF9800] text-lg font-semibold">0</p>
+                            <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Meetings →</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div>
+                            <h3 class="text-[rgb(237,226,226,1)] text-sm font-semibold mb-1">Commission Agents</h3>
+                            <p class="text-[#00FFFF] text-lg font-semibold">0</p>
+
+                            <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Agents →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex sm:grid sm:grid-cols-5 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
+                <button onclick="showAddAgentPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Add Agent</span>
+                </button>
+
+                <!-- Add Agent Popup Modal -->
+                <div id="addAgentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                    <div class="bg-[#212121] rounded-xl p-6 w-96 animate__animated animate__fadeIn">
+                        <h2 class="text-white text-xl font-semibold mb-4">Add New Agent</h2>
+                        <form id="addAgentForm" class="space-y-4" action="{% url 'add_agent' %}" method="post">
+                            {% csrf_token %}
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-2">Agent Email</label>
+                                <input type="email" id="agentEmail" name="email" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                            </div> 
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-2">Departments</label>
+                                <select id="departmentSelect" name="department" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                                    <option value="" default>Select Department</option>
+                                    {% for department in departments %}
+                                        <option value="{{ department.id }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeAddAgentPopup()" class="px-4 py-2 bg-[#424242] text-white rounded-lg hover:bg-[#4f4f4f] transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#45a049] transition-colors">
+                                    Add Agent
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    function showAddAgentPopup() {
+                        const modal = document.getElementById('addAgentModal');
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+
+                    function closeAddAgentPopup() {
+                        const modal = document.getElementById('addAgentModal');
+                        modal.classList.remove('flex');
+                        modal.classList.add('hidden');
+                    }
+
+                    document.getElementById('addAgentForm').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        
+                        const formData = new FormData(this);
+                        const email = formData.get('email');
+                        const department = formData.get('department');
+
+                        if (!email || !department) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Validation Error',
+                                text: 'Please fill in all required fields',
+                                confirmButtonColor: '#4CAF50'
+                            });
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(this.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                                }
+                            });
+
+                            if (response.ok) {
+                                const result = await response.json();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: 'Agent added successfully!',
+                                    confirmButtonColor: '#4CAF50'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        closeAddAgentPopup();
+                                        window.location.reload();
+                                    }
+                                });
+                            } else {
+                                const error = await response.json();
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: error.message || 'Failed to add agent',
+                                    confirmButtonColor: '#4CAF50'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred while adding the agent',
+                                confirmButtonColor: '#4CAF50'
+                            });
+                        }
+                    });
+
+                    // Close modal when clicking outside
+                    document.getElementById('addAgentModal').addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeAddAgentPopup();
+                        }
+                    });
+                </script>
+                <button onclick="showNotificationPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FF9800]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Connect With Agent</span>
+                </button>
+
+                <!-- Notification Popup Modal -->
+                <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                    <div class="bg-[#212121] rounded-xl p-6 w-96 animate__animated animate__fadeIn">
+                        <h2 class="text-white text-xl font-semibold mb-4">Send Notification to Agents</h2>
+                        <form id="notificationForm" class="space-y-4">
+                            {% csrf_token %}
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-2">Select Agents<span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="text" id="agentSearch" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-[#FF9800]" placeholder="Search agents...">
+                                    <select id="agentSelect" name="agent_ids" multiple class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF9800] max-h-32 overflow-y-auto" required aria-required="true">
+                                        {% for agent in agents %}
+                                            <option value="{{ agent.id }}">{{ agent.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-2">Message<span class="text-red-500">*</span></label>
+                                <textarea name="message" rows="4" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FF9800]" required aria-required="true"></textarea>
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" onclick="closeNotificationPopup()" class="px-4 py-2 bg-[#424242] text-white rounded-lg hover:bg-[#4f4f4f] transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2 bg-[#FF9800] text-white rounded-lg hover:bg-[#F57C00] transition-colors">
+                                    Send Notification
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <script>
+                    function showNotificationPopup() {
+                        const modal = document.getElementById('notificationModal');
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }
+
+                    function closeNotificationPopup() {
+                        const modal = document.getElementById('notificationModal');
+                        modal.classList.remove('flex');
+                        modal.classList.add('hidden');
+                    }
+
+                    // Agent search functionality
+                    document.getElementById('agentSearch').addEventListener('input', function(e) {
+                        const searchText = e.target.value.toLowerCase();
+                        const select = document.getElementById('agentSelect');
+                        const options = select.options;
+
+                        for (let option of options) {
+                            const agentText = option.text.toLowerCase();
+                            option.style.display = agentText.includes(searchText) ? '' : 'none';
+                        }
+                    });
+
+                    // Form submission handling
+                    document.getElementById('notificationForm').addEventListener('submit', async function(e) {
+                        e.preventDefault();
+
+                        // Get form data
+                        const formData = new FormData(this);
+                        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+                        // Get selected agents
+                        const selectedAgents = Array.from(document.getElementById('agentSelect').selectedOptions)
+                            .map(option => option.value);
+                        
+                        // Get message
+                        const message = formData.get('message');
+
+                        // Validate form
+                        if (selectedAgents.length === 0) {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Please select at least one agent',
+                                icon: 'error',
+                                confirmButtonColor: '#FF9800'
+                            });
+                            return;
+                        }
+
+                        if (!message || message.trim() === '') {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Please enter a message',
+                                icon: 'error',
+                                confirmButtonColor: '#FF9800'
+                            });
+                            return;
+                        }
+
+                        try {
+                            // Disable submit button
+                            const submitBtn = this.querySelector('button[type="submit"]');
+                            submitBtn.disabled = true;
+
+                            // Make API request
+                            const response = await fetch('/masteradmin/send_agent_notification/', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken
+                                },
+                                body: JSON.stringify({
+                                    agent_ids: selectedAgents,
+                                    message: message
+                                })
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                // Show success message
+                                await Swal.fire({
+                                    title: 'Success!',
+                                    text: 'Notification sent successfully',
+                                    icon: 'success',
+                                    confirmButtonColor: '#FF9800',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+
+                                // Reset form and close popup
+                                this.reset();
+                                closeNotificationPopup();
+                            } else {
+                                throw new Error(data.message || 'Failed to send notification');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: error.message,
+                                icon: 'error',
+                                confirmButtonColor: '#FF9800'
+                            });
+                        } finally {
+                            // Re-enable submit button
+                            const submitBtn = this.querySelector('button[type="submit"]');
+                            submitBtn.disabled = false;
+                        }
+                    });
+
+                    // Close modal when clicking outside
+                    document.getElementById('notificationModal').addEventListener('click', function(e) {
+                        if (e.target === this) {
+                            closeNotificationPopup();
+                        }
+                    });
+                </script>
+
+                <button onclick="showQuickNote()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#E91E63]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Report</span>
+                </button>
+                <button onclick="showAnalyticsPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#9C27B0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Agents Notification</span>
+                </button>
+
+                <button onclick="showIntegrationsPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#00BCD4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Integrations</span>
+                </button>
+            </div>
+            <style>
+                
+            </style>
+
+            <!-- Recent Orders -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <h3 class="text-[#ffffff] text-base font-bold mb-3">Recent Meetings</h3>
+                <div class="overflow-y-auto h-[280px] scrollbar-hide no-scrollbar">
+                    <table class="min-w-full table-auto">
+                        <thead class="sticky top-0 z-10">
+                            <tr class="bg-[#252525]">
+                                <th class="text-left text-[#ffffff] text-sm font-bold p-2">Client</th>
+                                <th class="text-left text-[#ffffff] text-sm font-bold p-2">Agent</th>
+                                <th class="text-left text-[#ffffff] text-sm font-bold p-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#333333]">
+                            {% for meeting in meetings %}
+                            <tr class="bg-[#252525] hover:bg-[#333333]">
+                                <td class="p-2 text-white text-sm">Meeting with {{ meeting.client_name }}<br><span class="text-[#b3b3b3] text-xs">{{ meeting.start_time|timesince }} ago</span></td>
+                                <td class="p-2 text-white text-sm">{{ meeting.agent_user.name }}</td>
+                                <td class="p-2 {% if meeting.is_completed %}text-[#4CAF50]{% elif meeting.is_active %}text-[#FF9800]{% else %}text-red-500{% endif %} text-sm">
+                                    {% if meeting.is_completed %}Completed{% elif meeting.is_active %}Active{% else %}Ended{% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr class="bg-[#252525]">
+                                <td colspan="3" class="p-2 text-white text-sm text-center">No meetings found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script src="{% static 'js/agent.js' %}?v=1"></script>
+    {% endblock %}

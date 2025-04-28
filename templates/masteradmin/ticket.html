@@ -1,0 +1,440 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <div class="flex flex-col md:flex-row gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 w-full md:w-1/2">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-2">Search Tickets</h3>
+                    <div class="relative">
+                        <input type="text" 
+                        placeholder="Search..." 
+
+                        class="w-full bg-[#2a2a2a] text-white rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2196F3] transition-colors duration-200"
+                        aria-label="Search support">
+                        <svg xmlns="http://www.w3.org/2000/svg" 
+                        class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 w-full md:w-1/2">
+                <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-2">Filter by Department</h3>
+                <select class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2196F3] transition-colors duration-200">
+                    <option value="">All Departments</option>
+                    <option value="sales">Sales</option>
+                    <option value="support">Support</option>
+                    <option value="technical">Technical</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="accounts">Accounts & Billing</option>
+                    <option value="training">Training</option>
+                    <option value="internal">Internal</option>
+                    <option value="general">General</option>
+                    
+                </select>
+            </div>
+            </div>
+            <!-- Sales Metrics -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Pending Tickets</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">{{ pending_tickets }}</p>
+                    <p class="text-[#b3b3b3] text-xs mt-1">Awaiting response</p>
+                    <button onclick="showTickets('pending')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View All →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Working Tickets</h3>
+                    <p class="text-[#9C27B0] text-lg font-semibold">{{ working_tickets }}</p>
+                    <p class="text-[#b3b3b3] text-xs mt-1">In progress</p>
+                    <button onclick="showTickets('working')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View All →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Priority Tickets</h3>
+                    <p class="text-[#FF9800] text-lg font-semibold">{{ priority_tickets }}</p>
+                    <div class="flex items-center mt-1">
+                        <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                        <p class="text-[#b3b3b3] text-xs">Urgent attention needed</p>
+                        <button onclick="showTickets('priority')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View All →</button>
+                    </div>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Expiring Tickets</h3>
+                    <p class="text-[#F44336] text-lg font-semibold">{{ expiring_tickets }}</p>
+                    <p class="text-[#b3b3b3] text-xs mt-1">Due within 24h</p>
+                    <button onclick="showTickets('expiring')" class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View All →</button>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex sm:grid sm:grid-cols-5 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
+                <!-- Create Ticket Button -->
+                <button onclick="toggleCreateTicketForm()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-2 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-6 h-6 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Create Ticket</span>
+                </button>
+
+                <!-- Create Ticket Popup Form -->
+                <div id="createTicketPopup" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                    <div class="bg-[#212121] rounded-xl p-6 w-full max-w-lg mx-auto my-8 md:my-16 lg:my-24 xl:my-32 transform -translate-y-4 transition-all duration-300">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-white text-lg font-bold">Create New Ticket</h3>
+                            <button onclick="toggleCreateTicketForm()" class="text-[#b3b3b3] hover:text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <form id="ticketForm" class="space-y-4">
+                            {% csrf_token %}
+                            <div>
+                                <label class="text-[#b3b3b3] text-sm mb-1 block">Title *</label>
+                                <input type="text" name="title" id="ticketTitle" required
+                                    class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+                            </div>
+                            <div>
+                                <label class="text-[#b3b3b3] text-sm mb-1 block">Description *</label>
+                                <textarea name="description" id="ticketDescription" required
+                                    class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 h-32 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]"></textarea>
+                            </div>
+                            <div>
+                                <label class="text-[#b3b3b3] text-sm mb-1 block">Priority *</label>
+                                <select name="priority" id="ticketPriority" required
+                                    class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+                                    <option value="">Select Priority</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[#b3b3b3] text-sm mb-1 block">Assign To</label>
+                                <select name="support_user" id="ticketSupportUser"
+                                    class="w-full bg-[#2a2a2a] text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+                                    <option value="">Select Support User</option>
+                                    {% for support in support_users %}
+                                        <option value="{{ support.id }}">{{ support.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="flex justify-end space-x-3">
+                                <button type="button" onclick="toggleCreateTicketForm()" 
+                                    class="bg-[#2a2a2a] text-white px-4 py-2 rounded-lg hover:bg-[#343434] transition-all duration-300">
+                                    Cancel
+                                </button>
+                                <button type="submit" 
+                                    class="bg-[#4CAF50] text-white px-4 py-2 rounded-lg hover:bg-[#388E3C] transition-all duration-300">
+                                    Create Ticket
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <button onclick="showReports()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-2 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-6 h-6 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#2196F3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Reports</span>
+                </button>
+
+                <a href="{% url 'create_note' %}" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-2 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-6 h-6 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FF9800]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Create Note</span>
+                </a>
+
+                <button onclick="showHiddenTickets()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-2 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-6 h-6 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#F44336]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Hidden Tickets</span>
+                </button>
+                <a href="{% url 'my_tickets' %}" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-2 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-6 h-6 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">My Tickets</span>
+                </a>
+            </div>
+
+            <!-- Assignment Modal -->
+            <div id="assignTicketModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                <div class="bg-[#212121] rounded-xl p-6 w-96">
+                    <h3 class="text-white text-lg font-bold mb-4">Assign Ticket</h3>
+                    <select id="agentSelect" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 mb-4">
+                        <option value="">Select Agent</option>
+                    </select>
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="closeAssignModal()" class="px-4 py-2 bg-[#424242] text-white rounded-lg hover:bg-[#4f4f4f]">Cancel</button>
+                        <button onclick="assignTicketToAgent()" class="px-4 py-2 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2]">Assign</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add this modal to templates/masteradmin/ticket.html -->
+            <div id="assignToOtherModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="bg-[#212121] rounded-xl p-6 w-96">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-white">Assign Ticket</h2>
+                            <button onclick="closeAssignToOtherModal()" class="text-gray-500 hover:text-gray-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-300 mb-1">Department</label>
+                                <select id="departmentSelect" onchange="loadSupportUsers()" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Department</option>
+                                    {% for department in support_departments %}
+                                    <option value="{{ department.id }}">{{ department.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-300 mb-1">Support User</label>
+                                <select id="supportUserSelect" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Support User</option>
+                                </select>
+                            </div>
+
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button onclick="closeAssignToOtherModal()" class="px-4 py-2 bg-[#424242] text-white rounded-lg hover:bg-[#4f4f4f]">
+                                    Cancel
+                                </button>
+                                <button onclick="assignTicketToUser()" class="px-4 py-2 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2]">
+                                    Assign
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Tickets -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <h3 class="text-[#ffffff] text-base font-bold mb-3">Recent Tickets</h3>
+                <div class="space-y-2">
+                    {% for ticket in tickets %}
+                    {% if ticket.assigned_to %}
+                    <div class="flex justify-between items-center p-2 bg-[#252525] rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-[#333333] rounded-full flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#F44336]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm">{{ ticket.problem }}</p>
+                                <p class="text-[#b3b3b3] text-xs">{{ ticket.created_at|date:"F j, Y, g:i a" }}</p>
+                                <p class="text-[#b3b3b3] text-xs">
+                                    Assigned to: 
+                                    {% if ticket.assigned_to %}
+                                        {{ ticket.assigned_to.name }}
+                                    {% else %}
+                                        MasterAdmin
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="px-2 py-1 bg-[#F44336] text-white text-xs rounded-full">{{ ticket.status }}</span>
+                            <div class="relative group">
+                                <button class="p-1 hover:bg-[#333333] rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                    </svg>
+                                </button>
+                                <div class="absolute right-0 w-48 bg-[#2a2a2a] rounded-lg shadow-lg hidden group-hover:block z-10">
+                                    {% if ticket.assigned_to %}
+                                    <a href="#" onclick="window.location.href='/masteradmin/assign_to_me/{{ ticket.id }}/'" class="block px-4 py-2 text-sm text-white hover:bg-[#333333] rounded-t-lg">Assign To Me</a>
+                                    {% endif %}
+                                    <a href="#" onclick="openAssignToOtherModal('{{ ticket.id }}')" class="block px-4 py-2 text-sm text-white hover:bg-[#333333] rounded-b-lg">Assign To Other</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#333333] rounded-b-lg">Hide Ticket</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#333333] rounded-b-lg">Delete Ticket</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#333333] rounded-b-lg">Mark as Resolved</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script src="{% static 'js/ticket.js' %}?v=2"></script>
+    <script>
+    function assignToMe(ticketId) {
+        fetch(`/masteradmin/assign_to_me/${ticketId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Show success message
+                Swal.fire({
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonColor: '#4CAF50'
+                }).then(() => {
+                    // Reload the page to show updated assignments
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            // Show error message
+            Swal.fire({
+                title: 'Error!',
+                text: error.message,
+                icon: 'error',
+                confirmButtonColor: '#F44336'
+            });
+        });
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    let currentTicketId = null;
+
+    function openAssignToOtherModal(ticketId) {
+        currentTicketId = ticketId;
+        const modal = document.getElementById('assignToOtherModal');
+        modal.classList.remove('hidden');
+        // Reset selections
+        document.getElementById('departmentSelect').value = '';
+        document.getElementById('supportUserSelect').innerHTML = '<option value="">Select Support User</option>';
+    }
+
+    function closeAssignToOtherModal() {
+        const modal = document.getElementById('assignToOtherModal');
+        modal.classList.add('hidden');
+        currentTicketId = null;
+    }
+
+    async function loadSupportUsers() {
+        const departmentId = document.getElementById('departmentSelect').value;
+        const supportUserSelect = document.getElementById('supportUserSelect');
+        
+        if (!departmentId) {
+            supportUserSelect.innerHTML = '<option value="">Select Support User</option>';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/masteradmin/get_support_users/${departmentId}/`);
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                let options = '<option value="">Select Support User</option>';
+                data.users.forEach(user => {
+                    options += `<option value="${user.id}">${user.name} (${user.pending_tickets} pending tickets)</option>`;
+                });
+                supportUserSelect.innerHTML = options;
+            } else {
+                throw new Error(data.message || 'Failed to load support users');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: error.message,
+                icon: 'error',
+                confirmButtonColor: '#F44336'
+            });
+        }
+    }
+
+    async function assignTicketToUser() {
+        const supportUserId = document.getElementById('supportUserSelect').value;
+        
+        if (!supportUserId) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Please select a support user',
+                icon: 'error',
+                confirmButtonColor: '#F44336'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(`/masteradmin/assign_ticket/${currentTicketId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    support_user_id: supportUserId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                Swal.fire({
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonColor: '#4CAF50'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Failed to assign ticket');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: error.message,
+                icon: 'error',
+                confirmButtonColor: '#F44336'
+            });
+        }
+    }
+    </script>
+{% endblock %}

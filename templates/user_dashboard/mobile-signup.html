@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Matrix - Signup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Poppins', sans-serif;
+            background-color: #f9fafb;
+        }
+        @media (max-width: 768px) {
+            .signup-container {
+                flex-direction: column;
+                box-shadow: none;
+            }
+            .brand-panel, .form-panel {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            .brand-panel {
+                padding: 2rem 1.5rem !important;
+                min-height: 30vh;
+            }
+            .steps-container {
+                display: none;
+            }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Input focus animation */
+        input:focus {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        
+        /* Button hover effect */
+        button:hover {
+            transform: translateY(-1px);
+        }
+    </style>
+
+</head>
+<body class="h-auto bg-gray-50 overflow-hidden">
+    <div class="flex mt-1 mb-10 w-full items-center justify-center p-4">
+        <div class="w-full max-w-6xl overflow-hidden rounded-xl bg-white signup-container flex shadow-lg">
+          <!-- Left Panel with Blue Gradient -->
+          <div class="relative p-8 md:p-10 w-full md:w-1/2 lg:w-[45%] bg-gradient-to-r from-[#00241f] via-[#050505] to-[#6a6555] text-white brand-panel rounded-l-xl">
+            <div class="mb-6">
+              <img src="/media/masteradmin_web/1mlogo.png" alt="1Matrix" class="w-32 h-auto">
+            </div>
+            
+            <div class="mt-4 md:mt-16">
+              
+              <h1 class="mb-4 text-3xl md:text-4xl lg:text-5xl font-medium">Start your Journey</h1>
+              <p class="text-sm md:text-lg opacity-90">Follow these simple steps to set up your account.</p>
+              
+              <div class="mt-5 md:mt-10 flex flex-nowrap gap-2 steps-container">
+                <!-- Step 1 -->
+                <div class="flex flex-col justify-center rounded-lg bg-white p-2 text-center flex-1">
+                  <div class="mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#4165e3] text-[10px] text-white">1</div>
+                  <p class="text-xs text-gray-700">Register</p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="flex flex-col justify-center rounded-lg bg-[#2e5be0]/20 backdrop-blur-[20px] p-2 text-center flex-1">
+                  <div class="mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/30 text-[10px] text-white">2</div>
+                  <p class="text-xs">Profile</p>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="flex flex-col justify-center rounded-lg bg-[#2e5be0]/20 backdrop-blur-[20px] p-2 text-center flex-1">
+                  <div class="mx-auto mb-1 flex h-5 w-5 items-center justify-center rounded-full bg-white/30 text-[10px] text-white">3</div>
+                  <p class="text-xs">Verify</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Panel with Form -->
+          <div class="w-full md:w-1/2 lg:w-[55%] p-6 md:p-8 form-panel rounded-r-xl">
+            <div class="mx-auto max-w-md w-full">
+              <h2 class="mb-4 text-xl md:text-2xl font-semibold text-gray-800">Join Us</h2>
+              
+              {% if messages %}
+              <div class="mb-4">
+                  {% for message in messages %}
+                  <div class="{% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} p-3 rounded-md mb-2 text-sm">
+                      {{ message }}
+                  </div>
+                  {% endfor %}
+              </div>
+              {% endif %}
+              
+              <form class="space-y-4" action="/user/signup/" method="post">
+                {% csrf_token %}
+                <!-- Phone Number -->
+                <div>
+                  <label class="mb-1 block text-xs text-gray-600">Phone number</label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <span class="flex items-center space-x-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 36 36">
+                          <path fill="#FF9933" d="M0 4h36v8H0z"/>
+                          <path fill="#FFFFFF" d="M0 12h36v8H0z"/>
+                          <path fill="#138808" d="M0 20h36v8H0z"/>
+                          <circle fill="#000080" cx="18" cy="16" r="3"/>
+                        </svg>
+                        <span class="text-gray-600 text-sm">+91</span>
+                      </span>
+                    </div>
+                    <input type="tel" name="mobile_number" class="w-full rounded-md border border-gray-300 bg-gray-50 py-2 pl-20 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="00000 00000" required>
+                  </div>
+                </div>
+                
+                <!-- Name and Username -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="mb-1 block text-xs text-gray-600">Email</label>
+                    <div class="relative">
+                      <input type="email" name="email" class="w-full rounded-md border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="laura@example.com" required>
+                      <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500 hidden" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Password -->
+                <div>
+                  <label class="mb-1 block text-xs text-gray-600">Password</label>
+                  <div class="relative">
+                    <input type="password" name="password" id="password" class="w-full rounded-md border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="••••••••••••••" required>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" id="password-eye" class="h-4 w-4 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="togglePasswordVisibility()">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="mt-1 text-[10px] text-gray-500">At least 12 characters with uppercase, lowercase, numbers, and symbols.</p>
+                </div>
+                
+                <!-- Submit Button -->
+                <div>
+                  <button type="submit" class="w-full rounded-md bg-gray-800 py-2.5 text-sm text-white font-medium transition duration-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">Continue</button>
+                </div>
+                
+                <!-- Login Link -->
+                <div class="text-center text-sm">
+                  <span class="text-gray-600">Already have an account? </span>
+                  <a href="/user/login/" class="text-blue-600 hover:underline">Log in</a>
+                </div>
+                
+                <div class="relative py-2">
+                  <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div class="relative flex justify-center">
+                    <span class="bg-white px-2 text-xs text-gray-500">Or</span>
+                  </div>
+                </div>
+                
+                <!-- Google Sign Up -->
+                <div>
+                  <a href="/user/google-login/" class="flex w-full items-center justify-center space-x-2 rounded-md border border-gray-300 bg-white py-3 text-gray-700 hover:bg-gray-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="h-5 w-5">
+                      <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+                      <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+                      <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+                      <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+                    </svg>
+                    <span>Sign up with Google</span>
+                  </a>
+                </div>
+                
+                <!-- Terms of Service -->
+                <div class="text-center text-[10px] text-gray-500">
+                  By signing up I confirm that I have read and agree to the 
+                  <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a> and 
+                  <a href="#" class="text-blue-600 hover:underline">Terms of Service</a>.
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        // Password visibility toggle
+        function togglePasswordVisibility() {
+          const passwordField = document.getElementById('password');
+          const passwordEye = document.getElementById('password-eye');
+          
+          if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            // Change to eye-off icon
+            passwordEye.innerHTML = `
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+            `;
+          } else {
+            passwordField.type = 'password';
+            // Change back to eye icon
+            passwordEye.innerHTML = `
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            `;
+          }
+        }
+        
+        // Email availability check
+        document.querySelector('input[name="email"]').addEventListener('blur', async function() {
+          const email = this.value.trim();
+          if (email.length > 0) {
+            try {
+              // Show subtle loading indicator
+              this.classList.add('bg-gray-100');
+              
+              const response = await fetch(`/user/check-username/?username=${encodeURIComponent(email)}`);
+              const data = await response.json();
+              
+              this.classList.remove('bg-gray-100');
+              
+              const checkIcon = this.nextElementSibling.querySelector('svg');
+              if (data.available) {
+                checkIcon.classList.remove('hidden');
+                this.classList.add('border-green-300');
+                this.classList.remove('border-red-300');
+              } else {
+                checkIcon.classList.add('hidden');
+                this.classList.add('border-red-300');
+                this.classList.remove('border-green-300');
+              }
+            } catch (error) {
+              console.error('Error checking email:', error);
+              this.classList.remove('bg-gray-100');
+            }
+          }
+        });
+      </script>
+</body>
+</html>

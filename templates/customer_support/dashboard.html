@@ -1,0 +1,456 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Matrix - Customer Support</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="bg-[#1a1a1a] min-h-screen font-poppins text-sm">
+    {% if request.session.support_id %}
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar - 20% -->
+        <nav id="sidebar" class="w-full lg:w-1/5 bg-[#191919] text-[#ffffff] h-auto lg:fixed lg:h-screen p-4 animate__animated animate__slideInLeft hidden lg:block overflow-y-auto no-scrollbar">
+            <div class="space-y-20">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center overflow-hidden">
+                        <img src="/media/masteradmin_web/1matrix_logo-bg.png" 
+                             alt="1Matrix Logo" 
+                             class="h-full w-full object-cover transition-transform duration-300 filter drop-shadow-lg"
+                             style="background: transparent;">
+                    </div>
+                    <div>
+                        <p class="text-xs text-[#b3b3b3]">Customer Support</p>
+                        <h2 class="text-base font-bold">1Matrix</h2>
+                        <p class="text-xs text-[#b3b3b3]">by Brandise Box LLP</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <a href="{% url 'agent_profile' %}" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span>Profile</span>
+                    </a>
+
+                    <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Customers</span>
+                    </a>
+
+                    <a href="{% url 'meetings' %}" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Tickets</span>
+                    </a>
+
+                    <div class="pt-4 mt-4 border-t border-[#333333]">
+                        <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+
+                        <a href="#" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Middle Section - 55% -->
+        <main class="w-full lg:w-[55%] p-4 lg:ml-[20%]">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center mb-4 px-4">
+                <!-- Left icon -->
+                <div class="lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+
+                <!-- Center title -->
+                <div class="flex-1 text-center lg:hidden p-0 m-0">
+                    <img src="/media/masteradmin_web/1matrix_logo-bg.png" 
+                         alt="1Matrix Logo" 
+                         class="h-24 sm:h-24 md:h-24 mx-auto object-contain transition-transform duration-300 filter drop-shadow-lg"
+                         style="background: transparent; transform: scale(2);">
+                </div>
+
+                <!-- Right menu button -->
+                <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+
+                <!-- Search bar for larger screens -->
+                <div class="flex justify-end mb-4">
+                    <div class="relative">
+                        <a href="{% url 'master_notifications' %}" class="flex items-center space-x-2 p-2 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] text-white transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{{ agent_notifications.count }}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sales Metrics -->
+             <!-- Date Range Selector -->
+            {% comment %} <div class="mb-3">
+                <div class="bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300">
+                    <div class="flex flex-col space-y-4 md:space-y-0 md:flex-row md:space-x-4">
+                        <div class="w-full md:flex-1">
+                            <label class="text-[#b3b3b3] text-xs mb-1 block">Start Date</label>
+                            <input type="date" id="startDate" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-1.5 text-sm">
+                        </div>
+                        <div class="w-full md:flex-1">
+                            <label class="text-[#b3b3b3] text-xs mb-1 block">End Date</label>
+                            <input type="date" id="endDate" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-1.5 text-sm">
+                        </div>
+                        <div class="w-full md:flex-1">
+                            <label class="text-[#b3b3b3] text-xs mb-1 block">Commission Earned</label>
+                            <div class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-1.5 text-sm">₹5,000</div>
+                        </div>
+                        <div class="flex items-end w-full md:w-auto">
+                            <button onclick="fetchMeetingStats()" class="w-full md:w-auto bg-[#2196F3] text-white px-4 py-1.5 rounded-lg hover:bg-[#1976D2] transition-all duration-300 text-sm">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div> {% endcomment %}
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">New Tickets</h3>
+                    <p class="text-[#4CAF50] text-lg font-semibold">24 Tickets</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Working Tickets</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">45 Tickets</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Priority Tickets</h3>
+                    <p class="text-[#FF9800] text-lg font-semibold">12 Tickets</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Expiring Tickets</h3>
+                    <p class="text-[#F44336] text-lg font-semibold">8 Tickets</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex sm:grid sm:grid-cols-6 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
+                <button onclick="showCreateNotePopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#9C27B0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Create Note</span>
+                </button>
+
+                <button onclick="showConnectCustomerPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#2196F3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a8 8 0 00-8 8h16a8 8 0 00-8-8z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Connect Customer</span>
+                </button>
+
+                <button onclick="showSendReportsPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Send Reports</span>
+                </button>
+
+                <button onclick="showRaiseComplaintPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FF9800]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Raise Complaint</span>
+                </button>
+
+                <button onclick="showConnectDepartmentPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#00BCD4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h3a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Connect Department</span>
+                </button>
+
+                <button onclick="showAskFeedbackPopup()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#E91E63]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Ask Feedback</span>
+                </button>
+            </div>
+            <style>
+                
+            </style>
+
+            <!-- Recent Orders -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <h3 class="text-[#ffffff] text-base font-bold mb-3">Recent Meetings</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center p-2 bg-[#252525] rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-[#333333] rounded-full"></div>
+                            <div>
+                                <p class="text-white text-sm">John Smith</p>
+                                <p class="text-[#b3b3b3] text-xs">john.smith@email.com</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[#4CAF50] text-sm">30 mins</p>
+                            <p class="text-[#b3b3b3] text-xs">2 hours ago</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-[#252525] rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-[#333333] rounded-full"></div>
+                            <div>
+                                <p class="text-white text-sm">Sarah Johnson</p>
+                                <p class="text-[#b3b3b3] text-xs">sarah.j@email.com</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[#4CAF50] text-sm">45 mins</p>
+                            <p class="text-[#b3b3b3] text-xs">4 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Section - 25% -->
+        <aside class="w-full lg:w-1/4 p-4 space-y-4">
+            <!-- Notifications Carousel -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-[#ffffff] text-sm font-bold">Recent Updates</h3>
+                    <button id="clearNotifications" class="text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">Clear All</button>
+                </div>
+                <div id="notificationsContainer" class="space-y-2 min-h-[120px] overflow-y-auto custom-scrollbar">
+                    <div class="p-3 bg-[#252525] rounded-lg">
+                        <p class="text-white text-sm">New feature released</p>
+                        <p class="text-[#b3b3b3] text-xs">10 minutes ago</p>
+                    </div>
+                    <div class="p-3 bg-[#252525] rounded-lg">
+                        <p class="text-white text-sm">System maintenance scheduled</p>
+                        <p class="text-[#b3b3b3] text-xs">1 hour ago</p>
+                    </div>
+                    <div class="p-3 bg-[#252525] rounded-lg">
+                        <p class="text-white text-sm">Security update available</p>
+                        <p class="text-[#b3b3b3] text-xs">2 hours ago</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                {% comment %} <h3 class="text-[#ffffff] text-base font-bold mb-3">Top Performers</h3> {% endcomment %}
+                
+                <!-- Tabs -->
+                <div class="flex mb-4">
+                    <button id="salesTab" class="flex-1 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300 mr-2">Top by Sales</button>
+                </div>
+
+                <!-- Sales Performers -->
+                <div id="salesPerformers" class="grid grid-cols-3 gap-3">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 1st</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 2nd</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 3rd</p>
+                    </div>
+                </div>
+
+                <!-- Meetings Performers -->
+
+                <!-- Popup for View All -->
+                <div id="viewAllPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 hidden backdrop-blur-sm">
+                    <div class="bg-[#212121] rounded-2xl p-8 w-4/5 max-w-6xl transform scale-0 transition-all duration-300 ease-in-out shadow-2xl border border-gray-700 scrollbar-hide" id="popupContentContainer">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-white text-2xl font-bold">Top Performers</h3>
+                            <button onclick="closeViewAllPopup()" class="text-gray-400 hover:text-white transition-colors z-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="popupContent" class="overflow-y-auto max-h-[70vh] scrollbar-hide">
+                            <div class="flex items-center justify-between bg-[#333333] p-4 rounded-lg mb-2">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-[#444444] rounded-full"></div>
+                                    <div>
+                                        <h4 class="text-white font-semibold">Person Name</h4>
+                                        <p class="text-gray-400 text-sm">Sales: $50,000 | Meetings: 25</p>
+                                    </div>
+                                </div>
+                                <button class="text-[#2196F3] hover:underline">View Profile</button>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end relative">
+                            <button onclick="closeViewAllPopup()" class="bg-[#2196F3] text-white py-2 px-6 rounded-lg hover:bg-[#1976D2] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-[#2196F3]/20 z-50">
+                                <span>Close</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <!-- Broadcast Message -->
+            <!-- Fixed floating button for mobile -->
+            <button onclick="toggleBroadcastPanel()" class="lg:hidden fixed bottom-4 right-4 w-12 h-12 bg-[#2196F3] rounded-full flex items-center justify-center shadow-lg hover:bg-[#1976D2] transition-all duration-300 z-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            </button>
+
+            <!-- Broadcast panel -->
+            <div id="broadcastPanel" class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 lg:block hidden">
+                <h3 class="text-[#ffffff] text-sm font-bold mb-3">Client Communication</h3>
+                <form class="space-y-3">
+                    <select class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="all">All Departments</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input type="text" placeholder="Client Name" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <input type="email" placeholder="Client Email" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    </div>
+                    <textarea placeholder="Client's Problem" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <textarea placeholder="Your Message" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <button type="submit" class="w-full bg-[#2196F3] text-white py-2 rounded-lg hover:bg-[#1976D2] transition-all duration-300 text-sm flex items-center justify-center gap-2">
+                        <span>Send Message</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Mobile broadcast panel -->
+            <div id="mobileBroadcastPanel" class="lg:hidden fixed bottom-20 right-4 w-80 bg-[#212121]/80 backdrop-blur-lg rounded-xl p-4 shadow-xl transition-all duration-300 hidden">
+                <h3 class="text-[#ffffff] text-sm font-bold mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                    Client Communication
+                </h3>
+                <form class="space-y-3">
+                    <select class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="all">All Departments</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <input type="text" placeholder="Client Name" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    <input type="email" placeholder="Client Email" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    <textarea placeholder="Client's Problem" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <textarea placeholder="Your Message" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <button type="submit" class="w-full bg-[#2196F3] text-white py-2 rounded-lg hover:bg-[#1976D2] transition-all duration-300 text-sm flex items-center justify-center gap-2">
+                        <span>Send Message</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </aside>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/customer_support/dashboard.js' %}?v=2"></script>
+    {% else %}
+    <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        <div class="w-full max-w-lg bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl animate__animated animate__fadeIn">
+            <div class="text-center space-y-6">
+                <!-- Logo -->
+                <div class="w-24 h-24 mx-auto rounded-full overflow-hidden animate__animated animate__bounceIn">
+                    <img src="/media/masteradmin_web/1matrix_logo.jpg" alt="1Matrix Logo" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Message -->
+                <div class="space-y-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    <h2 class="text-2xl md:text-3xl font-bold text-white">Access Restricted</h2>
+                    <p class="text-gray-300 text-sm md:text-base">
+                        Please log in to access your support profile and dashboard.
+                    </p>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-4 animate__animated animate__fadeInUp animate__delay-2s">
+                    <a href="{% url 'support_login' %}" 
+                       class="inline-flex items-center px-6 py-3 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2] transition-all duration-300 transform hover:-translate-y-1">
+                        <span class="mr-2">Login to Continue</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Additional Info -->
+                <p class="text-sm text-gray-400 mt-8 animate__animated animate__fadeIn animate__delay-3s">
+                    If you're having trouble logging in, please contact your administrator.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

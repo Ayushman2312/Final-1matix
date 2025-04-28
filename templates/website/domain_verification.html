@@ -1,0 +1,300 @@
+{% extends 'user_dashboard/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Website Creation Progress Steps -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-3xl font-bold text-gray-900">Connect Your Domain</h1>
+        </div>
+        
+        <div class="relative">
+            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                <div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600 w-full"></div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-600">
+                <div class="w-1/3 text-center">
+                    <div class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-1">✓</div>
+                    <span>Choose Template</span>
+                </div>
+                <div class="w-1/3 text-center">
+                    <div class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-1">✓</div>
+                    <span>Customize Content</span>
+                </div>
+                <div class="w-1/3 text-center">
+                    <div class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-1">3</div>
+                    <span>Setup Domain</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="border-b border-gray-200 px-6 py-4">
+            <h2 class="text-xl font-semibold text-gray-800">Verify Domain: {{ domain.domain }}</h2>
+        </div>
+        
+        <!-- If domain is already verified -->
+        {% if already_verified %}
+        <div class="p-6">
+            <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">
+                            This domain is already verified and active. You're all set! 
+                            {% if domain.ssl_status %}
+                                SSL is enabled.
+                            {% else %}
+                                SSL is being set up (this can take up to 30 minutes).
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center">
+                <a href="{% url 'domain_settings' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Back to Domain Settings
+                </a>
+            </div>
+        </div>
+        {% else %}
+        
+        <!-- If too many verification attempts -->
+        {% if too_many_attempts %}
+        <div class="p-6">
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            Too many verification attempts. Please wait a few minutes before trying again. DNS changes can take time to propagate.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- If verification just failed -->
+        {% if verification_failed %}
+        <div class="p-6">
+            <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">Domain verification failed</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <ul class="list-disc pl-5 space-y-1">
+                                {% for issue in verification_issues %}
+                                <li>{{ issue }}</li>
+                                {% endfor %}
+                            </ul>
+                            <p class="mt-2">DNS changes can take up to 24-48 hours to propagate. You can try again after making any needed corrections.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="p-6">
+            <div class="mb-8">
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 bg-blue-100 rounded-full p-2 mr-3">
+                        <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-700">To connect your domain, you need to add DNS records at your domain registrar (like GoDaddy, Namecheap, etc.)</p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Step 1: Add these DNS records at your domain registrar</h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name/Host</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value/Target</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TTL</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">A</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">89.116.20.128</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3600</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">TXT</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">verification={{ domain.verification_code }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3600</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">CNAME</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">www</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ domain.domain }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3600</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button id="copy-records" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            Copy records to clipboard
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">Step 2: Wait for DNS propagation</h3>
+                    <p class="text-gray-600 mb-4">DNS changes can take up to 24-48 hours to propagate, but often happen within 15-30 minutes.</p>
+                    
+                    <div class="flex items-center mt-2">
+                        <div id="dns-status-indicator" class="h-2.5 w-2.5 rounded-full bg-yellow-500 mr-2"></div>
+                        <span id="dns-status-text" class="text-sm text-gray-600">DNS changes are propagating</span>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Step 3: Verify domain ownership</h3>
+                    <p class="text-gray-600 mb-4">Once you've added the DNS records and they've had time to propagate, click the button below to verify:</p>
+                    
+                    <form method="post" class="flex flex-col items-center">
+                        {% csrf_token %}
+                        <button id="verify-button" type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Verify Domain
+                        </button>
+                        
+                        <p class="mt-3 text-sm text-gray-500">You can check verification status multiple times</p>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Popular Domain Registrar Instructions</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="https://www.namecheap.com/support/knowledgebase/article.aspx/767/10/how-to-change-dns-for-a-domain/" target="_blank" class="border rounded-lg p-4 hover:bg-gray-50">
+                        <div class="font-medium text-gray-800 mb-1">Namecheap</div>
+                        <p class="text-sm text-gray-500">View DNS setup instructions</p>
+                    </a>
+                    
+                    <a href="https://www.godaddy.com/help/manage-dns-records-680" target="_blank" class="border rounded-lg p-4 hover:bg-gray-50">
+                        <div class="font-medium text-gray-800 mb-1">GoDaddy</div>
+                        <p class="text-sm text-gray-500">View DNS setup instructions</p>
+                    </a>
+                    
+                    <a href="https://help.hover.com/hc/en-us/articles/217282457-Managing-DNS-records-" target="_blank" class="border rounded-lg p-4 hover:bg-gray-50">
+                        <div class="font-medium text-gray-800 mb-1">Hover</div>
+                        <p class="text-sm text-gray-500">View DNS setup instructions</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="flex justify-between mt-6">
+        <a href="{% url 'domain_settings' %}" class="text-blue-600 hover:text-blue-800 flex items-center">
+            <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Domain Settings
+        </a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('copy-records').addEventListener('click', function() {
+        const records = `DNS Records for {{ domain.domain }}:
+Type: A
+Name/Host: @
+Value/Target: 89.116.20.128
+TTL: 3600
+
+Type: TXT
+Name/Host: @
+Value/Target: verification={{ domain.verification_code }}
+TTL: 3600
+
+Type: CNAME
+Name/Host: www
+Value/Target: {{ domain.domain }}
+TTL: 3600`;
+        
+        navigator.clipboard.writeText(records).then(function() {
+            alert('DNS records copied to clipboard!');
+        }, function() {
+            alert('Failed to copy records. Please select and copy them manually.');
+        });
+    });
+    
+    // Function to check DNS propagation status
+    function checkDNSPropagation() {
+        const statusIndicator = document.getElementById('dns-status-indicator');
+        const statusText = document.getElementById('dns-status-text');
+        const verifyButton = document.getElementById('verify-button');
+        
+        // Add pulsing animation to the verify button
+        verifyButton.classList.add('pulse-animation');
+        
+        // Check if verification failed recently
+        {% if verification_failed %}
+            statusIndicator.classList.remove('bg-yellow-500', 'bg-green-500');
+            statusIndicator.classList.add('bg-red-500');
+            statusText.textContent = 'DNS verification failed. See details above.';
+            statusText.classList.remove('text-gray-600', 'text-green-600');
+            statusText.classList.add('text-red-600');
+        {% else %}
+            // If not manually verified, show as "in progress"
+            statusIndicator.classList.remove('bg-red-500', 'bg-green-500');
+            statusIndicator.classList.add('bg-yellow-500');
+            statusText.textContent = 'DNS changes are propagating';
+            statusText.classList.remove('text-red-600', 'text-green-600');
+            statusText.classList.add('text-gray-600');
+        {% endif %}
+    }
+    
+    // Run the check on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkDNSPropagation();
+    });
+    
+    // Add a pulsing animation for the verify button
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

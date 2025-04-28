@@ -1,0 +1,167 @@
+{% extends "user_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Manage Products{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Manage Products</h1>
+        <a href="{% url 'website_product_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded shadow-sm">
+            <i class="fas fa-plus mr-2"></i> Add New Product
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="p-4 mb-4 {% if message.tags == 'success' %}bg-green-100 text-green-800 border-green-200{% elif message.tags == 'error' %}bg-red-100 text-red-800 border-red-200{% else %}bg-blue-100 text-blue-800 border-blue-200{% endif %} rounded-lg border">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Website Selector -->
+    {% if websites.count > 1 %}
+    <div class="mb-6 bg-white rounded-lg shadow-md p-4">
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">Select Website</h2>
+        <form method="GET" id="websiteForm" class="flex items-center">
+            <select name="website_id" id="website_selector" class="w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mr-3">
+                {% for website in websites %}
+                <option value="{{ website.id }}" {% if website.id == selected_website.id %}selected{% endif %}>
+                    {% if website.template %}{{ website.template.name }}{% else %}Untitled Website{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">Switch</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Products List -->
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="border-b px-6 py-4 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-900">Products for "{{ selected_website.template.name|default:'Your Website' }}"</h2>
+            <div class="flex space-x-2">
+                <div class="relative">
+                    <input type="text" id="product-search" placeholder="Search products..." class="w-64 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <select id="category-filter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            {% if products %}
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="products-table-body">
+                    {% for product in products %}
+                    <tr data-category="{{ product.category.id|default:'none' }}" class="product-row">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="h-14 w-14 rounded-md overflow-hidden bg-gray-100">
+                                {% if product.image1 %}
+                                <img src="{{ product.image1.url }}" alt="{{ product.title }}" class="h-full w-full object-cover">
+                                {% else %}
+                                <div class="h-full w-full flex items-center justify-center bg-gray-200 text-gray-500">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ product.title }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ product.price }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if product.category %}
+                            {{ product.category.name }}
+                            {% else %}
+                            <span class="text-gray-400">No category</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if product.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {% if product.is_active %}Active{% else %}Draft{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'website_product_edit' product.product_id %}" class="text-blue-600 hover:text-blue-900">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{% url 'website_product_delete' product.product_id %}" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-600 hover:text-red-900">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                <a href="{% url 'website_product_detail' product.product_id %}" class="text-green-600 hover:text-green-900">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="px-6 py-10 text-center">
+                <p class="text-gray-500">No products found. Click the "Add New Product" button to create one.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Website selector auto-submit
+        const websiteSelector = document.getElementById('website_selector');
+        if (websiteSelector) {
+            websiteSelector.addEventListener('change', function() {
+                document.getElementById('websiteForm').submit();
+            });
+        }
+        
+        const productSearch = document.getElementById('product-search');
+        const categoryFilter = document.getElementById('category-filter');
+        const productRows = document.querySelectorAll('.product-row');
+
+        // Product search function
+        function filterProducts() {
+            const searchTerm = productSearch.value.toLowerCase();
+            const categoryId = categoryFilter.value;
+
+            productRows.forEach(row => {
+                const title = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const rowCategory = row.dataset.category;
+                const matchesSearch = title.includes(searchTerm);
+                const matchesCategory = categoryId === '' || rowCategory === categoryId;
+
+                if (matchesSearch && matchesCategory) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Add event listeners
+        productSearch.addEventListener('input', filterProducts);
+        categoryFilter.addEventListener('change', filterProducts);
+    });
+</script>
+{% endblock %} 

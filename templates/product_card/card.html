@@ -1,0 +1,635 @@
+{% extends 'user_dashboard/base.html' %}
+{%block content%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="font-['Inter'] bg-gradient-to-br from-sky-50 to-blue-50 m-0 min-h-screen">
+    <div class="container">
+        <div class="max-w-5xl bg-white rounded-lg shadow-lg p-6">
+            <!-- Manage Cards Button -->
+            <div class="flex justify-end mb-4">
+                <a href="{% url 'all_product_card' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                    Manage Cards
+                </a>
+            </div>
+            
+            <!-- Alert messages -->
+            <div id="successAlert" class="hidden mb-4 p-4 rounded-lg bg-green-100 text-green-800 border border-green-200">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span id="successMessage">Product card created successfully!</span>
+                </div>
+            </div>
+            
+            <div id="errorAlert" class="hidden mb-4 p-4 rounded-lg bg-red-100 text-red-800 border border-red-200">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span id="errorMessage">An error occurred. Please try again.</span>
+                </div>
+            </div>
+            
+            <form id="productForm" class="space-y-8">
+                {% csrf_token %}
+                <!-- Product Images -->
+                <div class="space-y-4">
+                    <label class="block text-base font-semibold text-gray-700">Product Images</label>
+                    <p class="text-sm text-gray-500 mb-2">Add up to 3 images. First image will be the main product image. Images must be square (1:1 ratio).</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                            <input type="file" name="image1" id="image1" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required onchange="validateAndDisplayImage('image1', 'image1Name', 'image1Preview')">
+                            <div class="text-center">
+                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <p class="mt-2 text-sm font-medium text-gray-900">Main Product Image</p>
+                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
+                                <p id="image1Name" class="mt-2 text-xs text-blue-500"></p>
+                                <div id="image1Preview" class="mt-2 hidden"></div>
+                            </div>
+                        </div>
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                            <input type="file" name="image2" id="image2" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image2', 'image2Name', 'image2Preview')">
+                            <div class="text-center">
+                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <p class="mt-2 text-sm font-medium text-gray-900">Additional Image</p>
+                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
+                                <p id="image2Name" class="mt-2 text-xs text-blue-500"></p>
+                                <div id="image2Preview" class="mt-2 hidden"></div>
+                            </div>
+                        </div>
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                            <input type="file" name="image3" id="image3" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image3', 'image3Name', 'image3Preview')">
+                            <div class="text-center">
+                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <p class="mt-2 text-sm font-medium text-gray-900">Additional Image</p>
+                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
+                                <p id="image3Name" class="mt-2 text-xs text-blue-500"></p>
+                                <div id="image3Preview" class="mt-2 hidden"></div>
+                            </div>
+                        </div>
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                            <input type="file" name="image4" id="image4" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image4', 'image4Name', 'image4Preview')">
+                            <div class="text-center">
+                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <p class="mt-2 text-sm font-medium text-gray-900">Additional Image</p>
+                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
+                                <p id="image4Name" class="mt-2 text-xs text-blue-500"></p>
+                                <div id="image4Preview" class="mt-2 hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    function validateAndDisplayImage(inputId, nameDisplayId, previewId) {
+                        const input = document.getElementById(inputId);
+                        const nameDisplay = document.getElementById(nameDisplayId);
+                        const preview = document.getElementById(previewId);
+                        
+                        if (input.files && input.files[0]) {
+                            const file = input.files[0];
+                            nameDisplay.textContent = file.name;
+                            
+                            // Create image element to check dimensions
+                            const img = new Image();
+                            img.src = URL.createObjectURL(file);
+                            
+                            img.onload = function() {
+                                // Check if image is square (1:1 ratio)
+                                if (img.width !== img.height) {
+                                    alert('Please upload a square image (1:1 ratio)');
+                                    input.value = '';
+                                    nameDisplay.textContent = 'No file chosen';
+                                    preview.classList.add('hidden');
+                                    return;
+                                }
+                                
+                                // Show preview
+                                preview.innerHTML = `<img src="${img.src}" class="w-20 h-20 object-cover rounded-lg">`;
+                                preview.classList.remove('hidden');
+                            }
+                        } else {
+                            nameDisplay.textContent = 'No file chosen';
+                            preview.classList.add('hidden');
+                        }
+                    }
+                </script>
+    
+                <!-- Product Information -->
+                <div class="bg-gray-50 rounded-lg p-6 space-y-6">
+                    <h2 class="text-xl font-bold text-gray-900">Basic Information</h2>
+                    
+                    <!-- Category and Title Row -->
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="title" class="block text-sm font-medium text-gray-700">Product Title <span class="text-red-500">*</span></label>
+                            <input type="text" id="title" name="title" placeholder="Enter product title" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
+                            <p class="text-xs text-gray-500">Write a clear, descriptive title</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="youtube_link" class="block text-sm font-medium text-gray-700">YouTube Video Link</label>
+                            <input type="url" id="youtube_link" name="youtube_link" placeholder="Enter YouTube video URL" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors">
+                            <p class="text-xs text-gray-500">Add a YouTube video showcasing your product (optional)</p>
+                        </div>
+                    </div>
+    
+                    <!-- Price, HSN Code and GST Row -->
+                    <div class="grid grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <label for="price" class="block text-sm font-medium text-gray-700">Price <span class="text-red-500">*</span></label>
+                            <div class="mt-1 relative rounded-lg shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">₹</span>
+                                </div>
+                                <input type="number" step="0.01" id="price" name="price" placeholder="0.00" class="pl-8 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="hsn_code" class="block text-sm font-medium text-gray-700">HSN Code <span class="text-red-500">*</span></label>
+                            <input type="text" id="hsn_code" name="hsn_code" placeholder="Enter HSN Code" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
+                            <p class="text-xs text-gray-500">Enter the HSN code for your product</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="gst_percentage" class="block text-sm font-medium text-gray-700">GST Percentage <span class="text-red-500">*</span></label>
+                            <div class="mt-1 relative rounded-lg shadow-sm">
+                                <input type="number" min="0" max="100" step="0.01" id="gst_percentage" name="gst_percentage" placeholder="Enter GST percentage" class="block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors pr-12" required>
+                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">%</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500">Enter the applicable GST percentage</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="category" class="block text-sm font-medium text-gray-700">Category <span class="text-red-500">*</span></label>
+                            <select id="category" name="category" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
+                                <option value="">Select a category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.category_id }}">{{ category.category_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <p class="text-xs text-gray-500">Choose the most relevant category</p>
+                        </div>
+                    </div>
+
+                    <!-- Description and YouTube Link Row -->
+                    <div>
+                        <div class="space-y-2">
+                            <label for="description" class="block text-sm font-medium text-gray-700">Product Description <span class="text-red-500">*</span></label>
+                            <textarea id="description" name="description" rows="4" placeholder="Describe your product (20 words max)" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required></textarea>
+                            <p class="text-xs text-gray-500">Keep it concise and highlight key features</p>
+                        </div>
+
+                        
+                    </div>
+    
+                    <!-- Stock Status Row -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Stock Status <span class="text-red-500">*</span></label>
+                        <div class="mt-2 space-x-6">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="stock" value="yes" class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
+                                <span class="ml-2 text-sm text-gray-700">In Stock</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="stock" value="no" class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">Out of Stock</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Product Variations -->
+                <div class="bg-white rounded-lg p-6">
+                    <h2 class="text-xl mb-6">Product Variation</h2>
+                    
+                    <div id="variations" class="space-y-6">
+                        <div class="variation-group relative">
+                            <!-- Variation Name -->
+                            <div class="mb-4 relative">
+                                <input type="text" 
+                                       placeholder="Name" 
+                                       class="variation-name w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                       style="height: 40px;">
+                                <button type="button" 
+                                        onclick="removeVariation(this)" 
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <!-- Value and Price Row -->
+                            <div class="values-container space-y-3">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="relative">
+                                        <input type="text" 
+                                               placeholder="Value" 
+                                               class="variation-value w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               style="height: 40px;">
+                                    </div>
+                                    <div class="relative">
+                                        <input type="number" 
+                                               placeholder="Price" 
+                                               class="variation-price w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                               style="height: 40px;">
+                                        <div class="text-xs text-gray-500 mt-1">If different price</div>
+                                        <button type="button" 
+                                                onclick="removeValue(this)" 
+                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Add Value Button -->
+                            <button type="button" 
+                                    onclick="addVariationValue(this)" 
+                                    class="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
+                                    style="height: 40px;">
+                                Add More Value
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Add More Variation Button -->
+                    <button type="button" 
+                            onclick="addNewVariation()" 
+                            class="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
+                            style="height: 40px;">
+                        Add More Variation
+                    </button>
+                </div>
+    
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" id="submitBtn" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <span id="submitText">Create Product</span>
+                        <svg id="loadingSpinner" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    // Function to check if device is mobile
+    function isMobileDevice() {
+        return window.innerWidth <= 768; // Common breakpoint for mobile devices
+    }
+
+    // Function to handle mobile access
+    function handleMobileAccess() {
+        if (isMobileDevice()) {
+            // Hide the main content
+            document.body.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: #f9fafb;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 20px;
+                    text-align: center;
+                    z-index: 9999;
+                ">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <h1 style="
+                        font-size: 1.5rem;
+                        font-weight: bold;
+                        color: #1f2937;
+                        margin-bottom: 1rem;
+                    ">Desktop Only</h1>
+                    <p style="
+                        color: #6b7280;
+                        max-width: 400px;
+                        line-height: 1.5;
+                    ">This page is optimized for desktop viewing. Please access it from a desktop computer for the best experience.</p>
+                </div>
+            `;
+        }
+    }
+
+    // Run check on page load
+    handleMobileAccess();
+
+    // Run check on window resize
+    window.addEventListener('resize', handleMobileAccess);
+</script>
+
+    
+<script>
+    // Display file names when selected
+    function displayFileName(inputId, displayId) {
+        const input = document.getElementById(inputId);
+        const display = document.getElementById(displayId);
+        display.textContent = input.files[0] ? input.files[0].name : '';
+    }
+    
+    // Form submission handler
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading spinner
+        document.getElementById('submitText').textContent = 'Creating...';
+        document.getElementById('loadingSpinner').classList.remove('hidden');
+        document.getElementById('submitBtn').disabled = true;
+        
+        // Create form data
+        const formData = new FormData(this);
+        
+        // Add variation data if any
+        const variationData = collectVariationData();
+        if (Object.keys(variationData).length > 0) {
+            formData.append('variants', JSON.stringify(variationData));
+        }
+        
+        // Submit the form
+        fetch('/product_card/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                const successAlert = document.createElement('div');
+                successAlert.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg';
+                successAlert.textContent = data.message;
+                document.body.appendChild(successAlert);
+                
+                // Remove success message after 3 seconds
+                setTimeout(() => {
+                    successAlert.remove();
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    }
+                }, 3000);
+            } else {
+                throw new Error(data.message);
+            }
+        })
+        .catch(error => {
+            // Show error message
+            document.getElementById('errorMessage').textContent = error.message;
+            document.getElementById('errorAlert').classList.remove('hidden');
+        })
+        .finally(() => {
+            // Reset button state
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitText').textContent = 'Create Product';
+            document.getElementById('loadingSpinner').classList.add('hidden');
+        });
+    });
+    
+    function addVariationValue(button) {
+        const valuesContainer = button.closest('.variation-group').querySelector('.values-container');
+        const newValue = document.createElement('div');
+        newValue.className = 'grid grid-cols-2 gap-4';
+        newValue.innerHTML = `
+            <div class="relative">
+                <input type="text" 
+                       placeholder="Value" 
+                       class="variation-value w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       style="height: 40px;">
+            </div>
+            <div class="relative">
+                <input type="number" 
+                       placeholder="Price" 
+                       class="variation-price w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       style="height: 40px;">
+                <div class="text-xs text-gray-500 mt-1">If different price</div>
+                <button type="button" 
+                        onclick="removeValue(this)" 
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        valuesContainer.appendChild(newValue);
+    }
+    
+    function addNewVariation() {
+        const variations = document.getElementById('variations');
+        const newVariation = document.createElement('div');
+        newVariation.className = 'variation-group relative mt-6';
+        newVariation.innerHTML = `
+            <!-- Variation Name -->
+            <div class="mb-4 relative">
+                <input type="text" 
+                       placeholder="Name" 
+                       class="variation-name w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       style="height: 40px;">
+                <button type="button" 
+                        onclick="removeVariation(this)" 
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Value and Price Row -->
+            <div class="values-container space-y-3">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="relative">
+                        <input type="text" 
+                               placeholder="Value" 
+                               class="variation-value w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                               style="height: 40px;">
+                    </div>
+                    <div class="relative">
+                        <input type="number" 
+                               placeholder="Price" 
+                               class="variation-price w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                               style="height: 40px;">
+                        <div class="text-xs text-gray-500 mt-1">If different price</div>
+                        <button type="button" 
+                                onclick="removeValue(this)" 
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Add Value Button -->
+            <button type="button" 
+                    onclick="addVariationValue(this)" 
+                    class="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
+                    style="height: 40px;">
+                Add More Value
+            </button>
+        `;
+        variations.appendChild(newVariation);
+    }
+    
+    // Collect variation data
+    function collectVariationData() {
+        const variations = {};
+        const variationGroups = document.querySelectorAll('.variation-group');
+        
+        variationGroups.forEach((group, index) => {
+            const name = group.querySelector('.variation-name').value.trim();
+            if (name) {
+                const values = [];
+                const valueRows = group.querySelectorAll('.values-container > div');
+                valueRows.forEach(row => {
+                    const value = row.querySelector('.variation-value').value.trim();
+                    const price = row.querySelector('.variation-price').value.trim();
+                    if (value) {
+                        values.push({
+                            value: value,
+                            price: price || null
+                        });
+                    }
+                });
+                if (values.length > 0) {
+                    variations[name] = {
+                        values: values,
+                        type: 'variation'
+                    };
+                }
+            }
+        });
+        
+        return variations;
+    }
+    
+    // Create success popup
+    function createSuccessPopup(message) {
+        // Remove existing popup if any
+        const existingPopup = document.getElementById('successPopup');
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+        
+        // Create popup container
+        const popup = document.createElement('div');
+        popup.id = 'successPopup';
+        popup.className = 'fixed inset-0 flex items-center justify-center z-50';
+        
+        // Create backdrop
+        const backdrop = document.createElement('div');
+        backdrop.className = 'absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm';
+        popup.appendChild(backdrop);
+        
+        // Create popup content
+        const content = document.createElement('div');
+        content.className = 'bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 relative z-10 transform transition-all duration-300 scale-100 opacity-100';
+        content.style.animation = 'popupFadeIn 0.5s ease-out forwards';
+        
+        content.innerHTML = `
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                    <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
+                <p class="text-lg text-gray-600 mb-6">${message}</p>
+                <button id="closePopupBtn" class="inline-flex justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    Continue
+                </button>
+            </div>
+        `;
+        
+        popup.appendChild(content);
+        
+        // Add styles for animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes popupFadeIn {
+                0% { transform: scale(0.9); opacity: 0; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Add to document
+        document.body.appendChild(popup);
+        
+        // Add event listener to close button
+        document.getElementById('closePopupBtn').addEventListener('click', function() {
+            popup.remove();
+        });
+        
+        // Close on backdrop click
+        backdrop.addEventListener('click', function() {
+            popup.remove();
+        });
+        
+        return popup;
+    }
+
+    // Function to remove a variation group
+    function removeVariation(button) {
+        const variationGroup = button.closest('.variation-group');
+        const allVariationGroups = document.querySelectorAll('.variation-group');
+        if (allVariationGroups.length > 1) {
+            variationGroup.remove();
+        } else {
+            // If it's the last variation group, just clear the inputs
+            const inputs = variationGroup.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+        }
+    }
+
+    // Function to remove a value row
+    function removeValue(button) {
+        const valueRow = button.closest('.grid');
+        const valuesContainer = valueRow.closest('.values-container');
+        const allValueRows = valuesContainer.querySelectorAll('.grid');
+        
+        if (allValueRows.length > 1) {
+            valueRow.remove();
+        } else {
+            // If it's the last value row, just clear the inputs
+            const inputs = valueRow.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+        }
+    }
+</script>
+</body>
+</html>
+
+{% endblock %}

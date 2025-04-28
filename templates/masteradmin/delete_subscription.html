@@ -1,0 +1,80 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <!-- Sales Metrics -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Total Plans</h3>
+                    <p class="text-[#4CAF50] text-lg font-semibold">124</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View All Plans →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Active Plans</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">98</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Active →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Suspended Plans</h3>
+                    <p class="text-[#F44336] text-lg font-semibold">15</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Suspended →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Paused Plans</h3>
+                    <p class="text-[#FF9800] text-lg font-semibold">11</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Paused →</button>
+                </div>
+            </div>
+
+            <!-- Delete Subscription Section -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 mb-4">
+                <h3 class="text-[#ffffff] text-base font-bold mb-3">Delete Subscription</h3>
+                
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {% for subscription in subscriptions %}
+                    <div class="bg-[#252525] rounded-lg p-4 hover:bg-[#2a2a2a] transition-all duration-300">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-white font-semibold">{{ subscription.name }}</h4>
+                            <span class="px-2 py-1 rounded text-xs {% if subscription.status == 'active' %}bg-[#4CAF50]{% elif subscription.status == 'suspended' %}bg-[#F44336]{% else %}bg-[#FF9800]{% endif %} text-white">
+                                {{ subscription.status }}
+                            </span>
+                        </div>
+                        
+                        <div class="text-[#b3b3b3] text-sm mb-3">
+                            <p>Price: ₹{{ subscription.price }}/mo</p>
+                            <p>Users: {{ subscription.users }}</p>
+                            <p>Valid until: {{ subscription.validity_date }}</p>
+                        </div>
+
+                        <button onclick="confirmDelete('{{ subscription.id }}', '{{ subscription.name }}')" 
+                                class="w-full bg-[#F44336] text-white rounded-lg px-4 py-2 hover:bg-[#D32F2F] transition-colors flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                <div class="bg-[#212121] rounded-xl p-6 w-[90%] max-w-md">
+                    <h3 class="text-white text-lg font-bold mb-4">Confirm Deletion</h3>
+                    <p class="text-[#b3b3b3] mb-6">Are you sure you want to delete <span id="subscriptionName" class="text-white"></span>? This action cannot be undone.</p>
+                    
+                    <div class="flex space-x-4">
+                        <button onclick="closeDeleteModal()" class="flex-1 bg-[#424242] text-white rounded-lg px-4 py-2 hover:bg-[#616161] transition-colors">
+                            Cancel
+                        </button>
+                        <button onclick="deleteSubscription()" class="flex-1 bg-[#F44336] text-white rounded-lg px-4 py-2 hover:bg-[#D32F2F] transition-colors">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script src="{% static 'js/subscription.js' %}?v=2"></script>
+{% endblock %}

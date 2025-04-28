@@ -1,0 +1,622 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1Matrix - Master Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/script.js' %}?v=1"></script>
+</head>
+<body class="bg-[#1a1a1a] min-h-screen font-poppins text-sm">
+    {% if request.session.masteradmin_id %}
+    <div class="flex flex-col lg:flex-row">
+        <!-- Left Sidebar - 20% -->
+        <nav id="sidebar" class="w-full lg:w-1/5 bg-[#191919] text-[#ffffff] h-auto lg:fixed lg:h-screen p-4 hidden lg:block overflow-y-auto no-scrollbar">
+            <div class="space-y-20">
+                <div class="flex items-center space-x-3 -mb-8 mt-5">
+                    <div class="w-8 h-8 bg-[#333333] rounded-full flex items-center justify-center overflow-hidden">
+                        <img src="/media/masteradmin_web/1matrix_logo.jpg" 
+                             alt="1Matrix Logo" 
+                             class="w-full h-full object-cover object-center"
+                        >
+                    </div>
+                    <div>
+                        <p class="text-xs text-[#b3b3b3]">Master Admin</p>
+                        <h2 class="text-base font-bold">1Matrix</h2>
+                        <p class="text-xs text-[#b3b3b3]">by Brandise Box LLP</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <a href="/masteradmin/dashboard/" class="flex items-center space-x-2 p-2 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <a href="/masteradmin/subscription/" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9a2 2 0 10-4 0v5a2 2 0 01-2 2h6m-6-4h4m8 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Subscriptions</span>
+                    </a>
+                    <a href="/masteradmin/ai_prompt/" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span>AI Prompt</span>
+                    </a>
+
+                    <a href="/masteradmin/apps/" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                        <span>Apps</span>
+                    </a>
+
+                    <a href="/masteradmin/sales/" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>Sales</span>
+                    </a>
+
+                    <a href="/masteradmin/ticket/" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        <span>Tickets</span>
+                    </a>
+
+                    <a href="/masteradmin/feedbacks/" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                        <span>Feedbacks</span>
+                    </a>
+
+                    <div class="relative">
+                        <button onclick="toggleDropdown('usersSubmenu', 'usersArrow')" class="w-full flex items-center justify-between space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <span>Users</span>
+                            </div>
+                            <svg id="usersArrow" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="usersSubmenu" class="hidden overflow-hidden transition-all duration-300 transform origin-top">
+                            <div class="py-2 pl-6">
+                                <a href="/masteradmin/users/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">All Users</a>
+                                <a href="/masteradmin/user_policy/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">User Policy</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Active Users</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Suspended Users</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <button onclick="toggleDropdown('agentsSubmenu', 'agentsArrow')" class="w-full flex items-center justify-between space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span>Agents</span>
+                            </div>
+                            <svg id="agentsArrow" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="agentsSubmenu" class="hidden overflow-hidden transition-all duration-300 transform origin-top">
+                            <div class="py-2 pl-6">
+                                <a href="/masteradmin/agents/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Agent Dashboard</a>
+                                <a href="/masteradmin/all_agents/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">All Agents</a>
+                                <a href="/masteradmin/agent_performance/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Performance</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <button onclick="toggleDropdown('supportSubmenu', 'supportArrow')" class="w-full flex items-center justify-between space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                </svg>
+                                <span>Customer Support</span>
+                            </div>
+                            <svg id="supportArrow" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="supportSubmenu" class="hidden overflow-hidden transition-all duration-300 transform origin-top">
+                            <div class="py-2 pl-6">
+                                <a href="/masteradmin/mastersupport/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Dashboard Overview</a>
+                                <a href="/masteradmin/support_department/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Departments</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Performance</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <button onclick="toggleDropdown('hireSubmenu', 'hireArrow')" class="w-full flex items-center justify-between space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span>Employee</span>
+                            </div>
+                            <svg id="hireArrow" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="hireSubmenu" class="hidden overflow-hidden transition-all duration-300 transform origin-top">
+                            <div class="py-2 pl-6">
+                                <a href="/masteradmin/employees/" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">All Employees</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-white hover:bg-[#2a2a2a]">Departments</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="relative">
+                        <a href="/masteradmin/departments/" class="w-full flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 18h18M3 6h18" />
+                            </svg>
+                            <span>Policies</span>
+                        </a>
+                    </div>
+
+                    <div class="pt-4 mt-4 border-t border-[#333333]">
+                        <a href="{% url 'settings' %}" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+
+                        <a href="{% url 'masteradmin_logout' %}" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <main class="w-full lg:w-[55%] p-4 lg:ml-[20%]">
+            <div class="flex justify-between items-center mb-4 px-4">
+                <!-- Left icon -->
+                <div class="lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+
+                <!-- Center title -->
+                <div class="flex-1 text-center lg:hidden p-0 m-0">
+                    <img src="/media/masteradmin_web/1matrix_logo-bg.png" 
+                         alt="1Matrix Logo" 
+                         class="h-24 sm:h-24 md:h-24 mx-auto object-contain transition-transform duration-300 filter drop-shadow-lg"
+                         style="background: transparent; transform: scale(2);">
+                </div>
+
+                <!-- Right menu button -->
+                <button class="lg:hidden text-white" onclick="toggleSidebar()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex flex-row items-center justify-between space-x-3 mb-4">
+                <div class="flex-1 max-w-[30%]">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center cursor-pointer" onclick="redirectToWhatsApp()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp text-[#39FF14]" viewBox="0 0 16 16">
+                                <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+                              </svg>
+                        </div>
+                        <input type="text" 
+                               id="whatsappNumber"
+                               placeholder="Enter 10 digit number..." 
+                               class="w-full bg-[#212121] text-white rounded-lg pl-10 pr-4 py-1.5 text-sm border-2 border-[#333333] focus:border-[#2196F3] focus:outline-none transition-colors"
+                               onkeyup="validateNumber(event)"
+                               maxlength="10">
+                    </div>
+                    <script>
+                        function validateNumber(event) {
+                            const input = document.getElementById('whatsappNumber');
+                            const value = input.value;
+                            
+                            // Only allow numbers
+                            input.value = value.replace(/[^0-9]/g, '');
+                            
+                            // Redirect on enter if valid
+                            if (event.key === 'Enter' && value.length === 10) {
+                                redirectToWhatsApp();
+                            }
+                        }
+
+                        function redirectToWhatsApp() {
+                            const number = document.getElementById('whatsappNumber').value;
+                            if (number.length === 10) {
+                                window.open(`https://web.whatsapp.com/send?phone=+91${number}`, '_blank');
+                            } else {
+                                alert('Please enter a valid 10 digit number');
+                            }
+                        }
+                    </script>
+                </div>
+                <div class="flex flex-row space-x-3 max-w-md">
+                    <button onclick = "window.location.href='{% url 'user_details' %}'" class="flex items-center space-x-2 text-[#ffffff] px-3 py-1.5 rounded-lg hover:bg-[#343434] transition-all duration-300 border-2 border-[rgba(16,70,131,1)] min-w-[120px] justify-center group">
+                        <div class="flex items-center space-x-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-3.31 0-10 1.67-10 5v1h20v-1c0-3.33-6.69-5-10-5z" />
+                            </svg>
+                            <span class="text-xs">Users</span>
+                        </div>
+                        <span class="bg-blue-600 text-white px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-blue-700 transition-colors">0</span>
+                    </button>
+                    <button onclick="window.location.href='{% url 'agent_details' %}'" class="flex items-center space-x-2 text-[#ffffff] px-3 py-1.5 rounded-lg hover:bg-[#343434] transition-all duration-300 border-2 border-[rgba(123,79,49,1)] min-w-[120px] justify-center group">
+                        <div class="flex items-center space-x-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span class="text-xs">Teams</span>
+                        </div>
+                        {% if total_agents > 0 %}
+                        <span class="bg-orange-600 text-white px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-orange-700 transition-colors">{{total_agents}}</span>
+                        {% else %}
+                        <span class="bg-orange-600 text-white px-1.5 py-0.5 rounded-full text-[10px] group-hover:bg-orange-700 transition-colors">0</span>
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+    <!-- Right Section - 25% -->
+    <aside class="w-full lg:w-1/4 p-4 flex flex-col lg:fixed right-0 top-0 h-screen bg-[#1a1a1a]" style="margin-top: 14px;">
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-5 gap-2 mb-4 flex-none">
+            <button onclick="toggleNotifications()" class="flex items-center justify-center rounded-lg transition-all duration-300 h-11 w-11 relative">
+                <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center hover:bg-yellow-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </div>
+            </button>
+            <script>
+                function toggleNotifications() {
+                    const popup = document.getElementById('notificationsPopup');
+                    popup.classList.toggle('hidden');
+                }
+
+                function clearAllNotifications() {
+                    const notificationsContainer = document.querySelector('#notificationsPopup .space-y-3');
+                    notificationsContainer.innerHTML = '';
+                }
+
+                function clearNotification(button) {
+                    const notification = button.closest('.flex');
+                    notification.remove();
+                }
+            </script>
+
+            <!-- Notifications Popup -->
+            <div id="notificationsPopup" class="hidden absolute mt-2 w-[91%] bg-[#2A2A2A] rounded-xl shadow-lg z-50" style="top: 60px;">
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-white text-lg font-semibold">Notifications</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="clearAllNotifications()" class="text-xs text-gray-400 hover:text-white transition-colors">
+                                Clear All
+                            </button>
+                            <button onclick="toggleNotifications()" class="text-gray-400 hover:text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-2 max-h-96 overflow-y-auto scrollbar-none">
+                        <!-- Notification items -->
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">New ticket #1234 has been assigned to you</p>
+                                <span class="text-xs text-gray-400">2 mins ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">Customer feedback received for order #5678</p>
+                                <span class="text-xs text-gray-400">15 mins ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">New agent registration request pending approval</p>
+                                <span class="text-xs text-gray-400">45 mins ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">System update scheduled for tomorrow at 2 AM</p>
+                                <span class="text-xs text-gray-400">1 hour ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">Monthly sales report is now available</p>
+                                <span class="text-xs text-gray-400">2 hours ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">New support department created: Technical Support</p>
+                                <span class="text-xs text-gray-400">3 hours ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">High priority ticket #2468 requires immediate attention</p>
+                                <span class="text-xs text-gray-400">4 hours ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">New subscription plan activated for client XYZ Corp</p>
+                                <span class="text-xs text-gray-400">5 hours ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">Server maintenance completed successfully</p>
+                                <span class="text-xs text-gray-400">6 hours ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start p-3 bg-[#191919] rounded-lg">
+                            <div class="flex-1">
+                                <p class="text-[0.7rem] text-white">Weekly performance reports generated for all departments</p>
+                                <span class="text-xs text-gray-400">8 hours ago</span>
+                            </div>
+                            <button onclick="clearNotification(this)" class="text-gray-400 hover:text-white ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="flex items-center justify-center rounded-lg transition-all duration-300 h-11 w-11">
+                <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center hover:bg-blue-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                </div>
+            </button>
+
+            <button class="flex items-center justify-center rounded-lg transition-all duration-300 h-11 w-11">
+                <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center hover:bg-green-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </div>
+            </button>
+
+            <button class="flex items-center justify-center rounded-lg transition-all duration-300 h-11 w-11">
+                <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center hover:bg-red-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+            </button>
+
+            <button class="flex items-center justify-center rounded-lg transition-all duration-300 h-11 w-11">
+                <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center hover:bg-yellow-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                </div>
+            </button>
+        </div>
+
+        <!-- Main Content Area - Flex Container -->
+        <div class="flex-1 flex flex-col gap-4 min-h-0">
+            <!-- Sales Visualization Chart -->
+            <div class="flex-1 bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 min-h-[200px]">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-[#ffffff] text-sm font-bold">Sales Overview</h3>
+                    <select class="bg-[#2a2a2a] text-white text-xs rounded-lg px-2 py-1 border border-[#404040]">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 90 days</option>
+                    </select>
+                </div>
+                <div class="h-[calc(100%-2rem)]">
+                    <canvas id="salesChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Performers Section -->
+            <div class="flex-1 bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 min-h-[200px]">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-[#ffffff] text-sm font-bold">Top Performers</h3>
+                    <button class="text-[#2196F3] text-xs hover:underline">View All</button>
+                </div>
+                <div class="space-y-2 h-[calc(100%-2rem)] overflow-y-auto">
+                    <div class="flex items-center justify-between bg-[#2a2a2a] p-2 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-[#333333] rounded-full flex-shrink-0"></div>
+                            <div>
+                                <p class="text-white text-xs">John Doe</p>
+                                <p class="text-[#b3b3b3] text-xs">Sales: $50,000</p>
+                            </div>
+                        </div>
+                        <span class="text-green-500 text-xs">+15%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- What's on my mind Section -->
+            <div class="flex-1 bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 min-h-[200px]">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-[#ffffff] text-sm font-bold">What's on my mind</h3>
+                    <button class="text-[#2196F3] text-xs hover:underline">Broadcast</button>
+                </div>
+                <textarea 
+                    class="w-full h-[calc(100%-2rem)] bg-[#2a2a2a] text-white rounded-lg p-3 border border-[#404040] focus:border-[#2196F3] focus:outline-none transition-colors resize-none text-sm"
+                    placeholder="Share something with your team..."></textarea>
+            </div>
+        </div>
+    </aside>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Initialize Sales Chart
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    borderColor: '#2196F3',
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#333333'
+                        },
+                        ticks: {
+                            color: '#b3b3b3'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#333333'
+                        },
+                        ticks: {
+                            color: '#b3b3b3'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% if messages %}
+    {% for message in messages %}
+        <div class="message hidden" data-type="{% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+{% else %}
+<div class="min-h-screen flex items-center justify-center bg-[#1a1a1a] px-4">
+<div class="max-w-md w-full space-y-8 bg-[#191919] p-8 rounded-lg shadow-lg animate__animated animate__fadeIn">
+    <!-- Logo/Header -->
+    <div class="text-center">
+        <img src="/media/masteradmin_web/1matrix_logo.jpg" alt="1Matrix Logo" class="h-20 w-20 mx-auto rounded-full">
+        <h2 class="mt-6 text-3xl font-bold text-white">Welcome to 1Matrix</h2>
+        <p class="mt-2 text-sm text-gray-400">Please sign in to continue</p>
+    </div>
+
+    <!-- Login Button -->
+    <div class="mt-8">
+        <a href="{% url 'masteradmin_login' %}" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300">
+            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+            </span>
+            Sign in
+        </a>
+    </div>
+</div>
+</div>
+{% endif %}
+</body>
+</html>
+
+
+

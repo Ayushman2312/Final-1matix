@@ -1,0 +1,217 @@
+{% extends 'website/template1/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name|default:"Shop" }} - {{ website.content.site_name|default:"Prestige" }}{% endblock %}
+
+{% block page_content %}
+<!-- Category Header -->
+<div class="relative h-[400px] bg-gray-100 pt-24">
+    {% if category.image %}
+        <img src="{{ category.image.url }}" alt="{{ category.name }}" class="absolute inset-0 w-full h-full object-cover">
+    {% else %}
+        <img src="#" alt="{{ category.name|default:'Shop' }}" class="absolute inset-0 w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1556905055-8f358a7a47b2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80'">
+    {% endif %}
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    <div class="relative h-full flex items-center justify-center text-center text-white px-4">
+        <div class="max-w-3xl">
+            <h1 class="text-4xl font-light mb-4">{{ category.name|default:"All Products" }}</h1>
+            {% if category.description %}
+                <p class="text-lg">{{ category.description }}</p>
+            {% else %}
+                <p class="text-lg">Discover our curated collection of premium products</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Sorting -->
+<div class="bg-white border-b">
+    <div class="container mx-auto px-6 py-4">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <!-- Category Filter -->
+            <div class="mb-4 md:mb-0">
+                <select class="border rounded-md px-4 py-2 bg-white">
+                    <option value="">All Categories</option>
+                    <option value="dresses">Dresses</option>
+                    <option value="tops">Tops</option>
+                    <option value="bottoms">Bottoms</option>
+                    <option value="accessories">Accessories</option>
+                </select>
+            </div>
+            
+            <!-- Sort Options -->
+            <div class="flex items-center">
+                <span class="text-sm text-gray-600 mr-2">Sort by:</span>
+                <select class="border rounded-md px-4 py-2 bg-white">
+                    <option value="newest">Newest</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="popular">Most Popular</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subcategories -->
+{% if category.subcategories.all %}
+    <section class="py-12">
+        <div class="container mx-auto px-6">
+            <h2 class="text-2xl font-light text-center mb-8">Subcategories</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {% for subcategory in category.subcategories.all %}
+                    <a href="{% url 'category_detail' subcategory.slug %}" class="group">
+                        <div class="relative overflow-hidden rounded-lg">
+                            {% if subcategory.image %}
+                                <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}" class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110">
+                            {% else %}
+                                <div class="w-full h-64 bg-gray-200 flex items-center justify-center">
+                                    <span class="text-gray-400">No image</span>
+                                </div>
+                            {% endif %}
+                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                <h3 class="text-white text-xl font-light">{{ subcategory.name }}</h3>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+<!-- Products Grid -->
+<section class="py-12 bg-gray-50">
+    <div class="container mx-auto px-6">
+        <!-- Products Count -->
+        <div class="mb-8 text-center">
+            <p class="text-gray-600">Showing 12 products</p>
+        </div>
+        
+        <!-- Products -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {% for product in products %}
+                <a href="{% url 'product_detail' product.slug %}" class="group">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        {% if product.images.first %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-64 object-cover">
+                        {% else %}
+                            <div class="w-full h-64 bg-gray-200 flex items-center justify-center">
+                                <span class="text-gray-400">No image</span>
+                            </div>
+                        {% endif %}
+                        <div class="p-4">
+                            <h3 class="text-lg font-light mb-2">{{ product.name }}</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-medium">${{ product.price }}</span>
+                                {% if product.compare_at_price %}
+                                    <span class="text-sm text-gray-500 line-through">${{ product.compare_at_price }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            {% empty %}
+                <!-- Default products for display -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <img src="#" alt="Product" class="w-full h-64 object-cover" onerror="this.src='https://via.placeholder.com/300x400'">
+                        <span class="absolute top-2 right-2 bg-red-500 text-white text-xs py-1 px-2 rounded">Sale</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-light mb-2">Classic Black Dress</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium">$89.99</span>
+                            <span class="text-sm text-gray-500 line-through">$120.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img src="#" alt="Product" class="w-full h-64 object-cover" onerror="this.src='https://via.placeholder.com/300x400'">
+                    <div class="p-4">
+                        <h3 class="text-lg font-light mb-2">Elegant White Blouse</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium">$49.99</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <img src="#" alt="Product" class="w-full h-64 object-cover" onerror="this.src='https://via.placeholder.com/300x400'">
+                        <span class="absolute top-2 right-2 bg-green-500 text-white text-xs py-1 px-2 rounded">New</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-light mb-2">Summer Floral Dress</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium">$75.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img src="#" alt="Product" class="w-full h-64 object-cover" onerror="this.src='https://via.placeholder.com/300x400'">
+                    <div class="p-4">
+                        <h3 class="text-lg font-light mb-2">Casual Denim Jacket</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium">$99.99</span>
+                            <span class="text-sm text-gray-500 line-through">$129.99</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <img src="#" alt="Product" class="w-full h-64 object-cover" onerror="this.src='https://via.placeholder.com/300x400'">
+                    <div class="p-4">
+                        <h3 class="text-lg font-light mb-2">Silk Evening Gown</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium">$199.99</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <img src="#" alt="Product" class="w-full h-64 object-cover" onerror="this.src='https://via.placeholder.com/300x400'">
+                        <span class="absolute top-2 right-2 bg-red-500 text-white text-xs py-1 px-2 rounded">Sale</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-lg font-light mb-2">Designer Handbag</h3>
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium">$149.99</span>
+                            <span class="text-sm text-gray-500 line-through">$189.99</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        <div class="mt-12 flex justify-center">
+            <nav class="inline-flex">
+                <a href="#" class="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Previous</a>
+                <a href="#" class="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 border-l-0">1</a>
+                <a href="#" class="px-4 py-2 border border-gray-300 bg-gray-800 text-white border-l-0">2</a>
+                <a href="#" class="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 border-l-0">3</a>
+                <a href="#" class="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 border-l-0">Next</a>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-16 bg-gray-100">
+    <div class="container mx-auto px-6">
+        <div class="max-w-xl mx-auto text-center">
+            <h2 class="text-3xl font-light mb-4">Subscribe to Our Newsletter</h2>
+            <p class="text-gray-600 mb-8">Stay updated with our newest arrivals and special offers</p>
+            
+            <form class="flex flex-col sm:flex-row gap-4">
+                <input type="email" placeholder="Your email address" class="flex-grow px-4 py-3 rounded-md border focus:outline-none focus:ring-2 focus:ring-gray-300">
+                <button type="submit" class="bg-gray-900 text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors">Subscribe</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %} 

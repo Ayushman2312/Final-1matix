@@ -1,0 +1,489 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}SEO Management{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">SEO Settings for {{ website.template.name }}</h1>
+        <a href="{% url 'edit_website' website.id %}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+            <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Website Editor
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Sidebar Navigation -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden sticky top-8">
+                <div class="px-4 py-5 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">SEO Settings</h3>
+                </div>
+                <nav class="p-4">
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="#basic-settings" class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 bg-gray-100">
+                                Basic SEO Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#structured-data" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                                Structured Data
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#social-meta" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                                Social Media & Open Graph
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#seo-preview" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                                SEO Preview
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="lg:col-span-3">
+            <form id="seo-form">
+                {% csrf_token %}
+                <input type="hidden" name="website_id" value="{{ website.id }}">
+                
+                <!-- Basic SEO Settings -->
+                <div id="basic-settings" class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800">Basic SEO Settings</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-6">
+                            <div>
+                                <label for="meta_title" class="block text-sm font-medium text-gray-700">
+                                    Meta Title <span class="text-red-500">*</span>
+                                </label>
+                                <div class="mt-1">
+                                    <input type="text" name="meta_title" id="meta_title" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ seo_data.meta_title }}" required>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Recommended length: 50-60 characters. Currently: <span id="meta-title-count">0</span> characters</p>
+                            </div>
+                            
+                            <div>
+                                <label for="meta_description" class="block text-sm font-medium text-gray-700">
+                                    Meta Description <span class="text-red-500">*</span>
+                                </label>
+                                <div class="mt-1">
+                                    <textarea name="meta_description" id="meta_description" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" required>{{ seo_data.meta_description }}</textarea>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Recommended length: 150-160 characters. Currently: <span id="meta-desc-count">0</span> characters</p>
+                            </div>
+                            
+                            <div>
+                                <label for="meta_keywords" class="block text-sm font-medium text-gray-700">
+                                    Meta Keywords
+                                </label>
+                                <div class="mt-1">
+                                    <input type="text" name="meta_keywords" id="meta_keywords" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ seo_data.meta_keywords }}">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Separate keywords with commas. Example: online store, products, services</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Structured Data -->
+                <div id="structured-data" class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800">Structured Data (Schema.org)</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        Structured data helps search engines understand your website content and can enhance your search listings with rich results.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label for="organization_name" class="block text-sm font-medium text-gray-700">
+                                    Organization Name
+                                </label>
+                                <div class="mt-1">
+                                    <input type="text" name="organization_name" id="organization_name" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ organization.name }}">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="organization_description" class="block text-sm font-medium text-gray-700">
+                                    Organization Description
+                                </label>
+                                <div class="mt-1">
+                                    <textarea name="organization_description" id="organization_description" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">{{ organization.description }}</textarea>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="organization_logo" class="block text-sm font-medium text-gray-700">
+                                    Organization Logo URL
+                                </label>
+                                <div class="mt-1">
+                                    <input type="url" name="organization_logo" id="organization_logo" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ organization.logo }}">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Preferred size: at least 112x112px, JPG, PNG, or GIF format</p>
+                            </div>
+                            
+                            <div>
+                                <label for="organization_url" class="block text-sm font-medium text-gray-700">
+                                    Organization URL
+                                </label>
+                                <div class="mt-1">
+                                    <input type="url" name="organization_url" id="organization_url" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ organization.url|default:public_url }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Social Media & Open Graph -->
+                <div id="social-meta" class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800">Social Media & Open Graph</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        Open Graph metadata controls how your website appears when shared on social media platforms.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label for="og_title" class="block text-sm font-medium text-gray-700">
+                                    OG Title
+                                </label>
+                                <div class="mt-1">
+                                    <input type="text" name="og_title" id="og_title" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ seo_data.og_title }}">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">If left blank, Meta Title will be used</p>
+                            </div>
+                            
+                            <div>
+                                <label for="og_description" class="block text-sm font-medium text-gray-700">
+                                    OG Description
+                                </label>
+                                <div class="mt-1">
+                                    <textarea name="og_description" id="og_description" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">{{ seo_data.og_description }}</textarea>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">If left blank, Meta Description will be used</p>
+                            </div>
+                            
+                            <div>
+                                <label for="og_image" class="block text-sm font-medium text-gray-700">
+                                    OG Image URL
+                                </label>
+                                <div class="mt-1">
+                                    <input type="url" name="og_image" id="og_image" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ seo_data.og_image }}">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Recommended size: 1200x630 pixels for best display on Facebook</p>
+                            </div>
+                            
+                            <div class="border-t border-gray-200 pt-6">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Social Media Links</h3>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="facebook_url" class="block text-sm font-medium text-gray-700">
+                                            Facebook URL
+                                        </label>
+                                        <div class="mt-1">
+                                            <input type="url" name="facebook_url" id="facebook_url" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ social_links.facebook }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="twitter_url" class="block text-sm font-medium text-gray-700">
+                                            Twitter URL
+                                        </label>
+                                        <div class="mt-1">
+                                            <input type="url" name="twitter_url" id="twitter_url" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ social_links.twitter }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="instagram_url" class="block text-sm font-medium text-gray-700">
+                                            Instagram URL
+                                        </label>
+                                        <div class="mt-1">
+                                            <input type="url" name="instagram_url" id="instagram_url" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ social_links.instagram }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="linkedin_url" class="block text-sm font-medium text-gray-700">
+                                            LinkedIn URL
+                                        </label>
+                                        <div class="mt-1">
+                                            <input type="url" name="linkedin_url" id="linkedin_url" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ social_links.linkedin }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="youtube_url" class="block text-sm font-medium text-gray-700">
+                                            YouTube URL
+                                        </label>
+                                        <div class="mt-1">
+                                            <input type="url" name="youtube_url" id="youtube_url" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md" value="{{ social_links.youtube }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SEO Preview -->
+                <div id="seo-preview" class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold text-gray-800">SEO Preview</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gray-50 p-6 rounded-lg">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Google Search Result Preview</h3>
+                            
+                            <div class="border border-gray-300 rounded-lg p-4 bg-white">
+                                <div class="text-xl text-blue-600 mb-1 font-medium" id="preview-title">{{ seo_data.meta_title }}</div>
+                                <div class="text-green-700 text-sm mb-1" id="preview-url">{{ public_url }}</div>
+                                <div class="text-gray-600 text-sm" id="preview-description">{{ seo_data.meta_description }}</div>
+                            </div>
+                            
+                            <p class="text-sm text-gray-500 mt-3">This is an approximation of how your page might appear in Google search results.</p>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Facebook Share Preview</h3>
+                            
+                            <div class="border border-gray-300 rounded-lg overflow-hidden bg-white">
+                                <div class="h-48 bg-gray-200" id="og-image-preview">
+                                    {% if seo_data.og_image %}
+                                        <img src="{{ seo_data.og_image }}" alt="OG Image Preview" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <span class="text-gray-400">No image provided</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-4">
+                                    <div class="text-sm text-gray-500 mb-1">{{ public_url }}</div>
+                                    <div class="text-lg font-medium text-gray-900 mb-1" id="og-title-preview">
+                                        {{ seo_data.og_title|default:seo_data.meta_title }}
+                                    </div>
+                                    <div class="text-gray-600 text-sm" id="og-description-preview">
+                                        {{ seo_data.og_description|default:seo_data.meta_description }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="submit" id="save-seo-button" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Save SEO Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Character count indicators
+        const metaTitle = document.getElementById('meta_title');
+        const metaDesc = document.getElementById('meta_description');
+        const metaTitleCount = document.getElementById('meta-title-count');
+        const metaDescCount = document.getElementById('meta-desc-count');
+        
+        function updateCharCount() {
+            metaTitleCount.textContent = metaTitle.value.length;
+            metaDescCount.textContent = metaDesc.value.length;
+            
+            // Update color based on recommended length
+            if (metaTitle.value.length > 60) {
+                metaTitleCount.classList.add('text-red-500');
+            } else {
+                metaTitleCount.classList.remove('text-red-500');
+            }
+            
+            if (metaDesc.value.length > 160) {
+                metaDescCount.classList.add('text-red-500');
+            } else {
+                metaDescCount.classList.remove('text-red-500');
+            }
+        }
+        
+        metaTitle.addEventListener('input', updateCharCount);
+        metaDesc.addEventListener('input', updateCharCount);
+        
+        // Initialize counts
+        updateCharCount();
+        
+        // Live preview updates
+        function updatePreview() {
+            // Google preview
+            document.getElementById('preview-title').textContent = metaTitle.value || 'Your Page Title';
+            document.getElementById('preview-description').textContent = metaDesc.value || 'Your page description will appear here.';
+            
+            // OG preview
+            const ogTitle = document.getElementById('og_title').value || metaTitle.value || 'Your Page Title';
+            const ogDesc = document.getElementById('og_description').value || metaDesc.value || 'Your page description will appear here.';
+            
+            document.getElementById('og-title-preview').textContent = ogTitle;
+            document.getElementById('og-description-preview').textContent = ogDesc;
+            
+            // OG image preview
+            const ogImage = document.getElementById('og_image').value;
+            const ogImagePreview = document.getElementById('og-image-preview');
+            
+            if (ogImage) {
+                ogImagePreview.innerHTML = `<img src="${ogImage}" alt="OG Image Preview" class="w-full h-full object-cover">`;
+            } else {
+                ogImagePreview.innerHTML = `<div class="w-full h-full flex items-center justify-center"><span class="text-gray-400">No image provided</span></div>`;
+            }
+        }
+        
+        // Add event listeners for all form fields to update preview
+        const formInputs = document.querySelectorAll('#seo-form input, #seo-form textarea');
+        formInputs.forEach(input => {
+            input.addEventListener('input', updatePreview);
+        });
+        
+        // Initialize preview
+        updatePreview();
+        
+        // Smooth scrolling for navigation
+        const navLinks = document.querySelectorAll('nav a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                window.scrollTo({
+                    top: targetElement.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+                
+                // Update active state
+                navLinks.forEach(navLink => {
+                    navLink.classList.remove('bg-gray-100', 'text-gray-900');
+                    navLink.classList.add('text-gray-600', 'hover:bg-gray-50', 'hover:text-gray-900');
+                });
+                
+                this.classList.remove('text-gray-600', 'hover:bg-gray-50', 'hover:text-gray-900');
+                this.classList.add('bg-gray-100', 'text-gray-900');
+            });
+        });
+        
+        // Form submission
+        const seoForm = document.getElementById('seo-form');
+        const saveButton = document.getElementById('save-seo-button');
+        
+        seoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            saveButton.disabled = true;
+            saveButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+            `;
+            
+            // Collect form data
+            const formData = new FormData(seoForm);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Send AJAX request
+            fetch('{% url "seo_management" website.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Show success message
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed bottom-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg';
+                    notification.innerHTML = `
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium">${data.message}</p>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    // Remove notification after 3 seconds
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 3000);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving your SEO settings. Please try again.');
+            })
+            .finally(() => {
+                saveButton.disabled = false;
+                saveButton.innerHTML = `
+                    <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save SEO Settings
+                `;
+            });
+        });
+    });
+</script>
+{% endblock %} 

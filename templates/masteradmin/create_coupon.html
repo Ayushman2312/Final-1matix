@@ -1,0 +1,319 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <!-- Sales Metrics -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Active Coupons</h3>
+                    <p class="text-[#4CAF50] text-lg font-semibold">127</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Total Redemptions</h3>
+                    <p class="text-[#2196F3] text-lg font-semibold">1,849</p>
+                    <button class="mt-2 text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">View Details →</button>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Expiring Soon</h3>
+                    <p class="text-[#FF9800] text-lg font-semibold">23</p>
+                    <p class="text-[#b3b3b3] text-xs mt-1">Next 7 days</p>
+                </div>
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 flex-1">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-1">Total Savings</h3>
+                    <p class="text-[#F44336] text-lg font-semibold">₹89,459</p>
+                    <p class="text-[#b3b3b3] text-xs mt-1">All time</p>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex sm:grid sm:grid-cols-4 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
+                <!-- Create Coupon Button -->
+                <button onclick="document.getElementById('createCouponModal').classList.remove('hidden'); document.getElementById('createCouponModal').classList.add('flex');" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#4CAF50]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Create Coupon</span>
+                </button>
+
+                <!-- Create Coupon Modal -->
+                <div id="createCouponModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                    <div class="bg-[#1a1a1a] rounded-xl p-6 w-full max-w-md">
+                        <h2 class="text-white text-lg font-bold mb-4">Create New Coupon</h2>
+                        <form class="space-y-4" action="{% url 'create_coupon' %}" method="post">
+                            {% csrf_token %}
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-1">Coupon Code</label>
+                                <input type="text" name="code" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-1">Discount Type</label>
+                                <select name="discount_type" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                                    <option value="percentage">Percentage</option>
+                                    <option value="fixed">Fixed Amount</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-1">Discount Value</label>
+                                <input type="number" name="value" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-1">Usage Limit</label>
+                                <input type="number" name="max_uses" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-gray-300 text-sm mb-1">Valid Until (Optional)</label>
+                                <input type="date" name="expiry_date" class="w-full bg-[#2a2a2a] text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#4CAF50]">
+                            </div>
+
+                            <div class="flex justify-end space-x-3 mt-4">
+                                <button type="button" onclick="document.getElementById('createCouponModal').classList.add('hidden'); document.getElementById('createCouponModal').classList.remove('flex');" class="px-4 py-2 bg-[#424242] text-white rounded-lg hover:bg-[#4f4f4f] transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-4 py-2 bg-[#4CAF50] text-white rounded-lg hover:bg-[#45a049] transition-colors">
+                                    Create Coupon
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <button onclick="bulkGenerateCoupons()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#2196F3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7zm8 4h4m-4 4h4m-4-8h4" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Bulk Generate</span>
+                </button>
+
+                <button onclick="viewCouponAnalytics()" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#FF9800]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Analytics</span>
+                </button>
+
+                <button onclick="window.location.href='{% url 'export_data' %}'" class="flex-none w-32 sm:w-auto bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
+                    <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#E91E63]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <span class="text-[rgb(237,226,226,1)] text-xs">Export Data</span>
+                </button>
+            </div>
+            
+            <!-- Recent Orders -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 h-72 overflow-hidden">  <!-- Increased height from h-64 to h-72 -->
+                <h3 class="text-[#ffffff] text-base font-bold mb-3">Recent Coupons</h3>
+                <div class="space-y-2 overflow-y-auto no-scrollbar h-full">
+                    {% for coupon in coupons %}
+                    <div class="flex justify-between items-center p-2 bg-[#252525] rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-[#333333] rounded-full flex items-center justify-center">
+                                {% if coupon.discount_type == 'Percent' %}
+                                <span class="text-[#4CAF50] text-sm">%</span>
+                                {% else %}
+                                <span class="text-[#4CAF50] text-sm">₹</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="text-white text-sm">{{ coupon.code }}</p>
+                                <p class="text-[#b3b3b3] text-xs">{{ coupon.discount_type }} - {{ coupon.rate }}{% if coupon.discount_type == 'Percent' %}%{% endif %}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <p class="text-[#4CAF50] text-sm">{{ coupon.number_of_uses }} uses</p>
+                                {% if coupon.expiry_date %}
+                                <p class="text-[#b3b3b3] text-xs">Expires: {{ coupon.expiry_date|date:"M d, Y" }}</p>
+                                {% endif %}
+                            </div>
+                            <button onclick="deleteCoupon('{{ coupon.id }}')" class="text-red-500 hover:text-red-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-[#b3b3b3] py-4">
+                        <p>No coupons created yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Section - 25% -->
+        <aside class="w-full lg:w-1/4 p-4 space-y-4">
+            <!-- Notifications Carousel -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-[#ffffff] text-sm font-bold">Recent Updates</h3>
+                    <button id="clearNotifications" class="text-[#b3b3b3] text-xs hover:text-white transition-colors duration-300">Clear All</button>
+                </div>
+                <div id="notificationsContainer" class="space-y-2 min-h-[120px] overflow-y-auto custom-scrollbar">
+                    <div class="p-3 bg-[#252525] rounded-lg">
+                        <p class="text-white text-sm">New feature released</p>
+                        <p class="text-[#b3b3b3] text-xs">10 minutes ago</p>
+                    </div>
+                    <div class="p-3 bg-[#252525] rounded-lg">
+                        <p class="text-white text-sm">System maintenance scheduled</p>
+                        <p class="text-[#b3b3b3] text-xs">1 hour ago</p>
+                    </div>
+                    <div class="p-3 bg-[#252525] rounded-lg">
+                        <p class="text-white text-sm">Security update available</p>
+                        <p class="text-[#b3b3b3] text-xs">2 hours ago</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Performers -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                {% comment %} <h3 class="text-[#ffffff] text-base font-bold mb-3">Top Performers</h3> {% endcomment %}
+                
+                <!-- Tabs -->
+                <div class="flex mb-4">
+                    <button onclick="showPerformers('sales')" id="salesTab" class="flex-1 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300 mr-2">Top by Sales</button>
+                    <button onclick="showPerformers('meetings')" id="meetingsTab" class="flex-1 text-white text-xs py-2 px-4 rounded-lg bg-[#2a2a2a] hover:bg-[#343434] active:bg-[#2196F3] transition-all duration-300">Top by Meetings</button>
+                    <button onclick="openViewAllPopup()" class="ml-2 text-white text-xs py-2 px-4 rounded-lg bg-[#2196F3] hover:bg-[#1976D2] transition-all duration-300">View All</button>
+                </div>
+
+                <!-- Sales Performers -->
+                <div id="salesPerformers" class="grid grid-cols-3 gap-3">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 1st</p>
+                        <button onclick="viewProfile('sales1')" class="text-[#2196F3] text-xs">View Profile</button>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 2nd</p>
+                        <button onclick="viewProfile('sales2')" class="text-[#2196F3] text-xs">View Profile</button>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Sales 3rd</p>
+                        <button onclick="viewProfile('sales3')" class="text-[#2196F3] text-xs">View Profile</button>
+                    </div>
+                </div>
+
+                <!-- Meetings Performers -->
+                <div id="meetingsPerformers" class="grid grid-cols-3 gap-3 hidden">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Meetings 1st</p>
+                        <button onclick="viewProfile('meetings1')" class="text-[#2196F3] text-xs">View Profile</button>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Meetings 2nd</p>
+                        <button onclick="viewProfile('meetings2')" class="text-[#2196F3] text-xs">View Profile</button>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-[#333333] rounded-full mx-auto mb-1"></div>
+                        <p class="text-white text-xs">Meetings 3rd</p>
+                        <button onclick="viewProfile('meetings3')" class="text-[#2196F3] text-xs">View Profile</button>
+                    </div>
+                </div>
+
+                <!-- Popup for View All -->
+                <div id="viewAllPopup" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 hidden backdrop-blur-sm">
+                    <div class="bg-[#212121] rounded-2xl p-8 w-4/5 max-w-6xl transform scale-0 transition-all duration-300 ease-in-out shadow-2xl border border-gray-700 scrollbar-hide" id="popupContentContainer">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-white text-2xl font-bold">Top Performers</h3>
+                            <button onclick="closeViewAllPopup()" class="text-gray-400 hover:text-white transition-colors z-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="popupContent" class="overflow-y-auto max-h-[70vh] scrollbar-hide">
+                            <div class="flex items-center justify-between bg-[#333333] p-4 rounded-lg mb-2">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-[#444444] rounded-full"></div>
+                                    <div>
+                                        <h4 class="text-white font-semibold">Person Name</h4>
+                                        <p class="text-gray-400 text-sm">Sales: $50,000 | Meetings: 25</p>
+                                    </div>
+                                </div>
+                                <button class="text-[#2196F3] hover:underline">View Profile</button>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end relative">
+                            <button onclick="closeViewAllPopup()" class="bg-[#2196F3] text-white py-2 px-6 rounded-lg hover:bg-[#1976D2] transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-[#2196F3]/20 z-50">
+                                <span>Close</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <!-- Broadcast Message -->
+            <!-- Fixed floating button for mobile -->
+            <button onclick="toggleBroadcastPanel()" class="lg:hidden fixed bottom-4 right-4 w-12 h-12 bg-[#2196F3] rounded-full flex items-center justify-center shadow-lg hover:bg-[#1976D2] transition-all duration-300 z-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+            </button>
+
+            <!-- Broadcast panel -->
+            <div id="broadcastPanel" class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 lg:block hidden">
+                <h3 class="text-[#ffffff] text-sm font-bold mb-3">What's on your mind?</h3>
+                <form class="space-y-3">
+                    <select class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="all">All Departments</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <input type="text" placeholder="Title" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    <textarea placeholder="Your message" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <button type="submit" class="w-full bg-[#2196F3] text-white py-1 rounded-lg hover:bg-[#1976D2] transition-all duration-300 text-sm">Send Message</button>
+                </form>
+            </div>
+
+            <!-- Mobile broadcast panel -->
+            <div id="mobileBroadcastPanel" class="lg:hidden fixed bottom-20 right-4 w-80 bg-[#212121]/80 backdrop-blur-lg rounded-xl p-4 shadow-xl transition-all duration-300 hidden">
+                <h3 class="text-[#ffffff] text-sm font-bold mb-3 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                    </svg>
+                    What's on your mind?
+                </h3>
+                <form class="space-y-3">
+                    <select class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="all">All Departments</option>
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="hr">Human Resources</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                    <input type="text" placeholder="Title" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 text-sm">
+                    <textarea placeholder="Your message" class="w-full bg-[#252525] text-white rounded-lg px-3 py-1 h-20 text-sm"></textarea>
+                    <button type="submit" class="w-full bg-[#2196F3] text-white py-1 rounded-lg hover:bg-[#1976D2] transition-all duration-300 text-sm">Send Message</button>
+                </form>
+            </div>
+        </aside>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+    <script src="{% static 'js/coupon.js' %}?v=1"></script>
+{% endblock %}

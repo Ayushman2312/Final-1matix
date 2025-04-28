@@ -1,0 +1,86 @@
+{% load static %}
+
+<footer class="bg-gray-800 text-white pt-12 pb-8">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="col-span-1 md:col-span-2">
+                <div class="mb-4">
+                    {% if website.content.logo_light %}
+                    <img src="{{ website.content.logo_light }}" alt="{{ website.content.site_name|default:'Website' }}" class="h-8 mb-4">
+                    {% else %}
+                    <h3 class="text-xl font-bold mb-4">{{ website.content.site_name|default:'My Website' }}</h3>
+                    {% endif %}
+                    
+                    <p class="text-gray-300 mb-4">{{ website.content.footer_description|default:'A dynamic website built with our multi-page templating system.' }}</p>
+                </div>
+                
+                {% if website.content.social_links %}
+                <div class="flex space-x-4 mt-4">
+                    {% for social in website.content.social_links %}
+                    <a href="{{ social.url }}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white">
+                        <span class="sr-only">{{ social.platform }}</span>
+                        <i class="fab fa-{{ social.platform|lower }} text-xl"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-semibold mb-4">Pages</h3>
+                <ul class="space-y-2">
+                    {% for nav_page in website.get_pages %}
+                    <li>
+                        <a href="/{{ nav_page.slug }}" class="text-gray-300 hover:text-white">{{ nav_page.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                {% if website.content.contact_info %}
+                <address class="not-italic text-gray-300">
+                    {% if website.content.contact_info.address %}
+                    <p class="mb-2">{{ website.content.contact_info.address|linebreaksbr }}</p>
+                    {% endif %}
+                    
+                    {% if website.content.contact_info.email %}
+                    <p class="mb-2">
+                        <i class="far fa-envelope mr-2"></i>
+                        <a href="mailto:{{ website.content.contact_info.email }}" class="hover:text-white">
+                            {{ website.content.contact_info.email }}
+                        </a>
+                    </p>
+                    {% endif %}
+                    
+                    {% if website.content.contact_info.phone %}
+                    <p class="mb-2">
+                        <i class="fas fa-phone mr-2"></i>
+                        <a href="tel:{{ website.content.contact_info.phone }}" class="hover:text-white">
+                            {{ website.content.contact_info.phone }}
+                        </a>
+                    </p>
+                    {% endif %}
+                </address>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between">
+            <p class="text-gray-400">
+                &copy; {% now "Y" %} {{ website.content.site_name|default:'My Website' }}. All rights reserved.
+            </p>
+            
+            {% if website.content.legal_links %}
+            <div class="flex space-x-4 mt-4 md:mt-0">
+                {% for link in website.content.legal_links %}
+                <a href="{{ link.url }}" class="text-gray-400 hover:text-white text-sm">
+                    {{ link.label }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</footer> 

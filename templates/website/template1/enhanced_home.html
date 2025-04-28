@@ -1,0 +1,1379 @@
+{% extends "website/template1/enhanced_base.html" %}
+{% load static %}
+
+{% block title %}{{ website.content.site_name|default:"Home" }}{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<!-- Schema.org structured data for WebPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ website.content.site_name|default:'Home' }}",
+  "description": "{{ website.content.meta_description|default:'Quality products with exceptional service' }}"
+}
+</script>
+{% endblock %}
+
+{% block page_content %}
+<!-- Admin banner (only visible to logged-in users, not on public view) -->
+{% if not is_public_view %}
+<div class="fixed top-0 left-0 right-0 bg-blue-600 text-white py-4 z-50">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between">
+        <div>
+            <h3 class="font-bold text-lg">Enhanced SEO Homepage Preview</h3>
+            <p class="text-sm">This template includes SEO best practices, structured data, and improved accessibility.</p>
+        </div>
+        <div class="mt-3 md:mt-0 flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0">
+            <a href="#" onclick="document.getElementById('apply-template-form').submit(); return false;" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded inline-flex items-center text-center">
+                <i class="fas fa-check mr-2"></i> Apply This Template
+            </a>
+            <a href="{% url 'edit_website' website.id %}" class="bg-white text-blue-600 font-medium py-2 px-4 rounded inline-flex items-center text-center">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Editor
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for applying the template -->
+<form id="apply-template-form" action="{% url 'apply_enhanced_template' website.id %}" method="POST" class="hidden">
+    {% csrf_token %}
+</form>
+
+<!-- Add spacing to account for the fixed banner -->
+<div class="pt-32"></div>
+{% endif %}
+
+<!-- Hero Section (Image Slider with CTA) -->
+<section class="hero-section pt-32 relative overflow-hidden">
+    <div class="slider-container relative w-full">
+        {% if website.content.hero_banners %}
+            {% for banner in website.content.hero_banners %}
+            <div class="slider-slide absolute w-full h-full opacity-0 transition-all duration-1000 ease-in-out">
+                <div class="relative h-full">
+                    <!-- Background Image with SEO-optimized alt text -->
+                    <div class="absolute inset-0 z-0">
+                        <img src="{{ banner.image|default:'https://via.placeholder.com/1920x1080' }}" 
+                             alt="{{ banner.alt_text|default:banner.title|default:'Featured product banner' }}"
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+                    </div>
+                    
+                    <!-- Content with semantic HTML structure -->
+                    <div class="container mx-auto px-4 py-16 text-center relative z-10">
+                        {% if forloop.first %}
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 transform translate-y-10 opacity-0 transition-all duration-1000 delay-200">
+                            {{ banner.title|default:"Welcome to Our Store" }}
+                        </h1>
+                        {% else %}
+                        <h2 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 transform translate-y-10 opacity-0 transition-all duration-1000 delay-200">
+                            {{ banner.title|default:"Quality Products" }}
+                        </h2>
+                        {% endif %}
+                        <p class="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto transform translate-y-10 opacity-0 transition-all duration-1000 delay-400">
+                            {{ banner.description|default:"Discover our exceptional collection" }}
+                        </p>
+                        <div class="transform translate-y-10 opacity-0 transition-all duration-1000 delay-600">
+                            <a href="{{ banner.button_url|default:'/shop' }}" 
+                               class="btn-primary text-lg">
+                                {{ banner.button_text|default:"Shop Now" }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Default banners only as fallback -->
+        {% endif %}
+
+        <!-- Navigation Arrows -->
+        <button class="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 text-white hover:text-gray-300 transition-colors" 
+                onclick="moveSlide(-1)" 
+                aria-label="Previous slide">
+            <i class="fas fa-chevron-left text-3xl"></i>
+        </button>
+        <button class="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 text-white hover:text-gray-300 transition-colors" 
+                onclick="moveSlide(1)" 
+                aria-label="Next slide">
+            <i class="fas fa-chevron-right text-3xl"></i>
+        </button>
+
+        <!-- Dots Navigation -->
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
+            {% for banner in website.content.hero_banners|default:default_banners %}
+            <button class="slider-dot w-3 h-3 rounded-full bg-white bg-opacity-50 hover:bg-opacity-100 transition-all"
+                    onclick="goToSlide({{ forloop.counter0 }})"
+                    aria-label="Go to slide {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slider-slide');
+const dots = document.querySelectorAll('.slider-dot');
+
+function showSlide(n) {
+    slides.forEach(slide => {
+        slide.style.opacity = '0';
+        slide.style.zIndex = '0';
+        // Reset content animations
+        slide.querySelectorAll('.transform').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(10px)';
+        });
+    });
+    dots.forEach(dot => dot.classList.remove('bg-opacity-100'));
+
+    currentSlide = (n + slides.length) % slides.length;
+    
+    slides[currentSlide].style.opacity = '1';
+    slides[currentSlide].style.zIndex = '1';
+    dots[currentSlide].classList.add('bg-opacity-100');
+    
+    // Trigger content animations
+    slides[currentSlide].querySelectorAll('.transform').forEach(el => {
+        setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, 200);
+    });
+}
+
+function moveSlide(n) {
+    showSlide(currentSlide + n);
+}
+
+function goToSlide(n) {
+    showSlide(n);
+}
+
+// Auto advance slides
+setInterval(() => moveSlide(1), 5000);
+
+// Initialize first slide
+showSlide(0);
+</script>
+
+<!-- Top Seller Products Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h2 class="section-heading">
+                {{ page.content.top_seller_title|default:website.content.top_seller_title|default:"Top Selling Products" }}
+            </h2>
+            <p class="section-subheading">
+                {{ page.content.top_seller_subtitle|default:website.content.top_seller_subtitle|default:"Our customers' favorite selections" }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {% if website.content.top_seller_products %}
+                {% for product in website.content.top_seller_products %}
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <a href="{{ product.url|default:'/product/'|add:product.id|default:'#' }}">
+                            <img src="{{ product.image|default:'/media/masteradmin_web/default_product.jpg' }}" 
+                                 alt="{{ product.alt_text|default:product.title|default:'Product image' }}" 
+                                 class="w-full h-64 object-cover rounded" 
+                                 onerror="this.src='https://via.placeholder.com/300x400'">
+                        </a>
+                        {% if product.on_sale %}
+                        <span class="absolute top-2 right-2 bg-red-500 text-white text-xs py-1 px-2 rounded">Sale</span>
+                        {% endif %}
+                        {% if product.is_new %}
+                        <span class="absolute top-2 right-2 bg-green-500 text-white text-xs py-1 px-2 rounded">New</span>
+                        {% endif %}
+                    </div>
+                    <h2 class="text-lg font-medium mt-4">
+                        <a href="{{ product.url|default:'/product/'|add:product.id|default:'#' }}">
+                            {{ product.title|default:"Product Title" }}
+                        </a>
+                    </h2>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">${{ product.price|default:"99.99" }}</span>
+                        {% if product.original_price %}
+                        <span class="text-gray-500 line-through">${{ product.original_price }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Structured Data for Product -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "{{ product.title|default:'Product Title' }}",
+                    "image": "{{ product.image|default:'/media/masteradmin_web/default_product.jpg' }}",
+                    "description": "{{ product.description|default:'Quality product from our store' }}",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "{{ product.price|default:'99.99' }}",
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    }
+                }
+                </script>
+                {% endfor %}
+            {% else %}
+                <!-- Default products if no features provided -->
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <a href="/product/1">
+                            <img src="/media/masteradmin_web/default_product.jpg" 
+                                 alt="Premium Black Dress" 
+                                 class="w-full h-64 object-cover rounded" 
+                                 onerror="this.src='https://via.placeholder.com/300x400'">
+                        </a>
+                        <span class="absolute top-2 right-2 bg-red-500 text-white text-xs py-1 px-2 rounded">Sale</span>
+                    </div>
+                    <h2 class="text-lg font-medium mt-4">
+                        <a href="/product/1">Premium Black Dress</a>
+                    </h2>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">$89.99</span>
+                        <span class="text-gray-500 line-through">$120.00</span>
+                    </div>
+                </div>
+                <!-- Structured Data for Product 1 -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "Premium Black Dress",
+                    "image": "/media/masteradmin_web/default_product.jpg",
+                    "description": "Elegant black dress perfect for any occasion",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "89.99",
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    }
+                }
+                </script>
+                
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <a href="/product/2">
+                            <img src="/media/masteradmin_web/default_product.jpg" 
+                                 alt="Elegant White Blouse" 
+                                 class="w-full h-64 object-cover rounded" 
+                                 onerror="this.src='https://via.placeholder.com/300x400'">
+                        </a>
+                    </div>
+                    <h2 class="text-lg font-medium mt-4">
+                        <a href="/product/2">Elegant White Blouse</a>
+                    </h2>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">$49.99</span>
+                    </div>
+                </div>
+                <!-- Structured Data for Product 2 -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "Elegant White Blouse",
+                    "image": "/media/masteradmin_web/default_product.jpg",
+                    "description": "Classic white blouse for a timeless look",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "49.99",
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    }
+                }
+                </script>
+                
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <a href="/product/3">
+                            <img src="/media/masteradmin_web/default_product.jpg" 
+                                 alt="Summer Floral Dress" 
+                                 class="w-full h-64 object-cover rounded" 
+                                 onerror="this.src='https://via.placeholder.com/300x400'">
+                        </a>
+                        <span class="absolute top-2 right-2 bg-green-500 text-white text-xs py-1 px-2 rounded">New</span>
+                    </div>
+                    <h2 class="text-lg font-medium mt-4">
+                        <a href="/product/3">Summer Floral Dress</a>
+                    </h2>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">$75.00</span>
+                    </div>
+                </div>
+                <!-- Structured Data for Product 3 -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "Summer Floral Dress",
+                    "image": "/media/masteradmin_web/default_product.jpg",
+                    "description": "Vibrant floral dress, perfect for summer",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "75.00",
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    }
+                }
+                </script>
+                
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <a href="/product/4">
+                            <img src="/media/masteradmin_web/default_product.jpg" 
+                                 alt="Casual Denim Jacket" 
+                                 class="w-full h-64 object-cover rounded" 
+                                 onerror="this.src='https://via.placeholder.com/300x400'">
+                        </a>
+                    </div>
+                    <h2 class="text-lg font-medium mt-4">
+                        <a href="/product/4">Casual Denim Jacket</a>
+                    </h2>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">$99.99</span>
+                        <span class="text-gray-500 line-through">$129.99</span>
+                    </div>
+                </div>
+                <!-- Structured Data for Product 4 -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "Casual Denim Jacket",
+                    "image": "/media/masteradmin_web/default_product.jpg",
+                    "description": "Stylish denim jacket for everyday wear",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "99.99",
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    }
+                }
+                </script>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-12">
+            <a href="/shop" class="btn-secondary">View All Products</a>
+        </div>
+    </div>
+</section>
+
+<!-- Recently Added Products Section -->
+<section class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h2 class="section-heading">
+                {{ page.content.new_products_title|default:website.content.new_products_title|default:"Recently Added" }}
+            </h2>
+            <p class="section-subheading">
+                {{ page.content.new_products_subtitle|default:website.content.new_products_subtitle|default:"Check out our newest arrivals" }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {% if website.content.new_products %}
+                {% for product in website.content.new_products %}
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <a href="{{ product.url|default:'/product/'|add:product.id|default:'#' }}">
+                            <img src="{{ product.image|default:'/media/masteradmin_web/default_product.jpg' }}" 
+                                 alt="{{ product.alt_text|default:product.title|default:'Product image' }}" 
+                                 class="w-full h-64 object-cover rounded" 
+                                 onerror="this.src='https://via.placeholder.com/300x400'">
+                        </a>
+                        <span class="absolute top-2 right-2 bg-green-500 text-white text-xs py-1 px-2 rounded">New</span>
+                    </div>
+                    <h2 class="text-lg font-medium mt-4">
+                        <a href="{{ product.url|default:'/product/'|add:product.id|default:'#' }}">
+                            {{ product.title|default:"New Product" }}
+                        </a>
+                    </h2>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">${{ product.price|default:"79.99" }}</span>
+                        {% if product.original_price %}
+                        <span class="text-gray-500 line-through">${{ product.original_price }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Structured Data for New Product -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "{{ product.title|default:'New Product' }}",
+                    "image": "{{ product.image|default:'/media/masteradmin_web/default_product.jpg' }}",
+                    "description": "{{ product.description|default:'New product in our collection' }}",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "{{ product.price|default:'79.99' }}",
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    }
+                }
+                </script>
+                {% endfor %}
+            {% else %}
+                <!-- Default new products -->
+                {% for i in "1234"|make_list %}
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        <a href="/product/new{{ forloop.counter }}">
+                            <img src="/media/masteradmin_web/default_product.jpg" 
+                                 alt="New Product {{ forloop.counter }}" 
+                                 class="w-full h-64 object-cover rounded" 
+                                 onerror="this.src='https://via.placeholder.com/300x400'">
+                        </a>
+                        <span class="absolute top-2 right-2 bg-green-500 text-white text-xs py-1 px-2 rounded">New</span>
+                    </div>
+                    <h2 class="text-lg font-medium mt-4">
+                        <a href="/product/new{{ forloop.counter }}">New Arrival {{ forloop.counter }}</a>
+                    </h2>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">${{ forloop.counter|add:"69.99" }}</span>
+                    </div>
+                </div>
+                <!-- Structured Data for New Product -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "name": "New Arrival {{ forloop.counter }}",
+                    "image": "/media/masteradmin_web/default_product.jpg",
+                    "description": "Brand new product in our collection",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "{{ forloop.counter|add:'69.99' }}",
+                        "priceCurrency": "USD",
+                        "availability": "https://schema.org/InStock"
+                    }
+                }
+                </script>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-12">
+            <a href="/new-arrivals" class="btn-secondary">View All New Arrivals</a>
+        </div>
+    </div>
+</section>
+
+<!-- Structured Data for ItemList (Product List) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% if website.content.top_seller_products %}
+      {% for product in website.content.top_seller_products %}
+        {
+          "@type": "ListItem",
+          "position": {{ forloop.counter }},
+          "url": "{{ request.scheme }}://{{ request.get_host }}{{ product.url|default:'/product/'|add:product.id|default:'#' }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/product/1"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/product/2"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/product/3"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/product/4"
+      }
+    {% endif %}
+  ]
+}
+</script>
+
+<!-- Category Section (4 Blocks with Button) -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h2 class="section-heading">
+                {{ page.content.categories_title|default:website.content.categories_title|default:"Shop by Category" }}
+            </h2>
+            <p class="section-subheading">
+                {{ page.content.categories_subtitle|default:website.content.categories_subtitle|default:"Browse our collections" }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {% if website.content.categories %}
+                {% for category in website.content.categories %}
+                <div class="category-card bg-white overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <a href="{{ category.url|default:'/category/'|add:category.slug|default:'#' }}" class="block">
+                        <div class="relative h-64">
+                            <img src="{{ category.image|default:'/media/masteradmin_web/default_category.jpg' }}" 
+                                 alt="{{ category.alt_text|default:category.title|default:'Category image' }}" 
+                                 class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                                 onerror="this.src='https://via.placeholder.com/400x300'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+                            <h2 class="absolute bottom-4 left-4 text-xl font-semibold text-white">
+                                {{ category.title|default:"Category Name" }}
+                            </h2>
+                        </div>
+                    </a>
+                    <div class="p-4 text-center">
+                        <a href="{{ category.url|default:'/category/'|add:category.slug|default:'#' }}" 
+                           class="inline-block btn-primary">
+                            {{ category.button_text|default:"Explore Now" }}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Default categories -->
+                <div class="category-card bg-white overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <a href="/category/women" class="block">
+                        <div class="relative h-64">
+                            <img src="/media/masteradmin_web/default_category.jpg" 
+                                 alt="Women's Fashion" 
+                                 class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                                 onerror="this.src='https://via.placeholder.com/400x300'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+                            <h2 class="absolute bottom-4 left-4 text-xl font-semibold text-white">
+                                Women's Fashion
+                            </h2>
+                        </div>
+                    </a>
+                    <div class="p-4 text-center">
+                        <a href="/category/women" class="inline-block btn-primary">
+                            Explore Now
+                        </a>
+                    </div>
+                </div>
+
+                <div class="category-card bg-white overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <a href="/category/men" class="block">
+                        <div class="relative h-64">
+                            <img src="/media/masteradmin_web/default_category.jpg" 
+                                 alt="Men's Collection" 
+                                 class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                                 onerror="this.src='https://via.placeholder.com/400x300'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+                            <h2 class="absolute bottom-4 left-4 text-xl font-semibold text-white">
+                                Men's Collection
+                            </h2>
+                        </div>
+                    </a>
+                    <div class="p-4 text-center">
+                        <a href="/category/men" class="inline-block btn-primary">
+                            Explore Now
+                        </a>
+                    </div>
+                </div>
+
+                <div class="category-card bg-white overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <a href="/category/accessories" class="block">
+                        <div class="relative h-64">
+                            <img src="/media/masteradmin_web/default_category.jpg" 
+                                 alt="Accessories Collection" 
+                                 class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                                 onerror="this.src='https://via.placeholder.com/400x300'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+                            <h2 class="absolute bottom-4 left-4 text-xl font-semibold text-white">
+                                Accessories
+                            </h2>
+                        </div>
+                    </a>
+                    <div class="p-4 text-center">
+                        <a href="/category/accessories" class="inline-block btn-primary">
+                            Explore Now
+                        </a>
+                    </div>
+                </div>
+
+                <div class="category-card bg-white overflow-hidden rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <a href="/category/footwear" class="block">
+                        <div class="relative h-64">
+                            <img src="/media/masteradmin_web/default_category.jpg" 
+                                 alt="Footwear Collection" 
+                                 class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" 
+                                 onerror="this.src='https://via.placeholder.com/400x300'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+                            <h2 class="absolute bottom-4 left-4 text-xl font-semibold text-white">
+                                Footwear
+                            </h2>
+                        </div>
+                    </a>
+                    <div class="p-4 text-center">
+                        <a href="/category/footwear" class="inline-block btn-primary">
+                            Explore Now
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Structured Data for ItemList (Category List) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "itemListElement": [
+    {% if website.content.categories %}
+      {% for category in website.content.categories %}
+        {
+          "@type": "ListItem",
+          "position": {{ forloop.counter }},
+          "url": "{{ request.scheme }}://{{ request.get_host }}{{ category.url|default:'/category/'|add:category.slug|default:'#' }}",
+          "name": "{{ category.title|default:'Category' }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/category/women",
+        "name": "Women's Fashion"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/category/men",
+        "name": "Men's Collection"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/category/accessories",
+        "name": "Accessories"
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "url": "{{ request.scheme }}://{{ request.get_host }}/category/footwear",
+        "name": "Footwear"
+      }
+    {% endif %}
+  ]
+}
+</script>
+
+<!-- Image with Text Section (About Product or Brand) -->
+<section class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2">
+                <img src="{{ page.content.about_image|default:website.content.about_image|default:'/media/masteradmin_web/default_about.jpg' }}" 
+                     alt="{{ page.content.about_image_alt|default:website.content.about_image_alt|default:'About our brand and products' }}" 
+                     class="rounded-lg shadow-lg w-full h-auto">
+            </div>
+            <div class="md:w-1/2">
+                <h3 class="section-heading">
+                    {{ page.content.about_title|default:website.content.about_title|default:"About Our Brand" }}
+                </h3>
+                <div class="prose prose-lg text-gray-600 max-w-none">
+                    <p>{{ page.content.about_content|default:website.content.about_content|default:"At our store, we believe in offering the finest quality products with exceptional service. Our carefully curated collection combines timeless elegance with contemporary style. Founded with a passion for excellence, we continue to grow and evolve, always putting our customers first." }}</p>
+                </div>
+                
+                <div class="mt-8">
+                    <a href="/about-us" class="btn-primary">
+                        Learn More About Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Organization Schema for About Section -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "{{ website.content.site_name|default:'Our Store' }}",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "logo": "{{ website.content.logo|default:'' }}",
+  "description": "{{ page.content.about_content|default:website.content.about_content|default:'Quality products with exceptional service' }}"
+}
+</script>
+
+<!-- Video Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h3 class="section-heading">
+                {{ page.content.video_title|default:website.content.video_title|default:"Watch Our Story" }}
+            </h3>
+            <p class="section-subheading">
+                {{ page.content.video_description|default:website.content.video_description|default:"Discover what makes our products special" }}
+            </p>
+        </div>
+        
+        <div class="max-w-4xl mx-auto">
+            <div class="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden shadow-lg relative">
+                <div class="video-thumbnail relative cursor-pointer" id="video-thumbnail">
+                    <img src="{{ page.content.video_thumbnail|default:website.content.video_thumbnail|default:'/media/masteradmin_web/default_video_thumbnail.jpg' }}" 
+                         alt="{{ page.content.video_thumbnail_alt|default:website.content.video_thumbnail_alt|default:'Video thumbnail' }}" 
+                         class="w-full h-auto">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-20 h-20 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
+                            <div class="w-0 h-0 border-t-8 border-b-8 border-l-16 border-t-transparent border-b-transparent border-l-primary ml-1"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="iframe-container hidden" id="video-player">
+                    <!-- Video will be loaded here when play button is clicked -->
+                </div>
+            </div>
+            <div class="mt-6 text-gray-600 text-center max-w-2xl mx-auto">
+                <p>{{ page.content.video_extended_description|default:website.content.video_extended_description|default:"Our brand video showcases our commitment to quality, sustainability, and customer satisfaction." }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- VideoObject Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "{{ page.content.video_title|default:website.content.video_title|default:'Our Brand Story' }}",
+  "description": "{{ page.content.video_description|default:website.content.video_description|default:'Discover what makes our products special' }}",
+  "thumbnailUrl": "{{ page.content.video_thumbnail|default:website.content.video_thumbnail|default:'/media/masteradmin_web/default_video_thumbnail.jpg' }}",
+  "uploadDate": "2023-01-01T08:00:00+08:00",
+  "contentUrl": "{{ page.content.video_url|default:website.content.video_url|default:'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }}"
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const videoThumbnail = document.getElementById('video-thumbnail');
+    const videoPlayer = document.getElementById('video-player');
+    
+    if (videoThumbnail && videoPlayer) {
+        videoThumbnail.addEventListener('click', function() {
+            // Get video URL from data or use a default
+            const videoUrl = "{{ page.content.video_url|default:website.content.video_url|default:'https://www.youtube.com/embed/dQw4w9WgXcQ' }}";
+            
+            // Create iframe element with lazy loading
+            const iframe = document.createElement('iframe');
+            iframe.setAttribute('src', videoUrl);
+            iframe.setAttribute('frameborder', '0');
+            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+            iframe.setAttribute('allowfullscreen', '');
+            iframe.setAttribute('loading', 'lazy');
+            iframe.classList.add('absolute', 'w-full', 'h-full', 'top-0', 'left-0');
+            
+            // Hide thumbnail and show player
+            videoThumbnail.classList.add('hidden');
+            videoPlayer.classList.remove('hidden');
+            videoPlayer.appendChild(iframe);
+        });
+    }
+});
+</script>
+
+<!-- Testimonials Section -->
+<section class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h2 class="section-heading">
+                {{ page.content.testimonials_title|default:website.content.testimonials_title|default:"Customer Testimonials" }}
+            </h2>
+            <p class="section-subheading">
+                {{ page.content.testimonials_subtitle|default:website.content.testimonials_subtitle|default:"What our customers say about us" }}
+            </p>
+        </div>
+        
+        <div class="testimonial-slider relative max-w-5xl mx-auto">
+            <div class="testimonial-container overflow-hidden">
+                <div class="testimonial-track flex transition-transform duration-300" id="testimonial-track">
+                    {% if website.content.testimonials %}
+                        {% for testimonial in website.content.testimonials %}
+                        <div class="testimonial-slide min-w-full">
+                            <div class="bg-white p-8 rounded-lg shadow text-center">
+                                <div class="text-yellow-400 flex justify-center mb-4">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= testimonial.rating|default:5 %}
+                                        <i class="fas fa-star"></i>
+                                        {% else %}
+                                        <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p class="text-gray-600 italic mb-6">"{{ testimonial.content|default:"This is the best shopping experience I've ever had. The quality of products and the excellent customer service exceeded my expectations." }}"</p>
+                                <div class="flex items-center justify-center">
+                                    {% if testimonial.avatar %}
+                                    <img src="{{ testimonial.avatar }}" alt="{{ testimonial.name|default:'Customer' }}" class="w-12 h-12 rounded-full mr-4">
+                                    {% else %}
+                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                        <span class="text-gray-500 text-xl">{{ testimonial.name|default:'C'|first }}</span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="text-left">
+                                        <p class="font-semibold">{{ testimonial.name|default:"Customer Name" }}</p>
+                                        <p class="text-sm text-gray-500">{{ testimonial.title|default:"Verified Buyer" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Default testimonials -->
+                        <div class="testimonial-slide min-w-full">
+                            <div class="bg-white p-8 rounded-lg shadow text-center">
+                                <div class="text-yellow-400 flex justify-center mb-4">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <p class="text-gray-600 italic mb-6">"This is the best shopping experience I've ever had. The quality of products and the excellent customer service exceeded my expectations."</p>
+                                <div class="flex items-center justify-center">
+                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                        <span class="text-gray-500 text-xl">S</span>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-semibold">Sarah Johnson</p>
+                                        <p class="text-sm text-gray-500">Verified Buyer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="testimonial-slide min-w-full">
+                            <div class="bg-white p-8 rounded-lg shadow text-center">
+                                <div class="text-yellow-400 flex justify-center mb-4">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                                <p class="text-gray-600 italic mb-6">"I've ordered multiple items and have always been impressed with the quality. Fast shipping and great packaging too!"</p>
+                                <div class="flex items-center justify-center">
+                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                        <span class="text-gray-500 text-xl">M</span>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-semibold">Michael Chen</p>
+                                        <p class="text-sm text-gray-500">Repeat Customer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="testimonial-slide min-w-full">
+                            <div class="bg-white p-8 rounded-lg shadow text-center">
+                                <div class="text-yellow-400 flex justify-center mb-4">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <p class="text-gray-600 italic mb-6">"The products are not only beautiful but also durable. Customer service was responsive when I had questions. Highly recommend!"</p>
+                                <div class="flex items-center justify-center">
+                                    <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                        <span class="text-gray-500 text-xl">E</span>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-semibold">Emily Rodriguez</p>
+                                        <p class="text-sm text-gray-500">Verified Buyer</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Testimonial Navigation -->
+            <button class="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 lg:-translate-x-12 z-10 bg-white rounded-full p-2 shadow hover:shadow-md focus:outline-none" 
+                    id="prev-testimonial" 
+                    aria-label="Previous testimonial">
+                <i class="fas fa-chevron-left text-gray-600"></i>
+            </button>
+            <button class="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 lg:translate-x-12 z-10 bg-white rounded-full p-2 shadow hover:shadow-md focus:outline-none" 
+                    id="next-testimonial" 
+                    aria-label="Next testimonial">
+                <i class="fas fa-chevron-right text-gray-600"></i>
+            </button>
+            
+            <!-- Testimonial Dots -->
+            <div class="flex justify-center mt-6 space-x-2">
+                {% if website.content.testimonials %}
+                    {% for testimonial in website.content.testimonials %}
+                    <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-500 transition-colors {% if forloop.first %}bg-gray-500{% endif %}" 
+                            data-index="{{ forloop.counter0 }}" 
+                            aria-label="Testimonial {{ forloop.counter }}"></button>
+                    {% endfor %}
+                {% else %}
+                    <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-500 hover:bg-gray-500 transition-colors" 
+                            data-index="0" 
+                            aria-label="Testimonial 1"></button>
+                    <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-500 transition-colors" 
+                            data-index="1" 
+                            aria-label="Testimonial 2"></button>
+                    <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-500 transition-colors" 
+                            data-index="2" 
+                            aria-label="Testimonial 3"></button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Blog Section (3 Blog Snippets) -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h2 class="section-heading">
+                {{ page.content.blog_title|default:website.content.blog_title|default:"Latest from Our Blog" }}
+            </h2>
+            <p class="section-subheading">
+                {{ page.content.blog_subtitle|default:website.content.blog_subtitle|default:"News, tips and insights from our experts" }}
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% if website.content.blog_posts %}
+                {% for post in website.content.blog_posts %}
+                <div class="blog-card bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                    <a href="{{ post.url|default:'/blog/'|add:post.slug|default:'#' }}" class="block">
+                        <img src="{{ post.image|default:'/media/masteradmin_web/default_blog.jpg' }}" 
+                             alt="{{ post.alt_text|default:post.title|default:'Blog post image' }}" 
+                             class="w-full h-48 object-cover">
+                    </a>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">{{ post.date|default:"January 1, 2023" }}</div>
+                        <h2 class="text-xl font-semibold mb-3">
+                            <a href="{{ post.url|default:'/blog/'|add:post.slug|default:'#' }}" class="text-gray-800 hover:text-gray-600 transition-colors">
+                                {{ post.title|default:"Blog Post Title" }}
+                            </a>
+                        </h2>
+                        <p class="text-gray-600 mb-4">{{ post.excerpt|default:"This is a short excerpt from this blog post that gives readers a quick overview of its content. Click to read more." }}</p>
+                        <a href="{{ post.url|default:'/blog/'|add:post.slug|default:'#' }}" class="text-primary font-medium hover:underline">Read More</a>
+                    </div>
+                </div>
+                <!-- Article Schema for Blog Post -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "BlogPosting",
+                    "headline": "{{ post.title|default:'Blog Post Title' }}",
+                    "image": "{{ post.image|default:'/media/masteradmin_web/default_blog.jpg' }}",
+                    "datePublished": "{{ post.date_iso|default:'2023-01-01T08:00:00+08:00' }}",
+                    "description": "{{ post.excerpt|default:'Blog post excerpt' }}",
+                    "url": "{{ request.scheme }}://{{ request.get_host }}{{ post.url|default:'/blog/'|add:post.slug|default:'#' }}",
+                    "author": {
+                        "@type": "Person",
+                        "name": "{{ post.author|default:'Website Author' }}"
+                    }
+                }
+                </script>
+                {% endfor %}
+            {% else %}
+                <!-- Default blog posts -->
+                <div class="blog-card bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                    <a href="/blog/summer-fashion-trends" class="block">
+                        <img src="/media/masteradmin_web/default_blog.jpg" 
+                             alt="Summer Fashion Trends" 
+                             class="w-full h-48 object-cover">
+                    </a>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">June 15, 2023</div>
+                        <h2 class="text-xl font-semibold mb-3">
+                            <a href="/blog/summer-fashion-trends" class="text-gray-800 hover:text-gray-600 transition-colors">
+                                Summer Fashion Trends to Watch
+                            </a>
+                        </h2>
+                        <p class="text-gray-600 mb-4">Discover the hottest fashion trends for this summer season. From vibrant colors to sustainable fabrics, we've got you covered.</p>
+                        <a href="/blog/summer-fashion-trends" class="text-primary font-medium hover:underline">Read More</a>
+                    </div>
+                </div>
+                <!-- Article Schema for Blog Post 1 -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "BlogPosting",
+                    "headline": "Summer Fashion Trends to Watch",
+                    "image": "/media/masteradmin_web/default_blog.jpg",
+                    "datePublished": "2023-06-15T08:00:00+08:00",
+                    "description": "Discover the hottest fashion trends for this summer season. From vibrant colors to sustainable fabrics, we've got you covered.",
+                    "url": "{{ request.scheme }}://{{ request.get_host }}/blog/summer-fashion-trends",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Fashion Editor"
+                    }
+                }
+                </script>
+                
+                <div class="blog-card bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                    <a href="/blog/sustainable-fashion" class="block">
+                        <img src="/media/masteradmin_web/default_blog.jpg" 
+                             alt="Sustainable Fashion Guide" 
+                             class="w-full h-48 object-cover">
+                    </a>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">May 22, 2023</div>
+                        <h2 class="text-xl font-semibold mb-3">
+                            <a href="/blog/sustainable-fashion" class="text-gray-800 hover:text-gray-600 transition-colors">
+                                Guide to Sustainable Fashion
+                            </a>
+                        </h2>
+                        <p class="text-gray-600 mb-4">Learn how to build an eco-friendly wardrobe without compromising on style. Our comprehensive guide to sustainable fashion choices.</p>
+                        <a href="/blog/sustainable-fashion" class="text-primary font-medium hover:underline">Read More</a>
+                    </div>
+                </div>
+                <!-- Article Schema for Blog Post 2 -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "BlogPosting",
+                    "headline": "Guide to Sustainable Fashion",
+                    "image": "/media/masteradmin_web/default_blog.jpg",
+                    "datePublished": "2023-05-22T08:00:00+08:00",
+                    "description": "Learn how to build an eco-friendly wardrobe without compromising on style. Our comprehensive guide to sustainable fashion choices.",
+                    "url": "{{ request.scheme }}://{{ request.get_host }}/blog/sustainable-fashion",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Sustainability Expert"
+                    }
+                }
+                </script>
+                
+                <div class="blog-card bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                    <a href="/blog/accessorizing-tips" class="block">
+                        <img src="/media/masteradmin_web/default_blog.jpg" 
+                             alt="Accessorizing Tips" 
+                             class="w-full h-48 object-cover">
+                    </a>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 mb-2">April 10, 2023</div>
+                        <h2 class="text-xl font-semibold mb-3">
+                            <a href="/blog/accessorizing-tips" class="text-gray-800 hover:text-gray-600 transition-colors">
+                                5 Essential Accessorizing Tips
+                            </a>
+                        </h2>
+                        <p class="text-gray-600 mb-4">Elevate your style with these essential tips for choosing and wearing accessories. Learn how to make any outfit stand out.</p>
+                        <a href="/blog/accessorizing-tips" class="text-primary font-medium hover:underline">Read More</a>
+                    </div>
+                </div>
+                <!-- Article Schema for Blog Post 3 -->
+                <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "BlogPosting",
+                    "headline": "5 Essential Accessorizing Tips",
+                    "image": "/media/masteradmin_web/default_blog.jpg",
+                    "datePublished": "2023-04-10T08:00:00+08:00",
+                    "description": "Elevate your style with these essential tips for choosing and wearing accessories. Learn how to make any outfit stand out.",
+                    "url": "{{ request.scheme }}://{{ request.get_host }}/blog/accessorizing-tips",
+                    "author": {
+                        "@type": "Person",
+                        "name": "Style Consultant"
+                    }
+                }
+                </script>
+            {% endif %}
+        </div>
+        
+        <div class="text-center mt-12">
+            <a href="/blog" class="btn-secondary">View All Posts</a>
+        </div>
+    </div>
+</section>
+
+<script>
+// Testimonial slider functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const track = document.getElementById('testimonial-track');
+    const slides = document.querySelectorAll('.testimonial-slide');
+    const dots = document.querySelectorAll('.testimonial-dot');
+    const prevButton = document.getElementById('prev-testimonial');
+    const nextButton = document.getElementById('next-testimonial');
+    
+    if (!track || !slides.length || !dots.length || !prevButton || !nextButton) return;
+    
+    let currentSlide = 0;
+    const slideCount = slides.length;
+    
+    function updateSlidePosition() {
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        dots.forEach((dot, index) => {
+            dot.classList.toggle('bg-gray-500', index === currentSlide);
+            dot.classList.toggle('bg-gray-300', index !== currentSlide);
+        });
+    }
+    
+    function moveToSlide(index) {
+        currentSlide = (index + slideCount) % slideCount;
+        updateSlidePosition();
+    }
+    
+    prevButton.addEventListener('click', () => moveToSlide(currentSlide - 1));
+    nextButton.addEventListener('click', () => moveToSlide(currentSlide + 1));
+    
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => moveToSlide(index));
+    });
+    
+    // Auto slide every 5 seconds
+    let autoSlideInterval = setInterval(() => moveToSlide(currentSlide + 1), 5000);
+    
+    // Reset interval on manual navigation
+    const resetInterval = () => {
+        clearInterval(autoSlideInterval);
+        autoSlideInterval = setInterval(() => moveToSlide(currentSlide + 1), 5000);
+    };
+    
+    prevButton.addEventListener('click', resetInterval);
+    nextButton.addEventListener('click', resetInterval);
+    dots.forEach(dot => dot.addEventListener('click', resetInterval));
+    
+    // Initialize
+    updateSlidePosition();
+});
+</script>
+
+<!-- FAQ Section -->
+<section class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h2 class="section-heading">
+                {{ page.content.faq_title|default:website.content.faq_title|default:"Frequently Asked Questions" }}
+            </h2>
+            <p class="section-subheading">
+                {{ page.content.faq_subtitle|default:website.content.faq_subtitle|default:"Find answers to common questions about our products and services" }}
+            </p>
+        </div>
+        
+        <div class="max-w-3xl mx-auto divide-y divide-gray-200">
+            {% if website.content.faqs %}
+                {% for faq in website.content.faqs %}
+                <div class="faq-item py-4">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-medium text-gray-800 focus:outline-none">
+                        <span>{{ faq.question|default:"FAQ Question" }}</span>
+                        <svg class="faq-icon w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-2 text-gray-600 hidden">
+                        <p>{{ faq.answer|default:"FAQ Answer" }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Default FAQs -->
+                <div class="faq-item py-4">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-medium text-gray-800 focus:outline-none">
+                        <span>What is your shipping policy?</span>
+                        <svg class="faq-icon w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-2 text-gray-600 hidden">
+                        <p>We offer free standard shipping on all orders over $50. Standard shipping typically takes 3-5 business days. Express shipping options are available at checkout for an additional fee.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item py-4">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-medium text-gray-800 focus:outline-none">
+                        <span>How do I return an item?</span>
+                        <svg class="faq-icon w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-2 text-gray-600 hidden">
+                        <p>You can return most items within 30 days of delivery for a full refund. Visit our Returns Center to initiate the return process. Please ensure items are in their original condition with tags attached.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item py-4">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-medium text-gray-800 focus:outline-none">
+                        <span>Are your products sustainable?</span>
+                        <svg class="faq-icon w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-2 text-gray-600 hidden">
+                        <p>We are committed to sustainability and ethical practices. Many of our products are made from recycled or sustainable materials, and we're working to make our entire supply chain more environmentally friendly.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item py-4">
+                    <button class="faq-question flex justify-between items-center w-full text-left font-medium text-gray-800 focus:outline-none">
+                        <span>Do you ship internationally?</span>
+                        <svg class="faq-icon w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="faq-answer mt-2 text-gray-600 hidden">
+                        <p>Yes, we ship to many countries worldwide. International shipping rates and delivery times vary by location. Please check our Shipping Information page for specific details about your country.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% if website.content.faqs %}
+      {% for faq in website.content.faqs %}
+        {
+          "@type": "Question",
+          "name": "{{ faq.question|default:'FAQ Question'|escapejs }}",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "{{ faq.answer|default:'FAQ Answer'|escapejs }}"
+          }
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    {% else %}
+      {
+        "@type": "Question",
+        "name": "What is your shipping policy?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We offer free standard shipping on all orders over $50. Standard shipping typically takes 3-5 business days. Express shipping options are available at checkout for an additional fee."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I return an item?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can return most items within 30 days of delivery for a full refund. Visit our Returns Center to initiate the return process. Please ensure items are in their original condition with tags attached."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are your products sustainable?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We are committed to sustainability and ethical practices. Many of our products are made from recycled or sustainable materials, and we're working to make our entire supply chain more environmentally friendly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you ship internationally?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, we ship to many countries worldwide. International shipping rates and delivery times vary by location. Please check our Shipping Information page for specific details about your country."
+        }
+      }
+    {% endif %}
+  ]
+}
+</script>
+
+<!-- CTA Section -->
+<section class="py-16 bg-gray-800 text-white">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+            {{ page.content.cta_title|default:website.content.cta_title|default:"Ready to Explore?" }}
+        </h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto">
+            {{ page.content.cta_subtitle|default:website.content.cta_subtitle|default:"Discover our full collection and find something you'll love." }}
+        </p>
+        
+        <a href="/shop" class="bg-white text-gray-800 font-medium py-3 px-8 rounded-md text-lg inline-block hover:bg-gray-100 transition duration-200">
+            Shop Now
+        </a>
+    </div>
+</section>
+
+<!-- LocalBusiness Schema for Footer -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "{{ website.content.site_name|default:'Our Store' }}",
+  "image": "{{ website.content.logo|default:'' }}",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "telephone": "{{ website.content.phone|default:'+1-123-456-7890' }}",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "{{ website.content.street_address|default:'123 Main St' }}",
+    "addressLocality": "{{ website.content.city|default:'New York' }}",
+    "addressRegion": "{{ website.content.state|default:'NY' }}",
+    "postalCode": "{{ website.content.postal_code|default:'10001' }}",
+    "addressCountry": "{{ website.content.country|default:'US' }}"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "opens": "09:00",
+      "closes": "18:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Saturday",
+      "opens": "10:00",
+      "closes": "17:00"
+    }
+  ],
+  "sameAs": [
+    "{{ website.content.facebook|default:'https://facebook.com/ourstore' }}",
+    "{{ website.content.instagram|default:'https://instagram.com/ourstore' }}",
+    "{{ website.content.twitter|default:'https://twitter.com/ourstore' }}"
+  ]
+}
+</script>
+
+<script>
+// FAQ accordion functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        const icon = item.querySelector('.faq-icon');
+        
+        question.addEventListener('click', () => {
+            // Toggle current item
+            answer.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+            
+            // Close other items
+            faqItems.forEach(otherItem => {
+                if (otherItem !== item) {
+                    const otherAnswer = otherItem.querySelector('.faq-answer');
+                    const otherIcon = otherItem.querySelector('.faq-icon');
+                    
+                    otherAnswer.classList.add('hidden');
+                    otherIcon.classList.remove('rotate-180');
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

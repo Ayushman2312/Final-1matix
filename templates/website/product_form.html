@@ -1,0 +1,540 @@
+{% extends "user_dashboard/base.html" %}
+{% load static %}
+{% load website_filters %}
+
+{% block title %}{% if product %}Edit Product{% else %}Create Product{% endif %}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .variant-item {
+        transition: all 0.3s ease;
+    }
+    .variant-item:hover {
+        background-color: #f9fafb;
+    }
+    .image-preview {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+    }
+    .custom-file-upload {
+        cursor: pointer;
+    }
+    .custom-file-upload:hover {
+        background-color: #f3f4f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <a href="{% url 'website_products' %}" class="text-blue-600 hover:text-blue-800">
+            <i class="fas fa-arrow-left mr-1"></i> Back to Products
+        </a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="border-b px-6 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">{% if product %}Edit Product{% else %}Create Product{% endif %} for "{{ selected_website.template.name|default:'Your Website' }}"</h1>
+        </div>
+
+        {% if messages %}
+        <div class="px-6 py-4">
+            {% for message in messages %}
+            <div class="p-4 mb-4 {% if message.tags == 'success' %}bg-green-100 text-green-800 border-green-200{% elif message.tags == 'error' %}bg-red-100 text-red-800 border-red-200{% else %}bg-blue-100 text-blue-800 border-blue-200{% endif %} rounded-lg border">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="product-form" class="px-6 py-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column - Basic Information -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Product Title <span class="text-red-500">*</span></label>
+                                <input type="text" id="title" name="title" value="{{ product.title|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            </div>
+
+                            <div>
+                                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description <span class="text-red-500">*</span></label>
+                                <textarea id="description" name="description" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>{{ product.description|default:'' }}</textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Base Price <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">₹</span>
+                                        </div>
+                                        <input type="number" id="price" name="price" value="{{ product.price|default:'' }}" min="0" step="0.01" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="hsn_code" class="block text-sm font-medium text-gray-700 mb-1">HSN Code <span class="text-red-500">*</span></label>
+                                    <input type="text" id="hsn_code" name="hsn_code" value="{{ product.hsn_code|default:'' }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category <span class="text-red-500">*</span></label>
+                                    <select id="category" name="category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                        <option value="">Select Category</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if product.category.id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="gst_percentage" class="block text-sm font-medium text-gray-700 mb-1">GST Percentage <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <input type="number" id="gst_percentage" name="gst_percentage" value="{{ product.gst_percentage|default:'' }}" min="0" max="100" step="0.01" class="w-full pr-9 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                            <span class="text-gray-500 sm:text-sm">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="youtube_link" class="block text-sm font-medium text-gray-700 mb-1">YouTube Video Link (Optional)</label>
+                                <input type="url" id="youtube_link" name="youtube_link" value="{{ product.video_link|default:'' }}" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="is_active" name="is_active" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {% if product.is_active %}checked{% endif %}>
+                                <label for="is_active" class="ml-2 block text-sm text-gray-900">Make product active (available for purchase)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Product Variants</h2>
+                        <p class="text-sm text-gray-500 mb-4">Add variant types (like Size, Color) and their values (like Small, Red) with optional custom pricing.</p>
+                        
+                        <div id="variant-types-container" class="space-y-6">
+                            <!-- Variant types will be added here dynamically -->
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="button" id="add-variant-type-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-plus mr-2"></i> Add Variant Type
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Product Specifications</h2>
+                        <p class="text-sm text-gray-500 mb-4">Add specifications for your product (e.g., Material: Cotton, Weight: 200g)</p>
+                        
+                        <div id="specifications-container" class="space-y-6">
+                            <!-- Specification pairs will be added here dynamically -->
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="button" id="add-specification-btn" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <i class="fas fa-plus mr-2"></i> Add Specification
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Images -->
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">Product Images</h2>
+                        <p class="text-sm text-gray-500 mb-4">Upload up to 4 high-quality images of your product. The first image will be used as the main product image.</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="image1" class="block text-sm font-medium text-gray-700 mb-2">Main Image <span class="text-red-500">*</span></label>
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-24 h-24 bg-gray-100 border border-gray-300 rounded-md overflow-hidden flex items-center justify-center">
+                                        {% if product.image1 %}
+                                        <img id="image1-preview" src="{{ product.image1.url }}" alt="Main image" class="image-preview">
+                                        {% else %}
+                                        <img id="image1-preview" src="{% static 'img/placeholder.png' %}" alt="Add image" class="image-preview" style="display: none;">
+                                        <span id="image1-placeholder" class="text-gray-400"><i class="fas fa-image fa-2x"></i></span>
+                                        {% endif %}
+                                    </div>
+                                    <label for="image1" class="custom-file-upload flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-upload mr-2"></i> Browse...
+                                        <input type="file" id="image1" name="image1" accept="image/*" class="hidden" {% if not product.image1 %}required{% endif %}>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Additional Images -->
+                            {% for i in "234" %}
+                            <div>
+                                <label for="image{{ i }}" class="block text-sm font-medium text-gray-700 mb-2">Additional Image {{ forloop.counter }}</label>
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-24 h-24 bg-gray-100 border border-gray-300 rounded-md overflow-hidden flex items-center justify-center">
+                                        {% with image_attr="image"|add:i %}
+                                        {% with image=product|getattribute:image_attr %}
+                                        {% if image %}
+                                        <img id="image{{ i }}-preview" src="{{ image.url }}" alt="Image {{ forloop.counter }}" class="image-preview">
+                                        {% else %}
+                                        <img id="image{{ i }}-preview" src="{% static 'img/placeholder.png' %}" alt="Add image" class="image-preview" style="display: none;">
+                                        <span id="image{{ i }}-placeholder" class="text-gray-400"><i class="fas fa-image fa-2x"></i></span>
+                                        {% endif %}
+                                        {% endwith %}
+                                        {% endwith %}
+                                    </div>
+                                    <label for="image{{ i }}" class="custom-file-upload flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-upload mr-2"></i> Browse...
+                                        <input type="file" id="image{{ i }}" name="image{{ i }}" accept="image/*" class="hidden">
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hidden input to store variants data -->
+            <input type="hidden" id="variants" name="variants" value="">
+            <!-- Hidden input to store specifications data -->
+            <input type="hidden" id="specifications" name="specifications" value="">
+
+            <div class="border-t mt-8 pt-6 flex justify-end">
+                <a href="{% url 'website_products' %}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 mr-3">Cancel</a>
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Save Product</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image previews
+        function setupImagePreview(inputId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(`${inputId}-preview`);
+            const placeholder = document.getElementById(`${inputId}-placeholder`);
+            
+            input.addEventListener('change', function() {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        if (placeholder) placeholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            });
+        }
+        
+        // Set up image previews
+        setupImagePreview('image1');
+        setupImagePreview('image2');
+        setupImagePreview('image3');
+        setupImagePreview('image4');
+        
+        // Variant handling
+        const variantTypesContainer = document.getElementById('variant-types-container');
+        const addVariantTypeBtn = document.getElementById('add-variant-type-btn');
+        const variantsInput = document.getElementById('variants');
+        let variantTypeCounter = 0;
+        let variants = [];
+        
+        // Initialize variants if editing a product
+        if (window.existingVariants) {
+            try {
+                if (typeof window.existingVariants === 'string') {
+                    variants = JSON.parse(window.existingVariants);
+                } else {
+                    variants = window.existingVariants;
+                }
+                
+                // Group variants by type if they're in the old flat format
+                const variantTypes = {};
+                let needsConversion = false;
+                
+                // Check if we need to convert from old format
+                if (variants.length > 0 && 'name' in variants[0] && 'value' in variants[0]) {
+                    needsConversion = true;
+                    
+                    variants.forEach(variant => {
+                        if (!variantTypes[variant.name]) {
+                            variantTypes[variant.name] = {
+                                name: variant.name,
+                                values: []
+                            };
+                        }
+                        
+                        variantTypes[variant.name].values.push({
+                            value: variant.value,
+                            price: variant.price || null
+                        });
+                    });
+                    
+                    // Convert to new format
+                    variants = Object.values(variantTypes);
+                }
+                
+                // Add existing variant types to the UI
+                variants.forEach(variantType => {
+                    addVariantTypeToUI(variantType);
+                });
+            } catch (e) {
+                console.error('Error parsing existing variants:', e);
+                // If there was an error, start with an empty array
+                variants = [];
+            }
+        }
+        
+        // Function to add a variant value to a variant type
+        function addVariantValueToUI(variantTypeId, valueData = null) {
+            const variantValueId = `${variantTypeId}-value-${Date.now()}`;
+            const variantValueContainer = document.getElementById(`${variantTypeId}-values`);
+            
+            const valueItem = document.createElement('div');
+            valueItem.className = 'variant-value-item grid grid-cols-6 gap-2 items-center mt-2';
+            valueItem.id = variantValueId;
+            
+            valueItem.innerHTML = `
+                <div class="col-span-3">
+                    <input type="text" class="variant-value w-full px-3 py-2 border border-gray-300 rounded-md" 
+                           placeholder="e.g. Small, Red, etc." value="${valueData?.value || ''}">
+                </div>
+                <div class="col-span-2 relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">₹</span>
+                    </div>
+                    <input type="number" class="variant-price w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md" 
+                           min="0" step="0.01" placeholder="Custom price" value="${valueData?.price || ''}">
+                </div>
+                <div class="col-span-1 flex justify-center">
+                    <button type="button" class="delete-variant-value text-red-600 hover:text-red-800" data-id="${variantValueId}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            variantValueContainer.appendChild(valueItem);
+            
+            // Add delete event listener
+            valueItem.querySelector('.delete-variant-value').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                document.getElementById(id).remove();
+                updateVariantsData();
+            });
+            
+            // Add change event listeners
+            const inputs = valueItem.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', updateVariantsData);
+            });
+            
+            return valueItem;
+        }
+        
+        // Function to add a variant type to the UI
+        function addVariantTypeToUI(variantTypeData = null) {
+            const variantTypeId = 'variant-type-' + variantTypeCounter++;
+            const variantType = document.createElement('div');
+            variantType.className = 'variant-type-item p-4 border border-gray-200 rounded-lg';
+            variantType.id = variantTypeId;
+            
+            variantType.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <div class="w-full">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Variant Type <span class="text-red-500">*</span></label>
+                        <div class="flex">
+                            <input type="text" class="variant-type-name w-full px-3 py-2 border border-gray-300 rounded-md" 
+                                placeholder="e.g. Size, Color, Material" value="${variantTypeData?.name || ''}">
+                            <button type="button" class="delete-variant-type ml-2 text-red-600 hover:text-red-800 flex items-center px-2" data-id="${variantTypeId}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Values <span class="text-red-500">*</span></label>
+                    <div id="${variantTypeId}-values" class="variant-values-container">
+                        <!-- Values will be added here -->
+                    </div>
+                    <button type="button" class="add-variant-value mt-2 text-sm text-blue-600 hover:text-blue-800" data-type-id="${variantTypeId}">
+                        <i class="fas fa-plus-circle mr-1"></i> Add Value
+                    </button>
+                </div>
+            `;
+            
+            variantTypesContainer.appendChild(variantType);
+            
+            // Add values if provided
+            if (variantTypeData && variantTypeData.values && variantTypeData.values.length > 0) {
+                variantTypeData.values.forEach(valueData => {
+                    addVariantValueToUI(variantTypeId, valueData);
+                });
+            } else {
+                // Add at least one empty value field
+                addVariantValueToUI(variantTypeId);
+            }
+            
+            // Add delete event listener
+            variantType.querySelector('.delete-variant-type').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                document.getElementById(id).remove();
+                updateVariantsData();
+            });
+            
+            // Add event listener for adding values
+            variantType.querySelector('.add-variant-value').addEventListener('click', function() {
+                const typeId = this.getAttribute('data-type-id');
+                addVariantValueToUI(typeId);
+                updateVariantsData();
+            });
+            
+            // Add change event listener for type name
+            variantType.querySelector('.variant-type-name').addEventListener('input', updateVariantsData);
+            
+            return variantType;
+        }
+        
+        // Function to collect variants data
+        function updateVariantsData() {
+            const variantTypes = document.querySelectorAll('.variant-type-item');
+            variants = [];
+            
+            variantTypes.forEach(typeItem => {
+                const typeName = typeItem.querySelector('.variant-type-name').value.trim();
+                const valueItems = typeItem.querySelectorAll('.variant-value-item');
+                const values = [];
+                
+                valueItems.forEach(valueItem => {
+                    const value = valueItem.querySelector('.variant-value').value.trim();
+                    const price = valueItem.querySelector('.variant-price').value.trim();
+                    
+                    if (value) {
+                        values.push({
+                            value: value,
+                            price: price || null
+                        });
+                    }
+                });
+                
+                if (typeName && values.length > 0) {
+                    variants.push({
+                        name: typeName,
+                        values: values
+                    });
+                }
+            });
+            
+            // Update the hidden input
+            variantsInput.value = JSON.stringify(variants);
+        }
+        
+        // Add variant type button click
+        addVariantTypeBtn.addEventListener('click', function() {
+            addVariantTypeToUI();
+            updateVariantsData();
+        });
+        
+        // Specifications handling
+        const specificationsContainer = document.getElementById('specifications-container');
+        const addSpecificationBtn = document.getElementById('add-specification-btn');
+        const specificationsInput = document.getElementById('specifications');
+        let specifications = {};
+        
+        // Function to add a specification pair to the UI
+        function addSpecificationToUI(key = '', value = '') {
+            const specId = 'spec-' + Date.now();
+            const specElement = document.createElement('div');
+            specElement.className = 'specification-item grid grid-cols-2 gap-4 items-center';
+            specElement.id = specId;
+            
+            specElement.innerHTML = `
+                <div>
+                    <input type="text" class="spec-key w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           placeholder="Specification name" value="${key}">
+                </div>
+                <div class="relative">
+                    <input type="text" class="spec-value w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           placeholder="Specification value" value="${value}">
+                    <button type="button" class="delete-spec absolute right-2 top-1/2 transform -translate-y-1/2 text-red-600 hover:text-red-800" data-id="${specId}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            specificationsContainer.appendChild(specElement);
+            
+            // Add delete event listener
+            specElement.querySelector('.delete-spec').addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                document.getElementById(id).remove();
+                updateSpecificationsData();
+            });
+            
+            // Add change event listeners
+            const inputs = specElement.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', updateSpecificationsData);
+            });
+        }
+        
+        // Function to update specifications data
+        function updateSpecificationsData() {
+            const specItems = document.querySelectorAll('.specification-item');
+            specifications = {};
+            
+            specItems.forEach(item => {
+                const key = item.querySelector('.spec-key').value.trim();
+                const value = item.querySelector('.spec-value').value.trim();
+                
+                if (key && value) {
+                    specifications[key] = value;
+                }
+            });
+            
+            // Update the hidden input
+            specificationsInput.value = JSON.stringify(specifications);
+        }
+        
+        // Add specification button click
+        addSpecificationBtn.addEventListener('click', function() {
+            addSpecificationToUI();
+            updateSpecificationsData();
+        });
+        
+        // Initialize specifications if editing a product
+        if ({{ product.specifications|default:'null' }}) {
+            const existingSpecs = {{ product.specifications|default:'{}' }};
+            Object.entries(existingSpecs).forEach(([key, value]) => {
+                addSpecificationToUI(key, value);
+            });
+            updateSpecificationsData();
+        }
+        
+        // Form submission
+        const form = document.getElementById('product-form');
+        form.addEventListener('submit', function(e) {
+            // Make sure variants and specifications data are updated before submit
+            updateVariantsData();
+            updateSpecificationsData();
+        });
+        
+        // Initialize with at least one variant type if none exists
+        if (variants.length === 0) {
+            addVariantTypeToUI();
+            updateVariantsData();
+        }
+    });
+</script>
+{% endblock %} 

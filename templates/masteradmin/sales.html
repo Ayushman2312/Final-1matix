@@ -1,0 +1,242 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <!-- Advanced Analytics Dashboard -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <!-- Revenue Overview -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 col-span-1 sm:col-span-2 lg:col-span-3">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Revenue Overview</h3>
+                    <div class="h-[200px] relative">
+                        <canvas id="revenueChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sales by Product -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Sales by Plan</h3>
+                    <div class="h-[180px] relative">
+                        <canvas id="productChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Customer Demographics -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Customer Demographics</h3>
+                    <div class="h-[180px] relative">
+                        <canvas id="demographicsChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Conversion Funnel -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Conversion Funnel</h3>
+                    <div class="h-[180px] relative">
+                        <canvas id="funnelChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Regional Performance -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300 col-span-1 sm:col-span-2">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Regional Performance</h3>
+                    <div class="h-[200px] relative">
+                        <canvas id="regionalChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Customer Satisfaction -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Customer Satisfaction</h3>
+                    <div class="h-[180px] relative">
+                        <canvas id="satisfactionChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Sales Growth -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Sales Growth</h3>
+                    <div class="h-[180px] relative">
+                        <canvas id="growthChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Customer Retention -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Customer Retention</h3>
+                    <div class="h-[180px] relative">
+                        <canvas id="retentionChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                <!-- Marketing ROI -->
+                <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                    <h3 class="text-[rgb(237,226,226,1)] text-sm font-bold mb-3">Marketing ROI</h3>
+                    <div class="h-[180px] relative">
+                        <canvas id="roiChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/script.js' %}?v=3"></script>
+    <script>
+        // Demo data and chart configurations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Revenue Overview - Line Chart
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [30000, 45000, 42000, 50000, 75000, 85000],
+                        borderColor: '#4CAF50',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Sales by Plan - Pie Chart
+            new Chart(document.getElementById('productChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Basic', 'Pro', 'Enterprise'],
+                    datasets: [{
+                        data: [30, 45, 25],
+                        backgroundColor: ['#2196F3', '#4CAF50', '#FFC107']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Demographics - Doughnut Chart
+            new Chart(document.getElementById('demographicsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['18-24', '25-34', '35-44', '45+'],
+                    datasets: [{
+                        data: [20, 35, 25, 20],
+                        backgroundColor: ['#FF5722', '#9C27B0', '#3F51B5', '#009688']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Conversion Funnel - Bar Chart
+            new Chart(document.getElementById('funnelChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Visits', 'Leads', 'Sales'],
+                    datasets: [{
+                        label: 'Conversion',
+                        data: [1000, 400, 100],
+                        backgroundColor: '#E91E63'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Regional Performance - Radar Chart
+            new Chart(document.getElementById('regionalChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['North', 'South', 'East', 'West', 'Central'],
+                    datasets: [{
+                        label: 'Sales',
+                        data: [85, 65, 75, 90, 70],
+                        backgroundColor: 'rgba(156, 39, 176, 0.2)',
+                        borderColor: '#9C27B0'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Customer Satisfaction - Polar Area Chart
+            new Chart(document.getElementById('satisfactionChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: ['#4CAF50', '#8BC34A', '#FFC107', '#FF5722']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Sales Growth - Line Chart
+            new Chart(document.getElementById('growthChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'Growth',
+                        data: [10, 15, 20, 25],
+                        borderColor: '#FF9800',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Customer Retention - Bar Chart
+            new Chart(document.getElementById('retentionChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: 'Retention Rate',
+                        data: [85, 88, 92, 95],
+                        backgroundColor: '#03A9F4'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Marketing ROI - Bubble Chart
+            new Chart(document.getElementById('roiChart'), {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Campaign ROI',
+                        data: [
+                            {x: 10, y: 20, r: 10},
+                            {x: 20, y: 30, r: 15},
+                            {x: 30, y: 40, r: 20}
+                        ],
+                        backgroundColor: 'rgba(233, 30, 99, 0.5)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+{% endblock %}

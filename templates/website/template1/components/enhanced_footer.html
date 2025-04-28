@@ -1,0 +1,119 @@
+<footer class="bg-gray-800 text-gray-200 pt-16 pb-8">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Company Info -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4">{{ website.content.site_name|default:"Our Store" }}</h3>
+                <p class="mb-4">{{ website.content.footer_description|default:"Quality products with exceptional service. Shop our curated selection of premium items." }}</p>
+                <address class="not-italic mb-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-map-marker-alt mt-1 mr-2"></i>
+                        <span>{{ website.content.street_address|default:"123 Main Street" }}<br>
+                        {{ website.content.city|default:"New York" }}, {{ website.content.state|default:"NY" }} {{ website.content.postal_code|default:"10001" }}</span>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <i class="fas fa-phone mr-2"></i>
+                        <span>{{ website.content.phone|default:"+1 (123) 456-7890" }}</span>
+                    </div>
+                    <div class="flex items-center mt-2">
+                        <i class="fas fa-envelope mr-2"></i>
+                        <span>{{ website.content.email|default:"info@yourstore.com" }}</span>
+                    </div>
+                </address>
+                <div class="flex space-x-4 mt-4">
+                    <a href="{{ website.content.facebook|default:'#' }}" aria-label="Facebook" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="{{ website.content.instagram|default:'#' }}" aria-label="Instagram" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="{{ website.content.twitter|default:'#' }}" aria-label="Twitter" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="{{ website.content.pinterest|default:'#' }}" aria-label="Pinterest" class="text-gray-300 hover:text-white transition-colors">
+                        <i class="fab fa-pinterest-p"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4">Quick Links</h3>
+                <ul class="space-y-2">
+                    <li><a href="/" class="text-gray-300 hover:text-white transition-colors">Home</a></li>
+                    <li><a href="/about-us" class="text-gray-300 hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="/shop" class="text-gray-300 hover:text-white transition-colors">Shop</a></li>
+                    <li><a href="/blog" class="text-gray-300 hover:text-white transition-colors">Blog</a></li>
+                    <li><a href="/enquiry" class="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+                </ul>
+            </div>
+            
+            <!-- Categories -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4">Categories</h3>
+                <ul class="space-y-2">
+                    {% if website.content.footer_categories %}
+                        {% for category in website.content.footer_categories %}
+                        <li><a href="{{ category.url|default:'/category/'|add:category.slug|default:'#' }}" class="text-gray-300 hover:text-white transition-colors">{{ category.title }}</a></li>
+                        {% endfor %}
+                    {% else %}
+                        <li><a href="/category/women" class="text-gray-300 hover:text-white transition-colors">Women</a></li>
+                        <li><a href="/category/men" class="text-gray-300 hover:text-white transition-colors">Men</a></li>
+                        <li><a href="/category/accessories" class="text-gray-300 hover:text-white transition-colors">Accessories</a></li>
+                        <li><a href="/category/footwear" class="text-gray-300 hover:text-white transition-colors">Footwear</a></li>
+                        <li><a href="/category/new-arrivals" class="text-gray-300 hover:text-white transition-colors">New Arrivals</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <!-- Customer Service -->
+            <div>
+                <h3 class="text-xl font-semibold mb-4">Customer Service</h3>
+                <ul class="space-y-2">
+                    <li><a href="/shipping-info" class="text-gray-300 hover:text-white transition-colors">Shipping Information</a></li>
+                    <li><a href="/returns" class="text-gray-300 hover:text-white transition-colors">Returns & Exchanges</a></li>
+                    <li><a href="/faq" class="text-gray-300 hover:text-white transition-colors">FAQ</a></li>
+                    <li><a href="/terms-conditions" class="text-gray-300 hover:text-white transition-colors">Terms & Conditions</a></li>
+                    <li><a href="/privacy-policy" class="text-gray-300 hover:text-white transition-colors">Privacy Policy</a></li>
+                </ul>
+                <div class="mt-6">
+                    <h4 class="text-lg font-semibold mb-2">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/sitemap.xml" class="text-gray-300 hover:text-white transition-colors">Sitemap</a></li>
+                        <li><a href="/robots.txt" class="text-gray-300 hover:text-white transition-colors">Robots.txt</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Newsletter -->
+        <div class="border-t border-gray-700 mt-12 pt-8">
+            <div class="max-w-xl mx-auto text-center">
+                <h3 class="text-xl font-semibold mb-4">Subscribe to Our Newsletter</h3>
+                <p class="mb-4">Stay updated with our latest products and offers</p>
+                <form class="flex flex-col sm:flex-row gap-4">
+                    <input type="email" placeholder="Your email address" class="px-4 py-2 rounded-md flex-grow text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <button type="submit" class="btn-primary whitespace-nowrap">Subscribe</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Payment Methods -->
+        <div class="mt-8 text-center">
+            <h3 class="text-lg font-semibold mb-4">Accepted Payment Methods</h3>
+            <div class="flex justify-center space-x-4">
+                <i class="fab fa-cc-visa text-2xl"></i>
+                <i class="fab fa-cc-mastercard text-2xl"></i>
+                <i class="fab fa-cc-amex text-2xl"></i>
+                <i class="fab fa-cc-paypal text-2xl"></i>
+                <i class="fab fa-cc-apple-pay text-2xl"></i>
+            </div>
+        </div>
+        
+        <!-- Copyright -->
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-sm">
+            <p>&copy; {{ now.year }} {{ website.content.site_name|default:"Our Store" }}. All rights reserved.</p>
+            <p class="mt-2">Website by <a href="https://example.com" class="text-gray-300 hover:text-white transition-colors">Your Company</a></p>
+        </div>
+    </div>
+</footer> 

@@ -1,0 +1,96 @@
+{% extends "website/template1/base.html" %}
+{% load static %}
+
+{% block title %}Privacy Policy - {{ global_content.site_name }}{% endblock %}
+
+{% block body_class %}bg-gray-50{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-16">
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-sm p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
+        
+        {% if global_content.privacy_policy %}
+            <div class="prose max-w-none">
+                {{ global_content.privacy_policy|linebreaks }}
+            </div>
+        {% else %}
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-yellow-700">
+                            No privacy policy has been added yet. Please edit your website content to add it.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prose max-w-none text-gray-500">
+                <p>This privacy policy outlines how we collect, use, and protect your information. You should customize this to reflect your actual policies and comply with applicable laws.</p>
+                
+                <h2>Information We Collect</h2>
+                <p>We collect various types of information from users of our website and services, including:</p>
+                <ul>
+                    <li>Personal information such as name, email address, and contact details when you register or make a purchase</li>
+                    <li>Payment information when you complete a transaction</li>
+                    <li>Usage data about how you interact with our website</li>
+                    <li>Device information including IP address, browser type, and operating system</li>
+                </ul>
+                
+                <h2>How We Use Your Information</h2>
+                <p>We may use the information we collect for purposes including:</p>
+                <ul>
+                    <li>Processing your orders and providing our services</li>
+                    <li>Communicating with you about orders, products, and promotions</li>
+                    <li>Improving our website and customer experience</li>
+                    <li>Complying with legal obligations</li>
+                </ul>
+                
+                <h2>Information Sharing and Disclosure</h2>
+                <p>We may share your information with:</p>
+                <ul>
+                    <li>Service providers who help us operate our business</li>
+                    <li>Payment processors to complete transactions</li>
+                    <li>Legal authorities when required by law</li>
+                </ul>
+                <p>We do not sell or rent your personal information to third parties for marketing purposes.</p>
+                
+                <h2>Cookies and Tracking Technologies</h2>
+                <p>We use cookies and similar technologies to enhance your experience, analyze usage, and for marketing purposes. You can control cookies through your browser settings.</p>
+                
+                <h2>Data Security</h2>
+                <p>We implement appropriate security measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction.</p>
+                
+                <h2>Your Rights</h2>
+                <p>Depending on your location, you may have rights regarding your personal information, including:</p>
+                <ul>
+                    <li>Accessing and reviewing your personal information</li>
+                    <li>Correcting inaccurate information</li>
+                    <li>Requesting deletion of your information</li>
+                    <li>Opting out of certain data uses</li>
+                </ul>
+                
+                <h2>Children's Privacy</h2>
+                <p>Our services are not directed to individuals under the age of [13/16/18]. We do not knowingly collect personal information from children.</p>
+                
+                <h2>Changes to This Policy</h2>
+                <p>We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page.</p>
+                
+                <h2>Contact Us</h2>
+                <p>If you have any questions about this privacy policy, please contact us at [contact information].</p>
+            </div>
+        {% endif %}
+        
+        <div class="mt-8 text-center">
+            <a href="{{ website.get_public_url }}" class="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                Return to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

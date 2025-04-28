@@ -1,0 +1,417 @@
+{% extends 'user_dashboard/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% comment %} <title>Document</title> {% endcomment %}
+</head>
+<body class="bg-gray-100">
+    <div class="flex space-x-4 mb-6">
+        <!-- Search input -->
+        <div class="relative w-[280px]">
+            <div class="relative">
+                <input 
+                    type="text"
+                    id="searchInput"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Search products..."
+                    onkeyup="searchProducts()"
+                >
+                <div class="absolute right-3 top-2.5 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Suggestions dropdown -->
+            <div id="suggestions" class="absolute z-10 w-full bg-white mt-1 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto">
+                <!-- Suggestions will be populated here -->
+            </div>
+        </div>
+
+        <!-- Category filter -->
+        <div class="relative w-[200px]">
+            <select id="categoryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none" onchange="searchProducts()">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.category_id }}">{{ category.category_name }}</option>
+                {% endfor %}
+            </select>
+            <div class="absolute right-3 top-2.5 text-gray-400 pointer-events-none">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsContainer = document.getElementById('suggestions');
+        const categoryFilter = document.getElementById('categoryFilter');
+
+        async function searchProducts() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const selectedCategory = categoryFilter.value;
+
+            try {
+                // Make API call to search products with search term and category
+                const response = await fetch(`/product_card/api/products/search/?q=${encodeURIComponent(searchTerm)}&category=${selectedCategory}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error('Search request failed');
+                }
+
+                // Clear previous suggestions
+                suggestionsContainer.innerHTML = '';
+
+                if (searchTerm) {
+                    suggestionsContainer.classList.remove('hidden');
+
+                    if (data.products && data.products.length > 0) {
+                        // Display search results
+                        data.products.forEach(product => {
+                            const div = document.createElement('div');
+                            div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center';
+                            
+                            // Create product info container
+                            const productInfo = document.createElement('div');
+                            productInfo.className = 'flex-grow';
+                            
+                            // Product title with highlighting
+                            const titleDiv = document.createElement('div');
+                            titleDiv.className = 'font-medium';
+                            let highlightedTitle = product.title;
+                            searchTerm.split(' ').forEach(term => {
+                                if (term) {
+                                    const regex = new RegExp(`(${term})`, 'gi');
+                                    highlightedTitle = highlightedTitle.replace(regex, '<strong class="bg-yellow-200">$1</strong>');
+                                }
+                            });
+                            titleDiv.innerHTML = highlightedTitle;
+                            
+                            // Product details (price and category)
+                            const detailsDiv = document.createElement('div');
+                            detailsDiv.className = 'text-sm text-gray-600';
+                            detailsDiv.textContent = `₹${product.price} - ${product.category_name}`;
+                            
+                            productInfo.appendChild(titleDiv);
+                            productInfo.appendChild(detailsDiv);
+                            div.appendChild(productInfo);
+                            
+                            div.addEventListener('click', () => {
+                                searchInput.value = product.title;
+                                searchProducts();
+                                suggestionsContainer.classList.add('hidden');
+                            });
+                            suggestionsContainer.appendChild(div);
+                        });
+
+                    } else {
+                        // Show "No results found" message
+                        const noResults = document.createElement('div');
+                        noResults.className = 'px-4 py-2 text-gray-500 italic';
+                        noResults.textContent = 'No results found';
+                        suggestionsContainer.appendChild(noResults);
+                    }
+                } else {
+                    // If no search term, show all products filtered by category
+                    const productCards = document.querySelectorAll('[id^="product-card-"]');
+                    productCards.forEach(card => {
+                        const categoryId = card.getAttribute('data-category');
+                        card.style.display = (!selectedCategory || categoryId === selectedCategory) ? 'block' : 'none';
+                    });
+                    suggestionsContainer.classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error searching products:', error);
+                suggestionsContainer.innerHTML = `
+                    <div class="px-4 py-2 text-red-500">
+                        Error searching products. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        // Debounced search input handler with shorter delay
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(searchProducts, 200); // Reduced delay to 200ms
+        });
+
+        // Category filter handler
+        categoryFilter.addEventListener('change', searchProducts);
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!suggestionsContainer.contains(e.target) && e.target !== searchInput) {
+                suggestionsContainer.classList.add('hidden');
+            }
+        });
+
+        // Initial search to handle any pre-filled values
+        searchProducts();
+    });
+</script>
+    <div class="container py-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
+            {% if product_cards %}
+                {% for card in product_cards %}
+                    <div id="product-card-{{ card.product_id }}" data-category="{{ card.category_id }}" class="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl flex flex-col">
+                        {% if card.product_image1 %}
+                            <div class="relative aspect-square">
+                                <a href="{% url 'product_card_detail' product_id=card.product_id %}" target="_blank">
+                                    <img src="{{ card.product_image1.url }}" 
+                                         class="w-full h-full object-cover cursor-pointer" 
+                                         alt="{{ card.product_title }}">
+                                </a>
+                            </div>
+                        {% endif %}
+                        <div class="p-3 sm:p-4 lg:p-6 flex flex-col flex-grow">
+                            <h5 class="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 mb-2 line-clamp-2">{{ card.product_title }}</h5>
+                            <p class="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-3">{{ card.product_description|truncatechars:100 }}</p>
+                            <p class="text-sm sm:text-base lg:text-lg font-bold text-gray-800 mb-4">₹{{ card.product_price }}</p>
+                            
+                            <!-- Action buttons -->
+                            <div class="grid grid-cols-3 gap-1 sm:gap-2 mt-auto">
+                                <button onclick="shareLink('{% url 'product_card_detail' product_id=card.product_id %}')" 
+                                        class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-sm border border-purple-300 text-purple-700 hover:bg-purple-100 
+                                               font-light py-1 px-1 text-xs sm:text-sm rounded-lg transition-all duration-300 shadow-sm hover:shadow group">
+                                    <span class="flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" 
+                                             class="h-3 w-3 sm:h-4 sm:w-4 mr-1 group-hover:animate-pulse" 
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                        </svg>
+                                        <span class="hidden sm:inline">Share</span>
+                                    </span>
+                                </button>
+                                <button onclick="openEditModal('{{ card.product_id }}', '{{ card.product_title }}', '{{ card.product_description }}', '{{ card.product_price }}', '{{ card.product_image1.url }}')"
+                                   class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-sm border border-yellow-300 text-yellow-700 hover:bg-yellow-100 
+                                          font-light py-1 px-1 text-xs sm:text-sm rounded-lg transition-all duration-300 shadow-sm hover:shadow group">
+                                    <span class="flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" 
+                                             class="h-3 w-3 sm:h-4 sm:w-4 mr-1 group-hover:animate-pulse" 
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span class="hidden sm:inline">Edit</span>
+                                    </span>
+                                </button>
+
+                                <!-- Edit Modal -->
+                                <div id="edit-modal-{{ card.product_id }}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+                                    <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                        <h3 class="text-xl font-bold mb-4">Edit Product</h3>
+                                        <form id="edit-form-{{ card.product_id }}" method="POST" action="{% url 'update_product_card' product_id=card.product_id %}" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <div class="space-y-4">
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Title</label>
+                                                    <input type="text" name="product_title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                                    <textarea name="product_description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                                                    <input type="number" name="product_price" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+                                                    <input type="file" name="product_image1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    <img id="current-image-{{ card.product_id }}" class="mt-2 w-32 h-32 object-cover rounded-lg" src="" alt="Current product image">
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-end space-x-3 mt-6">
+                                                <button type="button" onclick="closeEditModal('{{ card.product_id }}')" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg transition duration-300">Cancel</button>
+                                                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-300">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    function openEditModal(productId, title, description, price, imageUrl) {
+                                        const modal = document.getElementById(`edit-modal-${productId}`);
+                                        const form = document.getElementById(`edit-form-${productId}`);
+                                        
+                                        // Populate form fields
+                                        form.querySelector('[name="product_title"]').value = title;
+                                        form.querySelector('[name="product_description"]').value = description;
+                                        form.querySelector('[name="product_price"]').value = price;
+                                        document.getElementById(`current-image-${productId}`).src = imageUrl;
+                                        
+                                        modal.classList.remove('hidden');
+                                    }
+
+                                    function closeEditModal(productId) {
+                                        const modal = document.getElementById(`edit-modal-${productId}`);
+                                        modal.classList.add('hidden');
+                                    }
+                                </script>
+                                <button onclick="confirmDelete('{{ card.product_id }}')" 
+                                        class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-sm border border-red-300 text-red-700 hover:bg-red-100 
+                                               font-light py-1 px-1 text-xs sm:text-sm rounded-lg transition-all duration-300 shadow-sm hover:shadow group">
+                                    <span class="flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" 
+                                             class="h-3 w-3 sm:h-4 sm:w-4 mr-1 group-hover:animate-pulse" 
+                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span class="hidden sm:inline">Delete</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-span-full">
+                    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
+                        <p class="font-medium">No product cards available. Create your first product card to get started!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Toast notification for link copied -->
+        <div id="toast-notification" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-10 opacity-0 transition-all duration-300">
+            Link copied to clipboard!
+        </div>
+        
+        <!-- Delete confirmation modal -->
+        <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 class="text-xl font-bold mb-4">Confirm Deletion</h3>
+                <p class="mb-6">Are you sure you want to delete this product card? This action cannot be undone.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg transition duration-300">Cancel</button>
+                    <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition duration-300">Delete</button>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            function shareLink(url) {
+                // Create a temporary input element
+                const tempInput = document.createElement('input');
+                // Set its value to the URL
+                tempInput.value = window.location.origin + url;
+                // Add it to the document
+                document.body.appendChild(tempInput);
+                // Select its contents
+                tempInput.select();
+                // Copy the selected text
+                document.execCommand('copy');
+                // Remove the temporary element
+                document.body.removeChild(tempInput);
+                
+                // Show toast notification
+                const toast = document.getElementById('toast-notification');
+                toast.classList.remove('translate-y-10', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                
+                // Hide toast after 3 seconds
+                setTimeout(() => {
+                    toast.classList.add('translate-y-10', 'opacity-0');
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                }, 3000);
+            }
+            
+            function confirmDelete(productId) {
+                const modal = document.getElementById('delete-modal');
+                const confirmBtn = document.getElementById('confirm-delete-btn');
+                
+                // Show modal
+                modal.classList.remove('hidden');
+                
+                // Set up delete action
+                confirmBtn.onclick = function() {
+                    // Use AJAX to delete the product card
+                    fetch(`/product_card/delete/${productId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Remove the product card element from the DOM
+                            const productCard = document.getElementById(`product-card-${productId}`);
+                            if (productCard) {
+                                productCard.remove();
+                            }
+                            
+                            // Show success toast
+                            const toast = document.getElementById('toast-notification');
+                            toast.textContent = 'Product card deleted successfully!';
+                            toast.classList.remove('translate-y-10', 'opacity-0');
+                            toast.classList.add('translate-y-0', 'opacity-100');
+                            
+                            // Hide toast after 3 seconds
+                            setTimeout(() => {
+                                toast.classList.add('translate-y-10', 'opacity-0');
+                                toast.classList.remove('translate-y-0', 'opacity-100');
+                            }, 3000);
+                        } else {
+                            // Show error toast
+                            const toast = document.getElementById('toast-notification');
+                            toast.textContent = 'Error deleting product card!';
+                            toast.classList.remove('translate-y-10', 'opacity-0');
+                            toast.classList.add('translate-y-0', 'opacity-100');
+                            
+                            // Hide toast after 3 seconds
+                            setTimeout(() => {
+                                toast.classList.add('translate-y-10', 'opacity-0');
+                                toast.classList.remove('translate-y-0', 'opacity-100');
+                            }, 3000);
+                        }
+                    });
+                    
+                    // Close the modal after confirming
+                    closeDeleteModal();
+                    
+                    // Prevent default action and stop propagation
+                    return false;
+                };
+            }
+            
+            // Function to get CSRF token from cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            function closeDeleteModal() {
+                const modal = document.getElementById('delete-modal');
+                modal.classList.add('hidden');
+            }
+        </script>
+    </div>
+</body>
+</html>
+{% endblock %}

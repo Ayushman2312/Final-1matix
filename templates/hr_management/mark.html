@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Device Recognition</title>
+    
+</head>
+<body>
+    <h1>Device Recognition Demo</h1>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3"></script>
+    <script>
+        (async () => {
+            const fp = await FingerprintJS.load();
+            const result = await fp.get();
+    
+            // Send the fingerprint to the server
+            fetch('/hr_management/save-device/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // CSRF token added
+                },
+                body: JSON.stringify({
+                    device_id: result.visitorId,
+                    user_agent: navigator.userAgent,
+                    platform: navigator.platform
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Device saved:', data);
+                
+                // Set device ID in cookie with Secure and HttpOnly flags
+                document.cookie = `device_id=${data.device_id}; path=/; Secure`;
+            })
+            .catch(error => console.error('Error:', error));
+        })();
+    </script>
+    
+</body>
+</html>

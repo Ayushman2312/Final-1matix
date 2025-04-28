@@ -1,0 +1,290 @@
+{% extends "website/template1/base.html" %}
+{% load static %}
+
+{% block title %}{{ website.content.site_name|default:"Home" }}{% endblock %}
+
+{% block page_content %}
+<!-- Hero Section -->
+<section class="hero-section pt-32 relative overflow-hidden h-[90vh]">
+    <div class="slider-container relative w-full h-full">
+        {% for banner in website.content.hero_banners|default:default_banners %}
+        <div class="slider-slide absolute w-full h-full opacity-0 transition-all duration-1000 ease-in-out">
+            <div class="relative h-full">
+                <!-- Background Image -->
+                <div class="absolute inset-0 z-0">
+                    <img src="{{ banner.image|default:'https://via.placeholder.com/1920x1080' }}" 
+                         alt="{{ banner.title }}"
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+                </div>
+                
+                <!-- Content -->
+                <div class="container mx-auto px-4 py-16 text-center relative z-10 h-full flex flex-col justify-center">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 transform translate-y-10 opacity-0 transition-all duration-1000 delay-200">
+                        {{ banner.title|default:"Welcome to Prestige" }}
+                    </h1>
+                    <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto transform translate-y-10 opacity-0 transition-all duration-1000 delay-400">
+                        {{ banner.description|default:"Quality Products, Exceptional Service" }}
+                    </p>
+                    <div class="transform translate-y-10 opacity-0 transition-all duration-1000 delay-600">
+                        <a href="{{ banner.button_url|default:'/shop' }}" 
+                           class="btn-primary text-lg">
+                            {{ banner.button_text|default:"Shop Now" }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Navigation Arrows -->
+        <button class="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 text-white hover:text-gray-300 transition-colors" onclick="moveSlide(-1)">
+            <i class="fas fa-chevron-left text-3xl"></i>
+        </button>
+        <button class="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 text-white hover:text-gray-300 transition-colors" onclick="moveSlide(1)">
+            <i class="fas fa-chevron-right text-3xl"></i>
+        </button>
+
+        <!-- Dots Navigation -->
+        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
+            {% for banner in website.content.hero_banners|default:default_banners %}
+            <button class="slider-dot w-3 h-3 rounded-full bg-white bg-opacity-50 hover:bg-opacity-100 transition-all"
+                    onclick="goToSlide({{ forloop.counter0 }})"></button>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slider-slide');
+const dots = document.querySelectorAll('.slider-dot');
+
+function showSlide(n) {
+    slides.forEach(slide => {
+        slide.style.opacity = '0';
+        slide.style.zIndex = '0';
+        // Reset content animations
+        slide.querySelectorAll('.transform').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(10px)';
+        });
+    });
+    dots.forEach(dot => dot.classList.remove('bg-opacity-100'));
+
+    currentSlide = (n + slides.length) % slides.length;
+    
+    slides[currentSlide].style.opacity = '1';
+    slides[currentSlide].style.zIndex = '1';
+    dots[currentSlide].classList.add('bg-opacity-100');
+    
+    // Trigger content animations
+    slides[currentSlide].querySelectorAll('.transform').forEach(el => {
+        setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, 200);
+    });
+}
+
+function moveSlide(n) {
+    showSlide(currentSlide + n);
+}
+
+function goToSlide(n) {
+    showSlide(n);
+}
+
+// Auto advance slides
+setInterval(() => moveSlide(1), 5000);
+
+// Initialize first slide
+showSlide(0);
+</script>
+
+<!-- Weekly Selection Section -->
+<section class="py-16">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-8">
+            <h2 class="text-lg uppercase tracking-wider text-gray-600 font-medium">
+                WEEKLY SELECTION
+            </h2>
+        </div>
+        
+        <!-- Category Tabs -->
+        <div class="flex justify-center mb-12">
+            {% if website.categories.all %}
+            <div class="border-b border-gray-300 inline-flex">
+                {% for category in website.categories.all|slice:":2" %}
+                <button class="category-tab py-2 px-6 border-b-2 {% if forloop.first %}border-gray-800 text-gray-800{% else %}border-transparent text-gray-500{% endif %} font-medium text-lg" data-target="{{ category.name|lower }}-tab">
+                    {{ category.name|upper }}
+                </button>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center">
+                <p class="text-gray-600 text-lg">Our product categories are currently being curated. Please check back soon.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Products Slider -->
+        <div class="relative">
+            {% if website.categories.all %}
+            {% for category in website.categories.all|slice:":2" %}
+            <div id="{{ category.name|lower }}-tab" class="tab-content {% if forloop.first %}block{% else %}hidden{% endif %}">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {% with category_products=website.products.all|dictsortreversed:"created_at"|slice:":4" %}
+                    {% if category_products %}
+                    {% for product in category_products %}
+                    {% if product.category == category %}
+                    <div class="product-card">
+                        <div class="relative h-[400px]">
+                            {% if product.image1 %}
+                            <img src="{{ product.image1.url }}" alt="{{ product.title }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <img src="https://via.placeholder.com/400x400?text=No+Image" alt="{{ product.title }}" class="w-full h-full object-cover">
+                            {% endif %}
+                        </div>
+                        <div class="mt-4 text-center">
+                            <h3 class="text-sm uppercase tracking-wider font-medium">{{ product.title }}</h3>
+                            <p class="text-gray-500 mt-1">${{ product.price }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    <div class="col-span-4 text-center py-12">
+                        <p class="text-gray-600 text-lg mb-2">No products are currently available in this category.</p>
+                        <p class="text-gray-500">Our team is working on bringing you exciting new items soon.</p>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<script>
+// Category tabs functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.category-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active state from all tabs
+            tabs.forEach(t => {
+                t.classList.remove('border-gray-800', 'text-gray-800');
+                t.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Add active state to clicked tab
+            tab.classList.remove('border-transparent', 'text-gray-500');
+            tab.classList.add('border-gray-800', 'text-gray-800');
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('block');
+            });
+            
+            // Show relevant tab content
+            const targetId = tab.getAttribute('data-target');
+            const targetContent = document.getElementById(targetId);
+            targetContent.classList.remove('hidden');
+            targetContent.classList.add('block');
+        });
+    });
+});
+</script>
+
+<!-- Featured Products Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h2 class="section-heading">
+                {{ page.content.features_title|default:website.content.features_title|default:"Featured Products" }}
+            </h2>
+            <p class="section-subheading">
+                {{ page.content.features_subtitle|default:website.content.features_subtitle|default:"Discover our most popular selections" }}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {% with featured_products=website.products.all|dictsortreversed:"created_at"|slice:":4" %}
+            {% if featured_products %}
+                {% for product in featured_products %}
+                {% if product.is_featured %}
+                <div class="product-card bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="relative">
+                        {% if product.image1 %}
+                        <img src="{{ product.image1.url }}" alt="{{ product.title }}" class="w-full h-64 object-cover rounded">
+                        {% else %}
+                        <img src="https://via.placeholder.com/300x400?text=No+Image" alt="{{ product.title }}" class="w-full h-64 object-cover rounded">
+                        {% endif %}
+                        {% if product.is_on_sale %}
+                        <span class="absolute top-2 right-2 bg-red-500 text-white text-xs py-1 px-2 rounded">Sale</span>
+                        {% endif %}
+                        {% if product.is_new %}
+                        <span class="absolute top-2 right-2 bg-green-500 text-white text-xs py-1 px-2 rounded">New</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="text-lg font-medium mt-4">{{ product.title }}</h3>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="font-bold">${{ product.price }}</span>
+                        {% if product.compare_at_price %}
+                        <span class="text-gray-500 line-through">${{ product.compare_at_price }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% empty %}
+                <div class="col-span-4 text-center py-16">
+                    <div class="max-w-2xl mx-auto">
+                        <h3 class="text-xl font-medium text-gray-800 mb-4">Coming Soon</h3>
+                        <p class="text-gray-600 mb-2">We're currently curating an exceptional collection of featured products.</p>
+                        <p class="text-gray-500">Please check back soon to discover our carefully selected items.</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-span-4 text-center py-16">
+                    <div class="max-w-2xl mx-auto">
+                        <h3 class="text-xl font-medium text-gray-800 mb-4">Coming Soon</h3>
+                        <p class="text-gray-600 mb-2">We're currently curating an exceptional collection of featured products.</p>
+                        <p class="text-gray-500">Please check back soon to discover our carefully selected items.</p>
+                    </div>
+                </div>
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        {% if website.products.all %}
+        <div class="text-center mt-12">
+            <a href="/shop" class="btn-secondary">View All Products</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+
+<!-- CTA Section -->
+<section class="py-16 bg-gray-800 text-white">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+            {{ page.content.cta_title|default:website.content.cta_title|default:"Questions or Feedback?" }}
+        </h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto">
+            {{ page.content.cta_subtitle|default:website.content.cta_subtitle|default:"We'd love to hear from you. Contact us today to learn more about our products or services." }}
+        </p>
+        
+        <a href="/enquiry" class="bg-white text-gray-800 font-medium py-3 px-8 rounded-md text-lg inline-block hover:bg-gray-100 transition duration-200">
+            Contact Us
+        </a>
+    </div>
+</section>
+{% endblock %}

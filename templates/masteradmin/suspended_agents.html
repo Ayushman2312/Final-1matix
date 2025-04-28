@@ -1,0 +1,25 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block content %}
+            <!-- Recent Orders -->
+            <div class="bg-[#212121] rounded-xl p-4 hover:shadow-xl transition-all duration-300">
+                <h3 class="text-[#ffffff] text-base font-bold mb-3">Suspended Agents</h3>
+                <div class="space-y-2">
+                    {% for agent in agents %}
+                    <div class="flex justify-between items-center p-2 bg-[#252525] rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-[#333333] rounded-full"></div>
+                            <div>
+                                <p class="text-white text-sm">{{ agent.name }}</p>
+                                <p class="text-[#b3b3b3] text-xs">{{ agent.email }}</p>
+                            </div>
+                        </div>
+                        <p class="text-[#f44336] text-sm">Suspended</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/script.js' %}?v=2"></script>
+{% endblock %}

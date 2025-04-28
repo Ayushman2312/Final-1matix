@@ -1,0 +1,134 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<div class="py-4">
+    <!-- Add this script block to define folderId -->
+    <script>
+        const folderId = '{{ folder.folder_id }}';
+    </script>
+    
+    <!-- Header -->
+
+    <!-- Create Data Button -->
+    <button onclick="openCreateDataModal()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-200">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Create New Data
+    </button>
+
+    <!-- Create Data Modal -->
+    <div id="createDataModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden overflow-y-auto h-full w-full transition-all duration-300" style="z-index: 20;">
+        <div class="relative top-20 mx-auto p-6 border w-[32rem] shadow-2xl rounded-2xl bg-white transform transition-all duration-300">
+            <div class="absolute top-4 right-4">
+                <button onclick="closeCreateDataModal()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">Create New Data</h3>
+                <p class="text-gray-500 mt-1 text-sm">Add new data to {{ folder.name }}</p>
+            </div>
+
+            <form id="createDataForm" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="folder_id" value="{{ folder.folder_id }}">
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">Title</label>
+                    <input type="text" id="dataTitle" name="title" required
+                        class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200"
+                        placeholder="Enter title">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-sm font-medium text-gray-700">Content</label>
+                    <textarea id="dataContent" name="content" rows="4" required
+                        class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200"
+                        placeholder="Enter content"></textarea>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200">
+                        Create Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="grid grid-cols-4 gap-4 mb-6">
+    {% if folder.json_data %}
+    {% for key, value in folder.json_data.items %}
+        <div class="mt-4 space-y-3">
+            <div class="bg-white rounded-lg shadow-sm p-4 relative">
+                <div class="absolute top-2 right-2 flex space-x-2">
+                    <button onclick="openEditDataModal('{{ key|escapejs }}', '{{ value|escapejs }}')" class="text-gray-400 hover:text-blue-500 transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                    <button onclick="deleteData('{{ key }}')" class="text-gray-400 hover:text-red-500 transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                <h3 class="text-gray-700 font-medium">{{ key }}</h3>
+                <p class="text-gray-600 mt-1">{{ value }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- Edit Data Modal -->
+<div id="editDataModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden overflow-y-auto h-full w-full transition-all duration-300" style="z-index: 20;">
+    <div class="relative top-20 mx-auto p-6 border w-[32rem] shadow-2xl rounded-2xl bg-white transform transition-all duration-300">
+        <div class="absolute top-4 right-4">
+            <button onclick="closeEditDataModal()" class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Edit Data</h3>
+            <p class="text-gray-500 mt-1 text-sm">Update the folder data</p>
+        </div>
+
+        <form id="editDataForm" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="originalTitle">
+            <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" id="editDataTitle" name="title" 
+                    class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200"
+                    placeholder="Enter title">
+            </div>
+            <div class="space-y-1">
+                <label class="block text-sm font-medium text-gray-700">Content</label>
+                <textarea id="editDataContent" name="content" rows="4"
+                    class="w-full px-3 py-2 rounded-lg border border-gray-200 focus:border-purple-500 focus:ring focus:ring-purple-200 transition-all duration-200"
+                    placeholder="Enter content"></textarea>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeEditDataModal()" 
+                    class="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{% static 'js/hr/folder.js' %}"></script>
+{% endblock %}
+
+

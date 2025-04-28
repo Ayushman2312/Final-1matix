@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live QR Code Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 3px solid #333;
+            border-radius: 10px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        #qr-video {
+            width: 100%;
+            height: auto;
+        }
+        
+        #qr-canvas {
+            display: none;
+        }
+        
+        #result-container {
+            margin-top: 30px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        #result {
+            font-size: 18px;
+            word-break: break-all;
+        }
+        
+        #status {
+            margin-top: 10px;
+            color: #666;
+        }
+
+        @keyframes pulse {
+            0% { border-color: #333; }
+            50% { border-color: #4CAF50; }
+            100% { border-color: #333; }
+        }
+        
+        .detected {
+            border-color: #FF3B58 !important;
+            animation: none !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live QR Code Scanner</h1>
+    
+    <div id="video-container">
+        <video id="qr-video" playsinline autoplay></video>
+    </div>
+    
+    <canvas id="qr-canvas"></canvas>
+    
+    <div id="result-container">
+        <h2>Scan Result:</h2>
+        <p id="result">No QR code detected yet</p>
+        <p id="status">Initializing camera...</p>
+    </div>
+
+    <script src="{% static 'js/hr/scanner.js' %}"></script>
+</body>
+</html>

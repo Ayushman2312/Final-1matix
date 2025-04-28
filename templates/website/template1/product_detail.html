@@ -1,0 +1,96 @@
+{% extends 'website/template1/base.html' %}
+
+{% block title %}{{ product.name }} - Prestige Fashion{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <!-- Product Images -->
+        <div class="space-y-4">
+            <div class="relative aspect-square overflow-hidden rounded-lg">
+                {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">No image</span>
+                    </div>
+                {% endif %}
+            </div>
+            {% if product.images.count > 1 %}
+                <div class="grid grid-cols-4 gap-4">
+                    {% for image in product.images.all %}
+                        <div class="relative aspect-square overflow-hidden rounded-lg">
+                            <img src="{{ image.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info -->
+        <div class="space-y-6">
+            <div>
+                <h1 class="text-3xl font-light mb-2">{{ product.name }}</h1>
+                <div class="flex items-center space-x-4">
+                    <span class="text-2xl font-medium">${{ product.price }}</span>
+                    {% if product.compare_at_price %}
+                        <span class="text-lg text-gray-500 line-through">${{ product.compare_at_price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="prose max-w-none">
+                {{ product.description|linebreaks }}
+            </div>
+
+            {% if product.variants.all %}
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium">Variants</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        {% for variant in product.variants.all %}
+                            <div class="border rounded-lg p-4 {% if variant.is_active %}border-gray-800{% else %}border-gray-200{% endif %}">
+                                <h4 class="font-medium">{{ variant.name }}</h4>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-lg">${{ variant.price_adjustment }}</span>
+                                    <span class="text-sm text-gray-500">Stock: {{ variant.stock }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center border rounded-lg">
+                    <button class="px-4 py-2 text-xl">-</button>
+                    <span class="px-4 py-2">1</span>
+                    <button class="px-4 py-2 text-xl">+</button>
+                </div>
+                <button class="flex-1 bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors">
+                    Add to Cart
+                </button>
+            </div>
+
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-medium mb-4">Product Details</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-500">SKU:</span>
+                        <span>{{ product.sku }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Category:</span>
+                        <a href="{% url 'category_detail' product.category.slug %}" class="hover:underline">
+                            {{ product.category.name }}
+                        </a>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Stock:</span>
+                        <span>{{ product.stock }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
