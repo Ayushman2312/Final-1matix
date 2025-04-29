@@ -16,10 +16,10 @@ if not website:
     exit(1)
 
 # Check if domain already exists
-if CustomDomain.objects.filter(domain='1matrix.in').exists():
-    print("Domain 1matrix.in already exists")
+if CustomDomain.objects.filter(domain='1matrix.io').exists():
+    print("Domain 1matrix.io already exists")
     # Update the domain to verified status
-    domain = CustomDomain.objects.get(domain='1matrix.in')
+    domain = CustomDomain.objects.get(domain='1matrix.io')
     domain.verification_status = 'verified'
     domain.save()
     print("Updated domain verification status to 'verified'")
@@ -27,7 +27,7 @@ else:
     # Create new domain
     domain = CustomDomain.objects.create(
         website=website,
-        domain='1matrix.in',
+        domain='1matrix.io',
         verification_status='verified',
         verification_code=str(uuid.uuid4()),
         ssl_status=False

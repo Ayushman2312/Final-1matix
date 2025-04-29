@@ -79,7 +79,6 @@ pillow==11.1.0
 propcache==0.2.1
 proto-plus==1.26.1
 protobuf==5.29.3
-psycopg2==2.9.10
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pycparser==2.22
@@ -97,7 +96,6 @@ python-docx==1.1.2
 python-dotenv==1.1.0
 pytrends==4.9.2
 pytz==2025.2
-pywin32==310
 PyYAML==6.0.2
 qrcode==8.0
 rcssmin==1.1.2
@@ -130,6 +128,5 @@ webdriver-manager==4.0.2
 webencodings==0.5.1
 websocket-client==1.8.0
 whitenoise==6.8.2
-WMI==1.5.1
 wsproto==1.2.0
 yarl==1.18.3
