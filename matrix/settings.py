@@ -9,19 +9,19 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from dotenv import load_dotenv
 from pathlib import Path
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(env_path)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qro_0-wy_990yy88at5b0(1gaz_hcn^!l@7y9_=$ms6!=cop^5'
-
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -205,15 +205,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  
-EMAIL_PORT = 587  # SMTP port
+EMAIL_HOST = 'smtp.hostinger.com'
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'hello1matrix@gmail.com'  
-EMAIL_HOST_PASSWORD = 'ipel srsx yloq uopw'  
-DEFAULT_FROM_EMAIL = 'hello1matrix@gmail.com'
-
-TWILIO_ACCOUNT_SID = 'AC3e991ec8e4b72ab7ced0642060e58a8b'
-TWILIO_AUTH_TOKEN = 'ecfb29d0eb3ee38639b920e26722b6de'
+EMAIL_HOST_USER = 'noreply@1matrix.io'
+EMAIL_HOST_PASSWORD = 'Helpeza@2312'
+DEFAULT_FROM_EMAIL = 'noreply@1matrix.io'
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -259,8 +256,8 @@ LOGGING = {
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': '998428705998-tl6fjl5ou47r8sg3t8gdn93cckc2o8vj.apps.googleusercontent.com', 
-            'secret': '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',
+            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET'),
             'key': ''
         },
         'SCOPE': [

@@ -150,3 +150,23 @@
 2025-04-29 01:06:28,018 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:531
 2025-04-29 03:05:55,281 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:531
 2025-04-29 03:05:56,968 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:696
+2025-04-29 15:31:31,344 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:531
+2025-04-29 15:31:35,277 [INFO] Getting context data for AgentsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:671
+2025-04-29 15:31:45,351 [INFO] AddAgentView.post() called - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:388
+2025-04-29 15:31:45,351 [ERROR] JSON decode error: Expecting value: line 1 column 1 (char 0) - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:400
+2025-04-29 15:31:45,356 [INFO] Using form data instead: <QueryDict: {'csrfmiddlewaretoken': ['lHEEiu8cGJsUNuGX6gBxKAsztb3kKoOO27d4o6DEjRacuDTz6ZCpZyJ6NEs1MPpV'], 'email': ['dusrajojo@gmail.com'], 'department': ['4193a027-f440-495f-9224-91cb95aa3d0a']}> - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:405
+2025-04-29 15:31:45,361 [INFO] Extracted fields - email: dusrajojo@gmail.com, department: 4193a027-f440-495f-9224-91cb95aa3d0a - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:420
+2025-04-29 15:32:16,268 [INFO] Getting context data for AgentsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:671
+2025-04-29 15:32:46,630 [INFO] Getting context data for AgentsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:671
+2025-04-29 15:32:49,669 [INFO] AddAgentView.post() called - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:388
+2025-04-29 15:32:49,674 [ERROR] JSON decode error: Expecting value: line 1 column 1 (char 0) - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:400
+2025-04-29 15:32:49,678 [INFO] Using form data instead: <QueryDict: {'csrfmiddlewaretoken': ['JU2Ahnb3jlTUuwzdvB6Q4eSnGrhDqMmtqkB0nZGvWtBcbFMPvk7Ijc9U0UGksdXA'], 'email': ['dusrajojo@gmail.com'], 'department': ['4193a027-f440-495f-9224-91cb95aa3d0a']}> - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:405
+2025-04-29 15:32:49,682 [INFO] Extracted fields - email: dusrajojo@gmail.com, department: 4193a027-f440-495f-9224-91cb95aa3d0a - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:420
+2025-04-29 15:32:49,686 [ERROR] Agent with email dusrajojo@gmail.com already exists - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:424
+2025-04-29 15:40:38,655 [INFO] AddAgentView.post() called - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:388
+2025-04-29 15:40:38,655 [ERROR] JSON decode error: Expecting value: line 1 column 1 (char 0) - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:400
+2025-04-29 15:40:38,655 [INFO] Using form data instead: <QueryDict: {'csrfmiddlewaretoken': ['JU2Ahnb3jlTUuwzdvB6Q4eSnGrhDqMmtqkB0nZGvWtBcbFMPvk7Ijc9U0UGksdXA'], 'email': ['ayushmantiwari2312@gmail.com'], 'department': ['4193a027-f440-495f-9224-91cb95aa3d0a']}> - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:405
+2025-04-29 15:40:38,670 [INFO] Extracted fields - email: ayushmantiwari2312@gmail.com, department: 4193a027-f440-495f-9224-91cb95aa3d0a - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:420
+2025-04-29 15:41:02,300 [INFO] Registration email sent successfully to ayushmantiwari2312@gmail.com - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:499
+2025-04-29 15:41:02,303 [INFO] Agent created successfully with email: ayushmantiwari2312@gmail.com and passcode: 7001 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:512
+2025-04-29 15:41:03,747 [INFO] Getting context data for AgentsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:671
