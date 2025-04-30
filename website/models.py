@@ -7,6 +7,7 @@ import uuid
 from django.utils.text import slugify
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+import json
 
 # Create your models here.
 
@@ -50,7 +51,8 @@ class WebsiteTemplate(models.Model):
 class Website(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     template = models.ForeignKey(WebsiteTemplate, on_delete=models.PROTECT, null=True, blank=True)
-    content = models.JSONField(default=dict, help_text="Structured content for the website")
+    name = models.CharField(max_length=100, default="My Website")
+    content = models.JSONField(default=dict)
     public_slug = models.SlugField(max_length=100, unique=True, null=True, blank=True, help_text="Public URL slug for sharing")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -61,7 +63,7 @@ class Website(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username}'s website - {self.template.name}" if self.template else f"{self.user.username}'s website"
+        return self.name
 
     def clean(self):
         super().clean()
@@ -79,7 +81,7 @@ class Website(models.Model):
         
         if not self.public_slug:
             # Generate a unique slug based on the website name
-            base_slug = slugify(self.content.get('site_name', f"{self.user.username}'s Website"))
+            base_slug = slugify(self.name)
             unique_id = str(uuid.uuid4())[:8]
             self.public_slug = f"{base_slug}-{unique_id}"
 
@@ -221,6 +223,25 @@ class Website(models.Model):
         })
         
         self.save(force_update=True)
+
+    def get_content(self):
+        """Returns the content as a Python dictionary"""
+        if isinstance(self.content, str):
+            return json.loads(self.content)
+        return self.content
+    
+    def set_content(self, content_dict):
+        """Sets the content from a Python dictionary"""
+        if isinstance(content_dict, dict):
+            self.content = content_dict
+        else:
+            self.content = json.dumps(content_dict)
+    
+    @property
+    def slides(self):
+        """Returns the slides from the content"""
+        content = self.get_content()
+        return content.get('slides', [])
 
 class WebsitePage(models.Model):
     website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name='pages')

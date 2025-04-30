@@ -2,6 +2,8 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import render
 from .models import CustomDomain, DomainLog, WebsitePage
 import os
+from django.utils.deprecation import MiddlewareMixin
+import re
 
 class CustomDomainMiddleware:
     def __init__(self, get_response):
@@ -319,3 +321,19 @@ class CustomDomainMiddleware:
         }
         
         return seo_data
+
+class NoCacheMiddleware(MiddlewareMixin):
+    """
+    Middleware to set no-cache headers on template1 page responses
+    to ensure dynamic content is always fresh.
+    """
+    
+    def process_response(self, request, response):
+        # Check if the request is for a template1 page
+        if 'template1' in request.path:
+            # Set cache control headers
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+        
+        return response

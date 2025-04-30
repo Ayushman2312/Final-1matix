@@ -4,6 +4,14 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.x509.oid import NameOID
 import datetime
+import os
+import uuid
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+import logging
+
+logger = logging.getLogger(__name__)
 
 def verify_dns_settings(domain, verification_code):
     """
@@ -191,4 +199,113 @@ def auto_generate_seo_content(website, request=None):
     except Exception as e:
         import logging
         logging.error(f"Error in auto_generate_seo_content: {str(e)}")
+        return False
+
+def process_media_upload(file_obj, subfolder='website_media', prefix=None, allowed_types=None):
+    """
+    Process and save an uploaded media file with validation.
+    
+    Args:
+        file_obj: The uploaded file object
+        subfolder: The subfolder within MEDIA_ROOT to save the file
+        prefix: Optional prefix for the filename
+        allowed_types: List of allowed MIME types (None for no restriction)
+        
+    Returns:
+        str: The relative path to the saved file or None if failed
+    """
+    if not file_obj:
+        return None
+        
+    try:
+        # Validate file type if restrictions provided
+        if allowed_types and file_obj.content_type not in allowed_types:
+            logger.warning(f"Invalid file type: {file_obj.content_type}. Allowed types: {allowed_types}")
+            return None
+            
+        # Generate unique filename
+        file_ext = os.path.splitext(file_obj.name)[1].lower()
+        unique_id = str(uuid.uuid4())[:8]
+        filename = f"{prefix or 'media'}_{unique_id}{file_ext}"
+        
+        # Ensure subdirectory exists
+        path = os.path.join(subfolder, filename)
+        
+        # Save file using Django's storage system
+        saved_path = default_storage.save(path, ContentFile(file_obj.read()))
+        
+        # Return the media URL path
+        return os.path.join(settings.MEDIA_URL.lstrip('/'), saved_path)
+        
+    except Exception as e:
+        logger.error(f"Error processing media upload: {str(e)}")
+        return None
+
+def process_banner_image(file_obj):
+    """Specialized handler for banner image uploads"""
+    return process_media_upload(
+        file_obj, 
+        subfolder='website_banners',
+        prefix='banner',
+        allowed_types=settings.ALLOWED_IMAGE_TYPES
+    )
+    
+def process_gallery_image(file_obj):
+    """Specialized handler for gallery image uploads"""
+    return process_media_upload(
+        file_obj, 
+        subfolder='website_gallery',
+        prefix='gallery',
+        allowed_types=settings.ALLOWED_IMAGE_TYPES
+    )
+    
+def process_document_upload(file_obj):
+    """Specialized handler for document uploads (PDF, DOC, etc.)"""
+    allowed_types = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/plain'
+    ]
+    
+    return process_media_upload(
+        file_obj, 
+        subfolder='website_documents',
+        prefix='doc',
+        allowed_types=allowed_types
+    )
+
+def delete_media_file(file_path):
+    """
+    Delete a media file from storage
+    
+    Args:
+        file_path: The relative path to the file
+        
+    Returns:
+        bool: True if deletion was successful, False otherwise
+    """
+    if not file_path:
+        return False
+        
+    try:
+        # Remove media URL prefix if present
+        if file_path.startswith(settings.MEDIA_URL):
+            file_path = file_path[len(settings.MEDIA_URL):]
+            
+        # Remove leading slash if present
+        file_path = file_path.lstrip('/')
+        
+        # Get absolute path
+        absolute_path = os.path.join(settings.MEDIA_ROOT, file_path)
+        
+        # Check if file exists
+        if os.path.exists(absolute_path):
+            os.remove(absolute_path)
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"Error deleting media file {file_path}: {str(e)}")
         return False

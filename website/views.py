@@ -6,7 +6,7 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse, Http404
 from .models import *
-from .utils import verify_dns_settings, request_ssl_certificate, auto_generate_seo_content
+from .utils import *
 import json
 from django.utils.text import slugify
 import logging
@@ -17,6 +17,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
 import dns.resolver
+from django.views.decorators.http import require_POST
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -25,50 +26,20 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def dashboard(request):
-    """Dashboard view showing all websites of the current user"""
-    # Get the current user directly from request.user
-    user = request.user
+    """Dashboard view for website management"""
+    # Get all websites for the user (which should be at most one)
+    websites = Website.objects.filter(user=request.user)
     
-    if not user or not user.is_authenticated:
-        messages.warning(request, 'Please log in to access the dashboard')
-        return redirect('/user/login/')
+    # Get user's domains
+    domains = CustomDomain.objects.filter(website__in=websites)
     
-    # Get all websites for the current user
-    websites = Website.objects.filter(user=user).order_by('-updated_at')
-    
-    # Fix any websites with missing public slugs
-    for website in websites:
-        if not website.public_slug or website.public_slug == 'None':
-            website.save()  # This will trigger the save method to generate a slug
-    
-    # Get domains associated with the user's websites
-    domains = CustomDomain.objects.filter(website__user=user)
-    
-    websites_data = []
-    for website in websites:
-        # Get pages count
-        pages_count = website.get_pages().count()
-        
-        # Get associated domains
-        site_domains = domains.filter(website=website)
-        
-        # Add to the data list
-        websites_data.append({
-            'website': website,
-            'pages_count': pages_count,
-            'domains': site_domains,
-            'public_url': request.build_absolute_uri(website.get_public_url())
-        })
-    
-    # Check if this is a new user or if they're seeing the dashboard for the first time
-    show_setup_guide = False
-    if not request.session.get('dashboard_visited', False):
-        show_setup_guide = True
-        request.session['dashboard_visited'] = True
+    # Add a note about the one website limitation
+    if not websites.exists():
+        messages.info(request, "You can create only one website per user account.")
     
     return render(request, 'website/dashboard.html', {
-        'websites_data': websites_data,
-        'show_setup_guide': show_setup_guide
+        'websites': websites,
+        'domains': domains
     })
 
 @login_required
@@ -235,37 +206,43 @@ def delete_domain(request, domain_id):
 
 @login_required
 def select_template(request):
+    # Check if user already has a website
+    existing_website = Website.objects.filter(user=request.user).first()
+    
+    if existing_website:
+        messages.warning(request, "You already have a website. Only one website per user is allowed.")
+        return redirect('edit_website', website_id=existing_website.id)
+    
     # Get all active templates
     all_templates = WebsiteTemplate.objects.filter(is_active=True)
     
-    # Get templates already used by the user
-    used_templates = Website.objects.filter(user=request.user).values_list('template_id', flat=True)
-    
-    # Filter out templates that are already in use by the user
-    available_templates = all_templates.exclude(id__in=used_templates)
-    
-    # Add warning message if user has already used some templates
-    if used_templates.exists():
-        messages.info(request, "You can only use each template once. Templates you've already used are not shown.")
-    
     return render(request, 'website/select_template.html', {
-        'templates': available_templates
+        'templates': all_templates
     })
 
 @login_required
 def create_website(request, template_id):
-    template = get_object_or_404(WebsiteTemplate, id=template_id, is_active=True)
+    # Check if user already has a website
+    existing_website = Website.objects.filter(user=request.user).first()
     
-    # Check if user has already used this template
-    if Website.objects.filter(user=request.user, template=template).exists():
-        messages.error(request, "You have already used this template. Please choose a different one.")
-        return redirect('select_template')
+    if existing_website:
+        messages.warning(request, "You already have a website. Only one website per user is allowed.")
+        return redirect('edit_website', website_id=existing_website.id)
+    
+    template = get_object_or_404(WebsiteTemplate, id=template_id, is_active=True)
     
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             # Extract content data properly
             content_data = data.get('content', {})
+            
+            # Final check to ensure user doesn't already have a website (in case of race condition)
+            if Website.objects.filter(user=request.user).exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'You already have a website. Only one website per user is allowed.'
+                }, status=400)
             
             # Create the website with the submitted content
             website = Website.objects.create(
@@ -326,9 +303,10 @@ def edit_website(request, website_id):
     
     if request.method == 'POST':
         try:
+            # Parse JSON content data
             data = json.loads(request.POST.get('content', '{}'))
             
-            # Extract contact information
+            # Extract contact information directly from the submitted data
             contact_info = {
                 'mobile_number': data.get('mobile_number', ''),
                 'contact_email': data.get('contact_email', ''),
@@ -336,22 +314,174 @@ def edit_website(request, website_id):
                 'map_location': data.get('map_location', '')
             }
             
-            # Update the website content
+            # Update the website content with all submitted data
             website.content.update(data)
             
-            # Update contact information
+            # Ensure contact_info is properly updated in the content dictionary
             if 'contact_info' not in website.content:
                 website.content['contact_info'] = {}
+                
             website.content['contact_info'].update(contact_info)
             
-            # Save the website
+            # Process media files - Handle desktop logo
+            if 'desktop_logo' in request.FILES:
+                logo_path = process_media_upload(
+                    request.FILES['desktop_logo'],
+                    subfolder='website_logos',
+                    prefix=f'logo_{website.id}',
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                )
+                if logo_path:
+                    website.content['desktop_logo'] = logo_path
+                    
+            # Handle mobile logo
+            if 'mobile_logo' in request.FILES:
+                logo_path = process_media_upload(
+                    request.FILES['mobile_logo'],
+                    subfolder='website_logos',
+                    prefix=f'mlogo_{website.id}',
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                )
+                if logo_path:
+                    website.content['mobile_logo'] = logo_path
+                    
+            # Handle favicon
+            if 'favicon' in request.FILES:
+                favicon_path = process_media_upload(
+                    request.FILES['favicon'],
+                    subfolder='website_logos',
+                    prefix=f'favicon_{website.id}',
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                )
+                if favicon_path:
+                    website.content['favicon'] = favicon_path
+                    
+            # Process slide images
+            if 'slides' in website.content:
+                # Ensure slides is a list
+                if not isinstance(website.content['slides'], list):
+                    website.content['slides'] = []
+                
+                # Process each slide that has a new image
+                for i, slide in enumerate(website.content['slides']):
+                    # Check if this slide has a new image to process
+                    if 'newImageIndex' in slide:
+                        image_key = f'slide_image_{slide["newImageIndex"]}'
+                        if image_key in request.FILES:
+                            # Process and save the image
+                            slide_image_path = process_media_upload(
+                                request.FILES[image_key],
+                                subfolder='slider_images',
+                                prefix=f'slide_{website.id}_{i}',
+                                allowed_types=settings.ALLOWED_IMAGE_TYPES
+                            )
+                            if slide_image_path:
+                                # Update the slide with the new image path
+                                slide['image'] = slide_image_path
+                    
+                    # Remove the newImageIndex flag used for processing
+                    if 'newImageIndex' in slide:
+                        del slide['newImageIndex']
+                
+                # Limit to maximum 5 slides
+                website.content['slides'] = website.content['slides'][:5]
+                
+                # Ensure at least one slide exists
+                if not website.content['slides']:
+                    # Add a default slide
+                    website.content['slides'] = [{
+                        'image': 'https://via.placeholder.com/1920x800',
+                        'heading': 'Welcome to our website',
+                        'subheading': 'Discover our amazing products and services',
+                        'buttonText': 'Learn More',
+                        'buttonLink': '#'
+                    }]
+            
+            # Handle banner images (for backwards compatibility)
+            if 'banner_image' in request.FILES:
+                banner_path = process_banner_image(request.FILES['banner_image'])
+                if banner_path:
+                    # Create banner object if not exists
+                    if 'hero_banners' not in website.content:
+                        website.content['hero_banners'] = []
+                    
+                    # Add new banner with defaults
+                    website.content['hero_banners'].append({
+                        'image': banner_path,
+                        'title': 'New Banner',
+                        'description': 'Banner description goes here',
+                        'button_text': 'Learn More',
+                        'button_url': '#'
+                    })
+            
+            # Process removal requests
+            if request.POST.get('remove_desktop_logo') == 'true':
+                if 'desktop_logo' in website.content:
+                    delete_media_file(website.content['desktop_logo'])
+                    website.content['desktop_logo'] = ''
+                    
+            if request.POST.get('remove_mobile_logo') == 'true':
+                if 'mobile_logo' in website.content:
+                    delete_media_file(website.content['mobile_logo'])
+                    website.content['mobile_logo'] = ''
+                    
+            if request.POST.get('remove_favicon') == 'true':
+                if 'favicon' in website.content:
+                    delete_media_file(website.content['favicon'])
+                    website.content['favicon'] = ''
+            
+            # Handle documents and other media
+            if 'document' in request.FILES:
+                doc_path = process_document_upload(request.FILES['document'])
+                if doc_path:
+                    # Initialize documents array if needed
+                    if 'documents' not in website.content:
+                        website.content['documents'] = []
+                    
+                    # Add the document with metadata
+                    doc_name = request.POST.get('document_name', request.FILES['document'].name)
+                    website.content['documents'].append({
+                        'path': doc_path,
+                        'name': doc_name,
+                        'size': request.FILES['document'].size,
+                        'type': request.FILES['document'].content_type,
+                        'date_added': timezone.now().isoformat()
+                    })
+                    
+            # Handle gallery images
+            if 'gallery_image' in request.FILES:
+                gallery_image_path = process_gallery_image(request.FILES['gallery_image'])
+                if gallery_image_path:
+                    # Initialize gallery if needed
+                    if 'gallery' not in website.content:
+                        website.content['gallery'] = []
+                    
+                    # Add image with metadata
+                    caption = request.POST.get('gallery_caption', '')
+                    website.content['gallery'].append({
+                        'image': gallery_image_path,
+                        'caption': caption,
+                        'date_added': timezone.now().isoformat()
+                    })
+                    
+            # Update last_modified timestamp to invalidate cache for template pages
+            website.content['last_modified'] = timezone.now().isoformat()
+                    
+            # Ensure we save with force_update to guarantee changes are committed
             website.save(force_update=True)
             
-            return JsonResponse({
+            response = JsonResponse({
                 'status': 'success',
                 'message': 'Website content updated successfully',
                 'content': website.content
             })
+            
+            # Set cache control headers to prevent caching
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+            
+            return response
             
         except json.JSONDecodeError:
             return JsonResponse({
@@ -369,6 +499,20 @@ def edit_website(request, website_id):
     context = {
         'website': website,
         'schema': website.template.content_schema if website.template else {},
+        'editable_fields': {
+            'site_name': 'Website Name',
+            'description': 'Short Description',
+            'top_seller_title': 'Top Seller Section Title',
+            'featured_products_title': 'Featured Products Title',
+            'new_arrivals_title': 'New Arrivals Title',
+            'about_section_title': 'About Section Title',
+            'contact_section_title': 'Contact Section Title',
+            'footer_description': 'Footer Description',
+            'mobile_number': 'Contact Phone Number',
+            'contact_email': 'Contact Email',
+            'address': 'Business Address',
+            'map_location': 'Google Maps Embed URL'
+        }
     }
     
     return render(request, 'website/edit_website.html', context)
@@ -962,7 +1106,9 @@ def public_website(request, public_slug):
         
         # Use template path with forward slashes for Django template loader
         template_path = f"{website.template.template_path.strip('/')}/{homepage.template_file}"
-        return render(request, template_path, {
+        
+        # Render the template with context
+        response = render(request, template_path, {
             'website': website,
             'page': homepage,
             'content': homepage.content,
@@ -978,10 +1124,19 @@ def public_website(request, public_slug):
                 }
             ]
         })
+        
+        # Set cache control headers to prevent browser caching
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        
+        return response
     else:
         # Use template path with forward slashes for Django template loader
         template_path = f"{website.template.template_path.strip('/')}/home.html"
-        return render(request, template_path, {
+        
+        # Render the template with context
+        response = render(request, template_path, {
             'website': website,
             'content': website.content,
             'is_public_view': True,
@@ -995,6 +1150,13 @@ def public_website(request, public_slug):
                 }
             ]
         })
+        
+        # Set cache control headers to prevent browser caching
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        
+        return response
 
 def public_website_page(request, public_slug, page_slug):
     """View for public access to a specific page of a website via its shareable link"""
@@ -1082,24 +1244,28 @@ def public_website_page(request, public_slug, page_slug):
             else:
                 page.content[field] = ""
     
-    # Use template path with forward slashes for Django template loader
+    # Use the template path with forward slashes for Django template loader
     template_path = f"{website.template.template_path.strip('/')}/{page.template_file}"
-    return render(request, template_path, {
+    
+    # Prepare navigation context with all pages for the website
+    navigation = website.get_pages().filter(is_active=True)
+    
+    # Render the template with context
+    response = render(request, template_path, {
         'website': website,
         'page': page,
         'content': page.content,
         'global_content': website.content,
-        'is_public_view': True,
-        'default_banners': [
-            {
-                'image': 'https://via.placeholder.com/1920x1080',
-                'title': 'Welcome to Your Store',
-                'description': 'Discover amazing products at great prices',
-                'button_text': 'Shop Now',
-                'button_url': '/shop'
-            }
-        ]
+        'navigation': navigation,
+        'is_public_view': True
     })
+    
+    # Set cache control headers to prevent browser caching
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
 
 @login_required
 def delete_website(request, website_id):
@@ -1555,7 +1721,7 @@ def product_detail(request, product_id):
         return redirect('website_products')
 
 def privacy_policy_page(request, public_slug):
-    """View for the privacy policy page"""
+    """View for privacy policy page of a website"""
     # Handle 'None' string as a special case
     if public_slug == 'None':
         raise Http404("Website not found. Invalid public link.")
@@ -1563,16 +1729,24 @@ def privacy_policy_page(request, public_slug):
     website = get_object_or_404(Website, public_slug=public_slug)
     
     # Use template path with forward slashes for Django template loader
-    template_path = f"{website.template.template_path.strip('/')}/privacy-policy.html"
+    template_path = "website/template1/privacy-policy.html"
     
-    return render(request, template_path, {
+    # Render the template with context
+    response = render(request, template_path, {
         'website': website,
-        'global_content': website.content,
+        'content': website.content,
         'is_public_view': True
     })
+    
+    # Set cache control headers to prevent browser caching
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
 
 def terms_conditions_page(request, public_slug):
-    """View for the terms and conditions page"""
+    """View for terms & conditions page of a website"""
     # Handle 'None' string as a special case
     if public_slug == 'None':
         raise Http404("Website not found. Invalid public link.")
@@ -1580,16 +1754,24 @@ def terms_conditions_page(request, public_slug):
     website = get_object_or_404(Website, public_slug=public_slug)
     
     # Use template path with forward slashes for Django template loader
-    template_path = f"{website.template.template_path.strip('/')}/terms-conditions.html"
+    template_path = "website/template1/terms-conditions.html"
     
-    return render(request, template_path, {
+    # Render the template with context
+    response = render(request, template_path, {
         'website': website,
-        'global_content': website.content,
+        'content': website.content,
         'is_public_view': True
     })
+    
+    # Set cache control headers to prevent browser caching
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
 
 def refund_policy_page(request, public_slug):
-    """View for the refund policy page"""
+    """View for refund policy page of a website"""
     # Handle 'None' string as a special case
     if public_slug == 'None':
         raise Http404("Website not found. Invalid public link.")
@@ -1597,13 +1779,21 @@ def refund_policy_page(request, public_slug):
     website = get_object_or_404(Website, public_slug=public_slug)
     
     # Use template path with forward slashes for Django template loader
-    template_path = f"{website.template.template_path.strip('/')}/refund-policy.html"
+    template_path = "website/template1/refund-policy.html"
     
-    return render(request, template_path, {
+    # Render the template with context
+    response = render(request, template_path, {
         'website': website,
-        'global_content': website.content,
+        'content': website.content,
         'is_public_view': True
     })
+    
+    # Set cache control headers to prevent browser caching
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
 
 @login_required
 def view_enhanced_homepage(request, website_id):
@@ -1876,3 +2066,103 @@ def shop_redirect(request, public_slug):
         # If no categories exist, show a message and redirect to home
         messages.info(request, 'No categories available yet.')
         return redirect('public_website', public_slug=public_slug)
+
+def home(request):
+    website = Website.objects.first()
+    return render(request, 'website/home.html', {'website': website})
+
+def edit_website(request):
+    website = Website.objects.first()
+    
+    if request.method == 'POST':
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Handle AJAX request
+            try:
+                # Get current content or initialize empty dict
+                content = json.loads(website.content) if website.content else {}
+                
+                # Update content with form data
+                form_data = request.POST.dict()
+                
+                # Process slider data
+                if 'slides' in form_data:
+                    slides = json.loads(form_data.get('slides', '[]'))
+                    content['slides'] = slides
+                    
+                    # Process slide images
+                    for i, slide in enumerate(slides):
+                        slide_image_key = f'slide_image_{i}'
+                        if slide_image_key in request.FILES:
+                            # Handle the image upload logic here
+                            # Save the image and update the slide data with the URL
+                            image = request.FILES[slide_image_key]
+                            filename = f'slide_{i}_{image.name}'
+                            file_path = os.path.join('media', 'slides', filename)
+                            
+                            # Ensure media/slides directory exists
+                            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                            
+                            # Save the file
+                            with open(file_path, 'wb+') as destination:
+                                for chunk in image.chunks():
+                                    destination.write(chunk)
+                                    
+                            # Update slide with image URL
+                            content['slides'][i]['image'] = f'/media/slides/{filename}'
+                
+                # Update other content fields from form
+                for key in form_data:
+                    if key not in ['csrfmiddlewaretoken', 'slides']:
+                        content[key] = form_data[key]
+                
+                # Save content back to the website object
+                website.content = json.dumps(content)
+                website.save()
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Website content updated successfully',
+                    'content': content
+                })
+                
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Error updating website content: {str(e)}'
+                })
+        else:
+            # Handle regular form submission
+            try:
+                # Get current content or initialize empty dict
+                content = json.loads(website.content) if website.content else {}
+                
+                # Update general fields
+                content['site_name'] = request.POST.get('site_name', '')
+                content['tagline'] = request.POST.get('tagline', '')
+                content['copyright'] = request.POST.get('copyright', '')
+                
+                # Handle logo uploads
+                if 'desktop_logo' in request.FILES:
+                    # Handle desktop logo upload
+                    pass
+                
+                if 'mobile_logo' in request.FILES:
+                    # Handle mobile logo upload
+                    pass
+                
+                if 'favicon' in request.FILES:
+                    # Handle favicon upload
+                    pass
+                
+                # Save content
+                website.content = json.dumps(content)
+                website.save()
+                
+                messages.success(request, 'Website content updated successfully')
+                return redirect('edit_website')
+                
+            except Exception as e:
+                messages.error(request, f'Error updating website content: {str(e)}')
+                return redirect('edit_website')
+    
+    return render(request, 'website/edit_website.html', {'website': website})

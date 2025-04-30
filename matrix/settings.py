@@ -82,6 +82,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'User.middleware.UserAuthMiddleware',
     'website.middleware.CustomDomainMiddleware',
+    'website.middleware.NoCacheMiddleware',
 ]
 
 
@@ -95,9 +96,9 @@ AUTHENTICATION_BACKENDS = [
 ROOT_URLCONF = 'matrix.urls'
 
 # settings.py
-SESSION_COOKIE_SECURE = False  # Set to True only in production with HTTPS
+SESSION_COOKIE_SECURE = True  # Set to True only in production with HTTPS
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = False  # Set to True only in production with HTTPS
+CSRF_COOKIE_SECURE = True  # Set to True only in production with HTTPS
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 SESSION_COOKIE_SAMESITE = 'Lax'
