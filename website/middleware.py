@@ -337,3 +337,83 @@ class NoCacheMiddleware(MiddlewareMixin):
             response['Expires'] = '0'
         
         return response
+
+class PerformanceOptimizationMiddleware:
+    """
+    Middleware for website performance optimization
+    Adds cache headers, content compression, and other performance optimizations
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        # Only apply optimizations to website routes
+        if '/website/' in request.path or '/s/' in request.path:
+            # Add cache control headers
+            if not response.get('Cache-Control') and response.status_code == 200:
+                # Cache static assets longer
+                if any(ext in request.path.lower() for ext in ['.css', '.js', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']):
+                    response['Cache-Control'] = 'public, max-age=86400'  # 1 day
+                else:
+                    response['Cache-Control'] = 'public, max-age=3600'  # 1 hour
+                    
+            # Add ETag for efficient caching
+            if not response.get('ETag') and hasattr(response, 'content'):
+                import hashlib
+                etag = hashlib.md5(response.content).hexdigest()
+                response['ETag'] = f'"{etag}"'
+            
+        return response
+
+class LazyLoadingMiddleware:
+    """
+    Middleware to inject lazy loading attributes to images and iframes
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        # Only process HTML responses for website routes
+        is_website_route = '/website/' in request.path or '/s/' in request.path
+        is_html = response.get('Content-Type', '').lower().startswith('text/html')
+        
+        if is_website_route and is_html and hasattr(response, 'content'):
+            content = response.content.decode('utf-8')
+            
+            # Add lazy loading to images
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(content, 'html.parser')
+            
+            # Add lazy loading to images (exclude small icons and logos)
+            for img in soup.find_all('img'):
+                if not img.get('loading') and not img.get('class') in ['logo', 'icon', 'avatar']:
+                    img['loading'] = 'lazy'
+            
+            # Add lazy loading to iframes
+            for iframe in soup.find_all('iframe'):
+                if not iframe.get('loading'):
+                    iframe['loading'] = 'lazy'
+            
+            # Auto-optimize image markup for responsiveness
+            for img in soup.find_all('img'):
+                if not img.get('class') in ['logo', 'icon', 'avatar']:
+                    # Add srcset for responsive images
+                    src = img.get('src', '')
+                    if src and not img.get('srcset') and (src.endswith('.jpg') or src.endswith('.jpeg') or src.endswith('.png')):
+                        # Only add srcset for local images
+                        if '/media/' in src:
+                            img['srcset'] = f"{src} 1x, {src.rsplit('.', 1)[0]}-2x.{src.rsplit('.', 1)[1]} 2x"
+                    # Add responsive width attributes
+                    if not img.get('width') and not img.get('height'):
+                        img['width'] = '100%'
+                        img['style'] = 'max-width: 100%; height: auto;'
+                        
+            # Update response content
+            response.content = soup.encode()
+            
+        return response

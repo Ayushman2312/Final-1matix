@@ -56,6 +56,8 @@ class Website(models.Model):
     public_slug = models.SlugField(max_length=100, unique=True, null=True, blank=True, help_text="Public URL slug for sharing")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_deployed = models.BooleanField(default=False)
+    last_deployed = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -98,8 +100,15 @@ class Website(models.Model):
             'featured_products_title': self.content.get('featured_products_title', 'Featured Products'),
             'new_arrivals_title': self.content.get('new_arrivals_title', 'New Arrivals'),
             'about_section_title': self.content.get('about_section_title', 'About Us'),
+            'about_section_subtitle': self.content.get('about_section_subtitle', 'Our Story'),
+            'about_section_content': self.content.get('about_section_content', 'Tell your story here. Share your mission, values, and what makes your business unique.'),
             'contact_section_title': self.content.get('contact_section_title', 'Contact Us'),
             'footer_description': self.content.get('footer_description', 'Your trusted online store'),
+            'testimonials_title': self.content.get('testimonials_title', 'What Our Customers Say'),
+            'about_button': self.content.get('about_button', {
+                'label': 'Learn More',
+                'url': '#'
+            }),
             'hero_banners': self.content.get('hero_banners', [
                 {
                     'image': 'https://via.placeholder.com/1920x1080',
@@ -108,7 +117,30 @@ class Website(models.Model):
                     'button_text': 'Shop Now',
                     'button_url': '/shop'
                 }
-            ])
+            ]),
+            'testimonials': self.content.get('testimonials', [
+                {
+                    'name': 'John Doe',
+                    'position': 'CEO, Example Inc',
+                    'content': 'This is a sample testimonial. Add real customer reviews here to build trust.',
+                    'rating': 5,
+                    'avatar': ''
+                }
+            ]),
+            'theme': self.content.get('theme', {
+                'colors': {
+                    'primary': '#3b82f6',
+                    'secondary': '#6b7280',
+                    'accent': '#f59e0b',
+                    'background': '#ffffff',
+                    'text': '#1f2937',
+                    'isDark': False
+                },
+                'typography': {
+                    'headingFont': 'Poppins',
+                    'bodyFont': 'Open Sans'
+                }
+            })
         }
 
         # Initialize contact information if it doesn't exist
@@ -243,6 +275,29 @@ class Website(models.Model):
         content = self.get_content()
         return content.get('slides', [])
 
+    def is_complete(self):
+        """Check if the website has the minimum required content for deployment"""
+        content = self.get_content()
+        
+        # Basic checks for required content
+        if not content.get('site_name'):
+            return False
+            
+        # Check if contact information is present
+        contact_info = content.get('contact_info', {})
+        if not contact_info.get('contact_email') and not contact_info.get('mobile_number'):
+            return False
+            
+        # Ensure there's at least some content
+        if not content.get('description'):
+            return False
+            
+        # Check for at least one page
+        if not self.get_pages().exists():
+            return False
+            
+        return True
+
 class WebsitePage(models.Model):
     website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name='pages')
     title = models.CharField(max_length=100)
@@ -374,4 +429,237 @@ class WebsiteProduct(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+class WebsiteDeployment(models.Model):
+    """Tracks website deployments and their status"""
+    DEPLOYMENT_STATUS = (
+        ('queued', 'Queued'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    )
+    
+    website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name='deployments')
+    status = models.CharField(max_length=20, choices=DEPLOYMENT_STATUS, default='queued')
+    version = models.CharField(max_length=20, blank=True, null=True)
+    environment = models.CharField(max_length=50, default='production')
+    logs = models.TextField(blank=True, null=True)
+    deployed_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    
+    # Deployment configurations
+    config = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        ordering = ['-deployed_at']
+    
+    def __str__(self):
+        return f"Deployment {self.id} for {self.website.name} - {self.status}"
+    
+    def save(self, *args, **kwargs):
+        if self.status == 'completed' and not self.completed_at:
+            self.completed_at = timezone.now()
+        super().save(*args, **kwargs)
+        
+    def add_log(self, message):
+        """Add a log message to deployment logs"""
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+        log_entry = f"[{timestamp}] {message}\n"
+        
+        if not self.logs:
+            self.logs = log_entry
+        else:
+            self.logs += log_entry
+            
+        self.save(update_fields=['logs'])
+    
+    def get_duration(self):
+        """Get deployment duration in seconds"""
+        if self.completed_at:
+            return (self.completed_at - self.deployed_at).total_seconds()
+        return None
+        
+    def start_deployment(self):
+        """Start deployment process"""
+        self.status = 'in_progress'
+        self.add_log("Deployment started")
+        self.save()
+        
+    def complete_deployment(self, success=True):
+        """Mark deployment as complete"""
+        self.status = 'completed' if success else 'failed'
+        self.completed_at = timezone.now()
+        self.add_log(f"Deployment {'completed successfully' if success else 'failed'}")
+        self.save()
+
+class WebsiteBackup(models.Model):
+    """Stores website backups"""
+    website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name='backups')
+    name = models.CharField(max_length=100)
+    content = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Backup: {self.name} - {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    def restore(self):
+        """Restore website content from this backup"""
+        self.website.content = self.content
+        self.website.save()
+        return True
+
+class WebsiteTheme(models.Model):
+    """Pre-configured theme settings that can be applied to a website"""
+    name = models.CharField(max_length=100)
+    preview_image = models.ImageField(upload_to='theme_previews/', blank=True, null=True)
+    description = models.TextField(blank=True)
+    color_scheme = models.JSONField(help_text="JSON containing color scheme information", default=dict)
+    typography = models.JSONField(help_text="JSON containing typography settings", default=dict)
+    layout_settings = models.JSONField(help_text="JSON containing layout settings", default=dict)
+    component_styles = models.JSONField(help_text="JSON containing component styles", default=dict)
+    template = models.ForeignKey(WebsiteTemplate, on_delete=models.SET_NULL, null=True, blank=True, 
+                                related_name='themes', help_text="Associated template if theme is template-specific")
+    is_premium = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+    
+    def apply_to_website(self, website):
+        """Apply theme settings to a website"""
+        # Get current content
+        content = website.get_content()
+        
+        # Apply theme settings
+        if not 'theme' in content:
+            content['theme'] = {}
+            
+        # Apply color scheme
+        content['theme']['colors'] = self.color_scheme
+        
+        # Apply typography
+        content['theme']['typography'] = self.typography
+        
+        # Apply layout settings
+        content['theme']['layout'] = self.layout_settings
+        
+        # Apply component styles
+        content['theme']['components'] = self.component_styles
+        
+        # Save changes
+        website.set_content(content)
+        website.save()
+        
+        return True
+        
+class WebsiteFont(models.Model):
+    """Available fonts for website customization"""
+    FONT_TYPES = (
+        ('google', 'Google Font'),
+        ('custom', 'Custom Font'),
+        ('system', 'System Font'),
+    )
+    
+    name = models.CharField(max_length=100)
+    font_family = models.CharField(max_length=100)
+    font_type = models.CharField(max_length=20, choices=FONT_TYPES, default='google')
+    url = models.URLField(blank=True, null=True, help_text="URL for loading font if not a system font")
+    weights_available = models.CharField(max_length=100, default="400,700", help_text="Comma-separated list of available weights")
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.name
+    
+    def get_font_import_code(self):
+        """Get CSS code for importing this font"""
+        if self.font_type == 'google':
+            weights = self.weights_available.replace(' ', '')
+            return f'@import url("https://fonts.googleapis.com/css2?family={self.font_family.replace(" ", "+")}&display=swap");'
+        elif self.font_type == 'custom' and self.url:
+            return f'@import url("{self.url}");'
+        else:
+            return ""  # System fonts don't need imports
+            
+class WebsiteColorScheme(models.Model):
+    """Predefined color schemes for websites"""
+    name = models.CharField(max_length=100)
+    primary_color = models.CharField(max_length=20, help_text="Primary brand color (hex code)")
+    secondary_color = models.CharField(max_length=20, help_text="Secondary brand color (hex code)")
+    accent_color = models.CharField(max_length=20, help_text="Accent color for highlights (hex code)")
+    background_color = models.CharField(max_length=20, help_text="Main background color (hex code)")
+    text_color = models.CharField(max_length=20, help_text="Main text color (hex code)")
+    link_color = models.CharField(max_length=20, help_text="Link color (hex code)")
+    button_color = models.CharField(max_length=20, help_text="Button color (hex code)")
+    button_text_color = models.CharField(max_length=20, help_text="Button text color (hex code)")
+    header_color = models.CharField(max_length=20, help_text="Header background color (hex code)")
+    footer_color = models.CharField(max_length=20, help_text="Footer background color (hex code)")
+    is_dark = models.BooleanField(default=False, help_text="Is this a dark theme?")
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.name
+    
+    def get_colors_dict(self):
+        """Return colors as dictionary for easy application to website content"""
+        return {
+            'primary': self.primary_color,
+            'secondary': self.secondary_color,
+            'accent': self.accent_color,
+            'background': self.background_color,
+            'text': self.text_color,
+            'link': self.link_color,
+            'button': self.button_color,
+            'buttonText': self.button_text_color,
+            'header': self.header_color,
+            'footer': self.footer_color,
+            'isDark': self.is_dark
+        }
+        
+    def apply_to_website(self, website):
+        """Apply this color scheme to a website"""
+        content = website.get_content()
+        
+        if not 'theme' in content:
+            content['theme'] = {}
+            
+        content['theme']['colors'] = self.get_colors_dict()
+        
+        website.set_content(content)
+        website.save()
+        
+        return True
+
+class WebsiteAsset(models.Model):
+    """Store custom assets for website (logos, icons, banners, etc.)"""
+    ASSET_TYPES = (
+        ('logo', 'Logo'),
+        ('favicon', 'Favicon'),
+        ('banner', 'Banner'),
+        ('hero', 'Hero Image'),
+        ('background', 'Background Image'),
+        ('icon', 'Icon'),
+        ('custom', 'Custom Asset'),
+    )
+    
+    website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name='assets')
+    name = models.CharField(max_length=100)
+    asset_type = models.CharField(max_length=20, choices=ASSET_TYPES, default='custom')
+    file = models.FileField(upload_to='website_assets/')
+    alt_text = models.CharField(max_length=255, blank=True, help_text="Alternative text for accessibility")
+    width = models.PositiveIntegerField(blank=True, null=True, help_text="Width in pixels")
+    height = models.PositiveIntegerField(blank=True, null=True, help_text="Height in pixels")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_asset_type_display()})"
+        
+    def get_url(self):
+        """Get the asset URL"""
+        return self.file.url
 

@@ -122,6 +122,62 @@
 </section>
 
 <!-- CTA Section -->
+<!-- Australian Lifestyle Brand Section -->
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-4">
+    <div class="flex flex-col items-center justify-center text-center mb-12">
+      <h2 class="text-2xl font-light uppercase tracking-widest text-gray-800">
+        {{ page.content.aus_brand_heading|default:"WE ARE AN AUSTRALIAN LIFESTYLE" }}
+      </h2>
+      <h3 class="text-2xl font-light uppercase tracking-widest text-gray-800 mb-6">
+        {{ page.content.aus_brand_subheading|default:"BRAND" }}
+      </h3>
+      <p class="max-w-3xl text-gray-600 text-center">
+        {{ page.content.aus_brand_description|default:"We started Auguste with a clear vision to transcend trends, and instead design future vintage pieces that would be loved for seasons to come." }}
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
+      <!-- Left Side Text Content -->
+      <div class="flex flex-col justify-center">
+        <div class="mb-8">
+          <h4 class="text-sm uppercase tracking-widest text-gray-500 mb-4">
+            {{ page.content.aus_brand_section_label|default:"OUR STORY" }}
+          </h4>
+          <h3 class="text-2xl font-light uppercase mb-4">
+            {{ page.content.aus_brand_section_title|default:"INSPIRING WOMEN TO CHERISH THEMSELVES AND OUR PLANET" }}
+          </h3>
+          <p class="text-gray-600">
+            {{ page.content.aus_brand_section_description|default:"Built on a foundation of environmental consciousness and driven by a sense of self-empowerment, we create timeless products that pay homage to the beauty of femininity." }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Side Image Collage - Redesigned for proper positioning -->
+      <div class="relative h-[400px] md:h-[450px] lg:h-[500px]">
+        <!-- Main Image (Person/Portrait) -->
+        <div class="absolute right-0 top-0 w-3/4 h-full overflow-hidden rounded-sm">
+          <img 
+            src="{{ page.content.aus_brand_main_image|default:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80' }}" 
+            alt="Australian Brand" 
+            class="w-full h-full object-cover object-center"
+          />
+        </div>
+        
+        <!-- Secondary Image (Nature/Waterfall) -->
+        <div class="absolute left-0 bottom-1/4 w-5/12 aspect-square overflow-hidden rounded-sm shadow-md z-20">
+          <img 
+            src="{{ page.content.aus_brand_secondary_image|default:'https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80' }}" 
+            alt="Nature" 
+            class="w-full h-full object-cover"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
 <section class="py-16 bg-gray-800 text-white">
   <div class="container mx-auto px-4 text-center">
     <h2 class="text-3xl font-light mb-6">Want to know more?</h2>

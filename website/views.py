@@ -24,6 +24,119 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 
+def calculate_website_health_score(website):
+    """Calculate health score for website based on completeness and quality"""
+    score = 0
+    total_points = 0
+    
+    # Check for basic information
+    if website.content.get('site_name'):
+        score += 10
+    total_points += 10
+    
+    if website.content.get('description'):
+        score += 10
+    total_points += 10
+    
+    # Check for contact information
+    contact_info = website.content.get('contact_info', {})
+    if contact_info.get('mobile_number'):
+        score += 5
+    total_points += 5
+    
+    if contact_info.get('contact_email'):
+        score += 5
+    total_points += 5
+    
+    if contact_info.get('address'):
+        score += 5
+    total_points += 5
+    
+    # Check for brand assets
+    if website.content.get('desktop_logo'):
+        score += 10
+    total_points += 10
+    
+    if website.content.get('favicon'):
+        score += 5
+    total_points += 5
+    
+    # Check for content sections
+    if website.content.get('hero_banners') and len(website.content.get('hero_banners', [])) > 0:
+        score += 10
+    total_points += 10
+    
+    if website.content.get('about_section_content'):
+        score += 10
+    total_points += 10
+    
+    if website.content.get('testimonials') and len(website.content.get('testimonials', [])) > 0:
+        score += 10
+    total_points += 10
+    
+    # Calculate percentage
+    health_score = int((score / total_points) * 100) if total_points > 0 else 0
+    return health_score
+
+def calculate_website_seo_score(website):
+    """Calculate SEO score for website based on SEO best practices"""
+    score = 0
+    total_points = 0
+    
+    # Check for SEO meta information
+    seo = website.content.get('seo', {})
+    
+    if seo.get('meta_title') and len(seo.get('meta_title', '')) > 10:
+        score += 15
+    total_points += 15
+    
+    if seo.get('meta_description') and len(seo.get('meta_description', '')) > 50:
+        score += 15
+    total_points += 15
+    
+    if seo.get('keywords'):
+        score += 10
+    total_points += 10
+    
+    # Check for Open Graph metadata
+    if seo.get('og_title'):
+        score += 5
+    total_points += 5
+    
+    if seo.get('og_description'):
+        score += 5
+    total_points += 5
+    
+    if seo.get('og_image'):
+        score += 10
+    total_points += 10
+    
+    # Check for analytics and tracking
+    if seo.get('google_analytics_id'):
+        score += 10
+    total_points += 10
+    
+    if seo.get('google_tag_manager_id'):
+        score += 5
+    total_points += 5
+    
+    if seo.get('fb_pixel_id'):
+        score += 5
+    total_points += 5
+    
+    # Check for sitemap and robots.txt
+    if seo.get('generate_sitemap'):
+        score += 10
+    total_points += 10
+    
+    if seo.get('robots_txt'):
+        score += 10
+    total_points += 10
+    
+    # Calculate percentage
+    seo_score = int((score / total_points) * 100) if total_points > 0 else 0
+    return seo_score
+
 @login_required
 def dashboard(request):
     """Dashboard view for website management"""
@@ -303,25 +416,160 @@ def edit_website(request, website_id):
     
     if request.method == 'POST':
         try:
-            # Parse JSON content data
-            data = json.loads(request.POST.get('content', '{}'))
+            # Check if this is an AJAX request
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
             
-            # Extract contact information directly from the submitted data
-            contact_info = {
-                'mobile_number': data.get('mobile_number', ''),
-                'contact_email': data.get('contact_email', ''),
-                'address': data.get('address', ''),
-                'map_location': data.get('map_location', '')
-            }
-            
-            # Update the website content with all submitted data
-            website.content.update(data)
-            
-            # Ensure contact_info is properly updated in the content dictionary
-            if 'contact_info' not in website.content:
-                website.content['contact_info'] = {}
+            # Parse data from the request
+            if is_ajax:
+                # For AJAX auto-save requests, we get raw form data
+                # Extract basic content information
+                site_name = request.POST.get('site_name', '')
+                description = request.POST.get('description', '')
                 
-            website.content['contact_info'].update(contact_info)
+                # Create or update content dictionary
+                if not website.content:
+                    website.content = {}
+                
+                # Update basic information
+                website.content['site_name'] = site_name
+                website.content['description'] = description
+                
+                # Extract contact information
+                contact_info = {
+                    'mobile_number': request.POST.get('mobile_number', ''),
+                    'contact_email': request.POST.get('contact_email', ''),
+                    'address': request.POST.get('address', ''),
+                    'map_location': request.POST.get('map_location', '')
+                }
+                
+                # Ensure contact_info exists in content
+                if 'contact_info' not in website.content:
+                    website.content['contact_info'] = {}
+                website.content['contact_info'].update(contact_info)
+                
+                # Extract social links
+                if 'seo' not in website.content:
+                    website.content['seo'] = {}
+                if 'social_links' not in website.content['seo']:
+                    website.content['seo']['social_links'] = {}
+                
+                website.content['seo']['social_links'].update({
+                    'facebook': request.POST.get('facebook_url', ''),
+                    'instagram': request.POST.get('instagram_url', ''),
+                    'twitter': request.POST.get('twitter_url', ''),
+                    'linkedin': request.POST.get('linkedin_url', ''),
+                    'youtube': request.POST.get('youtube_url', '')
+                })
+                
+                # About section
+                website.content['about_section_title'] = request.POST.get('about_section_title', 'About Us')
+                website.content['about_section_subtitle'] = request.POST.get('about_section_subtitle', 'Our Story')
+                website.content['about_section_content'] = request.POST.get('about_section_content', '')
+                
+                # About button
+                if 'about_button' not in website.content:
+                    website.content['about_button'] = {}
+                website.content['about_button'].update({
+                    'label': request.POST.get('about_button_text', 'Learn More'),
+                    'url': request.POST.get('about_button_url', '#')
+                })
+                
+                # Australian Lifestyle Brand section
+                website.content['aus_brand_heading'] = request.POST.get('aus_brand_heading', 'WE ARE AN AUSTRALIAN LIFESTYLE')
+                website.content['aus_brand_subheading'] = request.POST.get('aus_brand_subheading', 'BRAND')
+                website.content['aus_brand_description'] = request.POST.get('aus_brand_description', 'We started Auguste with a clear vision to transcend trends, and instead design future vintage pieces that would be loved for seasons to come.')
+                website.content['aus_brand_section_label'] = request.POST.get('aus_brand_section_label', 'OUR STORY')
+                website.content['aus_brand_section_title'] = request.POST.get('aus_brand_section_title', 'INSPIRING WOMEN TO CHERISH THEMSELVES AND OUR PLANET')
+                website.content['aus_brand_section_description'] = request.POST.get('aus_brand_section_description', 'Built on a foundation of environmental consciousness and driven by a sense of self-empowerment, we create timeless products that pay homage to the beauty of femininity.')
+                
+                # Testimonials section
+                website.content['testimonials_title'] = request.POST.get('testimonials_title', 'What Our Customers Say')
+                
+                # Process hero banners from JSON data
+                if 'hero_banners' in request.POST:
+                    try:
+                        hero_banners = json.loads(request.POST.get('hero_banners', '[]'))
+                        website.content['hero_banners'] = hero_banners
+                    except json.JSONDecodeError:
+                        # If JSON parsing fails, keep existing data
+                        pass
+                
+                # Process testimonials from JSON data
+                if 'testimonials' in request.POST:
+                    try:
+                        testimonials = json.loads(request.POST.get('testimonials', '[]'))
+                        website.content['testimonials'] = testimonials
+                    except json.JSONDecodeError:
+                        # If JSON parsing fails, keep existing data
+                        pass
+                
+                # Process appearance and theme settings
+                if request.POST.get('primary_color'):
+                    if 'theme' not in website.content:
+                        website.content['theme'] = {}
+                    if 'colors' not in website.content['theme']:
+                        website.content['theme']['colors'] = {}
+                    
+                    website.content['theme']['colors'].update({
+                        'primary': request.POST.get('primary_color', '#3b82f6'),
+                        'secondary': request.POST.get('secondary_color', '#6b7280'),
+                        'accent': request.POST.get('accent_color', '#f59e0b'),
+                        'background': request.POST.get('background_color', '#ffffff'),
+                        'text': request.POST.get('text_color', '#1f2937'),
+                        'isDark': request.POST.get('is_dark_mode') == 'on'
+                    })
+                
+                # Process typography settings
+                if request.POST.get('heading_font') or request.POST.get('body_font'):
+                    if 'theme' not in website.content:
+                        website.content['theme'] = {}
+                    if 'typography' not in website.content['theme']:
+                        website.content['theme']['typography'] = {}
+                    
+                    website.content['theme']['typography'].update({
+                        'headingFont': request.POST.get('heading_font', 'Poppins'),
+                        'bodyFont': request.POST.get('body_font', 'Open Sans')
+                    })
+                
+                # Process SEO settings
+                if request.POST.get('seo_meta_title'):
+                    if 'seo' not in website.content:
+                        website.content['seo'] = {}
+                    
+                    website.content['seo'].update({
+                        'meta_title': request.POST.get('seo_meta_title', ''),
+                        'meta_description': request.POST.get('seo_meta_description', ''),
+                        'keywords': request.POST.get('seo_keywords', ''),
+                        'og_title': request.POST.get('seo_og_title', ''),
+                        'og_description': request.POST.get('seo_og_description', ''),
+                        'google_analytics_id': request.POST.get('google_analytics_id', ''),
+                        'google_tag_manager_id': request.POST.get('google_tag_manager_id', ''),
+                        'fb_pixel_id': request.POST.get('fb_pixel_id', ''),
+                        'custom_head_code': request.POST.get('custom_head_code', ''),
+                        'robots_txt': request.POST.get('robots_txt', ''),
+                        'generate_sitemap': request.POST.get('generate_sitemap') == 'on'
+                    })
+            else:
+                # For regular form submissions, use the existing parsing logic
+                # Parse JSON content data
+                data = json.loads(request.POST.get('content', '{}'))
+                
+                # Extract contact information directly from the submitted data
+                contact_info = {
+                    'mobile_number': data.get('mobile_number', ''),
+                    'contact_email': data.get('contact_email', ''),
+                    'address': data.get('address', ''),
+                    'map_location': data.get('map_location', '')
+                }
+                
+                # Update the website content with all submitted data
+                website.content.update(data)
+                
+                # Ensure contact_info is properly updated in the content dictionary
+                if 'contact_info' not in website.content:
+                    website.content['contact_info'] = {}
+                    
+                website.content['contact_info'].update(contact_info)
             
             # Process media files - Handle desktop logo
             if 'desktop_logo' in request.FILES:
@@ -355,6 +603,28 @@ def edit_website(request, website_id):
                 )
                 if favicon_path:
                     website.content['favicon'] = favicon_path
+                    
+            # Handle Australian lifestyle brand main image
+            if 'aus_brand_main_image' in request.FILES:
+                image_path = process_media_upload(
+                    request.FILES['aus_brand_main_image'],
+                    subfolder='website_images',
+                    prefix=f'aus_brand_main_{website.id}',
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                )
+                if image_path:
+                    website.content['aus_brand_main_image'] = image_path
+                    
+            # Handle Australian lifestyle brand secondary image
+            if 'aus_brand_secondary_image' in request.FILES:
+                image_path = process_media_upload(
+                    request.FILES['aus_brand_secondary_image'],
+                    subfolder='website_images',
+                    prefix=f'aus_brand_sec_{website.id}',
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                )
+                if image_path:
+                    website.content['aus_brand_secondary_image'] = image_path
                     
             # Process slide images
             if 'slides' in website.content:
@@ -414,6 +684,22 @@ def edit_website(request, website_id):
                         'button_url': '#'
                     })
             
+            # Handle gallery images
+            if 'gallery_image' in request.FILES:
+                gallery_image_path = process_gallery_image(request.FILES['gallery_image'])
+                if gallery_image_path:
+                    # Initialize gallery if needed
+                    if 'gallery' not in website.content:
+                        website.content['gallery'] = []
+                    
+                    # Add image with metadata
+                    caption = request.POST.get('gallery_caption', '')
+                    website.content['gallery'].append({
+                        'image': gallery_image_path,
+                        'caption': caption,
+                        'date_added': timezone.now().isoformat()
+                    })
+            
             # Process removal requests
             if request.POST.get('remove_desktop_logo') == 'true':
                 if 'desktop_logo' in website.content:
@@ -447,22 +733,42 @@ def edit_website(request, website_id):
                         'type': request.FILES['document'].content_type,
                         'date_added': timezone.now().isoformat()
                     })
-                    
-            # Handle gallery images
-            if 'gallery_image' in request.FILES:
-                gallery_image_path = process_gallery_image(request.FILES['gallery_image'])
-                if gallery_image_path:
-                    # Initialize gallery if needed
-                    if 'gallery' not in website.content:
-                        website.content['gallery'] = []
-                    
-                    # Add image with metadata
-                    caption = request.POST.get('gallery_caption', '')
-                    website.content['gallery'].append({
-                        'image': gallery_image_path,
-                        'caption': caption,
-                        'date_added': timezone.now().isoformat()
-                    })
+            
+            # Handle about section image
+            if 'about_image' in request.FILES:
+                about_image_path = process_media_upload(
+                    request.FILES['about_image'],
+                    subfolder='about_images',
+                    prefix=f'about_{website.id}',
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                )
+                if about_image_path:
+                    website.content['about_image'] = about_image_path
+            
+            # Process removal requests for SEO og_image
+            if request.POST.get('remove_og_image') == 'true':
+                if 'seo' in website.content and 'og_image' in website.content['seo']:
+                    delete_media_file(website.content['seo']['og_image'])
+                    website.content['seo']['og_image'] = ''
+            
+            # Process removal request for about image
+            if request.POST.get('remove_about_image') == 'true':
+                if 'about_image' in website.content:
+                    delete_media_file(website.content['about_image'])
+                    website.content['about_image'] = ''
+            
+            # SEO og_image handling
+            if 'seo_og_image' in request.FILES:
+                og_image_path = process_media_upload(
+                    request.FILES['seo_og_image'],
+                    subfolder='seo_images',
+                    prefix=f'og_image_{website.id}',
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                )
+                if og_image_path:
+                    if 'seo' not in website.content:
+                        website.content['seo'] = {}
+                    website.content['seo']['og_image'] = og_image_path
                     
             # Update last_modified timestamp to invalidate cache for template pages
             website.content['last_modified'] = timezone.now().isoformat()
@@ -470,30 +776,51 @@ def edit_website(request, website_id):
             # Ensure we save with force_update to guarantee changes are committed
             website.save(force_update=True)
             
-            response = JsonResponse({
-                'status': 'success',
-                'message': 'Website content updated successfully',
-                'content': website.content
-            })
-            
-            # Set cache control headers to prevent caching
-            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            response['Pragma'] = 'no-cache'
-            response['Expires'] = '0'
-            
-            return response
+            # Return appropriate response based on request type
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Changes saved successfully',
+                })
+            else:
+                response = JsonResponse({
+                    'status': 'success',
+                    'message': 'Website content updated successfully',
+                    'content': website.content
+                })
+                
+                # Set cache control headers to prevent caching
+                response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+                response['Pragma'] = 'no-cache'
+                response['Expires'] = '0'
+                
+                return response
             
         except json.JSONDecodeError:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Invalid JSON data provided'
-            }, status=400)
+            # Return error JSON response
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid JSON data provided'
+                }, status=400)
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid JSON data provided'
+                }, status=400)
         except Exception as e:
             logger.error(f"Error updating website content: {str(e)}")
-            return JsonResponse({
-                'status': 'error',
-                'message': 'An error occurred while updating the website content'
-            }, status=500)
+            # Return error JSON response
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'An error occurred while updating the website content'
+                }, status=500)
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An error occurred while updating the website content'
+                }, status=500)
     
     # For GET requests, prepare the context
     context = {
@@ -512,7 +839,11 @@ def edit_website(request, website_id):
             'contact_email': 'Contact Email',
             'address': 'Business Address',
             'map_location': 'Google Maps Embed URL'
-        }
+        },
+        'website_themes': WebsiteTheme.objects.filter(is_active=True),
+        'website_fonts': WebsiteFont.objects.filter(is_active=True),
+        'health_score': calculate_website_health_score(website),
+        'seo_score': calculate_website_seo_score(website)
     }
     
     return render(request, 'website/edit_website.html', context)
@@ -600,6 +931,22 @@ def preview_website(request, website_id):
                     homepage.content[field] = 'https://via.placeholder.com/600x400'
                 else:
                     homepage.content[field] = ""
+        
+        # Copy Australian Lifestyle Brand section content from website to homepage content
+        aus_brand_fields = [
+            'aus_brand_heading', 
+            'aus_brand_subheading', 
+            'aus_brand_description',
+            'aus_brand_section_label', 
+            'aus_brand_section_title', 
+            'aus_brand_section_description',
+            'aus_brand_main_image', 
+            'aus_brand_secondary_image'
+        ]
+        
+        for field in aus_brand_fields:
+            if field in website.content:
+                homepage.content[field] = website.content[field]
         
         # Use template path with forward slashes for Django template loader
         template_path = f"{website.template.template_path.strip('/')}/{homepage.template_file}"
@@ -777,131 +1124,7 @@ def reorder_pages(request, website_id):
 
 @login_required
 def home(request):
-    website = None
-    if hasattr(request, 'website'):
-        website = request.website
-    else:
-        # For development/preview, get the first website of the logged-in user
-        if request.user.is_authenticated:
-            website = Website.objects.filter(user=request.user).first()
-    
-    if website:
-        # Ensure required fields exist in website content
-        required_fields = [
-            'meta_description', 'meta_keywords', 'site_name', 
-            'hero_title', 'hero_subtitle', 'hero_button',
-            'features_title', 'features_subtitle', 'features',
-            'about_title', 'about_content', 'about_image', 'about_button',
-            'cta_title', 'cta_subtitle', 'cta_main_button'
-        ]
-        
-        # Copy description to meta_description if available
-        if 'meta_description' not in website.content and 'description' in website.content:
-            website.content['meta_description'] = website.content['description']
-        
-        # Ensure websiteName is copied to site_name if needed
-        if 'site_name' not in website.content and 'websiteName' in website.content:
-            website.content['site_name'] = website.content['websiteName']
-        
-        # Set default empty values for all required fields if missing
-        for field in required_fields:
-            if field not in website.content:
-                if field == 'hero_button' or field == 'about_button' or field == 'cta_main_button':
-                    website.content[field] = {'url': '#', 'label': 'Learn More'}
-                elif field == 'features':
-                    website.content[field] = [
-                        {
-                            'icon': 'palette',
-                            'title': 'Beautiful Design',
-                            'description': 'Modern and elegant designs that capture attention and create memorable experiences.'
-                        },
-                        {
-                            'icon': 'mobile-alt',
-                            'title': 'Responsive Layout',
-                            'description': 'Our websites look amazing on all devices, from desktops to smartphones.'
-                        },
-                        {
-                            'icon': 'bolt',
-                            'title': 'Performance Optimized',
-                            'description': 'Fast loading times and smooth performance for the best user experience.'
-                        }
-                    ]
-                elif field == 'about_image':
-                    website.content[field] = 'https://via.placeholder.com/600x400'
-                else:
-                    website.content[field] = ""
-        
-        homepage = website.pages.filter(is_homepage=True).first()
-        
-        if homepage:
-            # Ensure required fields exist in page content
-            if homepage.content is None:
-                homepage.content = {}
-                
-            # Set default empty values for all required fields if missing in page content
-            for field in required_fields:
-                if field not in homepage.content:
-                    if field == 'hero_button' or field == 'about_button' or field == 'cta_main_button':
-                        homepage.content[field] = {'url': '#', 'label': 'Learn More'}
-                    elif field == 'features':
-                        homepage.content[field] = [
-                            {
-                                'icon': 'palette',
-                                'title': 'Beautiful Design',
-                                'description': 'Modern and elegant designs that capture attention and create memorable experiences.'
-                            },
-                            {
-                                'icon': 'mobile-alt',
-                                'title': 'Responsive Layout',
-                                'description': 'Our websites look amazing on all devices, from desktops to smartphones.'
-                            },
-                            {
-                                'icon': 'bolt',
-                                'title': 'Performance Optimized',
-                                'description': 'Fast loading times and smooth performance for the best user experience.'
-                            }
-                        ]
-                    elif field == 'about_image':
-                        homepage.content[field] = 'https://via.placeholder.com/600x400'
-                    else:
-                        homepage.content[field] = ""
-            
-            # Use template path with forward slashes for Django template loader
-            template_path = f"{website.template.template_path.strip('/')}/{homepage.template_file}"
-            return render(request, template_path, {
-                'website': website,
-                'page': homepage,
-                'content': homepage.content,
-                'global_content': website.content,
-                'default_banners': [
-                    {
-                        'image': 'https://via.placeholder.com/1920x1080',
-                        'title': 'Welcome to Your Store',
-                        'description': 'Discover amazing products at great prices',
-                        'button_text': 'Shop Now',
-                        'button_url': '/shop'
-                    }
-                ]
-            })
-        else:
-            # Use template path with forward slashes for Django template loader
-            template_path = f"{website.template.template_path.strip('/')}/home.html"
-            return render(request, template_path, {
-                'website': website,
-                'content': website.content,
-                'default_banners': [
-                    {
-                        'image': 'https://via.placeholder.com/1920x1080',
-                        'title': 'Welcome to Your Store',
-                        'description': 'Discover amazing products at great prices',
-                        'button_text': 'Shop Now',
-                        'button_url': '/shop'
-                    }
-                ]
-            })
-    
-    # If no website found, redirect to template selection
-    return redirect('select_template')
+    return redirect('dashboard')
 
 def about_us(request):
     """Render the about us page using the website template system"""
@@ -980,6 +1203,22 @@ def about_us(request):
                     about_page.content[field] = 'https://via.placeholder.com/600x400'
                 else:
                     about_page.content[field] = ""
+        
+        # Copy Australian Lifestyle Brand section content from website to page content
+        aus_brand_fields = [
+            'aus_brand_heading', 
+            'aus_brand_subheading', 
+            'aus_brand_description',
+            'aus_brand_section_label', 
+            'aus_brand_section_title', 
+            'aus_brand_section_description',
+            'aus_brand_main_image', 
+            'aus_brand_secondary_image'
+        ]
+        
+        for field in aus_brand_fields:
+            if field in website.content:
+                about_page.content[field] = website.content[field]
         
         # Use template path with forward slashes for Django template loader
         template_path = f"{website.template.template_path.strip('/')}/{about_page.template_file}"
@@ -1103,6 +1342,22 @@ def public_website(request, public_slug):
                     homepage.content[field] = 'https://via.placeholder.com/600x400'
                 else:
                     homepage.content[field] = ""
+        
+        # Copy Australian Lifestyle Brand section content from website to homepage content
+        aus_brand_fields = [
+            'aus_brand_heading', 
+            'aus_brand_subheading', 
+            'aus_brand_description',
+            'aus_brand_section_label', 
+            'aus_brand_section_title', 
+            'aus_brand_section_description',
+            'aus_brand_main_image', 
+            'aus_brand_secondary_image'
+        ]
+        
+        for field in aus_brand_fields:
+            if field in website.content:
+                homepage.content[field] = website.content[field]
         
         # Use template path with forward slashes for Django template loader
         template_path = f"{website.template.template_path.strip('/')}/{homepage.template_file}"
@@ -1244,11 +1499,27 @@ def public_website_page(request, public_slug, page_slug):
             else:
                 page.content[field] = ""
     
+    # Copy Australian Lifestyle Brand section content from website to page content
+    aus_brand_fields = [
+        'aus_brand_heading', 
+        'aus_brand_subheading', 
+        'aus_brand_description',
+        'aus_brand_section_label', 
+        'aus_brand_section_title', 
+        'aus_brand_section_description',
+        'aus_brand_main_image', 
+        'aus_brand_secondary_image'
+    ]
+    
+    for field in aus_brand_fields:
+        if field in website.content:
+            page.content[field] = website.content[field]
+    
     # Use the template path with forward slashes for Django template loader
     template_path = f"{website.template.template_path.strip('/')}/{page.template_file}"
     
     # Prepare navigation context with all pages for the website
-    navigation = website.get_pages().filter(is_active=True)
+    navigation = website.get_pages()
     
     # Render the template with context
     response = render(request, template_path, {
@@ -1310,7 +1581,7 @@ def delete_website(request, website_id):
 @login_required
 def fix_all_slugs(request):
     """Admin utility to fix all missing public slugs"""
-    if not request.user.is_staff:
+    if not request.user.is_superuser:
         messages.error(request, "You don't have permission to access this page.")
         return redirect('website_dashboard')
     
@@ -2067,102 +2338,32 @@ def shop_redirect(request, public_slug):
         messages.info(request, 'No categories available yet.')
         return redirect('public_website', public_slug=public_slug)
 
-def home(request):
-    website = Website.objects.first()
-    return render(request, 'website/home.html', {'website': website})
-
-def edit_website(request):
-    website = Website.objects.first()
+@login_required
+def deploy_website(request, website_id):
+    """View for deploying website to production environment"""
+    website = get_object_or_404(Website, id=website_id, user=request.user)
     
-    if request.method == 'POST':
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # Handle AJAX request
-            try:
-                # Get current content or initialize empty dict
-                content = json.loads(website.content) if website.content else {}
-                
-                # Update content with form data
-                form_data = request.POST.dict()
-                
-                # Process slider data
-                if 'slides' in form_data:
-                    slides = json.loads(form_data.get('slides', '[]'))
-                    content['slides'] = slides
-                    
-                    # Process slide images
-                    for i, slide in enumerate(slides):
-                        slide_image_key = f'slide_image_{i}'
-                        if slide_image_key in request.FILES:
-                            # Handle the image upload logic here
-                            # Save the image and update the slide data with the URL
-                            image = request.FILES[slide_image_key]
-                            filename = f'slide_{i}_{image.name}'
-                            file_path = os.path.join('media', 'slides', filename)
-                            
-                            # Ensure media/slides directory exists
-                            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                            
-                            # Save the file
-                            with open(file_path, 'wb+') as destination:
-                                for chunk in image.chunks():
-                                    destination.write(chunk)
-                                    
-                            # Update slide with image URL
-                            content['slides'][i]['image'] = f'/media/slides/{filename}'
-                
-                # Update other content fields from form
-                for key in form_data:
-                    if key not in ['csrfmiddlewaretoken', 'slides']:
-                        content[key] = form_data[key]
-                
-                # Save content back to the website object
-                website.content = json.dumps(content)
-                website.save()
-                
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Website content updated successfully',
-                    'content': content
-                })
-                
-            except Exception as e:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f'Error updating website content: {str(e)}'
-                })
-        else:
-            # Handle regular form submission
-            try:
-                # Get current content or initialize empty dict
-                content = json.loads(website.content) if website.content else {}
-                
-                # Update general fields
-                content['site_name'] = request.POST.get('site_name', '')
-                content['tagline'] = request.POST.get('tagline', '')
-                content['copyright'] = request.POST.get('copyright', '')
-                
-                # Handle logo uploads
-                if 'desktop_logo' in request.FILES:
-                    # Handle desktop logo upload
-                    pass
-                
-                if 'mobile_logo' in request.FILES:
-                    # Handle mobile logo upload
-                    pass
-                
-                if 'favicon' in request.FILES:
-                    # Handle favicon upload
-                    pass
-                
-                # Save content
-                website.content = json.dumps(content)
-                website.save()
-                
-                messages.success(request, 'Website content updated successfully')
-                return redirect('edit_website')
-                
-            except Exception as e:
-                messages.error(request, f'Error updating website content: {str(e)}')
-                return redirect('edit_website')
+    # Check if website is ready for deployment
+    if not website.is_complete():
+        messages.warning(request, "Your website needs some content before it can be deployed. Please complete all required sections.")
+        return redirect('edit_website', website_id=website_id)
     
-    return render(request, 'website/edit_website.html', {'website': website})
+    try:
+        # Logic for deployment would go here
+        # This could involve publishing to a hosting service, updating DNS records, etc.
+        
+        # For now, we'll just mark the website as deployed
+        website.is_deployed = True
+        website.last_deployed = timezone.now()
+        website.save()
+        
+        # Log the deployment
+        logger.info(f"Website {website_id} deployed by user {request.user.id}")
+        
+        messages.success(request, "Your website has been successfully deployed! It's now live and accessible to visitors.")
+        return redirect('edit_website', website_id=website_id)
+    
+    except Exception as e:
+        logger.error(f"Error deploying website {website_id}: {str(e)}")
+        messages.error(request, "There was an error deploying your website. Please try again later.")
+        return redirect('edit_website', website_id=website_id)

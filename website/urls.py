@@ -6,6 +6,7 @@ urlpatterns = [
     path('create/<int:template_id>/', views.create_website, name='create_website'),
     path('edit/<int:website_id>/', views.edit_website, name='edit_website'),
     path('preview/<int:website_id>/', views.preview_website, name='preview_website'),
+    path('deploy/<int:website_id>/', views.deploy_website, name='deploy_website'),
     path('delete/<int:website_id>/', views.delete_website, name='delete_website'),
     path('domain-settings/', views.domain_settings, name='domain_settings'),
     path('domain-verification/<int:domain_id>/', views.domain_verification, name='domain_verification'),
