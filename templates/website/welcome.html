@@ -1,0 +1,229 @@
+{% extends "onematrix/base.html" %}
+{% load static %}
+
+{% block title %}1Matrix - Professional Website Builder | Create Your Dream Website in Minutes{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-blue-700 to-purple-800 py-32 lg:py-40">
+    <div class="absolute inset-0">
+        <div class="absolute inset-0 bg-[url('/static/images/grid-pattern.svg')] opacity-10"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/10"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="text-center">
+            <div class="inline-block mb-8">
+                <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-white/10 text-white backdrop-blur-sm">
+                    <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span>
+                    Trusted by 10,000+ businesses worldwide
+                </span>
+            </div>
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight tracking-tight">
+                Create a Professional Website<br/>
+                <span class="bg-gradient-to-r from-emerald-400 to-cyan-300 text-transparent bg-clip-text">In Minutes, Not Months</span>
+            </h1>
+            <p class="mt-8 text-xl md:text-2xl text-white/80 max-w-3xl mx-auto font-light">
+                Join thousands of successful businesses using 1Matrix to build stunning, high-converting websites. No coding required - just drag, drop, and launch your professional website today.
+            </p>
+            <div class="mt-12 flex flex-col sm:flex-row gap-6 justify-center">
+                <a href="/user/login/" class="inline-flex items-center px-10 py-4 text-lg font-medium rounded-full text-white bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-cyan-500/30 transform hover:-translate-y-0.5 transition duration-200">
+                    <span>Start Your Free Website</span>
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+                <a href="{% url 'google_login' %}" class="inline-flex items-center px-10 py-4 text-lg font-medium rounded-full bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 border border-white/20 transform hover:-translate-y-0.5 transition duration-200">
+                    <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.545,12.151L12.545,12.151c0,1.054,0.855,1.909,1.909,1.909h3.536c-0.367,1.332-1.459,2.379-2.799,2.719 c-1.339,0.34-2.769-0.002-3.784-0.905c-1.015-0.903-1.475-2.271-1.213-3.607c0.262-1.336,1.284-2.417,2.607-2.757 c1.323-0.34,2.729,0.044,3.704,1.007l2.454-2.454C15.605,5.847,11.755,5.414,8.85,7.229C5.945,9.044,4.683,12.562,5.93,15.689 c1.247,3.127,4.562,4.824,7.837,4.021c3.275-0.803,5.576-3.724,5.445-7.067H14.454C13.4,12.643,12.545,12.151,12.545,12.151z"/>
+                    </svg>
+                    Continue with Google
+                </a>
+            </div>
+            <div class="mt-12 flex flex-wrap justify-center gap-8">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="ml-2 text-white/80">Free SSL Certificate</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="ml-2 text-white/80">No Credit Card Required</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="ml-2 text-white/80">24/7 Support</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="ml-2 text-white/80">Mobile Optimized</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Social Proof Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-2xl font-semibold text-gray-600">Trusted by Industry Leaders</h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center opacity-70">
+            <img src="{% static 'images/logos/microsoft.svg' %}" alt="Microsoft" class="h-8">
+            <img src="{% static 'images/logos/adobe.svg' %}" alt="Adobe" class="h-8">
+            <img src="{% static 'images/logos/shopify.svg' %}" alt="Shopify" class="h-8">
+            <img src="{% static 'images/logos/slack.svg' %}" alt="Slack" class="h-8">
+            <img src="{% static 'images/logos/spotify.svg' %}" alt="Spotify" class="h-8">
+            <img src="{% static 'images/logos/airbnb.svg' %}" alt="Airbnb" class="h-8">
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-20">
+            <span class="text-emerald-600 font-semibold text-sm uppercase tracking-wider">Why Choose 1Matrix</span>
+            <h2 class="mt-4 text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
+                Everything You Need to Succeed Online
+            </h2>
+            <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto">
+                Built for businesses that demand excellence. Our enterprise-grade platform combines powerful features with unmatched ease of use.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <!-- AI-Powered Templates -->
+            <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border border-gray-100">
+                <div class="bg-gradient-to-br from-blue-500 to-purple-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">AI-Powered Templates</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Industry-specific templates optimized for conversion, powered by advanced AI to match your brand identity perfectly.
+                </p>
+                <ul class="space-y-3 text-gray-500">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Smart Layout Suggestions
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Auto Color Matching
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Industry-Specific Content
+                    </li>
+                </ul>
+            </div>
+
+            <!-- SEO Optimization -->
+            <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border border-gray-100">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Built-in SEO Tools</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Comprehensive SEO optimization tools to help your website rank higher in search results and attract more visitors.
+                </p>
+                <ul class="space-y-3 text-gray-500">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Keyword Optimization
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Meta Tag Generator
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Performance Analytics
+                    </li>
+                </ul>
+            </div>
+
+            <!-- E-commerce Features -->
+            <div class="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border border-gray-100">
+                <div class="bg-gradient-to-br from-orange-500 to-pink-500 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">E-commerce Ready</h3>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    Everything you need to start selling online, from secure payments to inventory management.
+                </p>
+                <ul class="space-y-3 text-gray-500">
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Secure Checkout
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Inventory Management
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Multiple Payment Options
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-24 bg-gradient-to-br from-gray-900 to-blue-900 relative overflow-hidden">
+    <div class="absolute inset-0">
+        <div class="absolute inset-0 bg-[url('/static/images/grid-pattern.svg')] opacity-10"></div>
+    </div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-8">Ready to Transform Your Online Presence?</h2>
+            <p class="text-xl text-white/80 mb-12">Join 100,000+ businesses already growing with 1Matrix</p>
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                <a href="/user/login/" class="inline-flex items-center px-10 py-4 text-lg font-medium rounded-full text-white bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 shadow-lg shadow-cyan-500/30 transform hover:-translate-y-0.5 transition duration-200">
+                    Start Building Free
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </a>
+                <a href="#" class="inline-flex items-center px-10 py-4 text-lg font-medium rounded-full bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 transform hover:-translate-y-0.5 transition duration-200">
+                    Schedule Demo
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,3 +1,4 @@
+import subprocess
 from django.shortcuts import render, redirect, get_object_or_404
 import uuid
 from django.contrib.auth.decorators import login_required
@@ -21,6 +22,36 @@ from django.views.decorators.http import require_POST
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
+"""
+Media Storage Structure:
+- All website media is stored in user-specific folders
+- The folder structure is: user_{user_id}/website_{website_id}/{media_type}/{file}
+- This ensures proper separation of media between users and websites
+- Media types include: website_logos, website_banners, website_images, website_gallery, etc.
+
+Banner Images:
+- Banner images are stored in the user_{user_id}/website_{website_id}/website_banners/ folder
+- Each banner image is named with a unique identifier and the index: banner_{website_id}_{index}_{uuid}
+- Banner images are processed in the edit_website view when files with names like 'banner_image_0' are submitted
+- Banner images are rendered in templates using the image path stored in website.content['hero_banners'][index]['image']
+"""
+
+# Welcome page - no authentication required
+def welcome(request):
+    """Welcome page for website builder - accessible without authentication"""
+    
+    # Count total websites created
+    total_websites = Website.objects.count()
+    
+    # Get a few sample templates to showcase
+    templates = WebsiteTemplate.objects.all()[:6]
+    
+    return render(request, 'website/welcome.html', {
+        'total_websites': total_websites,
+        'templates': templates,
+        'is_authenticated': request.session.get('user_id') is not None or request.session.get('_auth_user_id') is not None,
+    })
 
 # Create your views here.
 
@@ -577,7 +608,9 @@ def edit_website(request, website_id):
                     request.FILES['desktop_logo'],
                     subfolder='website_logos',
                     prefix=f'logo_{website.id}',
-                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                    user_id=request.user.id,
+                    website_id=website.id
                 )
                 if logo_path:
                     website.content['desktop_logo'] = logo_path
@@ -588,7 +621,9 @@ def edit_website(request, website_id):
                     request.FILES['mobile_logo'],
                     subfolder='website_logos',
                     prefix=f'mlogo_{website.id}',
-                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                    user_id=request.user.id,
+                    website_id=website.id
                 )
                 if logo_path:
                     website.content['mobile_logo'] = logo_path
@@ -599,7 +634,9 @@ def edit_website(request, website_id):
                     request.FILES['favicon'],
                     subfolder='website_logos',
                     prefix=f'favicon_{website.id}',
-                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                    user_id=request.user.id,
+                    website_id=website.id
                 )
                 if favicon_path:
                     website.content['favicon'] = favicon_path
@@ -610,7 +647,9 @@ def edit_website(request, website_id):
                     request.FILES['aus_brand_main_image'],
                     subfolder='website_images',
                     prefix=f'aus_brand_main_{website.id}',
-                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                    user_id=request.user.id,
+                    website_id=website.id
                 )
                 if image_path:
                     website.content['aus_brand_main_image'] = image_path
@@ -621,10 +660,62 @@ def edit_website(request, website_id):
                     request.FILES['aus_brand_secondary_image'],
                     subfolder='website_images',
                     prefix=f'aus_brand_sec_{website.id}',
-                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                    user_id=request.user.id,
+                    website_id=website.id
                 )
                 if image_path:
                     website.content['aus_brand_secondary_image'] = image_path
+            
+            # Process banner images - Check for files with names like 'banner_image_0', 'banner_image_1', etc.
+            banner_file_prefix = 'banner_image_'
+            banner_files = [f for f in request.FILES if f.startswith(banner_file_prefix)]
+            
+            logger.info(f"Found {len(banner_files)} banner image files to process")
+            
+            # Initialize hero_banners if it doesn't exist in the content
+            if 'hero_banners' not in website.content:
+                website.content['hero_banners'] = []
+                logger.info(f"Initialized empty hero_banners list")
+                
+            if banner_files:
+                for file_key in banner_files:
+                    try:
+                        # Extract the index from the file key (e.g., 'banner_image_0' -> 0)
+                        index = int(file_key.replace(banner_file_prefix, ''))
+                        logger.info(f"Processing banner image {file_key} with index {index}")
+                        
+                        # Process and save the banner image
+                        image_path = process_media_upload(
+                            request.FILES[file_key],
+                            subfolder='website_banners',
+                            prefix=f'banner_{website.id}_{index}',
+                            allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                            user_id=request.user.id,
+                            website_id=website.id
+                        )
+                        
+                        if image_path:
+                            logger.info(f"Banner image saved successfully at {image_path}")
+                            # Make sure the index exists in hero_banners
+                            if index < len(website.content['hero_banners']):
+                                # Update the banner's image path in the content
+                                website.content['hero_banners'][index]['image'] = image_path
+                                logger.info(f"Updated existing banner at index {index}")
+                            elif index == len(website.content['hero_banners']):
+                                # This is a new banner being added
+                                website.content['hero_banners'].append({
+                                    'title': '',
+                                    'description': '',
+                                    'button_text': '',
+                                    'button_url': '',
+                                    'image': image_path
+                                })
+                                logger.info(f"Added new banner at index {index}")
+                        else:
+                            logger.error(f"Failed to save banner image {file_key}")
+                    except (ValueError, IndexError) as e:
+                        logger.error(f"Error processing banner image {file_key}: {str(e)}")
                     
             # Process slide images
             if 'slides' in website.content:
@@ -643,8 +734,11 @@ def edit_website(request, website_id):
                                 request.FILES[image_key],
                                 subfolder='slider_images',
                                 prefix=f'slide_{website.id}_{i}',
-                                allowed_types=settings.ALLOWED_IMAGE_TYPES
+                                allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                                user_id=request.user.id,
+                                website_id=website.id
                             )
+                            
                             if slide_image_path:
                                 # Update the slide with the new image path
                                 slide['image'] = slide_image_path
@@ -667,84 +761,6 @@ def edit_website(request, website_id):
                         'buttonLink': '#'
                     }]
             
-            # Handle banner images (for backwards compatibility)
-            if 'banner_image' in request.FILES:
-                banner_path = process_banner_image(request.FILES['banner_image'])
-                if banner_path:
-                    # Create banner object if not exists
-                    if 'hero_banners' not in website.content:
-                        website.content['hero_banners'] = []
-                    
-                    # Add new banner with defaults
-                    website.content['hero_banners'].append({
-                        'image': banner_path,
-                        'title': 'New Banner',
-                        'description': 'Banner description goes here',
-                        'button_text': 'Learn More',
-                        'button_url': '#'
-                    })
-            
-            # Handle gallery images
-            if 'gallery_image' in request.FILES:
-                gallery_image_path = process_gallery_image(request.FILES['gallery_image'])
-                if gallery_image_path:
-                    # Initialize gallery if needed
-                    if 'gallery' not in website.content:
-                        website.content['gallery'] = []
-                    
-                    # Add image with metadata
-                    caption = request.POST.get('gallery_caption', '')
-                    website.content['gallery'].append({
-                        'image': gallery_image_path,
-                        'caption': caption,
-                        'date_added': timezone.now().isoformat()
-                    })
-            
-            # Process removal requests
-            if request.POST.get('remove_desktop_logo') == 'true':
-                if 'desktop_logo' in website.content:
-                    delete_media_file(website.content['desktop_logo'])
-                    website.content['desktop_logo'] = ''
-                    
-            if request.POST.get('remove_mobile_logo') == 'true':
-                if 'mobile_logo' in website.content:
-                    delete_media_file(website.content['mobile_logo'])
-                    website.content['mobile_logo'] = ''
-                    
-            if request.POST.get('remove_favicon') == 'true':
-                if 'favicon' in website.content:
-                    delete_media_file(website.content['favicon'])
-                    website.content['favicon'] = ''
-            
-            # Handle documents and other media
-            if 'document' in request.FILES:
-                doc_path = process_document_upload(request.FILES['document'])
-                if doc_path:
-                    # Initialize documents array if needed
-                    if 'documents' not in website.content:
-                        website.content['documents'] = []
-                    
-                    # Add the document with metadata
-                    doc_name = request.POST.get('document_name', request.FILES['document'].name)
-                    website.content['documents'].append({
-                        'path': doc_path,
-                        'name': doc_name,
-                        'size': request.FILES['document'].size,
-                        'type': request.FILES['document'].content_type,
-                        'date_added': timezone.now().isoformat()
-                    })
-            
-            # Handle about section image
-            if 'about_image' in request.FILES:
-                about_image_path = process_media_upload(
-                    request.FILES['about_image'],
-                    subfolder='about_images',
-                    prefix=f'about_{website.id}',
-                    allowed_types=settings.ALLOWED_IMAGE_TYPES
-                )
-                if about_image_path:
-                    website.content['about_image'] = about_image_path
-            
             # Process removal requests for SEO og_image
             if request.POST.get('remove_og_image') == 'true':
                 if 'seo' in website.content and 'og_image' in website.content['seo']:
@@ -763,7 +779,9 @@ def edit_website(request, website_id):
                     request.FILES['seo_og_image'],
                     subfolder='seo_images',
                     prefix=f'og_image_{website.id}',
-                    allowed_types=settings.ALLOWED_IMAGE_TYPES
+                    allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                    user_id=request.user.id,
+                    website_id=website.id
                 )
                 if og_image_path:
                     if 'seo' not in website.content:
@@ -2340,7 +2358,7 @@ def shop_redirect(request, public_slug):
 
 @login_required
 def deploy_website(request, website_id):
-    """View for deploying website to production environment"""
+    """View for deploying website to production environment on Hostinger using Nginx and Gunicorn"""
     website = get_object_or_404(Website, id=website_id, user=request.user)
     
     # Check if website is ready for deployment
@@ -2349,21 +2367,78 @@ def deploy_website(request, website_id):
         return redirect('edit_website', website_id=website_id)
     
     try:
-        # Logic for deployment would go here
-        # This could involve publishing to a hosting service, updating DNS records, etc.
+        # Get domain info
+        domain = website.customdomain_set.first()
+        if not domain:
+            messages.error(request, "Please configure a custom domain before deploying.")
+            return redirect('edit_website', website_id=website_id)
+
+        # Generate Nginx config
+        nginx_config = f"""
+server {{
+    listen 80;
+    server_name {domain.domain} www.{domain.domain};
+    
+    location = /favicon.ico {{ access_log off; log_not_found off; }}
+    location /static/ {{
+        root /var/www/{domain.domain};
+    }}
+    
+    location / {{
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn_{website_id}.sock;
+    }}
+}}"""
+
+        # Generate Gunicorn systemd service
+        gunicorn_service = f"""
+[Unit]
+Description=gunicorn daemon for {domain.domain}
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/{domain.domain}
+ExecStart=/usr/local/bin/gunicorn --workers 3 --bind unix:/run/gunicorn_{website_id}.sock matrix.wsgi:application
+
+[Install]
+WantedBy=multi-user.target"""
+
+        # Write configs to temp files
+        with open(f'/tmp/nginx_{website_id}.conf', 'w') as f:
+            f.write(nginx_config)
+        with open(f'/tmp/gunicorn_{website_id}.service', 'w') as f:
+            f.write(gunicorn_service)
+
+        # Deploy configs using subprocess
+        subprocess.run(['sudo', 'mv', f'/tmp/nginx_{website_id}.conf', f'/etc/nginx/sites-available/{domain.domain}'])
+        subprocess.run(['sudo', 'ln', '-sf', f'/etc/nginx/sites-available/{domain.domain}', '/etc/nginx/sites-enabled/'])
+        subprocess.run(['sudo', 'mv', f'/tmp/gunicorn_{website_id}.service', f'/etc/systemd/system/gunicorn_{website_id}.service'])
         
-        # For now, we'll just mark the website as deployed
+        # Reload services
+        subprocess.run(['sudo', 'systemctl', 'daemon-reload'])
+        subprocess.run(['sudo', 'systemctl', 'start', f'gunicorn_{website_id}'])
+        subprocess.run(['sudo', 'systemctl', 'enable', f'gunicorn_{website_id}'])
+        subprocess.run(['sudo', 'nginx', '-t'])
+        subprocess.run(['sudo', 'systemctl', 'reload', 'nginx'])
+
+        # Update website status
         website.is_deployed = True
         website.last_deployed = timezone.now()
         website.save()
         
         # Log the deployment
-        logger.info(f"Website {website_id} deployed by user {request.user.id}")
+        logger.info(f"Website {website_id} deployed successfully to {domain.domain}")
         
-        messages.success(request, "Your website has been successfully deployed! It's now live and accessible to visitors.")
+        messages.success(request, f"Your website has been successfully deployed to {domain.domain}!")
         return redirect('edit_website', website_id=website_id)
     
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Deployment command failed for website {website_id}: {str(e)}")
+        messages.error(request, "Deployment failed. There was an error with the server configuration.")
+        return redirect('edit_website', website_id=website_id)
     except Exception as e:
         logger.error(f"Error deploying website {website_id}: {str(e)}")
-        messages.error(request, "There was an error deploying your website. Please try again later.")
+        messages.error(request, "There was an unexpected error deploying your website. Please try again later.")
         return redirect('edit_website', website_id=website_id)

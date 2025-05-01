@@ -201,7 +201,7 @@ def auto_generate_seo_content(website, request=None):
         logging.error(f"Error in auto_generate_seo_content: {str(e)}")
         return False
 
-def process_media_upload(file_obj, subfolder='website_media', prefix=None, allowed_types=None):
+def process_media_upload(file_obj, subfolder='website_media', prefix=None, allowed_types=None, user_id=None, website_id=None):
     """
     Process and save an uploaded media file with validation.
     
@@ -210,6 +210,8 @@ def process_media_upload(file_obj, subfolder='website_media', prefix=None, allow
         subfolder: The subfolder within MEDIA_ROOT to save the file
         prefix: Optional prefix for the filename
         allowed_types: List of allowed MIME types (None for no restriction)
+        user_id: The ID of the user who owns the website
+        website_id: The ID of the website
         
     Returns:
         str: The relative path to the saved file or None if failed
@@ -228,8 +230,15 @@ def process_media_upload(file_obj, subfolder='website_media', prefix=None, allow
         unique_id = str(uuid.uuid4())[:8]
         filename = f"{prefix or 'media'}_{unique_id}{file_ext}"
         
+        # Create user-specific folder path if user_id and website_id are provided
+        if user_id and website_id:
+            path = os.path.join(f"user_{user_id}", f"website_{website_id}", subfolder, filename)
+        else:
+            path = os.path.join(subfolder, filename)
+        
         # Ensure subdirectory exists
-        path = os.path.join(subfolder, filename)
+        directory = os.path.dirname(os.path.join(settings.MEDIA_ROOT, path))
+        os.makedirs(directory, exist_ok=True)
         
         # Save file using Django's storage system
         saved_path = default_storage.save(path, ContentFile(file_obj.read()))
@@ -241,25 +250,29 @@ def process_media_upload(file_obj, subfolder='website_media', prefix=None, allow
         logger.error(f"Error processing media upload: {str(e)}")
         return None
 
-def process_banner_image(file_obj):
+def process_banner_image(file_obj, user_id=None, website_id=None):
     """Specialized handler for banner image uploads"""
     return process_media_upload(
         file_obj, 
         subfolder='website_banners',
         prefix='banner',
-        allowed_types=settings.ALLOWED_IMAGE_TYPES
+        allowed_types=settings.ALLOWED_IMAGE_TYPES,
+        user_id=user_id,
+        website_id=website_id
     )
     
-def process_gallery_image(file_obj):
+def process_gallery_image(file_obj, user_id=None, website_id=None):
     """Specialized handler for gallery image uploads"""
     return process_media_upload(
         file_obj, 
         subfolder='website_gallery',
         prefix='gallery',
-        allowed_types=settings.ALLOWED_IMAGE_TYPES
+        allowed_types=settings.ALLOWED_IMAGE_TYPES,
+        user_id=user_id,
+        website_id=website_id
     )
     
-def process_document_upload(file_obj):
+def process_document_upload(file_obj, user_id=None, website_id=None):
     """Specialized handler for document uploads (PDF, DOC, etc.)"""
     allowed_types = [
         'application/pdf',
@@ -274,7 +287,9 @@ def process_document_upload(file_obj):
         file_obj, 
         subfolder='website_documents',
         prefix='doc',
-        allowed_types=allowed_types
+        allowed_types=allowed_types,
+        user_id=user_id,
+        website_id=website_id
     )
 
 def delete_media_file(file_path):

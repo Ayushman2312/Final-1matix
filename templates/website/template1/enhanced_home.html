@@ -56,7 +56,8 @@
                     <div class="absolute inset-0 z-0">
                         <img src="{{ banner.image|default:'https://via.placeholder.com/1920x1080' }}" 
                              alt="{{ banner.alt_text|default:banner.title|default:'Featured product banner' }}"
-                             class="w-full h-full object-cover">
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://via.placeholder.com/1920x1080'">
                         <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                     </div>
                     

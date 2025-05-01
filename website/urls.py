@@ -2,6 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # Welcome page - accessible without authentication
+    path('', views.welcome, name='website_welcome'),
+    
     path('select-template/', views.select_template, name='select_template'),
     path('create/<int:template_id>/', views.create_website, name='create_website'),
     path('edit/<int:website_id>/', views.edit_website, name='edit_website'),

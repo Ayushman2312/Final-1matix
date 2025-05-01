@@ -338,6 +338,13 @@ def google_callback(request):
         request.session['user_email'] = user.email
         request.session['user_name'] = user.name
         
+        # Check if there's a next URL to redirect to
+        next_url = request.session.get('next_url')
+        if next_url:
+            del request.session['next_url']
+            messages.success(request, f"Welcome, {user.name}!")
+            return redirect(next_url)
+        
         messages.success(request, f"Welcome, {user.name}!")
         return redirect('/user/dashboard/')
     
@@ -350,6 +357,10 @@ class LoginView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Add next parameter to context if available
+        next_url = self.request.session.get('next_url')
+        if next_url:
+            context['next_url'] = next_url
         return context
     
     def get_template_names(self):
@@ -400,6 +411,13 @@ class LoginView(TemplateView):
             if not remember_me:
                 request.session.set_expiry(0)  # Session expires when browser closes
             
+            # Check if there's a next URL to redirect to
+            next_url = request.session.get('next_url')
+            if next_url:
+                del request.session['next_url']
+                messages.success(request, f'Welcome back, {user.name}!')
+                return redirect(next_url)
+            
             messages.success(request, f'Welcome back, {user.name}!')
             return redirect('/user/dashboard/')
             
@@ -409,6 +427,7 @@ class LoginView(TemplateView):
             print(f"Error during login: {str(e)}")
             messages.error(request, f'Error during login: {str(e)}')
             return render(request, self.get_template_names()[0])
+
 class DebugSessionView(View):
     def get(self, request):
         """Debug view to check session values"""

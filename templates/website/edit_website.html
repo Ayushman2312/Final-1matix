@@ -1898,6 +1898,17 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('aus_brand_section_title', document.getElementById('aus_brand_section_title')?.value || '');
         formData.append('aus_brand_section_description', document.getElementById('aus_brand_section_description')?.value || '');
         
+        // In the saveFormData function after creating the heroBanners array
+        document.querySelectorAll('.hero-banner-item').forEach((banner, index) => {
+            const imageInput = banner.querySelector('.banner-image');
+            // Check if there's a new file to upload
+            if (imageInput && imageInput.files && imageInput.files[0]) {
+                // Add the file to form data with index in the name
+                formData.append(`banner_image_${index}`, imageInput.files[0]);
+                console.log(`Adding banner image at index ${index}`, imageInput.files[0]);
+            }
+        });
+        
         // Send the form data
         fetch(window.location.pathname, {
             method: 'POST',

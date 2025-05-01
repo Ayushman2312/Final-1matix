@@ -19,6 +19,12 @@ class UserAuthMiddleware:
             '/user/google-callback/',
             '/user/check-username/',
             '/',  # Root path
+            # Add more public paths here
+            '/website/',  # Main website page
+            '/website/about/',  # About website builder
+            '/website/pricing/',  # Pricing page
+            '/website/features/',  # Features page
+            '/website/templates/',  # Templates showcase
         ]
         
         # Check if the path is a static or media file
@@ -56,7 +62,12 @@ class UserAuthMiddleware:
             'masteradmin' in current_path or
             'alavi07' in current_path or
             # Include website public paths
-            current_path.startswith('/website/public/')
+            current_path.startswith('/website/public/') or
+            current_path.startswith('/website/s/') or
+            # Allow public access to website templates browsing
+            current_path.startswith('/website/templates/') or
+            # Include all public website slugs
+            current_path.startswith('/s/')
         )
         
         # For debugging - prints the session info for every request
@@ -69,6 +80,9 @@ class UserAuthMiddleware:
             
         # For user paths that require authentication
         if not is_user_authenticated and not is_public_path:
+            # Save the requested URL to redirect back after login
+            request.session['next_url'] = current_path
+            
             # Check if this is a dashboard path
             if current_path == '/user/dashboard/' or current_path.startswith('/dashboard/'):
                 messages.warning(request, 'Please log in to access the dashboard')
