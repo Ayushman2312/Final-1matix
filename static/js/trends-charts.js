@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let stateChart = null;
     let cityChart = null;
     let currentTimeUnit = 'month'; // Default time unit
+    
+    // Make key variables available globally
+    window.currentTimeUnit = currentTimeUnit;
+    window.trendsData = trendsData;
+    window.lastFetchedKeyword = lastFetchedKeyword;
+    window.timeChart = timeChart;
+    
     const googleApiConfigured = window.googleApiConfigured || false;
     
     // Debug logging
@@ -565,78 +572,77 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Server returned an empty response. Please try again later.');
             }
             
-            // Quick check for a common pattern that might indicate an error with the option field
-            const optionErrorIndex = rawData.indexOf('"option":1');
-            if (optionErrorIndex > 0) {
-                console.log(`Detected potential option field issue at position ${optionErrorIndex}`);
-                // Apply quick fix - add quotes around the option value
-                rawData = rawData.replace(/"option"\s*:\s*(\d+)([,}])/g, '"option":"$1"$2');
-            }
-            
-            // Try to parse the JSON using the standard method first
+            // Try to parse the JSON using our enhanced fixBrokenJSON method
             let parsedData = null;
             let parseError = null;
             
             try {
+                // First try standard parsing
                 parsedData = JSON.parse(rawData);
+                console.log('Standard JSON parsing succeeded');
             } catch (error) {
                 console.warn('Standard JSON parsing failed, attempting repair:', error.message);
                 parseError = error;
                 
-                // Try to fix the JSON string 
+                // Use our enhanced JSON repair function
                 try {
-                    const fixedJson = fixBrokenJSON(rawData);
+                    // fixBrokenJSON now returns the actual object, not a string
+                    parsedData = fixBrokenJSON(rawData);
                     
-                    // Try parsing the fixed JSON
-                    if (fixedJson) {
-                        try {
-                            parsedData = JSON.parse(fixedJson);
-                            console.log('Successfully parsed JSON after repair');
-                        } catch (error2) {
-                            console.error('Failed to parse repaired JSON:', error2.message);
-                            
-                            // Fallback to more drastic measures - use a third-party JSON repair library if available
-                            if (typeof JSONCrush !== 'undefined') {
-                                try {
-                                    const uncrushed = JSONCrush.uncrush(rawData);
-                                    parsedData = JSON.parse(uncrushed);
-                                    console.log('Successfully parsed JSON using JSONCrush');
-                                } catch (error3) {
-                                    console.error('JSONCrush repair failed:', error3.message);
-                                }
-                            }
-                        }
+                    if (parsedData) {
+                        console.log('JSON repair succeeded');
+                    } else {
+                        throw new Error('JSON repair failed to produce valid data');
                     }
                 } catch (repairError) {
                     console.error('JSON repair attempt failed:', repairError.message);
+                    
+                    // Create a minimal valid response as a last resort
+                    console.log('Creating minimal fallback response');
+                    parsedData = {
+                        status: 'success',
+                        error: null,
+                        metadata: {
+                            keywords: [lastFetchedKeyword],
+                            timestamp: new Date().toISOString()
+                        },
+                        data: {
+                            time_series: [],
+                            time_trends: []
+                        }
+                    };
                 }
             }
             
-            // If we still couldn't parse the data after all attempts
-            if (!parsedData) {
-                // Create a minimal valid response
-                console.error('All JSON parsing attempts failed. Creating minimal valid response.');
+            // Validate that the parsed data has the required structure
+            if (!parsedData || !parsedData.data) {
+                console.error('Invalid data structure after parsing');
+                
+                // Create a valid structure
                 parsedData = {
-                    status: 'error',
-                    error: 'JSON parsing error: ' + (parseError ? parseError.message : 'Unknown parsing error'),
+                    status: 'success',
+                    metadata: {
+                        keywords: [lastFetchedKeyword],
+                        timestamp: new Date().toISOString()
+                    },
                     data: {
-                        time_series: []
-                    }
+                        time_series: [],
+                        time_trends: []
+                    },
+                    error: 'Data structure was invalid'
                 };
             }
             
             // Check for error status in the parsed data
             if (parsedData.status === 'error' || parsedData.error) {
-                const errorMessage = parsedData.error || 'An error occurred while processing the data';
-                console.error('Error in parsed data:', errorMessage);
-                throw new Error(errorMessage);
+                console.warn('Error status in parsed data:', parsedData.error);
+                // Don't throw here, instead, we'll handle it in the next step
             }
             
             return parsedData;
         })
         .then(data => {
             console.log('Data parsed successfully, processing...');
-            console.log('Data structure:', Object.keys(data));
             
             // Clear interval if still running
             clearInterval(stepInterval);
@@ -650,50 +656,36 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check for error status in the data
             if (data.status === 'error' || data.error) {
                 const errorMessage = data.error || 'An error occurred while processing trends data';
-                console.error('Error in response data:', errorMessage);
+                console.warn('Error status in response data:', errorMessage);
                 
-                // Hide loader
-                if (inlineLoader) {
-                    inlineLoader.style.opacity = '0';
-                    setTimeout(() => {
-                        inlineLoader.style.display = 'none';
-                        document.body.classList.remove('loading');
-                    }, 300);
-                }
-                
-                // Show error message
-                if (typeof showError === 'function') {
-                    showError(errorMessage);
+                // If there's no time_series data at all, show the error
+                if (!data.data || !data.data.time_series || data.data.time_series.length === 0) {
+                    console.error('No time series data available');
+                    
+                    // Hide loader
+                    if (inlineLoader) {
+                        inlineLoader.style.opacity = '0';
+                        setTimeout(() => {
+                            inlineLoader.style.display = 'none';
+                            document.body.classList.remove('loading');
+                        }, 300);
+                    }
+                    
+                    // Show error message
+                    if (typeof showError === 'function') {
+                        showError(errorMessage);
+                    } else {
+                        alert(errorMessage);
+                    }
+                    
+                    // Reset dataAlreadyFetched flag to allow retry
+                    dataAlreadyFetched = false;
+                    
+                    return; // Stop processing
                 } else {
-                    alert(errorMessage);
+                    // If we have time_series data, log the error but continue processing
+                    console.log('Error in data but time_series available, continuing with processing');
                 }
-                
-                // Reset dataAlreadyFetched flag to allow retry
-                dataAlreadyFetched = false;
-                
-                return; // Stop processing
-            }
-            
-            // Check if we have usable data - must have data property
-            if (!data.data) {
-                console.error('Response missing data object');
-                
-                // Hide loader
-                if (inlineLoader) {
-                    inlineLoader.style.opacity = '0';
-                    setTimeout(() => {
-                        inlineLoader.style.display = 'none';
-                        document.body.classList.remove('loading');
-                    }, 300);
-                }
-                
-                // Show error message
-                showError('Invalid data format returned from server');
-                
-                // Reset dataAlreadyFetched flag to allow retry
-                dataAlreadyFetched = false;
-                
-                return; // Stop processing
             }
             
             // Process and store the data
@@ -770,14 +762,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show user-friendly error message
             let errorMessage = error.message || 'Error loading data';
+            let isNetworkError = false;
             
             // Make common error messages more user-friendly
             if (errorMessage.includes('HTTP error! Status: 429')) {
                 errorMessage = 'Too many requests. Please wait a moment and try again.';
             } else if (errorMessage.includes('HTTP error! Status: 500')) {
                 errorMessage = 'Server error. Please try again with a different keyword or later.';
-            } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
-                errorMessage = 'Network error. Please check your internet connection and try again.';
+            } else if (errorMessage.includes('Failed to fetch') || 
+                      errorMessage.includes('NetworkError') || 
+                      errorMessage.includes('network error') ||
+                      error.name === 'TypeError') {
+                errorMessage = 'Network connection error. Please check your internet connection and try again.';
+                isNetworkError = true;
             } else if (errorMessage.includes('JSON')) {
                 errorMessage = 'Error processing data. Please try again with a different keyword.';
             } else if (errorMessage.includes('aborted')) {
@@ -789,6 +786,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(errorMessage);
             } else {
                 alert(errorMessage);
+            }
+            
+            // For network errors, attempt to automatically reconnect after a delay
+            if (isNetworkError && !window.searchCancelled) {
+                console.log('Network error detected, scheduling retry attempt');
+                
+                // Add reconnection UI feedback
+                setTimeout(() => {
+                    console.log('Attempting to reconnect...');
+                    // Show reconnection message
+                    if (typeof showError === 'function') {
+                        showError('Attempting to reconnect... Please wait.');
+                    }
+                    
+                    // Try to fetch again after a short delay
+                    setTimeout(() => {
+                        if (!window.searchCancelled) {
+                            console.log('Retrying fetch operation');
+                            fetchTrendsData(lastFetchedKeyword, analysisOption);
+                        }
+                    }, 3000);
+                }, 2000);
             }
         })
         .finally(() => {
@@ -1413,147 +1432,107 @@ function ensureValidJSON(responseText) {
 function fixBrokenJSON(text) {
     console.log('Attempting to fix JSON data of length:', text.length);
     
-    // Special handling for option field issues (most common issue)
-    if (text.includes('"option":')) {
-        console.log('Found option field, checking for issues...');
-        
-        // Fix pattern for option with numeric value - properly quote the value
-        const basicPattern = /"option"\s*:\s*(\d+)([,}])/g;
-        if (text.match(basicPattern)) {
-            console.log('Found unquoted option value, fixing');
-            text = text.replace(basicPattern, '"option":"$1"$2');
-        }
-        
-        // Fix pattern for option with an extra quote after the number (position 34879 issue)
-        const brokenPattern = /"option"\s*:\s*(\d+)"\s*,/g;
-        if (text.match(brokenPattern)) {
-            console.log('Found option field with extra quote, fixing');
-            text = text.replace(brokenPattern, '"option":"$1",');
-        }
-        
-        // Fix pattern for option with quotes on wrong side
-        const wrongQuotePattern = /"option"\s*:\s*"(\d+)([,}])/g;
-        if (text.match(wrongQuotePattern)) {
-            console.log('Found option with misplaced quotes, fixing');
-            text = text.replace(wrongQuotePattern, '"option":"$1"$2');
-        }
+    // Guard against empty or non-string inputs
+    if (!text || typeof text !== 'string') {
+        console.error('Invalid input to fixBrokenJSON:', text);
+        return null;
     }
     
-    // Special handling for position 34879 with option field
-    if (text.length > 34870 && text.length < 34890) {
-        // Get context around the problem area
-        const context = text.substring(34870, 34890);
-        console.log(`Context around position 34879: '${context}'`);
-        
-        // Check for suspicious content at this position 
-        if (context.includes('option') && context.includes('"')) {
-            console.log('Found suspicious pattern around position 34879, applying targeted fix');
-            
-            // Extract the parts before and after the problematic area
-            const before = text.substring(0, 34870);
-            const after = text.substring(34890);
-            
-            // Replace with a known good pattern for option field
-            const fixedMiddle = ',"option":"1","time';
-            text = before + fixedMiddle + after;
-            console.log('Applied targeted fix for position 34879');
-        }
-    }
-    
-    // Apply additional fixes to handle common JSON issues
-    const cleanText = text
-        // Remove control characters 
-        .replace(/[\x00-\x1F\x7F]/g, '')
-        // Fix unescaped backslashes in strings
-        .replace(/([^\\])\\([^\\/"bfnrtu])/g, '$1\\\\$2')
-        // Fix trailing commas in arrays and objects
-        .replace(/,\s*}/g, '}')
-        .replace(/,\s*\]/g, ']')
-        // Fix missing quotes around property names
-        .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*:)/g, '$1"$2"$3')
-        // Fix broken quotes in option values - recurring theme
-        .replace(/"option"\s*:\s*(\d+)([,}])/g, '"option":"$1"$2')
-        .replace(/"option"\s*:\s*(\d+)"\s*,/g, '"option":"$1",');
-    
-    // Try to parse the cleaned text
     try {
-        const parsed = JSON.parse(cleanText);
-        console.log('JSON repair succeeded, returning fixed data');
-        return cleanText;
-    } catch (e) {
-        console.error('JSON repair failed:', e.message);
+        // First try standard JSON parse - maybe it's actually valid
+        return JSON.parse(text);
+    } catch (initialError) {
+        console.log('Initial JSON parse failed, attempting repair:', initialError.message);
         
-        // Last resort: try to implement a more brute-force fix
         try {
-            const errorMatch = e.message.match(/position (\d+)/);
-            if (errorMatch) {
+            // Log some debug information about the error
+            const errorMatch = initialError.message.match(/position (\d+)/);
+            if (errorMatch && errorMatch[1]) {
                 const errorPos = parseInt(errorMatch[1]);
-                console.log(`Error at position ${errorPos}`);
-                
-                // Look at context around error
-                const contextStart = Math.max(0, errorPos - 15);
-                const contextEnd = Math.min(cleanText.length, errorPos + 15);
-                const context = cleanText.substring(contextStart, contextEnd);
-                
-                console.log(`Context around error: "${context}"`);
-                
-                // If error is near "option" field, apply special handling
-                if (context.includes('option')) {
-                    // Find the position of "option" and apply targeted fix
-                    const optionIndex = cleanText.lastIndexOf('"option":', errorPos);
-                    if (optionIndex > 0) {
-                        // Find the end of this field (next comma or brace)
-                        let commaPos = cleanText.indexOf(',', optionIndex);
-                        let bracePos = cleanText.indexOf('}', optionIndex);
-                        
-                        if (commaPos < 0) commaPos = cleanText.length;
-                        if (bracePos < 0) bracePos = cleanText.length;
-                        
-                        const endPos = Math.min(commaPos, bracePos);
-                        
-                        if (endPos > optionIndex) {
-                            // Replace just this field with a known good value
-                            const before = cleanText.substring(0, optionIndex);
-                            const after = cleanText.substring(endPos);
-                            const fixed = before + '"option":"1"' + after;
-                            
-                            console.log('Applied targeted fix for option field');
-                            
-                            try {
-                                JSON.parse(fixed);
-                                return fixed;
-                            } catch (fixError) {
-                                console.error('Targeted fix failed:', fixError.message);
-                            }
-                        }
-                    }
-                }
+                const contextStart = Math.max(0, errorPos - 30);
+                const contextEnd = Math.min(text.length, errorPos + 30);
+                console.log(`Error context at position ${errorPos}: "${text.substring(contextStart, errorPos)}[ERROR HERE]${text.substring(errorPos, contextEnd)}"`);
             }
             
-            // Extract the largest valid JSON object as a last resort
-            const firstBrace = text.indexOf('{');
-            let lastBrace = text.lastIndexOf('}');
+            // Step 1: Fix common JSON syntax issues
+            let fixedText = text
+                // Remove control characters
+                .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+                // Fix unescaped quotes in strings - careful with this
+                .replace(/([^\\])"([^"]*[^\\])"/g, '$1\\"$2\\"')
+                // Fix missing quotes around property names
+                .replace(/([{,]\s*)([a-zA-Z0-9_$]+)(\s*:)/g, '$1"$2"$3')
+                // Fix trailing commas in objects
+                .replace(/,(\s*})/g, '$1')
+                // Fix trailing commas in arrays
+                .replace(/,(\s*\])/g, '$1');
             
-            if (firstBrace >= 0 && lastBrace > firstBrace) {
-                // Try to find a valid JSON object by testing different end positions
-                while (lastBrace > firstBrace) {
-                    const potentialJSON = text.substring(firstBrace, lastBrace + 1);
+            // Step 2: Try to parse the fixed text
+            try {
+                return JSON.parse(fixedText);
+            } catch (error) {
+                console.log('Basic fixing failed, attempting more advanced repairs:', error.message);
+                
+                // Step 3: More aggressive fixing
+                // Try to extract just the JSON object portion
+                const objectStartIndex = text.indexOf('{');
+                const objectEndIndex = text.lastIndexOf('}');
+                
+                if (objectStartIndex !== -1 && objectEndIndex !== -1 && objectEndIndex > objectStartIndex) {
+                    const extractedObject = text.substring(objectStartIndex, objectEndIndex + 1);
                     try {
-                        JSON.parse(potentialJSON);
-                        console.log(`Found valid JSON object from ${firstBrace} to ${lastBrace}`);
-                        return potentialJSON;
-                    } catch (extractErr) {
-                        // Try a smaller section
-                        lastBrace = text.lastIndexOf('}', lastBrace - 1);
+                        console.log('Attempting to parse extracted JSON object');
+                        return JSON.parse(extractedObject);
+                    } catch (extractError) {
+                        console.log('Extracted object parsing failed:', extractError.message);
                     }
                 }
+                
+                // Step 4: If we have a specific error about option field, fix that
+                if (error.message.includes('option') || text.includes('"option":1') || text.includes('"option": 1')) {
+                    console.log('Detected potential option field issue, applying specific fix');
+                    fixedText = text.replace(/"option"\s*:\s*(\d+)([,}])/g, '"option":"$1"$2');
+                    
+                    try {
+                        return JSON.parse(fixedText);
+                    } catch (optionError) {
+                        console.log('Option field fix failed:', optionError.message);
+                    }
+                }
+                
+                // Step 5: Last resort - create a minimal valid response
+                console.log('JSON repair partially succeeded but could not produce valid JSON');
+                console.log('Creating fallback response object');
+                
+                // Get keyword from the page if possible
+                const keywordInput = document.getElementById('keywordInput') || document.getElementById('id_keyword');
+                const keyword = keywordInput ? keywordInput.value.trim() : 'unknown';
+                
+                return {
+                    status: 'success',
+                    metadata: {
+                        keywords: [keyword],
+                        timestamp: new Date().toISOString(),
+                        message: 'Data reconstructed from invalid JSON'
+                    },
+                    data: {
+                        time_series: [],
+                        time_trends: []
+                    }
+                };
             }
-        } catch (finalError) {
-            console.error('All JSON repair attempts failed');
+        } catch (repairError) {
+            console.error('Fatal error during JSON repair process:', repairError);
+            
+            // Return a valid but empty response object
+            return {
+                status: 'error',
+                error: 'Failed to repair malformed JSON: ' + repairError.message,
+                data: {
+                    time_series: []
+                }
+            };
         }
-        
-        // If everything failed, return the cleaned text
-        return cleanText;
     }
 }
 
@@ -1700,15 +1679,19 @@ function hideErrorMessage() {
 }
 
 function renderCharts() {
+    // Use lastFetchedKeyword or get it from the input if available
+    const selectedKeyword = lastFetchedKeyword || (keywordInput ? keywordInput.value.trim() : null);
+    
     if (!selectedKeyword) {
+        console.error("No keyword available for renderCharts");
         return;
     }
 
     hideErrorMessage();
     
     // Get the selected option from the dropdown
-    const analysisOption = document.getElementById('analysis-option').value;
-    const url = `/trends/api/?keyword=${encodeURIComponent(selectedKeyword)}&option=${encodeURIComponent(analysisOption)}`;
+    const analysisOption = document.getElementById('analysisOption')?.value || document.getElementById('analysis-option')?.value || '1';
+    const url = `/trends/api/data/?keyword=${encodeURIComponent(selectedKeyword)}&analysis_option=${encodeURIComponent(analysisOption)}`;
     
     // Check if we already have data for this keyword and option
     if (dataAlreadyFetched && lastFetchedKeyword === selectedKeyword) {
@@ -1725,6 +1708,22 @@ function renderCharts() {
         document.getElementById('loading-spinner').style.display = 'block';
     }
     
+    // Show the loader
+    if (inlineLoader) {
+        inlineLoader.style.display = 'flex';
+        inlineLoader.style.opacity = '1';
+        
+        // Update the loader text with the current keyword
+        const keywordSpan = inlineLoader.querySelector('.text-sm .font-semibold');
+        if (keywordSpan) {
+            keywordSpan.textContent = selectedKeyword;
+        }
+        
+        // Add loading class to body
+        document.body.classList.add('loading');
+    }
+    
+    // Fetch with retry and better error handling
     fetchWithRetry(url)
         .then(response => {
             // Check if our custom header is present to confirm server-side sanitization
@@ -1740,27 +1739,6 @@ function renderCharts() {
                 if (responseText.includes('"option":1') || responseText.includes('"option": 1')) {
                     console.log('Detected unquoted option value, fixing automatically');
                     responseText = responseText.replace(/"option"\s*:\s*(\d+)([,}])/g, '"option":"$1"$2');
-                }
-                
-                // Check the specific area around position 34879 if relevant
-                if (responseText.length > 34870) {
-                    const contextArea = responseText.substring(34870, 34890);
-                    console.log(`Content around position 34879: "${contextArea}"`);
-                    
-                    // Check for potential JSON error in this area
-                    if (contextArea.includes('option') && !contextArea.includes('"option":"')) {
-                        console.log('Potential option field issue detected, performing specific fix');
-                        
-                        // Extract before and after the problematic area
-                        const before = responseText.substring(0, 34870);
-                        const after = responseText.substring(34890);
-                        
-                        // Replace the middle section with a known good pattern
-                        const safeMiddle = ',"option":"1","time';
-                        
-                        // Try the fixed version
-                        responseText = before + safeMiddle + after;
-                    }
                 }
                 
                 // First, attempt to parse the response as-is
@@ -1795,11 +1773,13 @@ function renderCharts() {
                     const fallbackResponse = {
                         status: "error",
                         error: "Failed to parse server response",
-                        time_series: [],
-                        metadata: {
-                            keyword: selectedKeyword,
-                            analysis_option: analysisOption,
-                            message: "Data unavailable due to parsing error"
+                        data: {
+                            time_series: [],
+                            metadata: {
+                                keyword: selectedKeyword,
+                                analysis_option: analysisOption,
+                                message: "Data unavailable due to parsing error"
+                            }
                         }
                     };
                     
@@ -1847,17 +1827,34 @@ function renderCharts() {
                 }, 300);
             }
             
-            showErrorMessage(`Error connecting to server: ${error.message}`);
+            // User-friendly error message
+            let errorMessage = error.message || 'Error connecting to server';
+            
+            // Make common error messages more user-friendly
+            if (error.message && error.message.includes('NetworkError')) {
+                errorMessage = 'Network connection error. Please check your internet connection and try again.';
+                // Add retry logic for network errors
+                setTimeout(() => {
+                    console.log('Attempting to reconnect...');
+                    if (typeof showError === 'function') {
+                        showError('Attempting to reconnect... Please wait.');
+                    }
+                }, 2000);
+            }
+            
+            showErrorMessage(`Error: ${errorMessage}`);
             
             // Create a minimal response to prevent charts from breaking
             const fallbackResponse = {
                 status: "error",
                 error: `Network error: ${error.message}`,
-                time_series: [],
-                metadata: {
-                    keyword: selectedKeyword,
-                    analysis_option: document.getElementById('analysis-option').value,
-                    message: "Data unavailable due to network error"
+                data: {
+                    time_series: [],
+                    metadata: {
+                        keyword: selectedKeyword,
+                        analysis_option: analysisOption,
+                        message: "Data unavailable due to network error"
+                    }
                 }
             };
             
@@ -1882,59 +1879,82 @@ function handleTrendsData(data) {
         return;
     }
     
-    // Check for required data structure
-    if (!data.data && !data.time_series) {
-        console.error("Invalid data structure:", data);
-        showErrorMessage("Received invalid data structure from server");
+    // Check for required data structure and normalize it
+    let timeSeriesData = [];
+    let keyword = lastFetchedKeyword || "";
+    let metadata = {};
+    
+    // Handle different data structures
+    if (data.data) {
+        // New API format
+        timeSeriesData = data.data.time_trends || data.data.time_series || [];
+        if (data.data.metadata) {
+            metadata = data.data.metadata;
+            if (data.data.metadata.keywords && data.data.metadata.keywords.length > 0) {
+                keyword = data.data.metadata.keywords[0];
+            }
+        }
+    } else if (data.time_series) {
+        // Old API format
+        timeSeriesData = data.time_series;
+        metadata = data.metadata || {};
+        if (data.keyword) {
+            keyword = data.keyword;
+        }
+    }
+    
+    if (timeSeriesData.length === 0) {
+        console.error("No time series data found in response");
+        showErrorMessage("No trend data available for this keyword");
         clearCharts();
         return;
     }
     
-    // Hide any error messages now that we have valid data
-    hideErrorMessage();
+    // Store normalized data
+    window.normalizedTrendsData = {
+        time_series: timeSeriesData,
+        keyword: keyword,
+        metadata: metadata
+    };
     
-    // Show results container if it exists
+    console.log("Rendering charts with data for:", keyword);
+    console.log("Time series data points:", timeSeriesData.length);
+    
+    // Clear any existing charts
+    clearCharts();
+    
+    // Render the time series chart
+    renderTimeSeriesChart(timeSeriesData, keyword);
+    
+    // Show results container
     if (resultsContainer) {
         resultsContainer.style.display = 'block';
     }
     
-    try {
-        console.log('Processing valid trends data, rendering charts');
-        
-        // Get the selected analysis option
-        const analysisOption = data.metadata?.analysis_option || 
-                              document.getElementById('analysisOption')?.value || '1';
-        
-        // Update UI for different modes if that function exists
-        if (typeof updateUIForAnalysisOption === 'function') {
-            updateUIForAnalysisOption(analysisOption);
+    // Update current time unit buttons to active state
+    if (currentTimeUnit) {
+        let btnId;
+        switch (currentTimeUnit) {
+            case 'year':
+                btnId = 'viewByYear';
+                break;
+            case 'quarter':
+                btnId = 'viewByQuarter';
+                break;
+            case 'month':
+                btnId = 'viewByMonth';
+                break;
+            default:
+                btnId = 'viewByMonth';
         }
         
-        // Extract the data we need based on the structure
-        const timeSeriesData = data.time_series || data.data.time_trends;
-        const keyword = data.metadata?.keywords?.[0] || data.metadata?.keyword || Object.keys(timeSeriesData[0]).filter(k => k !== 'date' && k !== 'isPartial')[0];
-        
-        // Render the time series chart with our enhanced implementation
-        renderTimeSeriesChart(timeSeriesData, keyword);
-        
-        // If the application has existing insight generation functionality, also call it
-        // for backward compatibility
-        if (typeof generateInsights === 'function' && 
-            data.data && 
-            (data.data.time_trends || data.data.time_series)) {
-            // Set a short delay to ensure the UI is updated first
-            setTimeout(function() {
-                if (typeof window.generateInsights === 'function') {
-                    window.generateInsights();
-                } else if (typeof generateInsights === 'function') {
-                    generateInsights();
-                }
-            }, 100);
+        const activeBtn = document.getElementById(btnId);
+        if (activeBtn && typeof updateActiveFilterButton === 'function') {
+            updateActiveFilterButton(activeBtn);
         }
-    } catch (error) {
-        console.error('Error processing trends data:', error);
-        showErrorMessage('Error processing trends data: ' + error.message);
     }
+    
+    return true;
 }
 
 function clearCharts() {
@@ -1967,13 +1987,15 @@ function clearCharts() {
 }
 
 // Function to update the time unit for the chart
-window.updateTimeUnit = function(unit) {
+function updateTimeUnit(unit) {
     if (!timeChart) {
         console.error('Time chart not initialized');
         return;
     }
     
+    // Update global variable
     currentTimeUnit = unit;
+    window.currentTimeUnit = unit;
     console.log('Updating time unit to:', unit);
     
     // Update the chart options
@@ -1996,7 +2018,10 @@ window.updateTimeUnit = function(unit) {
     
     // Update the chart
     timeChart.update();
-};
+}
+
+// Make the function globally available
+window.updateTimeUnit = updateTimeUnit;
 
 // Enhanced renderTimeSeriesChart function based on test-ui.html
 function renderTimeSeriesChart(timeSeriesData, keyword) {

@@ -667,6 +667,7 @@
                                 if (!response.ok) {
                                     throw new Error(`HTTP error! Status: ${response.status}`);
                                 }
+                                // Get the response as text to avoid JSON parsing errors initially
                                 return response.text();
                             })
                             .then(text => {
@@ -675,45 +676,81 @@
                                     console.log('Starting JSON parsing with enhanced error handling');
                                     let data;
                                     
-                                    // Use fixBrokenJSON if available (from our json-repair.js)
-                                    if (typeof window.fixBrokenJSON === 'function') {
-                                        console.log('Using enhanced JSON repair function');
-                                        data = window.fixBrokenJSON(text);
-                                    } 
-                                    // Fallback to safeJSONParse if available
-                                    else if (typeof window.safeJSONParse === 'function') {
-                                        console.log('Using safe JSON parse method');
-                                        data = window.safeJSONParse(text);
-                                    } 
-                                    // Last resort: try-catch with standard JSON.parse
-                                    else {
-                                        try {
-                                            console.log('Using standard JSON.parse with try-catch');
-                                            data = JSON.parse(text);
-                                        } catch (error) {
-                                            console.error('JSON parse error:', error);
-                                            
-                                            // Try to fix common issues before giving up
-                                            const cleanedText = text.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+                                    // Safely parse the JSON with fallbacks
+                                    try {
+                                        // Use fixBrokenJSON if available (from our json-repair.js)
+                                        if (typeof window.fixBrokenJSON === 'function') {
+                                            console.log('Using enhanced JSON repair function');
+                                            data = window.fixBrokenJSON(text);
+                                        } 
+                                        // Fallback to safeJSONParse if available
+                                        else if (typeof window.safeJSONParse === 'function') {
+                                            console.log('Using safe JSON parse method');
+                                            data = window.safeJSONParse(text);
+                                        } 
+                                        // Last resort: try-catch with standard JSON.parse
+                                        else {
                                             try {
-                                                data = JSON.parse(cleanedText);
-                                                console.log('Successfully parsed JSON after basic cleaning');
-                                            } catch (secondError) {
-                                                console.error('Failed to parse cleaned JSON:', secondError);
-                                                // Basic fallback object
-                                                data = {
-                                                    status: 'error',
-                                                    error: 'Failed to parse JSON data: ' + error.message
-                                                };
+                                                console.log('Using standard JSON.parse with try-catch');
+                                                data = JSON.parse(text);
+                                            } catch (error) {
+                                                console.error('JSON parse error:', error);
+                                                
+                                                // Try to fix common issues before giving up
+                                                console.log('Attempting basic JSON repair');
+                                                const cleanedText = text
+                                                    .replace(/[\x00-\x1F\x7F-\x9F]/g, "")
+                                                    .replace(/([{,]\s*)([a-zA-Z0-9_$]+)(\s*:)/g, '$1"$2"$3')
+                                                    .replace(/,(\s*[}\]])/g, '$1');
+                                                    
+                                                try {
+                                                    data = JSON.parse(cleanedText);
+                                                    console.log('Successfully parsed JSON after basic cleaning');
+                                                } catch (secondError) {
+                                                    console.error('Failed to parse cleaned JSON:', secondError);
+                                                    // Basic fallback object
+                                                    data = {
+                                                        status: 'error',
+                                                        error: 'Failed to parse JSON data: ' + error.message,
+                                                        data: {
+                                                            time_series: []
+                                                        }
+                                                    };
+                                                }
                                             }
                                         }
+                                    } catch (repairError) {
+                                        console.error('All JSON repair methods failed:', repairError);
+                                        data = {
+                                            status: 'error',
+                                            error: 'Failed to repair malformed JSON: ' + repairError.message,
+                                            data: {
+                                                time_series: []
+                                            }
+                                        };
+                                    }
+                                    
+                                    // If we still don't have valid data structure, create one
+                                    if (!data || !data.data) {
+                                        console.error('Invalid data structure after parsing');
+                                        data = {
+                                            status: 'success',
+                                            metadata: {
+                                                keywords: [keyword],
+                                                timestamp: new Date().toISOString()
+                                            },
+                                            data: {
+                                                time_series: [],
+                                                time_trends: []
+                                            }
+                                        };
                                     }
                                     
                                     // Store the data globally for charts to access
                                     window.trendsData = data;
                                     
                                     // Update UI based on the data
-                                    if (data.status === 'success') {
+                                    if (data.status === 'success' && !data.error) {
                                         // Hide loader
                                         loader.style.opacity = '0';
                                         setTimeout(() => {
@@ -731,13 +768,18 @@
                                             renderCharts();
                                         } else {
                                             console.error('renderCharts function not found. Make sure trends-charts.js is loaded properly.');
+                                            // Try loading the script again
+                                            const script = document.createElement('script');
+                                            script.src = "{% static 'js/trends-charts.js' %}";
+                                            document.head.appendChild(script);
                                         }
                                     } else {
-                                        // Show error
+                                        // Show error but don't completely fail if we have some data
+                                        const errorMsg = data.error || 'An error occurred while fetching trends data.';
                                         if (typeof showError === 'function') {
-                                            showError(data.error || 'An error occurred while fetching trends data.');
+                                            showError(errorMsg);
                                         } else {
-                                            alert(data.error || 'An error occurred while fetching trends data.');
+                                            alert(errorMsg);
                                         }
                                         
                                         // Hide loader
@@ -746,10 +788,29 @@
                                             loader.style.display = 'none';
                                             document.body.classList.remove('loading');
                                         }, 300);
+                                        
+                                        // Still show results if we have any data
+                                        if (data.data && (data.data.time_series || data.data.time_trends)) {
+                                            if (resultsContainer) {
+                                                resultsContainer.style.display = 'block';
+                                            }
+                                            
+                                            // Try rendering whatever data we have
+                                            if (typeof renderCharts === 'function') {
+                                                renderCharts();
+                                            }
+                                        }
                                     }
                                 } catch (fatalError) {
                                     console.error('Fatal error during JSON processing:', fatalError);
-                                    alert('A critical error occurred while processing the data. Please try again with a different search term.');
+                                    const errorMessage = 'A critical error occurred while processing the data. Please try again with a different search term.';
+                                    
+                                    // Show user-friendly error
+                                    if (typeof showError === 'function') {
+                                        showError(errorMessage);
+                                    } else {
+                                        alert(errorMessage);
+                                    }
                                     
                                     // Hide loader
                                     loader.style.opacity = '0';
@@ -762,11 +823,25 @@
                             .catch(error => {
                                 console.error('Error fetching trends data:', error);
                                 
+                                // Format the error message for better user understanding
+                                let errorMessage = 'Error fetching trends data: ' + error.message;
+                                
+                                // Customize message based on error type
+                                if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                                    errorMessage = 'Network connection error. Please check your internet connection and try again.';
+                                } else if (error.message.includes('HTTP error! Status: 500')) {
+                                    errorMessage = 'Server error. Please try again with a different keyword or later.';
+                                } else if (error.message.includes('HTTP error! Status: 429')) {
+                                    errorMessage = 'Too many requests. Please wait a moment and try again.';
+                                } else if (error.message.includes('JSON')) {
+                                    errorMessage = 'Error processing the data. Please try a different keyword.';
+                                }
+                                
                                 // Show error
                                 if (typeof showError === 'function') {
-                                    showError('Error fetching trends data: ' + error.message);
+                                    showError(errorMessage);
                                 } else {
-                                    alert('Error fetching trends data: ' + error.message);
+                                    alert(errorMessage);
                                 }
                                 
                                 // Hide loader
@@ -775,6 +850,32 @@
                                     loader.style.display = 'none';
                                     document.body.classList.remove('loading');
                                 }, 300);
+                                
+                                // Add a retry button to the results container
+                                if (resultsContainer) {
+                                    const retryContainer = document.createElement('div');
+                                    retryContainer.className = 'text-center py-8';
+                                    retryContainer.innerHTML = `
+                                        <button id="retryFetchBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                            </svg>
+                                            Retry Search
+                                        </button>
+                                    `;
+                                    
+                                    resultsContainer.style.display = 'block';
+                                    resultsContainer.appendChild(retryContainer);
+                                    
+                                    // Add event listener to retry button
+                                    document.getElementById('retryFetchBtn')?.addEventListener('click', function() {
+                                        // Remove the retry container
+                                        retryContainer.remove();
+                                        
+                                        // Try the search again
+                                        showLoader(keyword);
+                                    });
+                                }
                             });
                     }
                     
@@ -1344,63 +1445,87 @@
         const originalFetch = window.fetch;
         window.fetch = function(...args) {
             return originalFetch.apply(this, args).then(response => {
-                // Clone the response to avoid consuming it
-                const clone = response.clone();
-                
                 // Check if this is a trends API call
                 if (args[0] && args[0].includes && args[0].includes('/trends/api/data/')) {
-                    clone.json().then(data => {
-                        console.log('INTERCEPTED API RESPONSE:', data);
-                        
-                        // Fix the data structure if needed
-                        if (data && data.data) {
-                            // Convert time_trends to time_series if it exists
-                            if (data.data.time_trends && !data.data.time_series) {
-                                console.log('Converting time_trends to time_series format');
-                                
-                                // Create time_series data from time_trends
-                                data.data.time_series = data.data.time_trends.map(item => {
-                                    // Handle different data formats
-                                    const date = item.date || item.index || '';
-                                    const keyword = data.metadata && data.metadata.keywords && data.metadata.keywords[0] || 'India';
+                    // Create a copy of the response by getting the text and then processing it
+                    // This avoids using response.clone() which isn't supported in all environments
+                    return response.text().then(responseText => {
+                        try {
+                            // Parse the response text
+                            const data = JSON.parse(responseText);
+                            console.log('INTERCEPTED API RESPONSE:', data);
+                            
+                            // Fix the data structure if needed
+                            if (data && data.data) {
+                                // Convert time_trends to time_series if it exists
+                                if (data.data.time_trends && !data.data.time_series) {
+                                    console.log('Converting time_trends to time_series format');
                                     
-                                    // Handle different value formats
-                                    let value;
-                                    if (typeof item.value === 'number') {
-                                        value = item.value;
-                                    } else if (typeof item[keyword] === 'number') {
-                                        value = item[keyword];
-                                    } else {
-                                        // Find any numeric property as a fallback
-                                        for (const key in item) {
-                                            if (typeof item[key] === 'number' && 
-                                                key !== 'date' && 
-                                                key !== 'index' && 
-                                                key !== 'is_partial') {
-                                                value = item[key];
-                                                break;
+                                    // Create time_series data from time_trends
+                                    data.data.time_series = data.data.time_trends.map(item => {
+                                        // Handle different data formats
+                                        const date = item.date || item.index || '';
+                                        const keyword = data.metadata && data.metadata.keywords && data.metadata.keywords[0] || 'India';
+                                        
+                                        // Handle different value formats
+                                        let value;
+                                        if (typeof item.value === 'number') {
+                                            value = item.value;
+                                        } else if (typeof item[keyword] === 'number') {
+                                            value = item[keyword];
+                                        } else {
+                                            // Find any numeric property as a fallback
+                                            for (const key in item) {
+                                                if (typeof item[key] === 'number' && 
+                                                    key !== 'date' && 
+                                                    key !== 'index' && 
+                                                    key !== 'is_partial') {
+                                                    value = item[key];
+                                                    break;
+                                                }
                                             }
                                         }
-                                    }
+                                        
+                                        return {
+                                            date: date,
+                                            value: value || 0
+                                        };
+                                    });
                                     
-                                    return {
-                                        date: date,
-                                        value: value || 0
-                                    };
-                                });
-                                
-                                console.log('Created time_series data with', data.data.time_series.length, 'points');
-                                console.log('Sample:', data.data.time_series.slice(0, 3));
-                                
-                                // Store the modified data
-                                window.trendsData = data;
+                                    console.log('Created time_series data with', data.data.time_series.length, 'points');
+                                    console.log('Sample:', data.data.time_series.slice(0, 3));
+                                    
+                                    // Store the modified data
+                                    window.trendsData = data;
+                                }
                             }
+                            
+                            // Create a custom response object with the processed data
+                            return {
+                                ok: response.ok,
+                                status: response.status,
+                                statusText: response.statusText,
+                                headers: response.headers,
+                                json: () => Promise.resolve(data),
+                                text: () => Promise.resolve(responseText)
+                            };
+                            
+                        } catch (err) {
+                            console.error('Error processing API response:', err);
+                            // Return the original response text in case of error
+                            return {
+                                ok: response.ok,
+                                status: response.status,
+                                statusText: response.statusText,
+                                headers: response.headers,
+                                json: () => Promise.reject(new Error('Failed to parse JSON: ' + err.message)),
+                                text: () => Promise.resolve(responseText)
+                            };
                         }
-                    }).catch(err => {
-                        console.error('Error processing API response:', err);
                     });
                 }
                 
+                // For other requests, pass through unchanged
                 return response;
             });
         };
@@ -2033,12 +2158,11 @@
         const originalFetch = window.fetch;
         window.fetch = function(...args) {
             return originalFetch.apply(this, args).then(response => {
-                // Clone the response so we can still read it
-                const clonedResponse = response.clone();
-                
                 // If this is a trends API request, handle it with our robust parser
                 if (args[0] && args[0].includes && args[0].includes('/trends/api/data/')) {
-                    return clonedResponse.text().then(text => {
+                    // Don't use response.clone() as it's not supported in all environments
+                    // Instead, get the text directly and create a modified response object
+                    return response.text().then(text => {
                         console.log('Received API response, length:', text.length);
                         
                         // Print the first 1000 characters and last 1000 characters for debugging

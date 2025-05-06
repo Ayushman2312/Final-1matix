@@ -67,7 +67,11 @@ class UserAuthMiddleware:
             # Allow public access to website templates browsing
             current_path.startswith('/website/templates/') or
             # Include all public website slugs
-            current_path.startswith('/s/')
+            current_path.startswith('/s/') or
+            # Allow access to 404 template
+            request.resolver_match and request.resolver_match.url_name == '404' or
+            hasattr(request, 'is_404') or
+            request.META.get('REDIRECT_STATUS') == '404'
         )
         
         # For debugging - prints the session info for every request
