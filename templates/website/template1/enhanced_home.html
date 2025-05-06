@@ -54,10 +54,42 @@
                 <div class="relative h-full">
                     <!-- Background Image with SEO-optimized alt text -->
                     <div class="absolute inset-0 z-0">
-                        <img src="{{ banner.image|default:'https://via.placeholder.com/1920x1080' }}" 
-                             alt="{{ banner.alt_text|default:banner.title|default:'Featured product banner' }}"
-                             class="w-full h-full object-cover"
-                             onerror="this.src='https://via.placeholder.com/1920x1080'">
+                        {% if banner.image %}
+                            {% if banner.image|slice:":4" == "http" %}
+                            <!-- External URL -->
+                            <img src="{{ banner.image }}" 
+                                 alt="{{ banner.alt_text|default:banner.title|default:'Featured product banner' }}"
+                                 class="w-full h-full object-cover"
+                                 onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                            {% elif banner.image|slice:":6" == "media/" %}
+                            <!-- Path starts with media/ -->
+                            <img src="/{{ banner.image }}" 
+                                 alt="{{ banner.alt_text|default:banner.title|default:'Featured product banner' }}"
+                                 class="w-full h-full object-cover"
+                                 loading="lazy"
+                                 onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                            {% elif banner.image|slice:":1" == "/" %}
+                            <!-- Path starts with a slash -->
+                            <img src="{{ banner.image }}" 
+                                 alt="{{ banner.alt_text|default:banner.title|default:'Featured product banner' }}"
+                                 class="w-full h-full object-cover"
+                                 loading="lazy" 
+                                 onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                            {% else %}
+                            <!-- Normal path (no slash prefix) -->
+                            <img src="/{{ banner.image }}" 
+                                 alt="{{ banner.alt_text|default:banner.title|default:'Featured product banner' }}"
+                                 class="w-full h-full object-cover"
+                                 loading="lazy" 
+                                 onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                            {% endif %}
+                            <script>console.log('Enhanced banner image type: {{ banner.image|slice:":4" }}');</script>
+                            <script>console.log('Enhanced banner image URL:', '{{ banner.image }}');</script>
+                        {% else %}
+                            <img src="https://source.unsplash.com/random/1920x1080/?banner,product" 
+                                 alt="Default banner" 
+                                 class="w-full h-full object-cover">
+                        {% endif %}
                         <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                     </div>
                     

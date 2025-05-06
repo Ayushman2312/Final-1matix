@@ -407,7 +407,14 @@ class LazyLoadingMiddleware:
                     if src and not img.get('srcset') and (src.endswith('.jpg') or src.endswith('.jpeg') or src.endswith('.png')):
                         # Only add srcset for local images
                         if '/media/' in src:
-                            img['srcset'] = f"{src} 1x, {src.rsplit('.', 1)[0]}-2x.{src.rsplit('.', 1)[1]} 2x"
+                            # Fix path duplication by extracting just the filename
+                            base_path = src.rsplit('/', 1)[0]  # Get the directory path
+                            filename = src.rsplit('/', 1)[1]   # Get the filename
+                            basename = filename.rsplit('.', 1)[0]  # Get filename without extension
+                            ext = filename.rsplit('.', 1)[1]   # Get extension
+                            
+                            # Create srcset with proper paths
+                            img['srcset'] = f"{src} 1x, {base_path}/{basename}-2x.{ext} 2x"
                     # Add responsive width attributes
                     if not img.get('width') and not img.get('height'):
                         img['width'] = '100%'

@@ -32,6 +32,14 @@ class SignupView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Check if user is coming from Google authentication
+        if 'google_auth_email' in self.request.session:
+            context['google_auth_email'] = self.request.session.get('google_auth_email')
+            context['google_auth_name'] = self.request.session.get('google_auth_name')
+            context['google_auth_user_id'] = self.request.session.get('google_auth_user_id')
+            context['is_google_auth'] = True
+            
         return context
     
     def get_template_names(self):
@@ -49,6 +57,9 @@ class SignupView(TemplateView):
             password = request.POST.get('password')
             mobile_number = request.POST.get('mobile_number')
             
+            # Check if this is a Google signup completion
+            is_google_auth = 'google_auth_email' in request.session
+            
             # Determine which template to use based on device
             template_to_use = self.get_template_names()[0]
             
@@ -56,42 +67,60 @@ class SignupView(TemplateView):
             print(f"Received form data: name={full_name}, email={email}, mobile={mobile_number}, pwd_length={len(password) if password else 0}")
             
             # Basic validation
-            if not all([full_name, email, password, mobile_number]):
+            if not all([full_name, email, mobile_number]):
                 messages.error(request, 'Please fill all required fields')
-                return render(request, template_to_use)
+                return render(request, template_to_use, self.get_context_data())
+            
+            # Password is not required for Google auth
+            if not is_google_auth and not password:
+                messages.error(request, 'Password is required')
+                return render(request, template_to_use, self.get_context_data())
             
             # Validate mobile number (assuming Indian format without +91)
             if not mobile_number.isdigit() or len(mobile_number) != 10:
                 messages.error(request, 'Please enter a valid 10-digit mobile number')
-                return render(request, template_to_use)
+                return render(request, template_to_use, self.get_context_data())
             
             # Check if username already exists in email field
             if User.objects.filter(email=email).exists():
                 messages.error(request, 'Email already exists')
-                return render(request, template_to_use)
+                return render(request, template_to_use, self.get_context_data())
             
             # Check if mobile already exists
             if User.objects.filter(phone=mobile_number).exists():
                 messages.error(request, 'Mobile number already registered')
-                return render(request, template_to_use)
+                return render(request, template_to_use, self.get_context_data())
             
             # Create user
             user = User(
                 name=full_name,
                 email=email,
                 phone=mobile_number,
-                password=make_password(password),
                 created_at=timezone.now()
             )
             
-            # Set password if the model has a password field
-            if hasattr(User, 'password'):
+            # Set password if not Google auth
+            if not is_google_auth:
                 user.password = make_password(password)
             
             user.save()
             print(f"User created with ID: {user.user_id}")
             
-            # Redirect to login page or dashboard
+            # If this is Google auth completion, set session variables for login
+            if is_google_auth:
+                request.session['user_id'] = str(user.user_id)
+                request.session['user_email'] = user.email
+                request.session['user_name'] = user.name
+                
+                # Clear Google auth session data
+                request.session.pop('google_auth_email', None)
+                request.session.pop('google_auth_name', None)
+                request.session.pop('google_auth_user_id', None)
+                
+                messages.success(request, 'Registration completed successfully!')
+                return redirect('/user/dashboard/')
+            
+            # Regular signup - redirect to login page
             messages.success(request, 'Registration successful! Please log in.')
             return redirect('/user/login/')
             
@@ -108,10 +137,7 @@ class DashboardView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         # Check both custom authentication and Django authentication
-        is_authenticated = (
-            request.session.get('user_id') is not None or  # Custom auth
-            (request.session.get('_auth_user_id') is not None)  # Django auth
-        )
+        is_authenticated = request.session.get('user_id') is not None  # Only use custom auth
         
         if not is_authenticated:
             messages.warning(request, 'Please log in to access the dashboard')
@@ -123,35 +149,12 @@ class DashboardView(TemplateView):
         # Add user data to context
         user_id = self.request.session.get('user_id')
         
-        # Try to get user from custom auth or Django auth
+        # Only get user from custom auth system
         if user_id:
             try:
                 user = User.objects.get(user_id=user_id)
                 context['user'] = user
             except User.DoesNotExist:
-                pass
-        elif self.request.session.get('_auth_user_id'):
-            # Try to get Django authenticated user
-            from django.contrib.auth.models import User as AuthUser
-            auth_user_id = self.request.session.get('_auth_user_id')
-            try:
-                auth_user = AuthUser.objects.get(id=auth_user_id)
-                # Now get the corresponding custom User if it exists
-                try:
-                    user = User.objects.get(email=auth_user.email)
-                    context['user'] = user
-                except User.DoesNotExist:
-                    # Create a new User record linked to the AuthUser
-                    user = User(
-                        name=auth_user.get_full_name() or auth_user.username,
-                        email=auth_user.email,
-                        created_at=timezone.now()
-                    )
-                    user.save()
-                    context['user'] = user
-                    # Set our custom user_id in session for future requests
-                    self.request.session['user_id'] = str(user.user_id)
-            except AuthUser.DoesNotExist:
                 pass
                 
         return context
@@ -321,11 +324,19 @@ class CheckUsernameView(View):
 class GoogleLoginView(View):
     def get(self, request):
         """Redirect to Google OAuth"""
+        # If already logged in as a custom user, redirect to dashboard
+        if request.session.get('user_id'):
+            return redirect('/user/dashboard/')
+            
         auth_url = get_google_auth_url(request)
         return redirect(auth_url)
 
 def google_callback(request):
     """Handle the Google OAuth callback"""
+    # If already logged in as a custom user, redirect to dashboard
+    if request.session.get('user_id'):
+        return redirect('/user/dashboard/')
+        
     user, error = handle_google_callback(request)
     
     if error:
@@ -333,7 +344,22 @@ def google_callback(request):
         return redirect('signup')
     
     if user:
-        # Set session variables
+        # Check if this is a newly created user (without complete profile)
+        is_new_user = not hasattr(user, 'phone') or not user.phone
+        
+        if is_new_user:
+            # Store user data in session for the signup form
+            request.session['google_auth_email'] = user.email
+            request.session['google_auth_name'] = user.name
+            request.session['google_auth_user_id'] = str(user.user_id)
+            
+            # Delete incomplete user to prevent duplicate records
+            user.delete()
+            
+            messages.info(request, "Please complete your profile to continue")
+            return redirect('signup')
+        
+        # Set session variables for existing users (ONLY in custom user system)
         request.session['user_id'] = str(user.user_id)
         request.session['user_email'] = user.email
         request.session['user_name'] = user.name
@@ -358,10 +384,18 @@ class LoginView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Add next parameter to context if available
-        next_url = self.request.session.get('next_url')
+        next_url = self.request.GET.get('next') or self.request.session.get('next_url')
         if next_url:
+            # Store next URL in session
+            self.request.session['next_url'] = next_url
             context['next_url'] = next_url
         return context
+    
+    def get(self, request, *args, **kwargs):
+        # If user is already logged in, redirect to dashboard
+        if request.session.get('user_id'):
+            return redirect('/user/dashboard/')
+        return super().get(request, *args, **kwargs)
     
     def get_template_names(self):
         # Check if request is from mobile device
@@ -385,7 +419,7 @@ class LoginView(TemplateView):
                 messages.error(request, 'Please fill all required fields')
                 return render(request, template_to_use)
             
-            # Check if user exists
+            # Check if user exists in our custom User model (not Django auth)
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
@@ -431,20 +465,29 @@ class LoginView(TemplateView):
 class DebugSessionView(View):
     def get(self, request):
         """Debug view to check session values"""
+        # Only show custom user session values, not Django admin session info
         session_data = {
-            'is_authenticated': request.session.get('user_id') is not None,
-            'user_id': request.session.get('user_id'),
-            'user_email': request.session.get('user_email'),
-            'user_name': request.session.get('user_name'),
-            'session_keys': list(request.session.keys()),
+            'custom_is_authenticated': request.session.get('user_id') is not None,
+            'custom_user_id': request.session.get('user_id'),
+            'custom_user_email': request.session.get('user_email'),
+            'custom_user_name': request.session.get('user_name'),
+            'custom_session_keys': [key for key in request.session.keys() 
+                                   if key in ['user_id', 'user_email', 'user_name', 'next_url']],
         }
         return JsonResponse(session_data)
 
 
 def Logout(request):
+    # Only remove custom user session variables
     if 'user_id' in request.session:
         del request.session['user_id']
-    request.session.flush()
+    if 'user_email' in request.session:
+        del request.session['user_email']
+    if 'user_name' in request.session:
+        del request.session['user_name']
+        
+    # Don't call request.session.flush() as it would log out Django admin too
+    
     messages.success(request, 'You have been logged out successfully.')
     return redirect('/user/login/')
 

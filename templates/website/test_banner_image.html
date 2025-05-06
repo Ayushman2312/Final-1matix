@@ -1,0 +1,222 @@
+{% extends "website/template1/base.html" %}
+{% load static %}
+
+{% block title %}Banner Image Test{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold mb-4">Banner Image Test</h1>
+        <p class="text-gray-600 mb-4">This page helps debug banner image rendering for website ID: {{ website.id }}</p>
+        
+        <div class="bg-gray-100 p-4 rounded-lg mb-6">
+            <h2 class="text-xl font-semibold mb-2">Media Configuration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-medium text-gray-700">MEDIA_URL:</h3>
+                    <code class="block bg-white p-2 rounded border mt-1">{{ media_url }}</code>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700">MEDIA_ROOT:</h3>
+                    <code class="block bg-white p-2 rounded border mt-1">{{ media_root }}</code>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Test Form -->
+        <div class="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Test Banner Upload</h2>
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="test_banner_image" class="block text-sm font-medium text-gray-700 mb-1">
+                        Upload a test banner image
+                    </label>
+                    <input type="file" id="test_banner_image" name="test_banner_image" accept="image/*" 
+                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <p class="mt-1 text-sm text-gray-500">Upload an image to test the banner image functionality</p>
+                </div>
+                <div>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Upload Test Banner
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Test Banners -->
+    <h2 class="text-2xl font-bold mb-4">Test Banners</h2>
+    
+    <div class="space-y-8">
+        {% for banner in test_banners %}
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="p-6 bg-gray-50 border-b">
+                <h3 class="text-lg font-medium text-gray-900">
+                    {% if banner.image_debug.format %}
+                        Banner: {{ banner.image_debug.format }}
+                    {% else %}
+                        Banner {{ forloop.counter }}
+                    {% endif %}
+                </h3>
+                
+                {% if banner.image_debug %}
+                <div class="mt-2">
+                    <h4 class="text-sm font-medium text-gray-700">Path Analysis:</h4>
+                    <div class="mt-1 bg-gray-100 p-2 rounded text-sm overflow-x-auto">
+                        <p><span class="font-semibold">Original:</span> {{ banner.image_debug.original }}</p>
+                        
+                        {% if banner.image_debug.starts_with_slash is not None %}
+                        <p class="mt-1"><span class="font-semibold">Starts with slash:</span> {{ banner.image_debug.starts_with_slash }}</p>
+                        <p><span class="font-semibold">Starts with media/:</span> {{ banner.image_debug.starts_with_media }}</p>
+                        <p><span class="font-semibold">Starts with http:</span> {{ banner.image_debug.starts_with_http }}</p>
+                        <p><span class="font-semibold">Contains double slash:</span> {{ banner.image_debug.contains_double_slash }}</p>
+                        {% endif %}
+                        
+                        {% if banner.image_debug.upload_time %}
+                        <p class="mt-1"><span class="font-semibold">Upload time:</span> {{ banner.image_debug.upload_time }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-1">Raw Image Source:</h4>
+                    <code class="block bg-gray-100 p-2 rounded">{{ banner.image }}</code>
+                </div>
+                
+                <div class="mb-4">
+                    <h4 class="text-sm font-medium text-gray-700 mb-1">Title:</h4>
+                    <p>{{ banner.title }}</p>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-1">Description:</h4>
+                    <p>{{ banner.description }}</p>
+                </div>
+                
+                <div class="relative aspect-w-16 aspect-h-9 overflow-hidden rounded-lg">
+                    <!-- Simple Image Tag Test -->
+                    <img src="{{ banner.image }}" 
+                         alt="{{ banner.title }}" 
+                         class="object-cover w-full h-full"
+                         onerror="this.classList.add('border', 'border-red-500'); this.style.opacity = '0.5'; console.error('Failed to load image:', this.src);">
+                    
+                    <!-- Overlay to indicate load status -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <script>
+                            document.write(`
+                                <div class="image-load-status bg-gray-800 bg-opacity-75 text-white px-3 py-1 rounded">
+                                    Loading...
+                                </div>
+                            `);
+                            
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const img = document.currentScript.parentElement.previousElementSibling;
+                                const statusElement = document.currentScript.nextElementSibling;
+                                
+                                if (img.complete) {
+                                    if (img.naturalWidth === 0) {
+                                        statusElement.textContent = 'Failed to load';
+                                        statusElement.classList.add('bg-red-600');
+                                    } else {
+                                        statusElement.textContent = 'Loaded successfully';
+                                        statusElement.classList.add('bg-green-600');
+                                        setTimeout(() => statusElement.style.opacity = 0, 2000);
+                                    }
+                                } else {
+                                    img.addEventListener('load', () => {
+                                        statusElement.textContent = 'Loaded successfully';
+                                        statusElement.classList.add('bg-green-600');
+                                        setTimeout(() => statusElement.style.opacity = 0, 2000);
+                                    });
+                                    
+                                    img.addEventListener('error', () => {
+                                        statusElement.textContent = 'Failed to load';
+                                        statusElement.classList.add('bg-red-600');
+                                    });
+                                }
+                            });
+                        </script>
+                        <div class="image-load-status bg-gray-800 bg-opacity-75 text-white px-3 py-1 rounded">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Path Testing Variants -->
+                <div class="mt-6">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Path Rendering Tests:</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Test 1: Original path -->
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Original Path:</p>
+                            <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded overflow-hidden">
+                                <img src="{{ banner.image }}" 
+                                     alt="Original" 
+                                     class="object-cover w-full h-full"
+                                     onerror="this.classList.add('border', 'border-red-500');">
+                            </div>
+                        </div>
+                        
+                        <!-- Test 2: With leading slash -->
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">With Leading Slash:</p>
+                            <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded overflow-hidden">
+                                <img src="/{{ banner.image|slice:"1:" }}" 
+                                     alt="Leading slash" 
+                                     class="object-cover w-full h-full"
+                                     onerror="this.classList.add('border', 'border-red-500');">
+                            </div>
+                        </div>
+                        
+                        <!-- Test 3: Fixed media path -->
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Fixed Media Path:</p>
+                            <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded overflow-hidden">
+                                {% if banner.image|slice:":6" == "media/" %}
+                                <img src="/{{ banner.image }}" 
+                                     alt="Fixed media path" 
+                                     class="object-cover w-full h-full"
+                                     onerror="this.classList.add('border', 'border-red-500');">
+                                {% elif banner.image|slice:":4" == "http" %}
+                                <img src="{{ banner.image }}" 
+                                     alt="External URL" 
+                                     class="object-cover w-full h-full"
+                                     onerror="this.classList.add('border', 'border-red-500');">
+                                {% else %}
+                                <img src="{{ media_url }}{{ banner.image|slice:"1:" }}" 
+                                     alt="Fixed media path" 
+                                     class="object-cover w-full h-full"
+                                     onerror="this.classList.add('border', 'border-red-500');">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- JavaScript for debugging -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Banner image test page loaded');
+        console.log('MEDIA_URL:', '{{ media_url }}');
+        console.log('MEDIA_ROOT:', '{{ media_root }}');
+        
+        // Log all banner image sources
+        const bannerImages = document.querySelectorAll('img');
+        console.log(`Found ${bannerImages.length} images on the page`);
+        
+        bannerImages.forEach((img, index) => {
+            console.log(`Image ${index}: src="${img.src}", complete=${img.complete}, naturalWidth=${img.naturalWidth}`);
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coconut Oil Search Trends in India (2020-2025)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-moment/1.0.1/chartjs-adapter-moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        .header h1 {
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 28px;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 16px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .chart-container {
+            position: relative;
+            height: 60vh;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .controls button, .controls select {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .controls button:hover {
+            background: #2980b9;
+        }
+        .insights {
+            margin-top: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            color: #2c3e50;
+        }
+        .insights h3 {
+            margin-top: 0;
+            color: #2980b9;
+            font-size: 18px;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .tooltip {
+            background: rgba(0, 0, 0, 0.7) !important;
+            border-radius: 5px !important;
+            color: white !important;
+            padding: 10px !important;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .chart-container {
+                height: 50vh;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Coconut Oil Search Trends in India (2020-2025)</h1>
+            <p>Interactive visualization of search interest for "Coconut Oil" in India over a 5-year period. The values represent search interest relative to the highest point (100).</p>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="trendsChart"></canvas>
+        </div>
+        
+        <div class="controls">
+            <button id="yearBtn">View by Year</button>
+            <button id="quarterBtn">View by Quarter</button>
+            <button id="monthBtn">View by Month</button>
+            <button id="seasonalBtn">Show Seasonal Pattern</button>
+            <select id="timeRangeSelect">
+                <option value="all">All Time</option>
+                <option value="2020">2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+            </select>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(52, 152, 219, 0.7);"></div>
+                <span>Search Interest</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(231, 76, 60, 0.7);"></div>
+                <span>Trend Line</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(46, 204, 113, 0.7);"></div>
+                <span>Moving Average</span>
+            </div>
+        </div>
+        
+        <div class="insights">
+            <h3>Key Insights</h3>
+            <div id="insightsContent">
+                Loading analysis...
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        Data source: Search trends for "Coconut Oil" in India from 2020-2025
+    </div>
+
+    <script>
+        // Parse the JSON data
+        const jsonData = {
+  "metadata": {
+    "keywords": [
+      "Coconut Oil"
+    ],
+    "timeframe": "today 5-y",
+    "region": "IN",
+    "timestamp": "2025-05-02 00:51:23"
+  },
+  "data": {
+    "time_trends": [
+      {
+        "date": "2020-04-26 00:00:00",
+        "Coconut Oil": 93,
+        "isPartial": false
+      },
+      {
+        "date": "2020-05-03 00:00:00",
+        "Coconut Oil": 91,
+        "isPartial": false
+      },
+      {
+        "date": "2020-05-10 00:00:00",
+        "Coconut Oil": 87,
+        "isPartial": false
+      },
+      {
+        "date": "2020-05-17 00:00:00",
+        "Coconut Oil": 100,
+        "isPartial": false
+      },
+      {
+        "date": "2020-05-24 00:00:00",
+        "Coconut Oil": 93,
+        "isPartial": false
+      },
+      {
+        "date": "2020-05-31 00:00:00",
+        "Coconut Oil": 95,
+        "isPartial": false
+      },
+      {
+        "date": "2020-06-07 00:00:00",
+        "Coconut Oil": 94,
+        "isPartial": false
+      },
+      {
+        "date": "2020-06-14 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2020-06-21 00:00:00",
+        "Coconut Oil": 89,
+        "isPartial": false
+      },
+      {
+        "date": "2020-06-28 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2020-07-05 00:00:00",
+        "Coconut Oil": 97,
+        "isPartial": false
+      },
+      {
+        "date": "2020-07-12 00:00:00",
+        "Coconut Oil": 92,
+        "isPartial": false
+      },
+      {
+        "date": "2020-07-19 00:00:00",
+        "Coconut Oil": 96,
+        "isPartial": false
+      },
+      {
+        "date": "2020-07-26 00:00:00",
+        "Coconut Oil": 90,
+        "isPartial": false
+      },
+      {
+        "date": "2020-08-02 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2020-08-09 00:00:00",
+        "Coconut Oil": 81,
+        "isPartial": false
+      },
+      {
+        "date": "2020-08-16 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2020-08-23 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2020-08-30 00:00:00",
+        "Coconut Oil": 85,
+        "isPartial": false
+      },
+      {
+        "date": "2020-09-06 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2020-09-13 00:00:00",
+        "Coconut Oil": 84,
+        "isPartial": false
+      },
+      {
+        "date": "2020-09-20 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2020-09-27 00:00:00",
+        "Coconut Oil": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2020-10-04 00:00:00",
+        "Coconut Oil": 85,
+        "isPartial": false
+      },
+      {
+        "date": "2020-10-11 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2020-10-18 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2020-10-25 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2020-11-01 00:00:00",
+        "Coconut Oil": 88,
+        "isPartial": false
+      },
+      {
+        "date": "2020-11-08 00:00:00",
+        "Coconut Oil": 80,
+        "isPartial": false
+      },
+      {
+        "date": "2020-11-15 00:00:00",
+        "Coconut Oil": 85,
+        "isPartial": false
+      },
+      {
+        "date": "2020-11-22 00:00:00",
+        "Coconut Oil": 90,
+        "isPartial": false
+      },
+      {
+        "date": "2020-11-29 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2020-12-06 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2020-12-13 00:00:00",
+        "Coconut Oil": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2020-12-20 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2020-12-27 00:00:00",
+        "Coconut Oil": 78,
+        "isPartial": false
+      },
+      {
+        "date": "2021-01-03 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2021-01-10 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-01-17 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2021-01-24 00:00:00",
+        "Coconut Oil": 81,
+        "isPartial": false
+      },
+      {
+        "date": "2021-01-31 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2021-02-07 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2021-02-14 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-02-21 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-02-28 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2021-03-07 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2021-03-14 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-03-21 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2021-03-28 00:00:00",
+        "Coconut Oil": 89,
+        "isPartial": false
+      },
+      {
+        "date": "2021-04-04 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-04-11 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2021-04-18 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2021-04-25 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2021-05-02 00:00:00",
+        "Coconut Oil": 78,
+        "isPartial": false
+      },
+      {
+        "date": "2021-05-09 00:00:00",
+        "Coconut Oil": 90,
+        "isPartial": false
+      },
+      {
+        "date": "2021-05-16 00:00:00",
+        "Coconut Oil": 87,
+        "isPartial": false
+      },
+      {
+        "date": "2021-05-23 00:00:00",
+        "Coconut Oil": 89,
+        "isPartial": false
+      },
+      {
+        "date": "2021-05-30 00:00:00",
+        "Coconut Oil": 90,
+        "isPartial": false
+      },
+      {
+        "date": "2021-06-06 00:00:00",
+        "Coconut Oil": 88,
+        "isPartial": false
+      },
+      {
+        "date": "2021-06-13 00:00:00",
+        "Coconut Oil": 84,
+        "isPartial": false
+      },
+      {
+        "date": "2021-06-20 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-06-27 00:00:00",
+        "Coconut Oil": 85,
+        "isPartial": false
+      },
+      {
+        "date": "2021-07-04 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2021-07-11 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-07-18 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2021-07-25 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2021-08-01 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2021-08-08 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2021-08-15 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2021-08-22 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2021-08-29 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2021-09-05 00:00:00",
+        "Coconut Oil": 65,
+        "isPartial": false
+      },
+      {
+        "date": "2021-09-12 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2021-09-19 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2021-09-26 00:00:00",
+        "Coconut Oil": 61,
+        "isPartial": false
+      },
+      {
+        "date": "2021-10-03 00:00:00",
+        "Coconut Oil": 61,
+        "isPartial": false
+      },
+      {
+        "date": "2021-10-10 00:00:00",
+        "Coconut Oil": 61,
+        "isPartial": false
+      },
+      {
+        "date": "2021-10-17 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2021-10-24 00:00:00",
+        "Coconut Oil": 92,
+        "isPartial": false
+      },
+      {
+        "date": "2021-10-31 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2021-11-07 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2021-11-14 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2021-11-21 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2021-11-28 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2021-12-05 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2021-12-12 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2021-12-19 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2021-12-26 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2022-01-02 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2022-01-09 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2022-01-16 00:00:00",
+        "Coconut Oil": 64,
+        "isPartial": false
+      },
+      {
+        "date": "2022-01-23 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2022-01-30 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2022-02-06 00:00:00",
+        "Coconut Oil": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2022-02-13 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2022-02-20 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2022-02-27 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2022-03-06 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2022-03-13 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2022-03-20 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2022-03-27 00:00:00",
+        "Coconut Oil": 62,
+        "isPartial": false
+      },
+      {
+        "date": "2022-04-03 00:00:00",
+        "Coconut Oil": 63,
+        "isPartial": false
+      },
+      {
+        "date": "2022-04-10 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2022-04-17 00:00:00",
+        "Coconut Oil": 58,
+        "isPartial": false
+      },
+      {
+        "date": "2022-04-24 00:00:00",
+        "Coconut Oil": 56,
+        "isPartial": false
+      },
+      {
+        "date": "2022-05-01 00:00:00",
+        "Coconut Oil": 61,
+        "isPartial": false
+      },
+      {
+        "date": "2022-05-08 00:00:00",
+        "Coconut Oil": 65,
+        "isPartial": false
+      },
+      {
+        "date": "2022-05-15 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2022-05-22 00:00:00",
+        "Coconut Oil": 65,
+        "isPartial": false
+      },
+      {
+        "date": "2022-05-29 00:00:00",
+        "Coconut Oil": 63,
+        "isPartial": false
+      },
+      {
+        "date": "2022-06-05 00:00:00",
+        "Coconut Oil": 64,
+        "isPartial": false
+      },
+      {
+        "date": "2022-06-12 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2022-06-19 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2022-06-26 00:00:00",
+        "Coconut Oil": 65,
+        "isPartial": false
+      },
+      {
+        "date": "2022-07-03 00:00:00",
+        "Coconut Oil": 64,
+        "isPartial": false
+      },
+      {
+        "date": "2022-07-10 00:00:00",
+        "Coconut Oil": 64,
+        "isPartial": false
+      },
+      {
+        "date": "2022-07-17 00:00:00",
+        "Coconut Oil": 62,
+        "isPartial": false
+      },
+      {
+        "date": "2022-07-24 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2022-07-31 00:00:00",
+        "Coconut Oil": 65,
+        "isPartial": false
+      },
+      {
+        "date": "2022-08-07 00:00:00",
+        "Coconut Oil": 64,
+        "isPartial": false
+      },
+      {
+        "date": "2022-08-14 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2022-08-21 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2022-08-28 00:00:00",
+        "Coconut Oil": 65,
+        "isPartial": false
+      },
+      {
+        "date": "2022-09-04 00:00:00",
+        "Coconut Oil": 65,
+        "isPartial": false
+      },
+      {
+        "date": "2022-09-11 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2022-09-18 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2022-09-25 00:00:00",
+        "Coconut Oil": 62,
+        "isPartial": false
+      },
+      {
+        "date": "2022-10-02 00:00:00",
+        "Coconut Oil": 63,
+        "isPartial": false
+      },
+      {
+        "date": "2022-10-09 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2022-10-16 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2022-10-23 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2022-10-30 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2022-11-06 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2022-11-13 00:00:00",
+        "Coconut Oil": 84,
+        "isPartial": false
+      },
+      {
+        "date": "2022-11-20 00:00:00",
+        "Coconut Oil": 85,
+        "isPartial": false
+      },
+      {
+        "date": "2022-11-27 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2022-12-04 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2022-12-11 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2022-12-18 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2022-12-25 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2023-01-01 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2023-01-08 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2023-01-15 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2023-01-22 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2023-01-29 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2023-02-05 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2023-02-12 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2023-02-19 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2023-02-26 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2023-03-05 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2023-03-12 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2023-03-19 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2023-03-26 00:00:00",
+        "Coconut Oil": 62,
+        "isPartial": false
+      },
+      {
+        "date": "2023-04-02 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2023-04-09 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2023-04-16 00:00:00",
+        "Coconut Oil": 63,
+        "isPartial": false
+      },
+      {
+        "date": "2023-04-23 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2023-04-30 00:00:00",
+        "Coconut Oil": 62,
+        "isPartial": false
+      },
+      {
+        "date": "2023-05-07 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2023-05-14 00:00:00",
+        "Coconut Oil": 62,
+        "isPartial": false
+      },
+      {
+        "date": "2023-05-21 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2023-05-28 00:00:00",
+        "Coconut Oil": 61,
+        "isPartial": false
+      },
+      {
+        "date": "2023-06-04 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2023-06-11 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2023-06-18 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2023-06-25 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2023-07-02 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2023-07-09 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2023-07-16 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2023-07-23 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2023-07-30 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2023-08-06 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2023-08-13 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2023-08-20 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2023-08-27 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2023-09-03 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2023-09-10 00:00:00",
+        "Coconut Oil": 78,
+        "isPartial": false
+      },
+      {
+        "date": "2023-09-17 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2023-09-24 00:00:00",
+        "Coconut Oil": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2023-10-01 00:00:00",
+        "Coconut Oil": 89,
+        "isPartial": false
+      },
+      {
+        "date": "2023-10-08 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2023-10-15 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2023-10-22 00:00:00",
+        "Coconut Oil": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2023-10-29 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2023-11-05 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2023-11-12 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2023-11-19 00:00:00",
+        "Coconut Oil": 84,
+        "isPartial": false
+      },
+      {
+        "date": "2023-11-26 00:00:00",
+        "Coconut Oil": 92,
+        "isPartial": false
+      },
+      {
+        "date": "2023-12-03 00:00:00",
+        "Coconut Oil": 87,
+        "isPartial": false
+      },
+      {
+        "date": "2023-12-10 00:00:00",
+        "Coconut Oil": 84,
+        "isPartial": false
+      },
+      {
+        "date": "2023-12-17 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2023-12-24 00:00:00",
+        "Coconut Oil": 89,
+        "isPartial": false
+      },
+      {
+        "date": "2023-12-31 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2024-01-07 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2024-01-14 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2024-01-21 00:00:00",
+        "Coconut Oil": 80,
+        "isPartial": false
+      },
+      {
+        "date": "2024-01-28 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2024-02-04 00:00:00",
+        "Coconut Oil": 80,
+        "isPartial": false
+      },
+      {
+        "date": "2024-02-11 00:00:00",
+        "Coconut Oil": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2024-02-18 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2024-02-25 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2024-03-03 00:00:00",
+        "Coconut Oil": 78,
+        "isPartial": false
+      },
+      {
+        "date": "2024-03-10 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2024-03-17 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2024-03-24 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2024-03-31 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2024-04-07 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2024-04-14 00:00:00",
+        "Coconut Oil": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2024-04-21 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2024-04-28 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2024-05-05 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2024-05-12 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2024-05-19 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2024-05-26 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2024-06-02 00:00:00",
+        "Coconut Oil": 64,
+        "isPartial": false
+      },
+      {
+        "date": "2024-06-09 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2024-06-16 00:00:00",
+        "Coconut Oil": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2024-06-23 00:00:00",
+        "Coconut Oil": 67,
+        "isPartial": false
+      },
+      {
+        "date": "2024-06-30 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2024-07-07 00:00:00",
+        "Coconut Oil": 66,
+        "isPartial": false
+      },
+      {
+        "date": "2024-07-14 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2024-07-21 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2024-07-28 00:00:00",
+        "Coconut Oil": 71,
+        "isPartial": false
+      },
+      {
+        "date": "2024-08-04 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2024-08-11 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2024-08-18 00:00:00",
+        "Coconut Oil": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2024-08-25 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2024-09-01 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2024-09-08 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2024-09-15 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2024-09-22 00:00:00",
+        "Coconut Oil": 80,
+        "isPartial": false
+      },
+      {
+        "date": "2024-09-29 00:00:00",
+        "Coconut Oil": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2024-10-06 00:00:00",
+        "Coconut Oil": 72,
+        "isPartial": false
+      },
+      {
+        "date": "2024-10-13 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2024-10-20 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2024-10-27 00:00:00",
+        "Coconut Oil": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2024-11-03 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2024-11-10 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2024-11-17 00:00:00",
+        "Coconut Oil": 90,
+        "isPartial": false
+      },
+      {
+        "date": "2024-11-24 00:00:00",
+        "Coconut Oil": 99,
+        "isPartial": false
+      },
+      {
+        "date": "2024-12-01 00:00:00",
+        "Coconut Oil": 91,
+        "isPartial": false
+      },
+      {
+        "date": "2024-12-08 00:00:00",
+        "Coconut Oil": 93,
+        "isPartial": false
+      },
+      {
+        "date": "2024-12-15 00:00:00",
+        "Coconut Oil": 85,
+        "isPartial": false
+      },
+      {
+        "date": "2024-12-22 00:00:00",
+        "Coconut Oil": 80,
+        "isPartial": false
+      },
+      {
+        "date": "2024-12-29 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2025-01-05 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2025-01-12 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2025-01-19 00:00:00",
+        "Coconut Oil": 80,
+        "isPartial": false
+      },
+      {
+        "date": "2025-01-26 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2025-02-02 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2025-02-09 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2025-02-16 00:00:00",
+        "Coconut Oil": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2025-02-23 00:00:00",
+        "Coconut Oil": 74,
+        "isPartial": false
+      },
+      {
+        "date": "2025-03-02 00:00:00",
+        "Coconut Oil": 81,
+        "isPartial": false
+      },
+      {
+        "date": "2025-03-09 00:00:00",
+        "Coconut Oil": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2025-03-16 00:00:00",
+        "Coconut Oil": 91,
+        "isPartial": false
+      },
+      {
+        "date": "2025-03-23 00:00:00",
+        "Coconut Oil": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2025-03-30 00:00:00",
+        "Coconut Oil": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-06 00:00:00",
+        "Coconut Oil": 78,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-13 00:00:00",
+        "Coconut Oil": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-20 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-27 00:00:00",
+        "Coconut Oil": 77,
+        "isPartial": true
+      }
+    ]
+  }
+};
+
+        // Process the data
+        const timeTrends = jsonData.data.time_trends;
+        const keyword = jsonData.metadata.keywords[0];
+        
+        // Extract dates and values
+        const dates = timeTrends.map(item => item.date);
+        const values = timeTrends.map(item => item[keyword]);
+        
+        // Calculate moving average (12-week window)
+        const movingAverageWindow = 12;
+        const movingAverages = [];
+        
+        for (let i = 0; i < values.length; i++) {
+            if (i < movingAverageWindow - 1) {
+                movingAverages.push(null);
+            } else {
+                const windowValues = values.slice(i - movingAverageWindow + 1, i + 1);
+                const average = windowValues.reduce((sum, val) => sum + val, 0) / movingAverageWindow;
+                movingAverages.push(average);
+            }
+        }
+        
+        // Calculate trend line using linear regression
+        const xValues = Array.from({ length: values.length }, (_, i) => i);
+        const xMean = xValues.reduce((sum, val) => sum + val, 0) / xValues.length;
+        const yMean = values.reduce((sum, val) => sum + val, 0) / values.length;
+        
+        let numerator = 0;
+        let denominator = 0;
+        
+        for (let i = 0; i < values.length; i++) {
+            numerator += (xValues[i] - xMean) * (values[i] - yMean);
+            denominator += Math.pow(xValues[i] - xMean, 2);
+        }
+        
+        const slope = numerator / denominator;
+        const intercept = yMean - slope * xMean;
+        
+        const trendLine = xValues.map(x => slope * x + intercept);
+        
+        // Create the chart
+        const ctx = document.getElementById('trendsChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [
+                    {
+                        label: 'Search Interest',
+                        data: values,
+                        borderColor: 'rgba(52, 152, 219, 0.7)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 1,
+                        pointHoverRadius: 5,
+                        fill: true,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Trend Line',
+                        data: trendLine,
+                        borderColor: 'rgba(231, 76, 60, 0.7)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false,
+                        borderDash: [5, 5]
+                    },
+                    {
+                        label: 'Moving Average (12-week)',
+                        data: movingAverages,
+                        borderColor: 'rgba(46, 204, 113, 0.7)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const date = new Date(tooltipItems[0].label);
+                                return date.toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                });
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'month',
+                            displayFormats: {
+                                month: 'MMM YYYY'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        min: Math.max(0, Math.min(...values) - 10),
+                        max: 105,
+                        title: {
+                            display: true,
+                            text: 'Search Interest'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Generate insights
+        function generateInsights() {
+            const maxValue = Math.max(...values);
+            const maxIndex = values.indexOf(maxValue);
+            const maxDate = new Date(dates[maxIndex]);
+            
+            const minValue = Math.min(...values);
+            const minIndex = values.indexOf(minValue);
+            const minDate = new Date(dates[minIndex]);
+            
+            const currentValue = values[values.length - 1];
+            const yearAgoIndex = values.length - 53; // Approximately 1 year ago (52 weeks)
+            const yearAgoValue = yearAgoIndex >= 0 ? values[yearAgoIndex] : null;
+            
+            const percentChange = yearAgoValue ? ((currentValue - yearAgoValue) / yearAgoValue * 100).toFixed(1) : 'N/A';
+            
+            // Detect seasonality
+            const monthlyAverages = Array(12).fill(0).map(() => []);
+            
+            dates.forEach((date, index) => {
+                const month = new Date(date).getMonth();
+                monthlyAverages[month].push(values[index]);
+            });
+            
+            const monthlyMeans = monthlyAverages.map(monthValues => {
+                if (monthValues.length === 0) return 0;
+                return monthValues.reduce((sum, val) => sum + val, 0) / monthValues.length;
+            });
+            
+            const highestMonth = monthlyMeans.indexOf(Math.max(...monthlyMeans));
+            const lowestMonth = monthlyMeans.indexOf(Math.min(...monthlyMeans));
+            
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            // Trend direction
+            const trendDirection = slope > 0.05 ? 'increasing' : 
+                                  slope < -0.05 ? 'decreasing' : 'stable';
+            
+            // Generate HTML
+            let insightsHTML = `
+                <p><strong>Peak Interest:</strong> ${maxValue} on ${maxDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><strong>Lowest Interest:</strong> ${minValue} on ${minDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p><strong>Current Trend:</strong> The overall trend is ${trendDirection} over the 5-year period.</p>
+                <p><strong>Year-over-Year Change:</strong> ${percentChange}% compared to the same time last year.</p>
+                <p><strong>Seasonal Pattern:</strong> Interest tends to be highest in ${monthNames[highestMonth]} and lowest in ${monthNames[lowestMonth]}.</p>
+            `;
+            
+            document.getElementById('insightsContent').innerHTML = insightsHTML;
+        }
+        
+        generateInsights();
+        
+        // Event listeners for controls
+        document.getElementById('yearBtn').addEventListener('click', function() {
+            chart.options.scales.x.time.unit = 'year';
+            chart.update();
+        });
+        
+        document.getElementById('quarterBtn').addEventListener('click', function() {
+            chart.options.scales.x.time.unit = 'quarter';
+            chart.update();
+        });
+        
+        document.getElementById('monthBtn').addEventListener('click', function() {
+            chart.options.scales.x.time.unit = 'month';
+            chart.update();
+        });
+        
+        document.getElementById('seasonalBtn').addEventListener('click', function() {
+            // Group data by month to show seasonal patterns
+            const monthlyData = Array(12).fill(0).map(() => []);
+            
+            dates.forEach((date, index) => {
+                const month = new Date(date).getMonth();
+                monthlyData[month].push(values[index]);
+            });
+            
+            const monthlyAverages = monthlyData.map(monthValues => {
+                if (monthValues.length === 0) return 0;
+                return monthValues.reduce((sum, val) => sum + val, 0) / monthValues.length;
+            });
+            
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            // Destroy existing chart
+            chart.destroy();
+            
+            // Create new seasonal chart
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Average Search Interest by Month',
+                        data: monthlyAverages,
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Average Search Interest'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Time range filter
+        document.getElementById('timeRangeSelect').addEventListener('change', function() {
+            const selectedValue = this.value;
+            let filteredDates = [];
+            let filteredValues = [];
+            let filteredMovingAverages = [];
+            let filteredTrendLine = [];
+            
+            if (selectedValue === 'all') {
+                filteredDates = dates;
+                filteredValues = values;
+                filteredMovingAverages = movingAverages;
+                filteredTrendLine = trendLine;
+            } else {
+                const year = parseInt(selectedValue);
+                
+                dates.forEach((date, index) => {
+                    const dateObj = new Date(date);
+                    if (dateObj.getFullYear() === year) {
+                        filteredDates.push(date);
+                        filteredValues.push(values[index]);
+                        filteredMovingAverages.push(movingAverages[index]);
+                        filteredTrendLine.push(trendLine[index]);
+                    }
+                });
+            }
+            
+            // Update chart with filtered data
+            chart.data.labels = filteredDates;
+            chart.data.datasets[0].data = filteredValues;
+            chart.data.datasets[1].data = filteredTrendLine;
+            chart.data.datasets[2].data = filteredMovingAverages;
+            chart.update();
+        });
+    </script>
+</body>
+</html>

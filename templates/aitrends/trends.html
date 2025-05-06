@@ -1,152 +1,2375 @@
 {% extends 'user_dashboard/base.html' %}
 {% load static %}
 
-{% block title %}Google Trends Analysis{% endblock %}
+{% block title %}{{ keyword|default:"Google" }} Search Trends in India (2020-2025){% endblock %}
+
+{% block extra_head %}
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- JSON repair utilities - load this early to enhance JSON parsing -->
+<script src="{% static 'js/json-repair.js' %}"></script>
+
+<!-- Chart.js - Latest version -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<!-- ApexCharts - For more attractive charts -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.1/dist/apexcharts.min.js"></script>
+
+<!-- Moment.js for date handling -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+
+<!-- Chart.js adapter for Moment -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
+
+<!-- Chart.js annotation plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+<!-- Chart.js Zoom plugin for interactivity -->
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+<!-- Luxon for better date handling -->
+<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+
+<!-- D3.js for advanced visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+
+<!-- Ensure Chart.js and trends-charts.js are loaded properly -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, checking dependencies...');
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded! Attempting to load it now...');
+            
+            // Load Chart.js dynamically
+            const chartScript = document.createElement('script');
+            chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
+            chartScript.onload = function() {
+                console.log('Chart.js loaded successfully');
+                
+                // Load trends-charts.js after Chart.js loads
+                loadTrendsChartsJs();
+            };
+            
+            document.head.appendChild(chartScript);
+        } else {
+            // Chart.js is already loaded, load trends-charts.js
+            loadTrendsChartsJs();
+        }
+        
+        function loadTrendsChartsJs() {
+            // Only load trends-charts.js if it's not already loaded
+            if (typeof window.renderCharts !== 'function') {
+                console.log('Loading trends-charts.js...');
+                const trendsScript = document.createElement('script');
+                trendsScript.src = "{% static 'js/trends-charts.js' %}";
+                trendsScript.onload = function() {
+                    console.log('trends-charts.js loaded successfully');
+                    
+                    // Make renderCharts globally available in case it's not already
+                    if (typeof window.renderCharts !== 'function' && 
+                        typeof renderCharts === 'function') {
+                        window.renderCharts = renderCharts;
+                    }
+                    
+                    // If auto-fetch is enabled, trigger it after script loads
+                    const container = document.querySelector('[data-auto-fetch="true"]');
+                    const keyword = document.querySelector('#keywordInput')?.value;
+                    if (container && keyword && typeof fetchTrendsData === 'function') {
+                        console.log('Auto-fetching for keyword:', keyword);
+                        const analysisOption = document.getElementById('analysisOption')?.value || '1';
+                        fetchTrendsData(keyword, analysisOption);
+                    }
+                };
+                
+                // Add error handling for script loading
+                trendsScript.onerror = function() {
+                    console.error('Failed to load trends-charts.js');
+                };
+                
+                document.head.appendChild(trendsScript);
+            } else {
+                console.log('trends-charts.js is already loaded');
+            }
+        }
+        
+        // Check if trends-charts.js functionality is loaded after a delay
+        setTimeout(function() {
+            if (typeof window.renderCharts !== 'function') {
+                console.error('renderCharts function not found after timeout. Retrying...');
+                loadTrendsChartsJs();
+            }
+        }, 2000);
+    });
+</script>
+
+<!-- Remove the duplicate static script tag since we're loading it dynamically -->
+<!-- <script src="{% static 'js/trends-charts.js' %}"></script> -->
+<script src="{% static 'js/chart-controls.js' %}"></script>
+<script>
+    // Pass variables from Django to JavaScript
+    window.googleApiConfigured = {{ google_api_configured|lower }};
+    window.searchedFlag = {{ searched|lower }};
+    window.shouldAutoFetch = {{ should_auto_fetch|lower }};
+    window.initialKeyword = "{{ keyword }}";
+    
+    // Debug info
+    console.log('Django context variables:');
+    console.log('- googleApiConfigured:', {{ google_api_configured|lower }});
+    console.log('- searchedFlag:', {{ searched|lower }});
+    console.log('- shouldAutoFetch:', {{ should_auto_fetch|lower }});
+    console.log('- initialKeyword:', "{{ keyword }}");
+    
+    // Set a flag to indicate this page was just loaded (for auto-fetch detection)
+    window.justLoaded = true;
+    
+    // Add a class to the body if we should auto-fetch
+    if ({{ should_auto_fetch|lower }}) {
+        document.body.classList.add('should-auto-fetch');
+    }
+</script>
+
+<!-- Global error handler for JSON parsing and other critical errors -->
+<script>
+    // Set up global error handler
+    window.addEventListener('error', function(event) {
+        console.error('Global error caught:', event.error || event.message);
+        
+        // Check if this is a JSON parsing error
+        const errorMsg = (event.error && event.error.message) || event.message || '';
+        if (errorMsg.includes('JSON.parse') || errorMsg.includes('JSON parse') || errorMsg.includes('position 38236')) {
+            console.log('Detected JSON parsing error, attempting recovery');
+            
+            // Hide the loader if it's visible
+            const loader = document.getElementById('inlineLoader');
+            if (loader && loader.style.display !== 'none') {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    document.body.classList.remove('loading');
+                }, 300);
+                
+                // Show a user-friendly error
+                setTimeout(() => {
+                    if (typeof showError === 'function') {
+                        showError('There was a problem processing the data. Try a different search term or analysis option.');
+                    } else {
+                        const errorContainer = document.createElement('div');
+                        errorContainer.className = 'mt-6 bg-red-50 border-l-4 border-red-500 p-4 max-w-3xl mx-auto';
+                        errorContainer.id = 'error-message-container';
+                        errorContainer.innerHTML = `
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-red-700">
+                                        <strong>Error Processing Data:</strong> There was a problem with parsing the response data. 
+                                        <span class="block mt-1 text-xs text-gray-600">This may be due to a temporary API issue or server timeout.</span>
+                                    </p>
+                                    <div class="mt-3">
+                                        <button id="retryButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-1.5 px-3 rounded-md shadow-sm transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                            </svg>
+                                            Retry
+                                        </button>
+                                        <button id="changeKeywordButton" class="ml-2 bg-white hover:bg-gray-100 text-indigo-600 border border-indigo-200 font-semibold text-sm py-1.5 px-3 rounded-md shadow-sm transition-colors">
+                                            Try Different Keyword
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Insert at the top of the results container or main container
+                        const resultsContainer = document.getElementById('resultsContainer');
+                        const trendsContainer = document.getElementById('trendsContainer');
+                        const containerToUse = resultsContainer || trendsContainer;
+                        
+                        if (containerToUse) {
+                            containerToUse.insertBefore(errorContainer, containerToUse.firstChild);
+                            
+                            // Add event listeners to the retry buttons
+                            const retryButton = errorContainer.querySelector('#retryButton');
+                            if (retryButton) {
+                                retryButton.addEventListener('click', function() {
+                                    // Remove the error container
+                                    errorContainer.remove();
+                                    
+                                    // Get the current keyword and analysis option
+                                    const keywordInput = document.getElementById('keywordInput') || document.getElementById('id_keyword');
+                                    const analysisOption = document.getElementById('analysisOption');
+                                    
+                                    // If we have a valid keyword and the fetch function, retry the fetch
+                                    if (keywordInput && keywordInput.value && typeof window.fetchTrendsData === 'function') {
+                                        // Reset dataAlreadyFetched flag to allow fetch
+                                        window.dataAlreadyFetched = false;
+                                        
+                                        // Fetch data again
+                                        window.fetchTrendsData(keywordInput.value, analysisOption ? analysisOption.value : '1');
+                                    }
+                                });
+                            }
+                            
+                            // Add event listener to change keyword button
+                            const changeKeywordButton = errorContainer.querySelector('#changeKeywordButton');
+                            if (changeKeywordButton) {
+                                changeKeywordButton.addEventListener('click', function() {
+                                    // Remove the error container
+                                    errorContainer.remove();
+                                    
+                                    // Focus the keyword input
+                                    const keywordInput = document.getElementById('keywordInput') || document.getElementById('id_keyword');
+                                    if (keywordInput) {
+                                        keywordInput.focus();
+                                        keywordInput.select();
+                                    }
+                                });
+                            }
+                        } else {
+                            // If no container found, just append to body
+                            document.body.appendChild(errorContainer);
+                        }
+                    }
+                }, 350);
+            }
+            
+            // Attempt emergency chart rendering if we have data
+            if (window.trendsData && typeof window.renderCharts === 'function') {
+                console.log('Attempting emergency chart rendering with existing data');
+                try {
+                    window.renderCharts();
+                } catch (e) {
+                    console.error('Emergency chart rendering failed:', e);
+                }
+            }
+        }
+    });
+    
+    // Enhance the window.showError function to add retry functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Store the original showError function if it exists
+        const originalShowError = window.showError;
+        
+        // Create enhanced version with retry button
+        window.showError = function(message) {
+            console.error('Error:', message);
+            
+            // First, clear any existing error messages
+            const existingErrors = document.querySelectorAll('#error-message-container');
+            existingErrors.forEach(error => error.remove());
+            
+            // Create error container
+            const errorContainer = document.createElement('div');
+            errorContainer.className = 'bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm mb-6';
+            errorContainer.id = 'error-message-container';
+            
+            // Format the error message
+            let formattedMessage = message;
+            let additionalInfo = '';
+            
+            // Customize message based on error type
+            if (message.includes('JSON') || message.includes('parse') || message.includes('processing data') || message.includes('position 38236')) {
+                formattedMessage = 'Error processing data';
+                additionalInfo = 'The server response could not be properly processed. This may be due to temporary API issues.';
+            } else if (message.includes('fetch') || message.includes('network') || message.includes('connection')) {
+                formattedMessage = 'Connection error';
+                additionalInfo = 'Please check your internet connection and try again.';
+            } else if (message.includes('timeout') || message.includes('timed out')) {
+                formattedMessage = 'Request timeout';
+                additionalInfo = 'The server took too long to respond. Please try again later.';
+            }
+            
+            errorContainer.innerHTML = `
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 w-full">
+                        <p class="text-sm font-medium text-red-800">${formattedMessage}</p>
+                        <p class="text-xs text-red-700 mt-1">${message}</p>
+                        ${additionalInfo ? `<p class="text-xs text-gray-600 mt-1">${additionalInfo}</p>` : ''}
+                        
+                        <div class="mt-3">
+                            <button id="errorRetryButton" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm py-1.5 px-3 rounded-md shadow-sm transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                </svg>
+                                Retry
+                            </button>
+                            <button id="errorChangeKeywordButton" class="ml-2 bg-white hover:bg-gray-100 text-indigo-600 border border-indigo-200 font-semibold text-sm py-1.5 px-3 rounded-md shadow-sm transition-colors">
+                                Try Different Keyword
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Find a suitable container to add the error to
+            const container = document.getElementById('timeSeriesChartContainer') || 
+                document.getElementById('chartControlsSection') || 
+                document.getElementById('resultsContainer');
+            
+            if (container) {
+                // Insert at the beginning of the container
+                if (container.firstChild) {
+                    container.insertBefore(errorContainer, container.firstChild);
+                } else {
+                    container.appendChild(errorContainer);
+                }
+                
+                // Add event listener to retry button
+                const retryButton = errorContainer.querySelector('#errorRetryButton');
+                if (retryButton) {
+                    retryButton.addEventListener('click', function() {
+                        // Cancel any ongoing fetch operation
+                        if (typeof window.cancelTrendsFetch === 'function') {
+                            window.cancelTrendsFetch();
+                        }
+                        
+                        // Hide error
+                        errorContainer.remove();
+                        
+                        // Get the current keyword
+                        const keywordInput = document.getElementById('keywordInput') || document.getElementById('id_keyword');
+                        const analysisOption = document.getElementById('analysisOption');
+                        
+                        if (keywordInput && keywordInput.value && typeof window.fetchTrendsData === 'function') {
+                            // Reset flag to allow fetch
+                            window.dataAlreadyFetched = false;
+                            
+                            // Retry with the same keyword
+                            window.fetchTrendsData(keywordInput.value, analysisOption ? analysisOption.value : '1');
+                        }
+                    });
+                }
+                
+                // Add event listener to change keyword button
+                const changeKeywordButton = errorContainer.querySelector('#errorChangeKeywordButton');
+                if (changeKeywordButton) {
+                    changeKeywordButton.addEventListener('click', function() {
+                        // Focus the keyword input
+                        const keywordInput = document.getElementById('keywordInput') || document.getElementById('id_keyword');
+                        if (keywordInput) {
+                            keywordInput.focus();
+                            keywordInput.select();
+                        }
+                        
+                        // Hide error
+                        errorContainer.remove();
+                    });
+                }
+            } else if (originalShowError) {
+                // Fall back to original showError if available
+                originalShowError(message);
+            }
+        };
+        
+        // Also define hideError if it doesn't exist
+        if (typeof window.hideError !== 'function') {
+            window.hideError = function() {
+                const existingErrors = document.querySelectorAll('#error-message-container');
+                existingErrors.forEach(error => error.remove());
+            };
+        }
+    });
+</script>
+
+<!-- Reset auto-fetch behavior on normal navigation -->
+<script>
+    // Check if this is a genuine page load (not a form submission return)
+    if (!document.referrer.includes(window.location.pathname) && location.search === '') {
+        // Don't clear session storage on direct navigation anymore
+        // We want to keep the last keyword for auto-fetch on reload
+        console.log('Direct page load - preserving session storage for auto-fetch');
+    }
+    
+    // Check if there's a stored keyword in session storage
+    document.addEventListener('DOMContentLoaded', function() {
+        const storedKeyword = sessionStorage.getItem('lastKeyword');
+        if (storedKeyword) {
+            console.log('Found stored keyword in session storage:', storedKeyword);
+            
+            // Update page title if we have a stored keyword
+            const headerTitle = document.getElementById('headerTitle');
+            if (headerTitle) {
+                headerTitle.textContent = `${storedKeyword} in India`;
+            }
+            
+            // Make the AI insights button visible if needed
+            const aiInsightsButton = document.getElementById('aiInsightsButton');
+            if (aiInsightsButton && aiInsightsButton.style.display === 'none') {
+                aiInsightsButton.style.display = 'inline-flex';
+            }
+        }
+    });
+</script>
+
+<!-- Custom styles for enhanced UI -->
+<style>
+    .chart-container {
+        position: relative;
+        transition: all 0.3s ease;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1), 0 10px 10px -5px rgba(79, 70, 229, 0.04);
+        transform: translateY(-2px);
+    }
+    
+    .filter-button {
+        transition: all 0.2s ease;
+    }
+    
+    .filter-button:hover {
+        transform: translateY(-1px);
+    }
+    
+    .filter-button.active {
+        background-color: #4338ca;
+        color: white;
+    }
+    
+    .animate-gradient {
+        background-size: 200% 200%;
+        animation: gradient 8s ease infinite;
+    }
+    
+    @keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="min-h-screen px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl">
-        <!-- Header Section -->
-        <div class="text-center mb-12">
-            <h1 class="text-2xl font-medium text-gray-900 sm:text-5xl md:text-6xl mb-4">
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-violet-500 to-indigo-600">
-                    Google Trends Analysis
-                </span>
-            </h1>
-            <p class="max-w-2xl mx-auto text-lg text-gray-600 font-medium tracking-wide">
-                Discover search trends in India over the last 5 years with our advanced analytics tool
-            </p>
-        </div>
-
-        <!-- Search Section -->
-        <div class="max-w-3xl mx-auto mb-12">
-            <form method="POST" class="flex justify-center items-center" id="trendsForm">
-                {% csrf_token %}
-                <div class="relative rounded-full overflow-hidden bg-white shadow-xl w-[50%]">
-                    <input
-                        class="input bg-transparent outline-none border-none pl-6 pr-10 py-3 w-full font-sans text-lg font-semibold"
-                        placeholder="Enter keyword..."
-                        name="keyword"
-                        type="text"
-                        value="{{ keyword|default:'' }}"
-                        required
-                    />
-                    <div class="absolute right-2 top-[0.4em]">
-                        <button type="submit"
-                            class="w-10 h-10 rounded-full bg-violet-500 group shadow-xl flex items-center justify-center relative overflow-hidden"
-                            id="submitBtn"
-                        >
-                            <svg
-                                class="relative z-10"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 64 64"
-                                height="20"
-                                width="20"
-                            >
-                                <path
-                                    fill-opacity="0.01"
-                                    fill="white"
-                                    d="M63.6689 29.0491L34.6198 63.6685L0.00043872 34.6194L29.0496 1.67708e-05L63.6689 29.0491Z"
-                                ></path>
-                                <path
-                                    stroke-linejoin="round"
-                                    stroke-linecap="round"
-                                    stroke-width="3.76603"
-                                    stroke="white"
-                                    d="M42.8496 18.7067L21.0628 44.6712"
-                                ></path>
-                                <path
-                                    stroke-linejoin="round"
-                                    stroke-linecap="round"
-                                    stroke-width="3.76603"
-                                    stroke="white"
-                                    d="M26.9329 20.0992L42.85 18.7067L44.2426 34.6238"
-                                ></path>
+<div class="min-h-screen px-4 sm:px-6 lg:px-8" 
+     {% if should_auto_fetch %}data-auto-fetch="true"{% endif %} 
+     {% if searched %}data-searched="true"{% endif %}
+     data-keyword="{{ keyword }}"
+     id="trendsContainer">
+    <div class="max-w-7xl mx-auto py-8">
+        <!-- Error message display -->
+        {% if error_message %}
+        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm" id="errorMessage">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700">{{ error_message }}</p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button type="button" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100 focus:outline-none" onclick="this.parentElement.parentElement.parentElement.style.display='none';">
+                            <span class="sr-only">Dismiss</span>
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
-                            <div
-                                class="w-full h-full rotate-45 absolute left-[32%] top-[32%] bg-black group-hover:-left-[100%] group-hover:-top-[100%] duration-1000"
-                            ></div>
-                            <div
-                                class="w-full h-full -rotate-45 absolute -left-[32%] -top-[32%] group-hover:left-[100%] group-hover:top-[100%] bg-black duration-1000"
-                            ></div>
                         </button>
                     </div>
                 </div>
-            </form>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Header Section - Always visible -->
+        <div class="text-center mb-10">
+            <div class="relative">
+                <!-- Decorative elements -->
+                <div class="absolute -top-16 left-1/2 transform -translate-x-1/2 w-64 h-64 bg-gradient-to-r from-indigo-300/20 to-purple-300/20 rounded-full filter blur-3xl"></div>
+                <div class="absolute -top-8 left-1/4 transform -translate-x-1/2 w-32 h-32 bg-blue-300/20 rounded-full filter blur-2xl"></div>
+                <div class="absolute -top-12 right-1/4 transform translate-x-1/2 w-48 h-48 bg-violet-300/20 rounded-full filter blur-2xl"></div>
+                
+                <h1 class="text-3xl font-bold text-gray-900 sm:text-5xl md:text-6xl mb-4 relative">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 animate-gradient" id="headerTitle">
+                        {{ keyword|default:"Google Trends" }} in India
+                    </span>
+                </h1>
+            </div>
+            <p class="max-w-2xl mx-auto text-lg text-gray-600 font-medium tracking-wide">
+                Interactive visualization of search interest for "<span class="text-indigo-600 font-semibold">{{ keyword|default:"keywords" }}</span>" in India over a 5-year period. 
+                The values represent search interest relative to the highest point (100).
+            </p>
         </div>
 
-        {% if searched %}
-            <!-- Results Section -->
-            <div class="max-w-5xl mx-auto">
-                {% if error %}
-                    <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg mb-8">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        <!-- Search Section - Always visible -->
+        <div class="max-w-3xl mx-auto mb-10">
+            <form method="POST" class="flex flex-col justify-center items-center space-y-4" id="trendsForm">
+                {% csrf_token %}
+                <div class="relative rounded-full overflow-hidden bg-white shadow-xl w-[85%] transition-all hover:shadow-2xl">
+                    <div class="relative w-full flex-grow">
+                        <input 
+                            id="keywordInput" 
+                            name="keyword" 
+                            type="text" 
+                            placeholder="Enter a search term..." 
+                            class="w-full py-3 pl-14 pr-32 rounded-lg text-lg border-2 border-indigo-100 focus:border-violet-400 focus:outline-none transition-all"
+                            value="{{ keyword }}"
+                            data-initial-keyword="{{ keyword }}"
+                            required
+                        >
+                        <button id="autoFetchBtn" type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full px-4 py-1.5 text-sm font-medium transition-all hover:shadow-md">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-red-700">
-                                    {{ error }}
-                                </p>
-                            </div>
+                                Quick Fetch
+                            </span>
+                        </button>
+                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                         </div>
                     </div>
-                {% elif graph %}
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-                        <div class="p-6" id="graphContainer">
-                            <!-- Loading Spinner -->
-                            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 transition-opacity duration-300 hidden" id="loadingSpinner">
-                                <div class="animate-spin rounded-full h-12 w-12 border-4 border-violet-500 border-t-transparent"></div>
+                </div>
+                
+                <!-- Analysis Options Dropdown with improved UI -->
+                <div class="w-[85%] flex justify-center">
+                    <div class="relative w-full group">
+                        <select 
+                            name="analysis_option" 
+                            id="analysisOption" 
+                            class="w-full px-5 py-3 bg-white border-2 border-indigo-100 rounded-lg shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-gray-700"
+                        >
+                            <option value="1" {% if analysis_option == '1' %}selected{% endif %}>Time trends only (default)</option>
+                            <option value="2" {% if analysis_option == '2' %}selected{% endif %}>Time trends + State/Province analysis</option>
+                            <option value="3" {% if analysis_option == '3' %}selected{% endif %}>Time trends + City analysis</option>
+                            <option value="4" {% if analysis_option == '4' %}selected{% endif %}>Complete analysis (Time trends + States + Cities + Related queries)</option>
+                            <option value="5" {% if analysis_option == '5' %}selected{% endif %}>State/Province analysis only (faster)</option>
+                            <option value="6" {% if analysis_option == '6' %}selected{% endif %}>City analysis only (faster)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-indigo-500 group-hover:text-indigo-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hidden field to indicate direct form submission -->
+                <input type="hidden" name="direct_submit" value="false">
+                
+                <!-- Search Button -->
+                <button type="submit" 
+                    class="mt-2 px-8 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center"
+                    id="searchBtn"
+                    onclick="return showLoader('{{ keyword }}' || document.getElementById('keywordInput').value);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Analyze Trends
+                </button>
+            </form>
+        </div>
+        
+        <script>
+            // Helper function to show loader
+            function showLoader(keyword) {
+                console.log("showLoader called with keyword:", keyword);
+                
+                // Check if we're trying to fetch the same keyword that was just loaded
+                const lastKeyword = sessionStorage.getItem('lastKeyword');
+                if (lastKeyword === keyword) {
+                    console.log("Same keyword detected, preventing duplicate fetch:", keyword);
+                    return false;
+                }
+                
+                const loader = document.getElementById('inlineLoader');
+                if (loader) {
+                    // Show loader
+                    loader.style.display = 'flex';
+                    loader.style.opacity = '0';
+                    // Trigger a reflow to ensure the transition works
+                    void loader.offsetWidth;
+                    loader.style.opacity = '1';
+                    
+                    // Update keyword in loader
+                    const keywordSpan = loader.querySelector('.text-sm .font-semibold');
+                    if (keywordSpan && keyword) {
+                        keywordSpan.textContent = keyword;
+                    }
+                    
+                    // Add loading class to body
+                    document.body.classList.add('loading');
+                    
+                    // Hide results container
+                    const resultsContainer = document.getElementById('resultsContainer');
+                    if (resultsContainer) {
+                        resultsContainer.style.display = 'none';
+                    }
+                    
+                    // Store the keyword in session storage to ensure it's available after page reload
+                    if (keyword) {
+                        try {
+                            // Only store if it's different from what's already stored
+                            const storedKeyword = sessionStorage.getItem('lastKeyword');
+                            if (storedKeyword !== keyword) {
+                                console.log('Storing new keyword in session storage:', keyword);
+                                sessionStorage.setItem('lastKeyword', keyword);
+                                sessionStorage.setItem('lastAnalysisOption', document.getElementById('analysisOption').value);
+                            } else {
+                                console.log('Keyword already in session storage:', keyword);
+                            }
+                        } catch (e) {
+                            console.error('Error storing keyword in session storage:', e);
+                        }
+                    }
+
+                    // If we're using direct form submission, we should return true
+                    // to allow the form to submit normally
+                    const directSubmitInput = document.querySelector('input[name="direct_submit"]');
+                    console.log("Direct submit value:", directSubmitInput ? directSubmitInput.value : "not found");
+                    
+                    if (directSubmitInput && directSubmitInput.value === 'true') {
+                        console.log("Using direct form submission");
+                        return true;
+                    }
+                    
+                    // Otherwise, handle via AJAX to avoid page reload
+                    const analysisOption = document.getElementById('analysisOption').value;
+                    console.log("Using AJAX with analysis option:", analysisOption);
+                    
+                    // Check if fetchTrendsData function exists
+                    const hasFetchFunction = typeof fetchTrendsData === 'function';
+                    console.log("fetchTrendsData function available:", hasFetchFunction);
+                    
+                    // Fetch data via AJAX
+                    if (hasFetchFunction) {
+                        // If fetchTrendsData is available (from trends-charts.js), use it
+                        console.log("Calling fetchTrendsData function");
+                        fetchTrendsData(keyword, analysisOption);
+                    } else {
+                        // Otherwise, fetch data directly
+                        console.log("Using fallback fetch method");
+                        fetch(`/trends/api/data/?keyword=${encodeURIComponent(keyword)}&analysis_option=${analysisOption}&auto_triggered=true`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! Status: ${response.status}`);
+                                }
+                                return response.text();
+                            })
+                            .then(text => {
+                                // Use our enhanced JSON parsing
+                                try {
+                                    console.log('Starting JSON parsing with enhanced error handling');
+                                    let data;
+                                    
+                                    // Use fixBrokenJSON if available (from our json-repair.js)
+                                    if (typeof window.fixBrokenJSON === 'function') {
+                                        console.log('Using enhanced JSON repair function');
+                                        data = window.fixBrokenJSON(text);
+                                    } 
+                                    // Fallback to safeJSONParse if available
+                                    else if (typeof window.safeJSONParse === 'function') {
+                                        console.log('Using safe JSON parse method');
+                                        data = window.safeJSONParse(text);
+                                    } 
+                                    // Last resort: try-catch with standard JSON.parse
+                                    else {
+                                        try {
+                                            console.log('Using standard JSON.parse with try-catch');
+                                            data = JSON.parse(text);
+                                        } catch (error) {
+                                            console.error('JSON parse error:', error);
+                                            
+                                            // Try to fix common issues before giving up
+                                            const cleanedText = text.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+                                            try {
+                                                data = JSON.parse(cleanedText);
+                                                console.log('Successfully parsed JSON after basic cleaning');
+                                            } catch (secondError) {
+                                                console.error('Failed to parse cleaned JSON:', secondError);
+                                                // Basic fallback object
+                                                data = {
+                                                    status: 'error',
+                                                    error: 'Failed to parse JSON data: ' + error.message
+                                                };
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Store the data globally for charts to access
+                                    window.trendsData = data;
+                                    
+                                    // Update UI based on the data
+                                    if (data.status === 'success') {
+                                        // Hide loader
+                                        loader.style.opacity = '0';
+                                        setTimeout(() => {
+                                            loader.style.display = 'none';
+                                            document.body.classList.remove('loading');
+                                        }, 300);
+                                        
+                                        // Show results container
+                                        if (resultsContainer) {
+                                            resultsContainer.style.display = 'block';
+                                        }
+                                        
+                                        // Render charts if the function exists
+                                        if (typeof renderCharts === 'function') {
+                                            renderCharts();
+                                        } else {
+                                            console.error('renderCharts function not found. Make sure trends-charts.js is loaded properly.');
+                                        }
+                                    } else {
+                                        // Show error
+                                        if (typeof showError === 'function') {
+                                            showError(data.error || 'An error occurred while fetching trends data.');
+                                        } else {
+                                            alert(data.error || 'An error occurred while fetching trends data.');
+                                        }
+                                        
+                                        // Hide loader
+                                        loader.style.opacity = '0';
+                                        setTimeout(() => {
+                                            loader.style.display = 'none';
+                                            document.body.classList.remove('loading');
+                                        }, 300);
+                                    }
+                                } catch (fatalError) {
+                                    console.error('Fatal error during JSON processing:', fatalError);
+                                    alert('A critical error occurred while processing the data. Please try again with a different search term.');
+                                    
+                                    // Hide loader
+                                    loader.style.opacity = '0';
+                                    setTimeout(() => {
+                                        loader.style.display = 'none';
+                                        document.body.classList.remove('loading');
+                                    }, 300);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching trends data:', error);
+                                
+                                // Show error
+                                if (typeof showError === 'function') {
+                                    showError('Error fetching trends data: ' + error.message);
+                                } else {
+                                    alert('Error fetching trends data: ' + error.message);
+                                }
+                                
+                                // Hide loader
+                                loader.style.opacity = '0';
+                                setTimeout(() => {
+                                    loader.style.display = 'none';
+                                    document.body.classList.remove('loading');
+                                }, 300);
+                            });
+                    }
+                    
+                    // Prevent default form submission when using AJAX
+                    return false;
+                }
+                
+                // If there's no loader, allow the form to submit normally
+                return true;
+            }
+            
+            // On page load, check if we need to display the loader
+            document.addEventListener('DOMContentLoaded', function() {
+                // Set a flag to track if fetch has been triggered
+                window.fetchTriggered = false;
+                
+                // Check if we just returned from a form submission
+                const lastKeyword = sessionStorage.getItem('lastKeyword');
+                if (lastKeyword && !window.fetchTriggered) {
+                    console.log('Found last keyword in session storage:', lastKeyword);
+                    
+                    // Get the analysis option if available
+                    const lastAnalysisOption = sessionStorage.getItem('lastAnalysisOption');
+                    
+                    // Set the flag to prevent multiple fetches
+                    window.fetchTriggered = true;
+                    
+                    // Clear the storage to prevent repeated loading
+                    sessionStorage.removeItem('lastKeyword');
+                    sessionStorage.removeItem('lastAnalysisOption');
+                    
+                    // If we have a should-auto-fetch flag, the charts.js will handle loading
+                    const shouldAutoFetch = document.querySelector('[data-auto-fetch="true"]');
+                    if (!shouldAutoFetch) {
+                        console.log('No auto-fetch, showing loader manually');
+                        showLoader(lastKeyword);
+                    }
+                }
+            });
+        </script>
+
+        <!-- Enhanced Inline Loader with 1Matrix branding -->
+        <div id="inlineLoader" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-70 backdrop-blur-sm transition-opacity duration-300" style="display: none;">
+            <div class="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 overflow-hidden">
+                <!-- Decorative background elements -->
+                <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-300 rounded-full filter blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+                    <div class="absolute bottom-0 left-0 w-64 h-64 bg-violet-300 rounded-full filter blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
+                </div>
+                
+                <!-- Animated data visualization elements -->
+                <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                    <!-- Animated trend lines -->
+                    <svg class="absolute top-0 left-0 w-full h-full opacity-5" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <path d="M0,50 C20,30 40,70 60,40 S80,60 100,50" stroke="rgba(99, 102, 241, 0.8)" stroke-width="1" fill="none">
+                            <animate attributeName="d" 
+                                values="M0,50 C20,30 40,70 60,40 S80,60 100,50;
+                                        M0,60 C20,40 40,80 60,50 S80,70 100,60;
+                                        M0,50 C20,30 40,70 60,40 S80,60 100,50" 
+                                dur="8s" 
+                                repeatCount="indefinite" />
+                        </path>
+                        <path d="M0,70 C25,60 50,80 75,50 S100,60 100,70" stroke="rgba(139, 92, 246, 0.8)" stroke-width="1" fill="none">
+                            <animate attributeName="d" 
+                                values="M0,70 C25,60 50,80 75,50 S100,60 100,70;
+                                        M0,60 C25,50 50,70 75,40 S100,50 100,60;
+                                        M0,70 C25,60 50,80 75,50 S100,60 100,70" 
+                                dur="10s" 
+                                repeatCount="indefinite" />
+                        </path>
+                    </svg>
+                    
+                    <!-- Data points animation -->
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="relative w-full h-32">
+                            <!-- Animated data points -->
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-indigo-500 opacity-0" style="left: 10%; top: 50%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 0s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-violet-500 opacity-0" style="left: 20%; top: 30%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 0.2s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-indigo-500 opacity-0" style="left: 30%; top: 70%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 0.4s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-violet-500 opacity-0" style="left: 40%; top: 40%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 0.6s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-indigo-500 opacity-0" style="left: 50%; top: 60%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 0.8s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-violet-500 opacity-0" style="left: 60%; top: 50%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 1.0s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-indigo-500 opacity-0" style="left: 70%; top: 30%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 1.2s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-violet-500 opacity-0" style="left: 80%; top: 60%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 1.4s;"></div>
+                            <div class="data-point absolute w-2 h-2 rounded-full bg-indigo-500 opacity-0" style="left: 90%; top: 40%; animation: dataPointAnimation 4s infinite ease-in-out; animation-delay: 1.6s;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main loader content -->
+                <div class="relative z-10 flex flex-col items-center">
+                    <!-- 1Matrix Logo Animation -->
+                    <div class="mb-6 relative">
+                        <div class="relative w-32 h-32 flex items-center justify-center">
+                            <!-- Outer ring with gradient -->
+                            <div class="absolute w-full h-full rounded-full border-4 border-transparent bg-gradient-to-r from-indigo-600 to-violet-600 opacity-20 animate-pulse"></div>
+                            
+                            <!-- Middle spinning ring -->
+                            <div class="absolute w-28 h-28 rounded-full border-4 border-transparent" style="background: conic-gradient(from 0deg, #6366F1, #8B5CF6, #6366F1); animation: spin 2s linear infinite;"></div>
+                            
+                            <!-- Inner ring with data visualization -->
+                            <div class="absolute w-24 h-24 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                                <!-- Data visualization inside the inner ring -->
+                                <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                                    <!-- Animated bar chart -->
+                                    <rect x="20" y="70" width="8" height="30" fill="rgba(99, 102, 241, 0.3)">
+                                        <animate attributeName="height" values="10;30;20;30" dur="2s" repeatCount="indefinite" />
+                                        <animate attributeName="y" values="90;70;80;70" dur="2s" repeatCount="indefinite" />
+                                    </rect>
+                                    <rect x="35" y="50" width="8" height="50" fill="rgba(139, 92, 246, 0.3)">
+                                        <animate attributeName="height" values="30;50;40;50" dur="2s" repeatCount="indefinite" />
+                                        <animate attributeName="y" values="70;50;60;50" dur="2s" repeatCount="indefinite" />
+                                    </rect>
+                                    <rect x="50" y="30" width="8" height="70" fill="rgba(99, 102, 241, 0.3)">
+                                        <animate attributeName="height" values="50;70;60;70" dur="2s" repeatCount="indefinite" />
+                                        <animate attributeName="y" values="50;30;40;30" dur="2s" repeatCount="indefinite" />
+                                    </rect>
+                                    <rect x="65" y="40" width="8" height="60" fill="rgba(139, 92, 246, 0.3)">
+                                        <animate attributeName="height" values="40;60;50;60" dur="2s" repeatCount="indefinite" />
+                                        <animate attributeName="y" values="60;40;50;40" dur="2s" repeatCount="indefinite" />
+                                    </rect>
+                                    <rect x="80" y="60" width="8" height="40" fill="rgba(99, 102, 241, 0.3)">
+                                        <animate attributeName="height" values="20;40;30;40" dur="2s" repeatCount="indefinite" />
+                                        <animate attributeName="y" values="80;60;70;60" dur="2s" repeatCount="indefinite" />
+                                    </rect>
+                                </svg>
+                                
+                                <!-- 1Matrix logo -->
+                                <div class="relative z-10 flex items-center justify-center">
+                                    <span class="font-bold text-2xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">1M</span>
+                                </div>
                             </div>
-                            <img src="data:image/png;base64,{{ graph }}" 
-                                 alt="Google Trends Graph" 
-                                 id="trendGraph"
-                                 class="w-full h-auto rounded-lg"
-                            >
                         </div>
                     </div>
                     
-                    <div class="bg-indigo-50 rounded-2xl p-6 border border-indigo-100">
-                        <h3 class="text-xl font-semibold text-indigo-900 mb-3">
-                            About This Analysis
+                    <!-- Loading text with typing animation -->
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 relative">
+                            <span class="inline-block overflow-hidden whitespace-nowrap border-r-4 border-indigo-500 pr-1 animate-typing" style="animation: typing 3s steps(30) infinite, blink-caret 0.75s step-end infinite;">
+                                Analyzing Trends Data
+                            </span>
                         </h3>
-                        <p class="text-indigo-700 leading-relaxed">
-                            This graph shows the search interest for "<span class="font-semibold">{{ keyword }}</span>" in India over the past 5 years. The values represent search interest relative to the highest point on the chart. A value of 100 is the peak popularity for the term.
-                        </p>
+                        <p class="text-sm text-gray-600 max-w-sm">We're processing your request and generating insights for <span class="font-semibold text-indigo-600">{{ keyword|default:"your search" }}</span></p>
                     </div>
-                {% endif %}
+                    
+                    <!-- Progress bar -->
+                    <div class="w-full bg-gray-100 rounded-full h-2.5 mb-6 overflow-hidden">
+                        <div class="progress-bar h-full rounded-full" style="background: linear-gradient(to right, #6366F1, #8B5CF6);"></div>
+                    </div>
+                    
+                    <!-- Processing steps -->
+                    <div class="w-full grid grid-cols-3 gap-2 text-xs text-center">
+                        <div class="processing-step">
+                            <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <span class="text-gray-600">Fetching Data</span>
+                        </div>
+                        <div class="processing-step">
+                            <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <span class="text-gray-600">Processing</span>
+                        </div>
+                        <div class="processing-step">
+                            <div class="w-6 h-6 mx-auto mb-1 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                                </svg>
+                            </div>
+                            <span class="text-gray-600">Visualizing</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Cancel button -->
+                    <div class="mt-6">
+                        <button id="cancelSearchBtn" class="bg-white hover:bg-red-50 text-red-600 font-medium py-2 px-4 border border-red-300 rounded-full shadow-sm transition-all hover:shadow-md flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancel Search
+                        </button>
+                    </div>
+                </div>
             </div>
-        {% endif %}
+        </div>
+        
+        <!-- Add animation styles -->
+        <style>
+            /* Loader animations */
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            @keyframes dataPointAnimation {
+                0% { transform: scale(0); opacity: 0; }
+                20% { transform: scale(1.5); opacity: 1; }
+                40% { transform: scale(1); opacity: 0.7; }
+                100% { transform: scale(0); opacity: 0; }
+            }
+            
+            @keyframes typing {
+                from { width: 0 }
+                to { width: 100% }
+            }
+            
+            @keyframes blink-caret {
+                from, to { border-color: transparent }
+                50% { border-color: #6366F1 }
+            }
+            
+            .progress-bar {
+                width: 0%;
+                animation: progress 3s ease-in-out infinite;
+            }
+            
+            @keyframes progress {
+                0% { width: 0%; }
+                50% { width: 70%; }
+                80% { width: 85%; }
+                95% { width: 95%; }
+                100% { width: 0%; }
+            }
+            
+            .processing-step:nth-child(1) .w-6 {
+                animation: pulse 1.5s ease-in-out infinite;
+            }
+            
+            .processing-step:nth-child(2) .w-6 {
+                animation: pulse 1.5s ease-in-out infinite;
+                animation-delay: 0.5s;
+            }
+            
+            .processing-step:nth-child(3) .w-6 {
+                animation: pulse 1.5s ease-in-out infinite;
+                animation-delay: 1s;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.8; }
+            }
+            
+            /* Transition effects */
+            #inlineLoader {
+                transition: opacity 0.3s ease-out;
+                z-index: 9999; /* Ensure loader is on top of everything */
+            }
+            
+            #resultsContainer {
+                transition: opacity 0.5s ease-in;
+            }
+            
+            /* Ensure the loader is visible and properly positioned */
+            body.loading {
+                overflow: hidden; /* Prevent scrolling while loading */
+            }
+            
+            /* Chart container animations */
+            .chart-container {
+                transform: translateY(20px);
+                opacity: 0;
+                animation: slideUp 0.6s ease-out forwards;
+            }
+            
+            @keyframes slideUp {
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            
+            /* Staggered animation for multiple chart containers */
+            #timeChartContainer {
+                animation-delay: 0.1s;
+            }
+            
+            #stateChartContainer {
+                animation-delay: 0.3s;
+            }
+            
+            #cityChartContainer {
+                animation-delay: 0.5s;
+            }
+            
+            /* Filter button active state */
+            .filter-button.active {
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+            }
+            
+            /* Animate gradient text */
+            .animate-gradient {
+                background-size: 200% 200%;
+                animation: gradientShift 8s ease infinite;
+            }
+            
+            @keyframes gradientShift {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+        </style>
+
+        <!-- Content area that will be hidden while loading -->
+        <div id="resultsContainer" style="display: {% if searched %}block{% else %}none{% endif %};">
+            <!-- Analysis info section -->
+            <div id="analysisInfoSection" class="bg-gradient-to-r from-indigo-50 to-violet-50 p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h3 id="analysisInfoTitle" class="font-bold text-indigo-800 text-xl mb-1">Time Trends Analysis</h3>
+                    <p id="analysisInfoDescription" class="text-indigo-600 text-sm">Time trends data showing search interest over time.</p>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-xs text-indigo-500 mr-2">Analysis type:</span>
+                    <span id="analysisComponents" class="bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-full text-xs font-medium">Time trends</span>
+                </div>
+            </div>
+
+            <!-- AI Insights Button -->
+            <div class="flex justify-center mb-8">
+                <a id="aiInsightsButton" href="{% if keyword %}{% url 'trends:insights' keyword=keyword %}?analysis_option={{ analysis_option }}{% else %}#{% endif %}" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:-translate-y-1 {% if not keyword %}opacity-50 cursor-not-allowed{% endif %}" style="display: {% if keyword %}inline-flex{% else %}none{% endif %};">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    View AI Insights
+                    <span class="badge ml-2 bg-indigo-800 text-white text-xs px-2 py-1 rounded-full">{% if google_api_configured %}AI Powered{% else %}Standard{% endif %}</span>
+                </a>
+            </div>
+
+            <!-- Chart Controls Section (hidden for state-only and city-only modes) -->
+            <div id="chartControlsSection" class="flex flex-wrap justify-center mb-8 gap-3">
+                <button id="viewByYear" class="filter-button bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-full transition-all shadow-sm hover:shadow">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        View by Year
+                    </span>
+                </button>
+                <button id="viewByQuarter" class="filter-button bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-full transition-all shadow-sm hover:shadow">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        View by Quarter
+                    </span>
+                </button>
+                <button id="viewByMonth" class="filter-button bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-full transition-all shadow-sm hover:shadow">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        View by Month
+                    </span>
+                </button>
+                <button id="showSeasonalPattern" class="filter-button bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-full transition-all shadow-sm hover:shadow">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                        </svg>
+                        Show Seasonal Pattern
+                    </span>
+                </button>
+                
+                <button id="allTimeBtn" class="filter-button bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-full transition-all shadow-sm hover:shadow">
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        All Time
+                    </span>
+                </button>
+                
+                <select id="timeRangeSelect" class="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-full transition-all shadow-sm hover:shadow">
+                    <option value="all">All Years</option>
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+            
+            <!-- State/City Only Info (shown only for state/city-only modes) -->
+            <div id="geoOnlyInfoSection" class="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl shadow-md mb-8 text-center" style="display: none;">
+                <div class="flex flex-col items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    <p class="text-indigo-800 font-medium">
+                        You're viewing geographic data only for faster analysis. 
+                        <span class="text-sm italic block mt-1">
+                            Charts and time trends are not available in this mode.
+                        </span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Time Chart Container -->
+            <div id="timeChartContainer" class="chart-container bg-white p-6 rounded-xl shadow-lg mb-8">
+                <div class="chart-header flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Search Interest Over Time</h3>
+                    <button id="refreshChartBtn" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-full text-sm flex items-center transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Refresh Chart
+                    </button>
+                </div>
+                <div id="timeSeriesChartContainer" class="h-[450px]">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+                <div class="text-xs text-gray-500 mt-3 text-center">
+                    Tip: Use mouse wheel to zoom, drag to pan, and double-click to reset view
+                </div>
+                
+                <!-- Chart Legend (will be populated by JS if needed) -->
+                <div class="legend flex justify-center gap-6 mt-4 flex-wrap">
+                    <div class="legend-item flex items-center">
+                        <div class="legend-color w-3 h-3 mr-2 rounded-sm" style="background: rgba(52, 152, 219, 0.7);"></div>
+                        <span class="text-sm text-gray-700">Search Interest</span>
+                    </div>
+                    <div class="legend-item flex items-center">
+                        <div class="legend-color w-3 h-3 mr-2 rounded-sm" style="background: rgba(231, 76, 60, 0.7);"></div>
+                        <span class="text-sm text-gray-700">Trend Line</span>
+                    </div>
+                    <div class="legend-item flex items-center">
+                        <div class="legend-color w-3 h-3 mr-2 rounded-sm" style="background: rgba(46, 204, 113, 0.7);"></div>
+                        <span class="text-sm text-gray-700">Moving Average</span>
+                    </div>
+                </div>
+                
+                <!-- Insights Section (will be populated by JS) -->
+                <div class="insights mt-6 bg-indigo-50 p-5 rounded-xl">
+                    <h3 class="font-bold text-indigo-800 text-lg mb-2">Key Insights</h3>
+                    <div id="insightsContent">Loading analysis...</div>
+                </div>
+            </div>
+            
+            <!-- State Chart Container -->
+            <div id="stateChartContainer" class="chart-container bg-white p-6 rounded-xl shadow-lg mb-8" style="display: none;">
+                <div class="chart-header flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Interest by State/Region</h3>
+                    <div class="text-sm text-gray-500">Top regions by search interest</div>
+                </div>
+                <div class="h-[450px]">
+                    <canvas id="stateChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- City Chart Container -->
+            <div id="cityChartContainer" class="chart-container bg-white p-6 rounded-xl shadow-lg mb-8" style="display: none;">
+                <div class="chart-header flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Interest by City</h3>
+                    <div class="text-sm text-gray-500">Top cities by search interest</div>
+                </div>
+                <div class="h-[450px]">
+                    <canvas id="cityChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('trendsForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const graphContainer = document.getElementById('graphContainer');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    
-    form.addEventListener('submit', function(e) {
-        submitBtn.disabled = true;
-        
-        if (graphContainer) {
-            loadingSpinner.classList.remove('hidden');
+    // Verify Chart.js is loaded correctly
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if Chart is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded!');
+            // Create an error container
+            const errorContainer = document.createElement('div');
+            errorContainer.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded max-w-3xl mx-auto';
+            errorContainer.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="h-6 w-6 text-red-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p><strong>Error:</strong> Chart.js library failed to load. Charts will not display properly.</p>
+                </div>
+                <p class="mt-2">Please check your internet connection and reload the page.</p>
+            `;
+            
+            // Insert at the top of the content
+            const container = document.querySelector('#trendsContainer');
+            if (container) {
+                container.insertBefore(errorContainer, container.firstChild);
+            }
+        } else {
+            console.log('Chart.js is loaded successfully:', Chart.version);
+        }
+
+        // Log auto-fetch value
+        const container = document.querySelector('#trendsContainer');
+        console.log('Auto-fetch attribute:', container ? container.hasAttribute('data-auto-fetch') : false);
+        console.log('Auto-fetch value:', container ? container.getAttribute('data-auto-fetch') : 'not found');
+        console.log('Searched value:', {{ searched|lower }});
+        console.log('Keyword value:', "{{ keyword }}");
+    });
+
+    // Add event listener for the cancel button
+    document.addEventListener('DOMContentLoaded', function() {
+        const cancelBtn = document.getElementById('cancelSearchBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                // Hide loader
+                const loader = document.getElementById('inlineLoader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                        document.body.classList.remove('loading');
+                    }, 300);
+                }
+                
+                // If we have a currently running fetch request, we can't actually abort it directly,
+                // but we can prevent its results from being displayed
+                window.searchCancelled = true;
+                
+                // Let the user know the operation was cancelled
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md shadow-sm my-4 mx-auto max-w-4xl';
+                errorContainer.innerHTML = `
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                Search cancelled. You can start a new search when ready.
+                            </p>
+                        </div>
+                    </div>
+                `;
+                
+                // Add it to the page
+                const resultsContainer = document.getElementById('resultsContainer');
+                if (resultsContainer) {
+                    resultsContainer.style.display = 'block';
+                    resultsContainer.prepend(errorContainer);
+                    
+                    // Auto-remove this message after 5 seconds
+                    setTimeout(() => {
+                        errorContainer.style.opacity = '0';
+                        errorContainer.style.transition = 'opacity 0.5s';
+                        setTimeout(() => {
+                            if (errorContainer.parentNode) {
+                                errorContainer.parentNode.removeChild(errorContainer);
+                            }
+                        }, 500);
+                    }, 5000);
+                }
+            });
         }
     });
-    
-    const trendGraph = document.getElementById('trendGraph');
-    if (trendGraph) {
-        trendGraph.addEventListener('load', function() {
-            if (loadingSpinner) {
-                loadingSpinner.classList.add('hidden');
+
+    // Add data conversion script to handle time_trends vs time_series format mismatch
+    document.addEventListener('DOMContentLoaded', function() {
+        // Monkey patch the fetch function to convert time_trends to time_series
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return originalFetch.apply(this, args).then(response => {
+                // Clone the response to avoid consuming it
+                const clone = response.clone();
+                
+                // Check if this is a trends API call
+                if (args[0] && args[0].includes && args[0].includes('/trends/api/data/')) {
+                    clone.json().then(data => {
+                        console.log('INTERCEPTED API RESPONSE:', data);
+                        
+                        // Fix the data structure if needed
+                        if (data && data.data) {
+                            // Convert time_trends to time_series if it exists
+                            if (data.data.time_trends && !data.data.time_series) {
+                                console.log('Converting time_trends to time_series format');
+                                
+                                // Create time_series data from time_trends
+                                data.data.time_series = data.data.time_trends.map(item => {
+                                    // Handle different data formats
+                                    const date = item.date || item.index || '';
+                                    const keyword = data.metadata && data.metadata.keywords && data.metadata.keywords[0] || 'India';
+                                    
+                                    // Handle different value formats
+                                    let value;
+                                    if (typeof item.value === 'number') {
+                                        value = item.value;
+                                    } else if (typeof item[keyword] === 'number') {
+                                        value = item[keyword];
+                                    } else {
+                                        // Find any numeric property as a fallback
+                                        for (const key in item) {
+                                            if (typeof item[key] === 'number' && 
+                                                key !== 'date' && 
+                                                key !== 'index' && 
+                                                key !== 'is_partial') {
+                                                value = item[key];
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    return {
+                                        date: date,
+                                        value: value || 0
+                                    };
+                                });
+                                
+                                console.log('Created time_series data with', data.data.time_series.length, 'points');
+                                console.log('Sample:', data.data.time_series.slice(0, 3));
+                                
+                                // Store the modified data
+                                window.trendsData = data;
+                            }
+                        }
+                    }).catch(err => {
+                        console.error('Error processing API response:', err);
+                    });
+                }
+                
+                return response;
+            });
+        };
+        
+        // Also fix existing data if it's already loaded
+        const fixExistingData = function() {
+            if (window.trendsData && window.trendsData.data) {
+                if (window.trendsData.data.time_trends && !window.trendsData.data.time_series) {
+                    console.log('Fixing already loaded data - converting time_trends to time_series');
+                    
+                    // Get keyword
+                    const keyword = window.trendsData.metadata && window.trendsData.metadata.keywords && window.trendsData.metadata.keywords[0] || 'India';
+                    
+                    // Create time_series array
+                    window.trendsData.data.time_series = window.trendsData.data.time_trends.map(item => {
+                        // Handle different data formats
+                        const date = item.date || item.index || '';
+                        
+                        // Handle different value formats
+                        let value;
+                        if (typeof item.value === 'number') {
+                            value = item.value;
+                        } else if (typeof item[keyword] === 'number') {
+                            value = item[keyword];
+                        } else {
+                            // Find any numeric property as a fallback
+                            for (const key in item) {
+                                if (typeof item[key] === 'number' && 
+                                    key !== 'date' && 
+                                    key !== 'index' && 
+                                    key !== 'is_partial') {
+                                    value = item[key];
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        return {
+                            date: date,
+                            value: value || 0
+                        };
+                    });
+                    
+                    console.log('Fixed existing data - created time_series with', window.trendsData.data.time_series.length, 'points');
+                }
             }
-            submitBtn.disabled = false;
+        };
+        
+        // Try to fix data every second for the first 10 seconds
+        let fixAttempts = 0;
+        const fixInterval = setInterval(() => {
+            fixExistingData();
+            fixAttempts++;
+            if (fixAttempts >= 10) {
+                clearInterval(fixInterval);
+            }
+        }, 1000);
+        
+        // Also run the fix whenever renderCharts is called
+        const originalRenderCharts = window.renderCharts;
+        if (typeof originalRenderCharts === 'function') {
+            window.renderCharts = function() {
+                fixExistingData();
+                return originalRenderCharts.apply(this, arguments);
+            };
+        }
+    });
+
+    // Data debug script - prints complete JSON data
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create a debug container for JSON output
+        const debugContainer = document.createElement('div');
+        debugContainer.id = 'jsonDebugContainer';
+        debugContainer.style.cssText = 'display: none; position: fixed; bottom: 10px; right: 10px; z-index: 9999; background: white; border: 1px solid #ccc; padding: 10px; max-width: 90%; max-height: 80%; overflow: auto; box-shadow: 0 0 10px rgba(0,0,0,0.2); font-family: monospace; font-size: 12px;';
+        document.body.appendChild(debugContainer);
+        
+        // Add a toggle button
+        const toggleButton = document.createElement('button');
+        toggleButton.textContent = 'Show JSON Data';
+        toggleButton.style.cssText = 'position: fixed; bottom: 10px; right: 10px; z-index: 10000; background: #6366F1; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;';
+        document.body.appendChild(toggleButton);
+        
+        toggleButton.addEventListener('click', function() {
+            if (debugContainer.style.display === 'none') {
+                debugContainer.style.display = 'block';
+                toggleButton.textContent = 'Hide JSON Data';
+                
+                // Move the button
+                toggleButton.style.bottom = '10px';
+                toggleButton.style.right = (debugContainer.offsetWidth + 20) + 'px';
+            } else {
+                debugContainer.style.display = 'none';
+                toggleButton.textContent = 'Show JSON Data';
+                toggleButton.style.right = '10px';
+            }
         });
+        
+        // Function to pretty print JSON
+        function prettyPrintJSON(obj) {
+            const jsonStr = JSON.stringify(obj, null, 2);
+            return jsonStr.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                            match = '<span style="color:#881391;">' + match + '</span>';
+                        } else {
+                            cls = 'json-string';
+                            match = '<span style="color:#0E7334;">' + match + '</span>';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                        match = '<span style="color:#0000FF;">' + match + '</span>';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                        match = '<span style="color:#0000FF;">' + match + '</span>';
+                    } else {
+                        match = '<span style="color:#1C00CF;">' + match + '</span>';
+                    }
+                    return match;
+                });
+        }
+        
+        // Function to convert time_trends to time_series format
+        function convertTimeDataFormat(data) {
+            if (data && data.data) {
+                // If time_series already exists, no need to convert
+                if (data.data.time_series && data.data.time_series.length > 0) {
+                    console.log('Data already has time_series format with', data.data.time_series.length, 'points');
+                    return data;
+                }
+                
+                // Convert time_trends to time_series if it exists
+                if (data.data.time_trends && data.data.time_trends.length > 0) {
+                    console.log('Converting time_trends to time_series format');
+                    
+                    // Get keyword
+                    const keyword = data.metadata && data.metadata.keywords && data.metadata.keywords[0] || 'India';
+                    console.log('Using keyword for conversion:', keyword);
+                    
+                    // Create time_series array
+                    data.data.time_series = data.data.time_trends.map((item, index) => {
+                        // Show conversion details for debugging
+                        if (index < 5) {
+                            console.log('Converting item:', item);
+                        }
+                        
+                        // Handle different data formats
+                        const date = item.date || item.index || '';
+                        
+                        // Handle different value formats
+                        let value;
+                        if (typeof item.value === 'number') {
+                            value = item.value;
+                        } else if (typeof item[keyword] === 'number') {
+                            value = item[keyword];
+                        } else {
+                            // Find any numeric property as a fallback
+                            for (const key in item) {
+                                if (typeof item[key] === 'number' && 
+                                    key !== 'date' && 
+                                    key !== 'index' && 
+                                    key !== 'is_partial') {
+                                    value = item[key];
+                                    if (index < 5) {
+                                        console.log(`  - Using numeric property "${key}" with value ${value}`);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (index < 5) {
+                            console.log(`  - Converted to: { date: "${date}", value: ${value || 0} }`);
+                        }
+                        
+                        return {
+                            date: date,
+                            value: value || 0
+                        };
+                    });
+                    
+                    console.log('Created time_series format with', data.data.time_series.length, 'points');
+                    if (data.data.time_series.length > 0) {
+                        console.log('Sample converted data:', data.data.time_series.slice(0, 5));
+                    }
+                } else {
+                    console.warn('No time_trends or time_series data found');
+                }
+            }
+            return data;
+        }
+        
+        // Function to safely process trends API responses
+        window.processTrendsResponse = function(data) {
+            // Print to console
+            console.log('COMPLETE API RESPONSE:');
+            console.log(data);
+            
+            // Normalize data format
+            const normalizedData = normalizeJsonData(data);
+            
+            // Store modified data globally
+            window.trendsData = normalizedData;
+            
+            // Update debug container if it exists
+            if (typeof debugContainer !== 'undefined' && debugContainer) {
+                debugContainer.innerHTML = '<h3 style="margin-top:0">Complete JSON Data</h3><pre style="white-space:pre-wrap;">' + 
+                    prettyPrintJSON(normalizedData) + '</pre>';
+            }
+            
+            // Also print the data to the terminal
+            console.log('COMPLETE JSON DATA STRING:');
+            console.log(JSON.stringify(normalizedData, null, 2));
+            
+            // Print specific sections
+            if (normalizedData.data && normalizedData.data.time_trends) {
+                console.log('TIME_TRENDS DATA (' + normalizedData.data.time_trends.length + ' points):');
+                console.log(JSON.stringify(normalizedData.data.time_trends.slice(0, 10), null, 2));
+                if (normalizedData.data.time_trends.length > 10) {
+                    console.log(`... (${normalizedData.data.time_trends.length - 10} more items)`);
+                }
+            }
+            
+            if (normalizedData.data && normalizedData.data.time_series) {
+                console.log('TIME_SERIES DATA (' + normalizedData.data.time_series.length + ' points):');
+                console.log(JSON.stringify(normalizedData.data.time_series.slice(0, 10), null, 2));
+                if (normalizedData.data.time_series.length > 10) {
+                    console.log(`... (${normalizedData.data.time_series.length - 10} more items)`);
+                }
+            }
+            
+            return normalizedData;
+        };
+        
+        // Monkey patch fetch to intercept trends API responses
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            // Check if this is a trends API call
+            const url = args[0] && typeof args[0] === 'string' ? args[0] : '';
+            const isTrendsApi = url.includes('/trends/api/data/');
+            
+            return originalFetch.apply(this, args).then(response => {
+                // Only process trends API responses
+                if (isTrendsApi) {
+                    // For trends API calls, return a processed response
+                    return response.json().then(data => {
+                        // Process the data
+                        const processedData = window.processTrendsResponse(data);
+                        
+                        // Create a synthetic response
+                        return {
+                            ok: response.ok,
+                            status: response.status,
+                            statusText: response.statusText,
+                            headers: response.headers,
+                            json: () => Promise.resolve(processedData),
+                            text: () => Promise.resolve(JSON.stringify(processedData))
+                        };
+                    }).catch(error => {
+                        console.error('Error processing trends API response:', error);
+                        return response; // Return original response as fallback
+                    });
+                }
+                
+                // For other requests, return the original response unchanged
+                return response;
+            });
+        };
+        
+        // Also add a function to print existing data
+        window.printJsonData = function() {
+            if (window.trendsData) {
+                // Process the data using our standard function
+                window.processTrendsResponse(window.trendsData);
+                
+                // Show the container if it exists
+                if (typeof debugContainer !== 'undefined' && debugContainer) {
+                    debugContainer.style.display = 'block';
+                    
+                    if (typeof toggleButton !== 'undefined' && toggleButton) {
+                        toggleButton.textContent = 'Hide JSON Data';
+                    }
+                }
+                
+                return "JSON data printed to console and displayed in UI";
+            } else {
+                return "No trends data available";
+            }
+        };
+        
+        // Print data if it's already loaded
+        if (window.trendsData) {
+            window.printJsonData();
+        }
+        
+        // Also add a button to force chart rendering with fixed data
+        const renderButton = document.createElement('button');
+        renderButton.textContent = 'Force Render Chart';
+        renderButton.style.cssText = 'position: fixed; bottom: 10px; left: 10px; z-index: 10000; background: #6366F1; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;';
+        document.body.appendChild(renderButton);
+        
+        renderButton.addEventListener('click', function() {
+            if (window.trendsData) {
+                // Process data using our standard function
+                window.processTrendsResponse(window.trendsData);
+                
+                console.log('Forcing chart render with normalized data');
+                
+                // Force render charts
+                if (typeof window.renderCharts === 'function') {
+                    window.renderCharts();
+                } else {
+                    console.error('renderCharts function not available');
+                }
+            } else {
+                console.error('No trends data available to render');
+                alert('No trends data available. Search for a keyword first.');
+            }
+        });
+    });
+</script>
+
+<!-- Additional script to ensure trends-charts.js is loaded and fix any loading issues -->
+<script>
+    // Wait for DOMContentLoaded to ensure all other scripts have had a chance to load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a moment to check if renderCharts is available
+        setTimeout(function() {
+            console.log('Checking if trends-charts.js is properly loaded...');
+            
+            // Check if renderCharts function exists
+            if (typeof window.renderCharts !== 'function') {
+                console.error('renderCharts function not found! Attempting emergency load of trends-charts.js');
+                
+                // Force load the script
+                const script = document.createElement('script');
+                script.src = "{% static 'js/trends-charts.js' %}";
+                script.async = false; // Ensure synchronous loading
+                
+                script.onload = function() {
+                    console.log('Emergency load of trends-charts.js successful');
+                    
+                    // Try to find the renderCharts function again
+                    if (typeof window.renderCharts !== 'function') {
+                        // If it's still not available, create a shim function that will try to use an inner function if available
+                        console.warn('Creating renderCharts shim function');
+                        window.renderCharts = function() {
+                            console.log('Shim renderCharts called');
+                            
+                            // If we have data and a container element, we can try basic rendering
+                            if (window.trendsData && window.trendsData.data) {
+                                const hasTimeData = !!(window.trendsData.data.time_series || window.trendsData.data.time_trends);
+                                const hasRegionData = !!(window.trendsData.data.region_data || window.trendsData.data.regions);
+                                const hasCityData = !!(window.trendsData.data.city_data || window.trendsData.data.cities);
+                                
+                                // Show appropriate containers
+                                const timeChartContainer = document.getElementById('timeChartContainer');
+                                const stateChartContainer = document.getElementById('stateChartContainer');
+                                const cityChartContainer = document.getElementById('cityChartContainer');
+                                
+                                if (timeChartContainer) timeChartContainer.style.display = hasTimeData ? 'block' : 'none';
+                                if (stateChartContainer) stateChartContainer.style.display = hasRegionData ? 'block' : 'none';
+                                if (cityChartContainer) cityChartContainer.style.display = hasCityData ? 'block' : 'none';
+                                
+                                // Basic chart rendering for time data
+                                if (hasTimeData) {
+                                    const timeContainer = document.getElementById('timeSeriesChartContainer');
+                                    if (timeContainer) {
+                                        // Make sure we have a canvas
+                                        if (!document.getElementById('timeSeriesChart')) {
+                                            timeContainer.innerHTML = '<canvas id="timeSeriesChart"></canvas>';
+                                        }
+                                        
+                                        // Get time data and try to render
+                                        let timeData = window.trendsData.data.time_trends || window.trendsData.data.time_series || [];
+                                        if (timeData && timeData.length > 0 && typeof Chart !== 'undefined') {
+                                            try {
+                                                // Extract dates and values
+                                                const dates = [];
+                                                const values = [];
+                                                const keyword = window.trendsData.metadata && window.trendsData.metadata.keywords && 
+                                                    window.trendsData.metadata.keywords[0] || '';
+                                                
+                                                timeData.forEach(item => {
+                                                    if (item.is_partial === true) return;
+                                                    
+                                                    if (item.date) dates.push(item.date);
+                                                    else if (item.index) dates.push(item.index);
+                                                    
+                                                    // Use appropriate value property
+                                                    if (typeof item.value === 'number') values.push(item.value);
+                                                    else if (keyword && typeof item[keyword] === 'number') values.push(item[keyword]);
+                                                    else {
+                                                        // Look for any numeric value
+                                                        for (const key in item) {
+                                                            if (typeof item[key] === 'number' && 
+                                                                key !== 'date' && 
+                                                                key !== 'index' && 
+                                                                key !== 'is_partial') {
+                                                                values.push(item[key]);
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                });
+                                                
+                                                // Render chart if we have data
+                                                if (dates.length > 0 && values.length > 0) {
+                                                    const ctx = document.getElementById('timeSeriesChart');
+                                                    if (ctx) {
+                                                        // Destroy existing chart if it exists
+                                                        if (window.timeChart) {
+                                                            window.timeChart.destroy();
+                                                        }
+                                                        
+                                                        // Create new chart
+                                                        window.timeChart = new Chart(ctx, {
+                                                            type: 'line',
+                                                            data: {
+                                                                labels: dates,
+                                                                datasets: [{
+                                                                    label: keyword || 'Search Interest',
+                                                                    data: values,
+                                                                    borderColor: '#6366F1',
+                                                                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                                                                    fill: true
+                                                                }]
+                                                            },
+                                                            options: {
+                                                                responsive: true,
+                                                                maintainAspectRatio: false,
+                                                                plugins: {
+                                                                    title: {
+                                                                        display: true,
+                                                                        text: 'Search Interest Over Time'
+                                                                    }
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            } catch (error) {
+                                                console.error('Error rendering fallback chart:', error);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                    }
+                    
+                    // Try rendering again if we have data
+                    if (window.trendsData && typeof window.renderCharts === 'function') {
+                        console.log('Attempting to render charts after emergency script load');
+                        window.renderCharts();
+                    }
+                };
+                
+                script.onerror = function() {
+                    console.error('Failed to load trends-charts.js in emergency mode');
+                    
+                    // Display an error message to the user
+                    const errorContainer = document.createElement('div');
+                    errorContainer.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded max-w-3xl mx-auto';
+                    errorContainer.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="h-6 w-6 text-red-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <p><strong>Error:</strong> Failed to load chart rendering scripts.</p>
+                        </div>
+                        <p class="mt-2">Please try refreshing the page or contact support if the issue persists.</p>
+                    `;
+                    
+                    // Add to top of page
+                    const container = document.querySelector('#trendsContainer');
+                    if (container) {
+                        container.insertBefore(errorContainer, container.firstChild);
+                    }
+                };
+                
+                document.head.appendChild(script);
+            } else {
+                console.log('renderCharts function found, script is loaded correctly');
+                
+                // If we have data, but charts weren't rendered yet, render them
+                if (window.trendsData && !window.chartsRendered) {
+                    console.log('Found existing trends data, rendering charts now');
+                    window.renderCharts();
+                    window.chartsRendered = true;
+                }
+            }
+        }, 1500); // Wait 1.5 seconds to check
+    });
+</script>
+
+<!-- Fix for JSON parsing error -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Loading JSON parsing fix');
+        
+        // Robust JSON sanitizer and parser
+        window.safeJsonParse = function(jsonString) {
+            if (!jsonString) return null;
+            
+            try {
+                // First try normal parsing
+                return JSON.parse(jsonString);
+            } catch (error) {
+                console.error('JSON parse error:', error.message);
+                console.log('Attempting to sanitize and fix JSON data...');
+                
+                try {
+                    // Try to locate the error position
+                    const errorMatch = error.message.match(/position (\d+)/);
+                    const errorLineMatch = error.message.match(/line (\d+) column (\d+)/);
+                    
+                    // Log full error for debugging
+                    console.log('Original JSON parse error:', error.message);
+                    
+                    let sanitizedJson = jsonString;
+                    
+                    // Check for common issues and fix them
+                    if (errorMatch && errorMatch[1]) {
+                        const errorPos = parseInt(errorMatch[1]);
+                        console.log(`Error around position: ${errorPos}`);
+                        
+                        // Log a snippet of the JSON around the error position
+                        const start = Math.max(0, errorPos - 50);
+                        const end = Math.min(jsonString.length, errorPos + 50);
+                        console.log(`JSON snippet around error: "${jsonString.substring(start, errorPos)}[ERROR HERE]${jsonString.substring(errorPos, end)}"`);
+                        
+                        // Try to fix invalid control characters
+                        sanitizedJson = sanitizedJson.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+                        
+                        // Try to fix unescaped quotes in strings
+                        sanitizedJson = sanitizedJson.replace(/([^\\])"/g, '$1\\"');
+                        
+                        // Fix broken escape sequences
+                        sanitizedJson = sanitizedJson.replace(/\\/g, '\\\\');
+                        sanitizedJson = sanitizedJson.replace(/\\\\\"/g, '\\"');
+                    }
+                    
+                    if (errorLineMatch) {
+                        console.log(`Error at line ${errorLineMatch[1]}, column ${errorLineMatch[2]}`);
+                    }
+                    
+                    // Try multiple approaches to recover the data
+                    console.log('Attempting recovery approaches...');
+                    
+                    // Approach 1: Try to extract valid parts
+                    try {
+                        // Look for start of the JSON object
+                        const jsonStartIndex = sanitizedJson.indexOf('{');
+                        const jsonEndIndex = sanitizedJson.lastIndexOf('}');
+                        
+                        if (jsonStartIndex >= 0 && jsonEndIndex > jsonStartIndex) {
+                            const extractedJson = sanitizedJson.substring(jsonStartIndex, jsonEndIndex + 1);
+                            console.log('Extracted JSON object from string');
+                            return JSON.parse(extractedJson);
+                        }
+                    } catch (e) {
+                        console.log('Approach 1 failed:', e.message);
+                    }
+                    
+                    // Approach 2: Use a more lenient JSON parser
+                    try {
+                        console.log('Trying relaxed JSON parsing...');
+                        
+                        // Create a simplified version with only the essential data
+                        // This is a fallback when the JSON is severely damaged
+                        const simplifiedData = {
+                            status: 'success',
+                            metadata: {
+                                keywords: [document.getElementById('keywordInput')?.value || 'unknown'],
+                                timeframe: 'today 5-y',
+                                region: 'IN',
+                                timestamp: new Date().toISOString()
+                            },
+                            data: {
+                                time_trends: []
+                            }
+                        };
+                        
+                        // Try to extract time_trends array if present in the malformed JSON
+                        const timeDataMatch = sanitizedJson.match(/"time_trends"\s*:\s*(\[.*?\])/s);
+                        if (timeDataMatch && timeDataMatch[1]) {
+                            try {
+                                // Try to parse just the time_trends array
+                                const timeData = JSON.parse(timeDataMatch[1]);
+                                simplifiedData.data.time_trends = timeData;
+                                console.log('Successfully extracted time_trends data');
+                            } catch (e) {
+                                console.log('Failed to parse time_trends array:', e.message);
+                            }
+                        }
+                        
+                        return simplifiedData;
+                    } catch (e) {
+                        console.log('Approach 2 failed:', e.message);
+                    }
+                    
+                    // If all else fails, return a minimal valid object
+                    console.log('All recovery approaches failed. Returning minimal valid data.');
+                    return {
+                        status: 'success',
+                        metadata: {
+                            keywords: [document.getElementById('keywordInput')?.value || 'unknown'],
+                            timeframe: 'today 5-y',
+                            region: 'IN'
+                        },
+                        data: {
+                            time_trends: []
+                        },
+                        error: 'Data was malformed, showing empty results'
+                    };
+                } catch (finalError) {
+                    console.error('Failed to recover JSON data:', finalError);
+                    return {
+                        status: 'error',
+                        error: 'Failed to parse response data'
+                    };
+                }
+            }
+        };
+        
+        // Monkey patch the fetch API to handle JSON parsing errors
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return originalFetch.apply(this, args).then(response => {
+                // Clone the response so we can still read it
+                const clonedResponse = response.clone();
+                
+                // If this is a trends API request, handle it with our robust parser
+                if (args[0] && args[0].includes && args[0].includes('/trends/api/data/')) {
+                    return clonedResponse.text().then(text => {
+                        console.log('Received API response, length:', text.length);
+                        
+                        // Print the first 1000 characters and last 1000 characters for debugging
+                        if (text.length > 2000) {
+                            console.log('Response start:', text.substring(0, 1000));
+                            console.log('Response end:', text.substring(text.length - 1000));
+                        } else {
+                            console.log('Complete API response text:', text);
+                        }
+                        
+                        // Use our safe parser
+                        const parsedData = window.safeJsonParse(text);
+                        
+                        // Store the data globally for debugging
+                        window.rawApiResponse = text;
+                        window.parsedApiResponse = parsedData;
+                        
+                        // Create a modified response with our parsed data
+                        return {
+                            ok: response.ok,
+                            status: response.status,
+                            statusText: response.statusText,
+                            headers: response.headers,
+                            json: () => Promise.resolve(parsedData),
+                            text: () => Promise.resolve(text)
+                        };
+                    }).catch(error => {
+                        console.error('Error reading or parsing API response:', error);
+                        throw error;
+                    });
+                }
+                
+                // For other requests, pass through unchanged
+                return response;
+            });
+        };
+        
+        console.log('JSON parsing fix loaded successfully');
+    });
+</script>
+
+<script>
+// Add container structure fix script - runs immediately after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Running container structure fix script');
+    
+    // Function to ensure all chart containers exist and are properly structured
+    function ensureChartContainers() {
+        console.log('Ensuring chart containers exist and are properly structured');
+        
+        // Get the results container
+        const resultsContainer = document.getElementById('resultsContainer');
+        if (!resultsContainer) {
+            console.error('Results container not found, cannot fix chart structure');
+            return;
+        }
+        
+        // Check for timeSeriesChartContainer
+        let timeSeriesChartContainer = document.getElementById('timeSeriesChartContainer');
+        if (!timeSeriesChartContainer) {
+            console.log('Creating missing timeSeriesChartContainer');
+            timeSeriesChartContainer = document.createElement('div');
+            timeSeriesChartContainer.id = 'timeSeriesChartContainer';
+            timeSeriesChartContainer.className = 'chart-container';
+            timeSeriesChartContainer.style.cssText = 'width: 100%; height: 450px; margin-bottom: 30px; position: relative;';
+            
+            // Add canvas for the chart
+            timeSeriesChartContainer.innerHTML = '<canvas id="timeSeriesChart"></canvas>';
+            
+            // Find a good place to insert it - right at the beginning of the results container
+            resultsContainer.insertBefore(timeSeriesChartContainer, resultsContainer.firstChild);
+            console.log('Created timeSeriesChartContainer successfully');
+        } else {
+            console.log('timeSeriesChartContainer already exists');
+            
+            // Ensure it has the canvas
+            if (!timeSeriesChartContainer.querySelector('canvas#timeSeriesChart')) {
+                console.log('Adding missing canvas to timeSeriesChartContainer');
+                const canvas = document.createElement('canvas');
+                canvas.id = 'timeSeriesChart';
+                timeSeriesChartContainer.appendChild(canvas);
+            }
+            
+            // Ensure it's visible
+            timeSeriesChartContainer.style.display = 'block';
+            timeSeriesChartContainer.style.height = '450px';
+            timeSeriesChartContainer.style.width = '100%';
+            timeSeriesChartContainer.style.position = 'relative';
+        }
+        
+        // Return the reference to the container
+        return timeSeriesChartContainer;
     }
+    
+    // Call the function to fix containers
+    const fixedContainer = ensureChartContainers();
+    console.log('Chart container fix complete, container ready:', !!fixedContainer);
+    
+    // Try to do this again when trends-charts.js loads
+    window.addEventListener('load', function() {
+        setTimeout(ensureChartContainers, 1000);  // 1 second after load
+        setTimeout(ensureChartContainers, 3000);  // 3 seconds after load
+    });
 });
+</script>
+
+<!-- Results container - add the structure here explicitly -->
+<div id="resultsContainer" class="results-container bg-white rounded-lg shadow-lg p-6 mt-6 max-w-6xl mx-auto" style="display: none;">
+    <!-- Time Series Chart Container -->
+    <div id="timeSeriesChartContainer" class="chart-container mb-8" style="width: 100%; height: 450px; position: relative;">
+        <canvas id="timeSeriesChart"></canvas>
+    </div>
+    
+    <!-- Chart Controls -->
+    <div class="chart-controls flex flex-wrap gap-2 justify-center mb-6">
+        <button id="viewByYearBtn" class="chart-control-btn px-4 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Year</button>
+        <button id="viewByQuarterBtn" class="chart-control-btn px-4 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Quarter</button>
+        <button id="viewByMonthBtn" class="chart-control-btn px-4 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors active">Month</button>
+        <button id="viewByWeekBtn" class="chart-control-btn px-4 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Week</button>
+        <button id="viewSeasonalBtn" class="chart-control-btn px-4 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Seasonal Pattern</button>
+        <button id="resetChartBtn" class="chart-control-btn px-4 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors">Reset Zoom</button>
+        <button id="viewAllTimeBtn" class="chart-control-btn px-4 py-2 rounded-md text-sm text-gray-700 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 transition-colors">All Time</button>
+    </div>
+    
+    <!-- The rest of your results containers would go here -->
+</div>
+
+<script>
+    // Function to safely parse and normalize data format
+    function normalizeJsonData(data) {
+        if (!data) return null;
+        
+        // If already an object, normalize directly
+        if (typeof data === 'object') {
+            return normalizeDataFormat(data);
+        }
+        
+        // Otherwise try to parse the string
+        try {
+            return normalizeDataFormat(JSON.parse(data));
+        } catch (err) {
+            console.error('Error parsing JSON data:', err);
+            return null;
+        }
+    }
+    
+    // Normalize data structure to ensure consistent format
+    function normalizeDataFormat(data) {
+        if (!data || !data.data) {
+            console.error('Invalid data format, missing data property');
+            return null;
+        }
+        
+        // Ensure we have a time_series property for compatibility
+        if (!data.data.time_series && data.data.time_trends) {
+            console.log('Converting time_trends to time_series format');
+            
+            // Get keyword
+            const keyword = data.metadata && data.metadata.keywords && 
+                         data.metadata.keywords[0] || 'India';
+            
+            // Create time_series array
+            data.data.time_series = data.data.time_trends.map(item => {
+                // Handle different data formats
+                const date = item.date || item.index || '';
+                
+                // Handle different value formats
+                let value;
+                if (typeof item.value === 'number') {
+                    value = item.value;
+                } else if (typeof item[keyword] === 'number') {
+                    value = item[keyword];
+                } else {
+                    // Find any numeric property as a fallback
+                    for (const key in item) {
+                        if (typeof item[key] === 'number' && 
+                            key !== 'date' && 
+                            key !== 'index' && 
+                            key !== 'is_partial') {
+                            value = item[key];
+                            break;
+                        }
+                    }
+                }
+                
+                return {
+                    date: date,
+                    value: value !== undefined ? value : 0
+                };
+            });
+        }
+        
+        return data;
+    }
+    
+    // Function to safely process trends API responses
+    window.processTrendsResponse = function(data) {
+        // Print to console
+        console.log('COMPLETE API RESPONSE:');
+        console.log(data);
+        
+        // Normalize data format
+        const normalizedData = normalizeJsonData(data);
+        
+        // Store modified data globally
+        window.trendsData = normalizedData;
+        
+        // Update debug container if it exists
+        if (typeof debugContainer !== 'undefined' && debugContainer) {
+            debugContainer.innerHTML = '<h3 style="margin-top:0">Complete JSON Data</h3><pre style="white-space:pre-wrap;">' + 
+                prettyPrintJSON(normalizedData) + '</pre>';
+        }
+        
+        // Also print the data to the terminal
+        console.log('COMPLETE JSON DATA STRING:');
+        console.log(JSON.stringify(normalizedData, null, 2));
+        
+        // Print specific sections
+        if (normalizedData.data && normalizedData.data.time_trends) {
+            console.log('TIME_TRENDS DATA (' + normalizedData.data.time_trends.length + ' points):');
+            console.log(JSON.stringify(normalizedData.data.time_trends.slice(0, 10), null, 2));
+            if (normalizedData.data.time_trends.length > 10) {
+                console.log(`... (${normalizedData.data.time_trends.length - 10} more items)`);
+            }
+        }
+        
+        if (normalizedData.data && normalizedData.data.time_series) {
+            console.log('TIME_SERIES DATA (' + normalizedData.data.time_series.length + ' points):');
+            console.log(JSON.stringify(normalizedData.data.time_series.slice(0, 10), null, 2));
+            if (normalizedData.data.time_series.length > 10) {
+                console.log(`... (${normalizedData.data.time_series.length - 10} more items)`);
+            }
+        }
+        
+        return normalizedData;
+    };
+    
+    // Also add a function to print existing data
+    window.printJsonData = function() {
+        if (window.trendsData) {
+            // Process the data using our standard function
+            window.processTrendsResponse(window.trendsData);
+            
+            // Show the container if it exists
+            if (typeof debugContainer !== 'undefined' && debugContainer) {
+                debugContainer.style.display = 'block';
+                
+                if (typeof toggleButton !== 'undefined' && toggleButton) {
+                    toggleButton.textContent = 'Hide JSON Data';
+                }
+            }
+            
+            return "JSON data printed to console and displayed in UI";
+        } else {
+            return "No trends data available";
+        }
+    };
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // The most important part: create a properly working fetch monkey patch
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const fetchPromise = originalFetch.apply(this, args);
+            
+            // No response.clone() used - this avoids the error
+            return fetchPromise.then(response => {
+                // Only process trends API responses
+                const url = args[0] && typeof args[0] === 'string' ? args[0] : '';
+                const isTrendsApi = url.includes('/trends/api/data/');
+                
+                if (isTrendsApi) {
+                    return response.json()
+                        .then(data => {
+                            // Process the data using our helper function
+                            const processedData = window.processTrendsResponse(data);
+                            
+                            // Return a new response object with the processed data
+                            return {
+                                ok: response.ok,
+                                status: response.status,
+                                statusText: response.statusText,
+                                headers: response.headers,
+                                // These methods return promises as expected
+                                json: () => Promise.resolve(processedData),
+                                text: () => Promise.resolve(JSON.stringify(processedData))
+                            };
+                        })
+                        .catch(error => {
+                            console.error('Error processing trends API response:', error);
+                            // Return the original response as fallback
+                            return response;
+                        });
+                }
+                
+                // Return original response for non-trends API calls
+                return response;
+            });
+        };
+        
+        console.log('Fetch monkey patch installed successfully');
+        
+        // Try to fix existing data if available
+        if (window.trendsData) {
+            console.log('Fixing already loaded trends data format');
+            window.trendsData = normalizeDataFormat(window.trendsData);
+        }
+        
+        // Add force render button
+        const renderButton = document.createElement('button');
+        renderButton.textContent = 'Force Render Chart';
+        renderButton.style.cssText = 'position: fixed; bottom: 10px; left: 10px; z-index: 10000; background: #6366F1; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;';
+        document.body.appendChild(renderButton);
+        
+        renderButton.addEventListener('click', function() {
+            if (window.trendsData) {
+                // Process data using our standard function
+                window.processTrendsResponse(window.trendsData);
+                
+                console.log('Forcing chart render with normalized data');
+                
+                // Force render charts
+                if (typeof window.renderCharts === 'function') {
+                    window.renderCharts();
+                } else {
+                    console.error('renderCharts function not available');
+                }
+            } else {
+                console.error('No trends data available to render');
+                alert('No trends data available. Search for a keyword first.');
+            }
+        });
+    });
 </script>
 {% endblock %} 

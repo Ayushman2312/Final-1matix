@@ -50,3 +50,24 @@ class WebsiteAssetAdmin(admin.ModelAdmin):
     list_filter = ('asset_type', 'created_at')
     search_fields = ('name', 'website__name')
     readonly_fields = ('created_at',)
+
+# Register additional models
+@admin.register(WebsiteProduct)
+class WebsiteProductAdmin(admin.ModelAdmin):
+    list_display = ('title', 'website', 'category', 'price', 'is_active', 'is_featured', 'created_at')
+    list_filter = ('is_active', 'is_featured', 'category', 'created_at')
+    search_fields = ('title', 'description', 'website__name')
+    readonly_fields = ('created_at', 'updated_at', 'product_id')
+    prepopulated_fields = {'slug': ('title',)}
+
+@admin.register(WebsiteCategory)
+class WebsiteCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'website', 'parent', 'order', 'is_active', 'created_at')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('name', 'description', 'website__name')
+    readonly_fields = ('created_at', 'updated_at')
+    prepopulated_fields = {'slug': ('name',)}
+
+
+
+

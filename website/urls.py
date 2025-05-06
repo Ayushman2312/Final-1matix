@@ -60,4 +60,7 @@ urlpatterns = [
     
     path('<str:public_slug>/page/<str:page_slug>/', views.public_website_page, name='public_website_page'),
     path('<str:public_slug>/category/<str:category_slug>/', views.category_detail, name='category_detail'),
+    
+    # Add test URL for banner image debugging
+    path('test-banner-image/<int:website_id>/', views.test_banner_image, name='test_banner_image'),
 ]

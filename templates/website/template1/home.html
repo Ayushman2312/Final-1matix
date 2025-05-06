@@ -12,10 +12,39 @@
             <div class="relative h-full">
                 <!-- Background Image -->
                 <div class="absolute inset-0 z-0">
-                    <img src="{{ banner.image|default:'https://via.placeholder.com/1920x1080' }}" 
-                         alt="{{ banner.title|default:'Featured banner' }}"
-                         class="w-full h-full object-cover"
-                         onerror="this.src='https://via.placeholder.com/1920x1080'">
+                    {% if banner.image %}
+                        {% if banner.image|slice:":4" == "http" %}
+                        <!-- External URL -->
+                        <img src="{{ banner.image }}" 
+                             alt="{{ banner.title|default:'Featured banner' }}"
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                        {% elif banner.image|slice:":6" == "media/" %}
+                        <!-- Path starts with media/ -->
+                        <img src="/{{ banner.image }}" 
+                             alt="{{ banner.title|default:'Featured banner' }}"
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                        {% elif banner.image|slice:":1" == "/" %}
+                        <!-- Path starts with a slash -->
+                        <img src="{{ banner.image }}" 
+                             alt="{{ banner.title|default:'Featured banner' }}"
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                        {% else %}
+                        <!-- Normal path (no slash prefix) -->
+                        <img src="/{{ banner.image }}" 
+                             alt="{{ banner.title|default:'Featured banner' }}"
+                             class="w-full h-full object-cover"
+                             onerror="this.src='https://source.unsplash.com/random/1920x1080/?banner,product';console.log('Falling back to Unsplash image');">
+                        {% endif %}
+                        <script>console.log('Banner image type: {{ banner.image|slice:":4" }}');</script>
+                        <script>console.log('Banner image URL:', '{{ banner.image }}');</script>
+                    {% else %}
+                        <img src="https://source.unsplash.com/random/1920x1080/?banner,product" 
+                             alt="Default banner" 
+                             class="w-full h-full object-cover">
+                    {% endif %}
                     <div class="absolute inset-0 bg-black bg-opacity-50"></div>
                 </div>
                 
@@ -101,6 +130,37 @@ setInterval(() => moveSlide(1), 5000);
 
 // Initialize first slide
 showSlide(0);
+
+// Debug function for banner images
+function debugBannerImages() {
+    const bannerImages = document.querySelectorAll('.slider-slide img');
+    console.log(`Found ${bannerImages.length} banner images on the page`);
+    
+    bannerImages.forEach((img, index) => {
+        console.log(`Banner ${index}: src="${img.src}", complete=${img.complete}, naturalWidth=${img.naturalWidth}`);
+        
+        // Check if image has already loaded or failed
+        if (img.complete) {
+            if (img.naturalWidth === 0) {
+                console.log(`Banner ${index} failed to load`);
+            } else {
+                console.log(`Banner ${index} loaded successfully`);
+            }
+        } else {
+            // Add event listeners for images still loading
+            img.addEventListener('load', () => {
+                console.log(`Banner ${index} loaded successfully`);
+            });
+            
+            img.addEventListener('error', () => {
+                console.log(`Banner ${index} failed to load with error`);
+            });
+        }
+    });
+}
+
+// Run debug function after a short delay
+setTimeout(debugBannerImages, 1000);
 </script>
 
 <!-- Weekly Selection Section -->

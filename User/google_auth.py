@@ -94,9 +94,21 @@ def handle_google_callback(request):
         
         # Find or create user
         try:
+            # Check if user exists with complete profile
             user = User.objects.filter(email=email).first()
-            if not user:
-                # Generate a random username if needed
+            
+            if user:
+                # User exists, check if profile is complete
+                if hasattr(user, 'phone') and user.phone:
+                    # User has a complete profile
+                    logger.info(f"Existing user logged in via Google: {email}")
+                    return user, None
+                else:
+                    # User exists but profile is incomplete
+                    logger.info(f"User with incomplete profile via Google: {email}")
+                    return user, None
+            else:
+                # Create a new user with basic information
                 user = User(
                     name=name,
                     email=email,
@@ -105,8 +117,8 @@ def handle_google_callback(request):
                 )
                 user.save()
                 logger.info(f"Created new user via Google: {email}")
-            
-            return user, None
+                return user, None
+                
         except Exception as e:
             logger.error(f"Error creating/retrieving user: {str(e)}")
             return None, f"Error processing user data: {str(e)}"

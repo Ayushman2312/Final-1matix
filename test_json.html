@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSON Repair Test</title>
+</head>
+<body>
+    <h1>JSON Repair Test</h1>
+    <pre id="result"></pre>
+
+    <script>
+        // Problematic JSON string with option field issue
+        const problematicJson = `{
+            "status": "success",
+            "data": {
+                "time_series": [{"date": "2023-01-01", "value": 50}],
+                "option": 1,
+                "time_series_more": [{"date": "2023-01-02", "value": 60}]
+            }
+        }`;
+
+        function fixBrokenJSON(text) {
+            console.log('Attempting to fix JSON data with option field issue');
+            
+            // Get context around the position 34879 (simulated for our small test)
+            const optionPattern = /"option"\s*:\s*(\d+)([,}])/g;
+            const fixedJson = text.replace(optionPattern, '"option":"$1"$2');
+            
+            console.log('Original:', text);
+            console.log('Fixed:', fixedJson);
+            
+            try {
+                // Verify if our fix works
+                const parsed = JSON.parse(fixedJson);
+                console.log('JSON repair succeeded!', parsed);
+                return fixedJson;
+            } catch (e) {
+                console.error('JSON repair failed:', e.message);
+                return text;
+            }
+        }
+
+        // Test the repair function
+        try {
+            // Try parsing directly first (should fail)
+            try {
+                JSON.parse(problematicJson);
+                document.getElementById('result').textContent = 'UNEXPECTED: Direct parsing succeeded!';
+            } catch (e) {
+                console.log('Expected parse error:', e.message);
+                
+                // Now try with our repair function
+                const fixed = fixBrokenJSON(problematicJson);
+                const parsed = JSON.parse(fixed);
+                
+                document.getElementById('result').textContent = 'SUCCESS: Repair function worked!\n\n' + 
+                    'Fixed JSON:\n' + fixed + '\n\n' +
+                    'Parsed Result:\n' + JSON.stringify(parsed, null, 2);
+            }
+        } catch (e) {
+            document.getElementById('result').textContent = 'ERROR: ' + e.message;
+        }
+    </script>
+</body>
+</html> 

@@ -673,6 +673,12 @@ def edit_website(request, website_id):
             
             logger.info(f"Found {len(banner_files)} banner image files to process")
             
+            # Dump current hero_banners content for debugging
+            if 'hero_banners' in website.content:
+                logger.info(f"Current hero_banners before update: {website.content['hero_banners']}")
+            else:
+                logger.info("No hero_banners in website content yet")
+            
             # Initialize hero_banners if it doesn't exist in the content
             if 'hero_banners' not in website.content:
                 website.content['hero_banners'] = []
@@ -700,8 +706,9 @@ def edit_website(request, website_id):
                             # Make sure the index exists in hero_banners
                             if index < len(website.content['hero_banners']):
                                 # Update the banner's image path in the content
+                                old_path = website.content['hero_banners'][index].get('image', 'none')
                                 website.content['hero_banners'][index]['image'] = image_path
-                                logger.info(f"Updated existing banner at index {index}")
+                                logger.info(f"Updated existing banner at index {index}. Old path: {old_path}, New path: {image_path}")
                             elif index == len(website.content['hero_banners']):
                                 # This is a new banner being added
                                 website.content['hero_banners'].append({
@@ -711,12 +718,18 @@ def edit_website(request, website_id):
                                     'button_url': '',
                                     'image': image_path
                                 })
-                                logger.info(f"Added new banner at index {index}")
+                                logger.info(f"Added new banner at index {index} with image path: {image_path}")
+                            
+                            # Verify the current state of hero_banners
+                            logger.info(f"Banner at index {index} now has image path: {website.content['hero_banners'][index]['image']}")
                         else:
                             logger.error(f"Failed to save banner image {file_key}")
                     except (ValueError, IndexError) as e:
                         logger.error(f"Error processing banner image {file_key}: {str(e)}")
-                    
+                
+                # Log the final hero_banners content after all updates
+                logger.info(f"Final hero_banners after processing: {website.content['hero_banners']}")
+            
             # Process slide images
             if 'slides' in website.content:
                 # Ensure slides is a list
@@ -2442,3 +2455,108 @@ WantedBy=multi-user.target"""
         logger.error(f"Error deploying website {website_id}: {str(e)}")
         messages.error(request, "There was an unexpected error deploying your website. Please try again later.")
         return redirect('edit_website', website_id=website_id)
+
+@login_required
+def test_banner_image(request, website_id):
+    """
+    Test view to debug banner image rendering issues
+    """
+    website = get_object_or_404(Website, id=website_id, user=request.user)
+    
+    # Get the banner images from the website content
+    hero_banners = website.content.get('hero_banners', [])
+    
+    # Default banner if none exists
+    if not hero_banners:
+        hero_banners = [{
+            'image': 'https://via.placeholder.com/1920x1080',
+            'title': 'Default Banner',
+            'description': 'This is a default banner for testing',
+            'button_text': 'Click Me',
+            'button_url': '#'
+        }]
+    
+    # Add a test banner to debug different path formats
+    test_banners = []
+    
+    # Copy existing banners
+    for i, banner in enumerate(hero_banners):
+        test_banners.append(banner.copy())
+        
+        # Add path information for debugging
+        if 'image' in banner:
+            path = banner['image']
+            test_banners[i]['image_debug'] = {
+                'original': path,
+                'starts_with_slash': path.startswith('/'),
+                'starts_with_media': path.startswith('media/'),
+                'starts_with_http': path.startswith(('http://', 'https://')),
+                'contains_double_slash': '//' in path and not path.startswith(('http://', 'https://'))
+            }
+    
+    # Static test banner with known path formats
+    test_formats = [
+        {'label': 'External URL', 'path': 'https://via.placeholder.com/1920x1080'},
+        {'label': 'Media Root Path', 'path': '/media/test.jpg'},
+        {'label': 'Relative Path', 'path': 'test.jpg'},
+        {'label': 'Media Prefix Path', 'path': 'media/test.jpg'},
+        {'label': 'Double Slash Path', 'path': '//media/test.jpg'},
+    ]
+    
+    # Add test banner with all formats
+    for fmt in test_formats:
+        test_banners.append({
+            'image': fmt['path'],
+            'title': f"Test {fmt['label']}",
+            'description': f"Testing {fmt['label']} format",
+            'button_text': 'Test',
+            'button_url': '#',
+            'image_debug': {
+                'format': fmt['label'],
+                'original': fmt['path']
+            }
+        })
+    
+    # If this is a POST request, test uploading a new banner
+    if request.method == 'POST' and request.FILES.get('test_banner_image'):
+        try:
+            # Process the uploaded image
+            image_path = process_media_upload(
+                request.FILES['test_banner_image'],
+                subfolder='website_banners',
+                prefix=f'test_banner_{website.id}',
+                allowed_types=settings.ALLOWED_IMAGE_TYPES,
+                user_id=request.user.id,
+                website_id=website.id
+            )
+            
+            if image_path:
+                # Add the new banner with the uploaded image
+                test_banners.append({
+                    'image': image_path,
+                    'title': 'Newly Uploaded Banner',
+                    'description': 'This banner was just uploaded for testing',
+                    'button_text': 'New Test',
+                    'button_url': '#',
+                    'image_debug': {
+                        'format': 'New Upload',
+                        'original': image_path,
+                        'upload_time': timezone.now().isoformat()
+                    }
+                })
+                
+                messages.success(request, f"Test banner uploaded successfully. Path: {image_path}")
+            else:
+                messages.error(request, "Failed to upload test banner image.")
+        except Exception as e:
+            messages.error(request, f"Error uploading test banner: {str(e)}")
+    
+    # Prepare context
+    context = {
+        'website': website,
+        'test_banners': test_banners,
+        'media_url': settings.MEDIA_URL,
+        'media_root': settings.MEDIA_ROOT,
+    }
+    
+    return render(request, 'website/test_banner_image.html', context)

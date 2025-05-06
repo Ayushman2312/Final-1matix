@@ -232,19 +232,39 @@ def process_media_upload(file_obj, subfolder='website_media', prefix=None, allow
         
         # Create user-specific folder path if user_id and website_id are provided
         if user_id and website_id:
-            path = os.path.join(f"user_{user_id}", f"website_{website_id}", subfolder, filename)
+            # Use a consistent path format with forward slashes
+            rel_path = f"user_{user_id}/website_{website_id}/{subfolder}/{filename}"
         else:
-            path = os.path.join(subfolder, filename)
+            rel_path = f"{subfolder}/{filename}"
+        
+        # Normalize the path to use OS-specific separators for file operations
+        normalized_path = os.path.normpath(rel_path)
         
         # Ensure subdirectory exists
-        directory = os.path.dirname(os.path.join(settings.MEDIA_ROOT, path))
+        directory = os.path.dirname(os.path.join(settings.MEDIA_ROOT, normalized_path))
         os.makedirs(directory, exist_ok=True)
         
         # Save file using Django's storage system
-        saved_path = default_storage.save(path, ContentFile(file_obj.read()))
+        saved_path = default_storage.save(normalized_path, ContentFile(file_obj.read()))
         
-        # Return the media URL path
-        return os.path.join(settings.MEDIA_URL.lstrip('/'), saved_path)
+        # Log the file paths for debugging
+        logger.info(f"File upload details: Original name={file_obj.name}, Content type={file_obj.content_type}")
+        logger.info(f"File save path: MEDIA_ROOT={settings.MEDIA_ROOT}, Relative path={saved_path}")
+        
+        # Create a clean URL with forward slashes for web use
+        # First normalize for consistency
+        web_path = saved_path.replace('\\', '/')
+        
+        # Ensure the path starts with a slash and doesn't duplicate 'media/'
+        if web_path.startswith('media/'):
+            url_path = f"/{web_path}"
+        else:
+            # Make sure it has a leading slash and isn't doubling up
+            url_path = f"{settings.MEDIA_URL}{web_path}"
+            url_path = url_path.replace('//', '/')
+        
+        logger.info(f"Final image URL: {url_path}")
+        return url_path
         
     except Exception as e:
         logger.error(f"Error processing media upload: {str(e)}")

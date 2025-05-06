@@ -1,3 +1,9 @@
 from django.contrib import admin
+from .models import TrendSearch
 
-# Register your models here.
+@admin.register(TrendSearch)
+class TrendSearchAdmin(admin.ModelAdmin):
+    list_display = ['keyword', 'timestamp', 'country']
+    list_filter = ['country', 'timestamp']
+    search_fields = ['keyword']
+    date_hierarchy = 'timestamp'
