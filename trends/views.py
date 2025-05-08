@@ -18,6 +18,9 @@ from django.conf import settings
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
+from .trends_handler import analyze_trends
 
 logger = logging.getLogger(__name__)
 
@@ -157,12 +160,19 @@ class TrendsApiView(View):
             logger.warning("API call missing keyword parameter")
             return JsonResponse({
                 'error': 'Missing keyword parameter',
-                'status': 'error'
+                'status': 'error',
+                'data': {
+                    'time_trends': []
+                }
             }, status=400)
         
         # To prevent recursive calls, check if this is manually triggered
         if not auto_triggered:
-            TrendSearch.objects.get_or_create(keyword=keyword, country='IN')
+            try:
+                TrendSearch.objects.get_or_create(keyword=keyword, country='IN')
+                logger.info(f"Saved search history for keyword: {keyword}")
+            except Exception as e:
+                logger.error(f"Error saving search history: {str(e)}")
         
         try:
             # Configure analysis options based on user selection
@@ -179,11 +189,11 @@ class TrendsApiView(View):
             logger.info(f"Fetching trends for keyword: {keyword}, analysis option: {analysis_option}, options: {analysis_options}")
             
             try:
-                # Get trends data using the imported function - FIXED: explicitly set geo to 'IN' for India
+                # Get trends data using the imported function - explicitly set geo to 'IN' for India
                 trends_data = get_trends_json(
                     keywords=[keyword],
                     timeframe='today 5-y',  # Always use 5 years
-                    geo='IN',  # Always use India - Ensuring this is correct
+                    geo='IN',  # Always use India
                     analysis_options=analysis_options  # Pass user-selected options
                 )
                 
@@ -192,246 +202,80 @@ class TrendsApiView(View):
                     logger.info(f"Received trends data with keys: {list(trends_data.keys() if trends_data else [])}")
                     
                     if 'data' in trends_data:
-                        logger.info(f"Data section contains keys: {list(trends_data['data'].keys() if trends_data['data'] else [])}")
-                    else:
-                        logger.warning("No 'data' key found in trends_data")
-                    
-                    if 'metadata' in trends_data:
-                        logger.info(f"Metadata: {trends_data['metadata']}")
-                else:
-                    logger.warning("Received empty trends_data from get_trends_json")
-                
-                # Add diagnostic logging for time trends data
-                if trends_data and 'data' in trends_data and 'time_trends' in trends_data['data'] and trends_data['data']['time_trends']:
-                    time_trends_count = len(trends_data['data']['time_trends'])
-                    logger.info(f"Received {time_trends_count} time trend data points")
-                    
-                    sample_point = trends_data['data']['time_trends'][0]
-                    logger.info(f"Sample data point structure: {sample_point}")
-                    
-                    # Log keys to diagnose field names
-                    logger.info(f"Data point keys: {list(sample_point.keys())}")
-                    
-                    # Check for 'index' vs 'date' field
-                    if 'index' in sample_point:
-                        logger.info(f"Using 'index' field with value: {sample_point['index']}")
-                    elif 'date' in sample_point:
-                        logger.info(f"Using 'date' field with value: {sample_point['date']}")
-                    else:
-                        logger.warning(f"Neither 'index' nor 'date' field found in data")
-                else:
-                    # Check if this is a geo-only mode
-                    is_geo_only = analysis_option in ["5", "6"]
-                    
-                    if is_geo_only:
-                        # For geo-only modes, log regional/city data availability
-                        if trends_data and 'data' in trends_data:
-                            if 'regions' in trends_data['data'] and trends_data['data']['regions']:
-                                logger.info(f"Found {len(trends_data['data']['regions'])} regions in the response")
-                            if 'cities' in trends_data['data'] and trends_data['data']['cities']:
-                                logger.info(f"Found {len(trends_data['data']['cities'])} cities in the response")
-                    else:
-                        # For modes that should have time trends, log warning if missing
-                        logger.warning("No time trends data available in the response")
-                
-            except Exception as trends_error:
-                # Specifically catch exceptions from get_trends_json
-                logger.error(f"Error from get_trends_json: {str(trends_error)}", exc_info=True)
-                return JsonResponse({
-                    'error': 'Failed to retrieve trends data',
-                    'message': str(trends_error),
-                    'status': 'error'
-                }, status=500)
-            
-            # Check if we got valid data
-            if not trends_data:
-                logger.warning(f"get_trends_json returned None or empty data for keyword: {keyword}")
-                return JsonResponse({
-                    'error': 'No data available for this keyword',
-                    'status': 'error'
-                }, status=404)
-            
-            if 'data' not in trends_data:
-                logger.warning(f"get_trends_json returned data without 'data' key for keyword: {keyword}")
-                return JsonResponse({
-                    'error': 'Invalid data format returned',
-                    'status': 'error'
-                }, status=500)
-            
-            # For geo-only modes, don't require time_trends
-            is_geo_only = analysis_option in ["5", "6"]
-            
-            if not is_geo_only and ('time_trends' not in trends_data['data'] or not trends_data['data']['time_trends']):
-                logger.warning(f"get_trends_json returned data without time_trends for keyword: {keyword}")
-                return JsonResponse({
-                    'error': 'No time trends data available for this keyword',
-                    'status': 'error'
-                }, status=404)
-            
-            # Process the data for better visualization
-            try:
-                processed_data = process_trends_data(trends_data)
-                
-                # Log the processed data structure
-                logger.info(f"Processed data keys: {list(processed_data.keys())}")
-                
-                # Log detailed processed data info
-                if 'time_series' in processed_data:
-                    logger.info(f"Processed time_series contains {len(processed_data['time_series'])} data points")
-                    if processed_data['time_series']:
-                        logger.info(f"Sample processed data point: {processed_data['time_series'][0]}")
+                        data_keys = list(trends_data['data'].keys() if trends_data['data'] else [])
+                        logger.info(f"Trends data contains data keys: {data_keys}")
                         
-                        # Ensure we have enough data points for visualization
-                        if len(processed_data['time_series']) < 2:
-                            logger.warning("Not enough time series data points for visualization")
-                            return JsonResponse({
-                                'error': 'Not enough data points for visualization',
-                                'status': 'error'
-                            }, status=404)
+                        # Check if we have time_trends data (most important for visualization)
+                        if 'time_trends' in data_keys:
+                            time_trends_data = trends_data['data']['time_trends']
+                            logger.info(f"Time trends data has {len(time_trends_data) if time_trends_data else 0} records")
+                        else:
+                            logger.warning("No time_trends data in response")
                 else:
-                    logger.warning("No time_series in processed data")
-                    
-                    # Only show warning for non-geo-only modes
-                    if not is_geo_only:
-                        return JsonResponse({
-                            'error': 'No time series data available for visualization',
-                            'status': 'error'
-                        }, status=404)
-                            
-                # For geo-only modes, ensure we have the required data
-                if is_geo_only:
-                    if analysis_option == "5" and not processed_data['region_data']:
-                        logger.warning("No region data available for geo-only mode")
-                        return JsonResponse({
-                            'error': 'No region data available for this keyword',
-                            'status': 'error'
-                        }, status=404)
-                        
-                    if analysis_option == "6" and not processed_data['city_data']:
-                        logger.warning("No city data available for geo-only mode")
-                        return JsonResponse({
-                            'error': 'No city data available for this keyword',
-                            'status': 'error'
-                        }, status=404)
+                    logger.error("get_trends_json returned empty or None response")
+                    trends_data = {
+                        'status': 'error',
+                        'errors': ['Failed to retrieve trends data'],
+                        'data': {
+                            'time_trends': []
+                        }
+                    }
                 
-            except Exception as process_error:
-                logger.error(f"Error processing trends data: {str(process_error)}", exc_info=True)
+                # Ensure we have a valid JSON response structure, even if some data is missing
+                if not trends_data.get('data'):
+                    trends_data['data'] = {}
+                
+                # Make sure we have the minimum required data structure for the frontend
+                for key in ['time_trends', 'region_data', 'city_data', 'related_queries']:
+                    if key not in trends_data['data']:
+                        if key == 'related_queries':
+                            trends_data['data'][key] = {}
+                        else:
+                            trends_data['data'][key] = []
+                
+                # Set the status based on whether we have valid data
+                has_valid_data = bool(trends_data['data'].get('time_trends')) or \
+                                 bool(trends_data['data'].get('region_data')) or \
+                                 bool(trends_data['data'].get('city_data'))
+                
+                if not has_valid_data:
+                    trends_data['status'] = 'error'
+                    if not trends_data.get('errors'):
+                        trends_data['errors'] = ['No valid data retrieved from Google Trends']
+                
+                # Return the JSON response
+                return JsonResponse(trends_data, encoder=EnhancedJSONEncoder)
+            
+            except Exception as e:
+                # Log the detailed error
+                logger.error(f"Error fetching trends data: {str(e)}", exc_info=True)
+                
+                # Return a structured error response
                 return JsonResponse({
-                    'error': 'Failed to process trends data',
-                    'message': str(process_error),
-                    'status': 'error'
-                }, status=500)
-            
-            # Generate insights (only for non-auto-triggered requests to save on API usage)
-            insights = None
-            try:
-                if not auto_triggered:
-                    insights = generate_insights(processed_data, keyword)
-            except Exception as insights_error:
-                logger.error(f"Error generating insights: {str(insights_error)}")
-                # Continue without insights
-                insights = {
-                    'key_points': ['Error generating insights'],
-                    'trend_analysis': 'Analysis not available',
-                    'seasonal_insights': 'Seasonal data not available',
-                    'recommendations': ['Try with a different keyword']
-                }
-            
-            # Add information about what was analyzed
-            analysis_info = get_analysis_info(analysis_option)
-            
-            # Log the final response structure
-            logger.info(f"Returning JSON response with keys: status, data, insights, analysis_info")
-            
-            # Ensure the response includes all necessary data for chart rendering
-            response_data = {
-                'status': 'success',
-                'data': processed_data,
-                'insights': insights,
-                'analysis_info': analysis_info,
-                'metadata': {
-                    'keyword': keyword,
-                    'analysis_option': analysis_option,
-                    'time_series_count': len(processed_data.get('time_series', [])),
-                    'has_region_data': bool(processed_data.get('region_data', [])),
-                    'has_city_data': bool(processed_data.get('city_data', [])),
-                    'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                }
-            }
-            
-            # Add additional debug information
-            logger.info(f"Response data contains time_series with {len(processed_data.get('time_series', []))} points")
-            logger.info(f"Response data contains region_data with {len(processed_data.get('region_data', []))} points")
-            logger.info(f"Response data contains city_data with {len(processed_data.get('city_data', []))} points")
-            
-            # Add a final safety check to ensure the response data is serializable
-            try:
-                # Pre-process any other numeric string values that might cause issues
-                def sanitize_dict(d):
-                    if isinstance(d, dict):
-                        result = {}
-                        for key, value in d.items():
-                            # Handle the option field that's causing trouble
-                            if key == 'option' and not isinstance(value, str):
-                                result[key] = str(value)
-                            # Explicitly convert analysis_option to string
-                            elif key == 'analysis_option' and not isinstance(value, str):
-                                result[key] = str(value)
-                            # Handle nested dictionaries
-                            elif isinstance(value, dict):
-                                result[key] = sanitize_dict(value)
-                            # Handle lists with dictionaries
-                            elif isinstance(value, list):
-                                result[key] = [
-                                    sanitize_dict(item) if isinstance(item, dict) else item 
-                                    for item in value
-                                ]
-                            else:
-                                result[key] = value
-                        return result
-                    elif isinstance(d, list):
-                        return [sanitize_dict(item) if isinstance(item, dict) else item for item in d]
-                    return d
-                
-                # Apply sanitization to the entire response data
-                sanitized_data = sanitize_dict(response_data)
-                
-                # Log a sample of what we're going to return
-                if 'metadata' in sanitized_data and 'analysis_option' in sanitized_data['metadata']:
-                    logger.info(f"Final analysis_option value: {repr(sanitized_data['metadata']['analysis_option'])}")
-                
-                # Use our custom JSON encoder for better handling of special types
-                json_response = JsonResponse(
-                    sanitized_data, 
-                    encoder=EnhancedJSONEncoder,
-                    json_dumps_params={'ensure_ascii': False}
-                )
-                
-                # Add debugging header to track encoding
-                json_response['X-JSON-Sanitized'] = 'true'
-                
-                return json_response
-            except (TypeError, ValueError, json.JSONDecodeError) as e:
-                # If serialization fails, log the error and return a sanitized response
-                logger.error(f"JSON serialization error in trends API response: {str(e)}", exc_info=True)
-                
-                # Create a safe minimal response
-                safe_response = {
                     'status': 'error',
-                    'error': 'Data serialization error',
-                    'message': 'The server encountered an error when preparing the response data',
-                    'details': str(e)
-                }
-                
-                return JsonResponse(safe_response, status=500)
+                    'errors': [f"Failed to fetch trends data: {str(e)}"],
+                    'data': {
+                        'time_trends': [],
+                        'region_data': [],
+                        'city_data': [],
+                        'related_queries': {}
+                    }
+                })
         
         except Exception as e:
-            logger.error(f"Error generating trends data: {str(e)}", exc_info=True)
+            # Catch-all for any unexpected errors
+            logger.error(f"Unexpected error in trends API: {str(e)}", exc_info=True)
+            
             return JsonResponse({
-                'error': 'An unexpected error occurred',
                 'status': 'error',
-                'message': str(e)
-            }, status=500)
+                'errors': [f"Unexpected error: {str(e)}"],
+                'data': {
+                    'time_trends': [],
+                    'region_data': [],
+                    'city_data': [],
+                    'related_queries': {}
+                }
+            })
 
 def get_analysis_info(analysis_option):
     """
@@ -893,12 +737,25 @@ def analyze_with_genai(processed_data, keyword):
         }
         
         # Add trend patterns
-        if 'moving_average' in processed_data:
-            summary_data["trend_pattern"] = "The trend shows a " + (
-                "consistent upward direction" if processed_data['moving_average'][-1] > processed_data['moving_average'][0] 
-                else "consistent downward direction" if processed_data['moving_average'][-1] < processed_data['moving_average'][0]
-                else "relatively stable pattern"
-            )
+        if 'moving_average' in processed_data and processed_data['moving_average']:
+            # Check if moving_average contains dictionaries with 'value' key
+            if isinstance(processed_data['moving_average'][0], dict) and 'value' in processed_data['moving_average'][0]:
+                first_value = processed_data['moving_average'][0]['value']
+                last_value = processed_data['moving_average'][-1]['value']
+                summary_data["trend_pattern"] = "The trend shows a " + (
+                    "consistent upward direction" if last_value > first_value 
+                    else "consistent downward direction" if last_value < first_value
+                    else "relatively stable pattern"
+                )
+            # Handle case where moving_average is a list of numeric values
+            elif processed_data['moving_average']:
+                first_value = processed_data['moving_average'][0]
+                last_value = processed_data['moving_average'][-1]
+                summary_data["trend_pattern"] = "The trend shows a " + (
+                    "consistent upward direction" if last_value > first_value 
+                    else "consistent downward direction" if last_value < first_value
+                    else "relatively stable pattern"
+                )
             
         # Add seasonal information if available
         if 'seasonal_pattern' in processed_data and processed_data['seasonal_pattern']:
@@ -1287,4 +1144,180 @@ class AiInsightsApiView(View):
                 'future_scope': 'Analysis failed.',
                 'ad_recommendations': 'Analysis failed.',
                 'keyword_tips': 'Analysis failed.'
-            } 
+            }
+
+def trends_view(request):
+    """Render the trends analysis page."""
+    return render(request, 'trends/trends.html')
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def trends_api(request):
+    """Handle trends analysis API requests."""
+    try:
+        if request.method == "POST":
+            try:
+                data = json.loads(request.body)
+                logger.info(f"Received POST data: {data}")
+            except json.JSONDecodeError:
+                logger.error("Invalid JSON data in POST request")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid JSON data'
+                }, status=400)
+
+            # Get keyword and analysis_type from request data
+            keyword = data.get('keyword', '').strip()
+            timeframe = data.get('timeframe', 'today 5-y')  # Default: 5 years
+            geo = data.get('geo', 'IN')  # Default: India
+            analysis_type = data.get('analysis_type', '1')  # Default: basic time trends
+
+            if not keyword:
+                logger.warning("Missing keyword in trends API request")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Keyword is required'
+                }, status=400)
+
+            logger.info(f"Processing trends API request for keyword: {keyword}, analysis_type: {analysis_type}")
+            
+            # Convert analysis_type to analysis_options dictionary
+            analysis_options = {
+                "include_time_trends": analysis_type in ["1", "2", "3", "4"],
+                "include_state_analysis": analysis_type in ["2", "4", "5"],
+                "include_city_analysis": analysis_type in ["3", "4", "6"],
+                "include_related_queries": analysis_type == "4",
+                "state_only": analysis_type == "5",
+                "city_only": analysis_type == "6"
+            }
+            
+            # Get trends data
+            try:
+                trends_data = get_trends_json(
+                    keywords=keyword,
+                    timeframe=timeframe,
+                    geo=geo,
+                    analysis_options=analysis_options
+                )
+                
+                logger.info(f"Successfully retrieved trends data for {keyword}")
+                
+                if not trends_data:
+                    logger.error(f"Failed to retrieve trends data for {keyword}")
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Failed to retrieve trends data. Please try again later.'
+                    }, status=500)
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'data': trends_data
+                })
+            except Exception as e:
+                logger.error(f"Error retrieving trends data: {str(e)}")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Error retrieving trends data: {str(e)}'
+                }, status=500)
+
+        else:  # GET request
+            keyword = request.GET.get('keyword', '').strip()
+            timeframe = request.GET.get('timeframe', 'today 5-y')
+            geo = request.GET.get('geo', 'IN')
+            analysis_type = request.GET.get('analysis_type', '1')
+
+            if not keyword:
+                logger.warning("Missing keyword in trends API GET request")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Keyword is required'
+                }, status=400)
+
+            logger.info(f"Processing trends API GET request for keyword: {keyword}")
+            
+            # Convert analysis_type to analysis_options dictionary
+            analysis_options = {
+                "include_time_trends": analysis_type in ["1", "2", "3", "4"],
+                "include_state_analysis": analysis_type in ["2", "4", "5"],
+                "include_city_analysis": analysis_type in ["3", "4", "6"],
+                "include_related_queries": analysis_type == "4",
+                "state_only": analysis_type == "5",
+                "city_only": analysis_type == "6"
+            }
+                
+            # Get trends data
+            try:
+                trends_data = get_trends_json(
+                    keywords=keyword,
+                    timeframe=timeframe,
+                    geo=geo,
+                    analysis_options=analysis_options
+                )
+                
+                if not trends_data:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Failed to retrieve trends data. Please try again later.'
+                    }, status=500)
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'data': trends_data
+                })
+            except Exception as e:
+                logger.error(f"Error retrieving trends data: {str(e)}")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Error retrieving trends data: {str(e)}'
+                }, status=500)
+
+    except Exception as e:
+        logger.error(f"Error in trends_api: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+def insights_view(request, keyword=None):
+    """Render the insights page for a specific keyword."""
+    if not keyword:
+        return render(request, 'trends/insights.html')
+    return render(request, 'trends/insights.html', {'keyword': keyword})
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def ai_insights_api(request):
+    """Handle AI-powered insights API requests."""
+    try:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON data in AI insights API request")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data'
+            }, status=400)
+            
+        keyword = data.get('keyword')
+        trend_data = data.get('trend_data')
+
+        if not keyword or not trend_data:
+            logger.warning("Missing required data in AI insights API request")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Both keyword and trend data are required'
+            }, status=400)
+
+        # TODO: Implement AI insights generation
+        logger.info(f"AI insights requested for keyword: {keyword}")
+        return JsonResponse({
+            'status': 'success',
+            'message': 'AI insights generation coming soon'
+        })
+
+    except Exception as e:
+        logger.error(f"Error in ai_insights_api: {str(e)}")
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500) 

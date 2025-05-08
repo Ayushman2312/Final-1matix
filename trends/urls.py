@@ -1,11 +1,12 @@
 from django.urls import path
-from .views import TrendsView, TrendsApiView, InsightsView, AiInsightsApiView
+from . import views
 
 app_name = 'trends'
 
 urlpatterns = [
-    path('', TrendsView.as_view(), name='trends'),
-    path('api/data/', TrendsApiView.as_view(), name='trends_api'),
-    path('insights/<str:keyword>/', InsightsView.as_view(), name='insights'),
-    path('api/ai-insights/', AiInsightsApiView.as_view(), name='ai_insights_api'),
+    path('', views.trends_view, name='trends'),
+    path('insights/<str:keyword>/', views.insights_view, name='insights'),
+    path('insights/', views.insights_view, name='insights'),
+    path('api/', views.trends_api, name='trends_api'),
+    path('ai-insights/', views.ai_insights_api, name='ai_insights_api'),
 ]

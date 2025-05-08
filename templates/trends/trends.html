@@ -1,0 +1,108 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block title %}Trends Analysis{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">Trends Analysis</h1>
+        <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Analyze search trends and discover insights about keywords and topics.</p>
+    </div>
+    
+    <!-- Search Form -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 max-w-3xl mx-auto">
+        <form id="trendsForm" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Keyword Input -->
+            <div class="form-floating">
+                <input type="text" class="form-control shadow-sm focus:ring-2 focus:ring-blue-500 block w-full px-4 py-3 border border-gray-300 rounded-lg transition-all" id="keywordInput" name="keyword" placeholder="Enter a keyword" required>
+                <label for="keywordInput" class="text-gray-500">Keyword to analyze</label>
+            </div>
+            
+            <!-- Analysis Type -->
+            <div class="form-floating">
+                <select class="form-control shadow-sm focus:ring-2 focus:ring-blue-500 block w-full px-4 py-3 border border-gray-300 rounded-lg transition-all" id="analysisTypeSelect" name="analysis_type">
+                    <option value="1">Time Trends Analysis</option>
+                    <option value="2">Regional Analysis</option>
+                    <option value="3">City-Level Analysis</option>
+                    <option value="4">Complete Analysis</option>
+                </select>
+                <label for="analysisTypeSelect" class="text-gray-500">Analysis Type</label>
+            </div>
+            
+            <!-- Hidden fields with default values -->
+            <input type="hidden" id="timeframeSelect" name="timeframe" value="today 5-y">
+            <input type="hidden" id="regionSelect" name="geo" value="IN">
+            
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" id="analyzeButton" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
+                    <i class="fas fa-chart-line mr-2"></i>Analyze Trends
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 mb-8 bg-white/50 rounded-lg shadow" style="display: none;">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p class="mt-4 text-gray-700 font-medium">Analyzing trends data...</p>
+    </div>
+    
+    <!-- Error Container -->
+    <div id="errorContainer" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm hidden max-w-3xl mx-auto">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-red-500"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm" id="errorMessage"></p>
+            </div>
+            <div class="ml-auto pl-3">
+                <div class="-mx-1.5 -my-1.5">
+                    <button type="button" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-200 focus:outline-none" onclick="document.getElementById('errorContainer').style.display='none'">
+                        <span class="sr-only">Dismiss</span>
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Container -->
+    <div id="chartsContainer" class="flex flex-col gap-6" style="display: none;">
+        <!-- Time Series Chart -->
+        <div id="timeSeriesChartContainer" class="bg-white p-4 rounded-lg shadow-lg" style="display: none;">
+            <h3 class="text-lg font-semibold mb-4 text-gray-700">Interest Over Time</h3>
+            <div class="relative h-96">
+                <canvas id="timeSeriesChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Region Chart -->
+        <div id="regionChartContainer" class="bg-white p-4 rounded-lg shadow-lg" style="display: none;">
+            <h3 class="text-lg font-semibold mb-4 text-gray-700">Interest by Region</h3>
+            <div class="relative h-96">
+                <canvas id="regionChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- City Chart -->
+        <div id="cityChartContainer" class="bg-white p-4 rounded-lg shadow-lg" style="display: none;">
+            <h3 class="text-lg font-semibold mb-4 text-gray-700">Interest by City</h3>
+            <div class="relative h-96">
+                <canvas id="cityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js and its date adapter -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+<!-- Include custom JS -->
+<script src="{% static 'js/trends-charts.js' %}"></script>
+{% endblock %} 

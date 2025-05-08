@@ -126,11 +126,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('updateTimeUnit function not found');
                 }
                 
-                // Reset time range selector if it exists
-                const timeRangeSelector = document.getElementById('timeRangeSelector');
-                if (timeRangeSelector) {
-                    timeRangeSelector.value = 'all';
-                }
+                // Reset all filters to 'all'
+                resetAllFilters();
                 
                 // Call the filter by time range function with 'all'
                 if (typeof window.filterByTimeRange === 'function') {
@@ -148,11 +145,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 const selectedValue = this.value;
                 console.log('Time range changed to:', selectedValue);
                 
+                // Reset other filters to "All" to avoid conflicts
+                resetOtherFilters('timeRangeSelect');
+                
                 if (typeof window.filterByTimeRange === 'function') {
                     window.filterByTimeRange(selectedValue);
                 } else {
                     // If the function doesn't exist yet, implement time range filtering here directly
                     filterByTimeRangeImplementation(selectedValue);
+                }
+            });
+        }
+        
+        // Add event listener for quarter select
+        const quarterSelect = document.getElementById('quarterSelect');
+        if (quarterSelect) {
+            quarterSelect.addEventListener('change', function() {
+                const selectedValue = this.value;
+                console.log('Quarter filter changed to:', selectedValue);
+                
+                // Reset other filters to "All" to avoid conflicts
+                resetOtherFilters('quarterSelect');
+                
+                if (typeof window.filterByTimeRange === 'function') {
+                    window.filterByTimeRange(selectedValue);
+                } else {
+                    // If the function doesn't exist yet, implement time range filtering here directly
+                    filterByTimeRangeImplementation(selectedValue);
+                }
+            });
+        }
+        
+        // Add event listener for month select
+        const monthSelect = document.getElementById('monthSelect');
+        if (monthSelect) {
+            monthSelect.addEventListener('change', function() {
+                const selectedValue = this.value;
+                console.log('Month filter changed to:', selectedValue);
+                
+                // Reset other filters to "All" to avoid conflicts
+                resetOtherFilters('monthSelect');
+                
+                if (typeof window.filterByTimeRange === 'function') {
+                    window.filterByTimeRange(selectedValue);
+                } else {
+                    // If the function doesn't exist yet, implement time range filtering here directly
+                    filterByTimeRangeImplementation(selectedValue);
+                }
+            });
+        }
+        
+        // Helper function to reset other filters to "All" when one filter is changed
+        function resetOtherFilters(currentFilter) {
+            const filters = {
+                timeRangeSelect: document.getElementById('timeRangeSelect'),
+                quarterSelect: document.getElementById('quarterSelect'),
+                monthSelect: document.getElementById('monthSelect')
+            };
+            
+            // Reset all filters except the current one
+            Object.keys(filters).forEach(key => {
+                if (key !== currentFilter && filters[key]) {
+                    filters[key].value = 'all';
                 }
             });
         }
@@ -175,6 +229,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('No trend data available for seasonal pattern');
             return;
         }
+        
+        // Reset all filters to 'all'
+        resetAllFilters();
         
         const timeSeriesData = trendsData.data.time_trends;
         const keyword = trendsData.metadata.keywords[0];
@@ -286,6 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Time range filtering implementation based on test-ui.html
     function filterByTimeRangeImplementation(selectedValue) {
         console.log('Implementing time range filtering:', selectedValue);
+        console.log('Filter operation started successfully');
         
         // Get the trends data from the global scope
         const trendsData = window.trendsData || {};
@@ -298,12 +356,14 @@ document.addEventListener('DOMContentLoaded', function() {
         let timeChart = null;
         if (window.timeChart) {
             timeChart = window.timeChart;
+            console.log('Found time chart instance:', timeChart.id);
         } else {
             // Try to find the chart from Chart.js registry
             const charts = Chart.instances;
             for (let id in charts) {
                 if (charts[id].canvas.id === 'timeSeriesChart') {
                     timeChart = charts[id];
+                    console.log('Found time chart in registry:', id);
                     break;
                 }
             }
@@ -328,7 +388,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let filteredMovingAverages = [];
         let filteredTrendLine = [];
         
-        if (selectedValue === 'all') {
+        // Parse filter options
+        const filterType = selectedValue.split(':')[0] || selectedValue;
+        const filterValue = selectedValue.split(':')[1] || '';
+        
+        if (filterType === 'all') {
             // Use all data
             filteredDates = timeSeriesData.map(item => item.date);
             filteredValues = timeSeriesData.map(item => item[keyword]);
@@ -336,9 +400,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get existing moving averages and trend line
             filteredMovingAverages = timeChart.data.datasets[2].data;
             filteredTrendLine = timeChart.data.datasets[1].data;
-        } else {
+        } else if (filterType === 'year') {
             // Filter by year
-            const year = parseInt(selectedValue);
+            const year = parseInt(filterValue || selectedValue);
             
             // Filter the data for the selected year
             const yearData = timeSeriesData.filter(item => {
@@ -354,36 +418,121 @@ document.addEventListener('DOMContentLoaded', function() {
             filteredDates = yearData.map(item => item.date);
             filteredValues = yearData.map(item => item[keyword]);
             
-            // Recalculate moving average
-            const movingAverageWindow = Math.min(12, Math.floor(yearData.length / 2));
+            // Recalculate moving average and trend line
+            filteredMovingAverages = calculateMovingAverage(filteredValues);
+            filteredTrendLine = calculateTrendLine(filteredValues);
+        } else if (filterType === 'quarter') {
+            // Filter by quarter
+            const [year, quarter] = (filterValue || selectedValue).split('Q').map(Number);
             
-            for (let i = 0; i < filteredValues.length; i++) {
+            // Filter the data for the selected quarter
+            const quarterData = timeSeriesData.filter(item => {
+                const dateObj = new Date(item.date);
+                const itemYear = dateObj.getFullYear();
+                const itemQuarter = Math.floor(dateObj.getMonth() / 3) + 1; // 1-based quarter
+
+                return itemYear === year && itemQuarter === quarter;
+            });
+            
+            if (quarterData.length === 0) {
+                console.warn('No data found for quarter:', quarter, 'of year:', year);
+                return;
+            }
+            
+            filteredDates = quarterData.map(item => item.date);
+            filteredValues = quarterData.map(item => item[keyword]);
+            
+            // Recalculate moving average and trend line
+            filteredMovingAverages = calculateMovingAverage(filteredValues);
+            filteredTrendLine = calculateTrendLine(filteredValues);
+        } else if (filterType === 'month') {
+            // Filter by month
+            const [year, month] = (filterValue || selectedValue).split('-').map(Number);
+            
+            // Filter the data for the selected month
+            const monthData = timeSeriesData.filter(item => {
+                const dateObj = new Date(item.date);
+                const itemYear = dateObj.getFullYear();
+                const itemMonth = dateObj.getMonth() + 1; // 1-based month (January = 1)
+
+                return itemYear === year && itemMonth === month;
+            });
+            
+            if (monthData.length === 0) {
+                console.warn('No data found for month:', month, 'of year:', year);
+                return;
+            }
+            
+            filteredDates = monthData.map(item => item.date);
+            filteredValues = monthData.map(item => item[keyword]);
+            
+            // Recalculate moving average and trend line
+            filteredMovingAverages = calculateMovingAverage(filteredValues);
+            filteredTrendLine = calculateTrendLine(filteredValues);
+        } else {
+            // Assume it's a year if it's just a number
+            if (!isNaN(parseInt(selectedValue))) {
+                const year = parseInt(selectedValue);
+                
+                // Filter the data for the selected year
+                const yearData = timeSeriesData.filter(item => {
+                    const dateObj = new Date(item.date);
+                    return dateObj.getFullYear() === year;
+                });
+                
+                if (yearData.length === 0) {
+                    console.warn('No data found for year:', year);
+                    return;
+                }
+                
+                filteredDates = yearData.map(item => item.date);
+                filteredValues = yearData.map(item => item[keyword]);
+                
+                // Recalculate moving average and trend line
+                filteredMovingAverages = calculateMovingAverage(filteredValues);
+                filteredTrendLine = calculateTrendLine(filteredValues);
+            } else {
+                console.warn('Unknown filter type:', selectedValue);
+                return;
+            }
+        }
+        
+        // Helper function for moving average calculation
+        function calculateMovingAverage(values) {
+            const movingAverageWindow = Math.min(12, Math.floor(values.length / 2));
+            const result = [];
+            
+            for (let i = 0; i < values.length; i++) {
                 if (i < movingAverageWindow - 1) {
-                    filteredMovingAverages.push(null);
+                    result.push(null);
                 } else {
-                    const windowValues = filteredValues.slice(i - movingAverageWindow + 1, i + 1);
+                    const windowValues = values.slice(i - movingAverageWindow + 1, i + 1);
                     const average = windowValues.reduce((sum, val) => sum + val, 0) / movingAverageWindow;
-                    filteredMovingAverages.push(average);
+                    result.push(average);
                 }
             }
             
-            // Recalculate trend line
-            const xValues = Array.from({ length: filteredValues.length }, (_, i) => i);
+            return result;
+        }
+        
+        // Helper function for trend line calculation
+        function calculateTrendLine(values) {
+            const xValues = Array.from({ length: values.length }, (_, i) => i);
             const xMean = xValues.reduce((sum, val) => sum + val, 0) / xValues.length;
-            const yMean = filteredValues.reduce((sum, val) => sum + val, 0) / filteredValues.length;
+            const yMean = values.reduce((sum, val) => sum + val, 0) / values.length;
             
             let numerator = 0;
             let denominator = 0;
             
-            for (let i = 0; i < filteredValues.length; i++) {
-                numerator += (xValues[i] - xMean) * (filteredValues[i] - yMean);
+            for (let i = 0; i < values.length; i++) {
+                numerator += (xValues[i] - xMean) * (values[i] - yMean);
                 denominator += Math.pow(xValues[i] - xMean, 2);
             }
             
             const slope = numerator / denominator;
             const intercept = yMean - slope * xMean;
             
-            filteredTrendLine = xValues.map(x => slope * x + intercept);
+            return xValues.map(x => slope * x + intercept);
         }
         
         // Update chart with filtered data
@@ -392,6 +541,21 @@ document.addEventListener('DOMContentLoaded', function() {
         timeChart.data.datasets[1].data = filteredTrendLine;
         timeChart.data.datasets[2].data = filteredMovingAverages;
         timeChart.update();
+    }
+    
+    // Helper function to reset all filters to 'all'
+    function resetAllFilters() {
+        const filters = [
+            document.getElementById('timeRangeSelect'),
+            document.getElementById('quarterSelect'),
+            document.getElementById('monthSelect')
+        ];
+        
+        filters.forEach(filter => {
+            if (filter) {
+                filter.value = 'all';
+            }
+        });
     }
     
     // Make the function available globally
