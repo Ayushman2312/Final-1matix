@@ -23,7 +23,7 @@ load_dotenv(env_path)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 ALLOWED_HOSTS = ["89.116.20.128","1matrix.io","www.1matrix.io"]
