@@ -12,8 +12,7 @@
     
     <!-- Search Form -->
     <div class="bg-white rounded-lg shadow-lg p-6 mb-8 max-w-3xl mx-auto">
-        <form id="trendsForm" method="post" class="space-y-6">
-            {% csrf_token %}
+        <form id="trendsForm" class="space-y-6">
             
             <!-- Keyword Input -->
             <div class="form-floating">
@@ -46,9 +45,55 @@
     </div>
     
     <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 mb-8 bg-white/50 rounded-lg shadow" style="display: none;">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p class="mt-4 text-gray-700 font-medium">Analyzing trends data...</p>
+    <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 mb-8 bg-gradient-to-r from-gray-900 to-black rounded-lg shadow-2xl" style="display: none;">
+        <div class="relative w-24 h-24 mb-4">
+            <!-- Matrix-like digit animation container -->
+            <div class="absolute inset-0 overflow-hidden rounded-full border-2 border-[#27FFB4] shadow-lg shadow-[#27FFB4]/30">
+                <div class="matrix-digits absolute inset-0 flex items-center justify-center">
+                    <span class="text-[#27FFB4] font-mono text-xs opacity-80">10110101</span>
+                </div>
+            </div>
+            <!-- Pulsing outer ring -->
+            <div class="absolute inset-0 rounded-full border-4 border-[#27FFB4]/30 animate-pulse"></div>
+            <!-- Spinning inner circle -->
+            <div class="absolute inset-2 rounded-full border-t-4 border-[#27FFB4] animate-spin"></div>
+            <!-- 1Matrix logo/text in center -->
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-white font-bold text-xl">1M</span>
+            </div>
+        </div>
+        <p class="text-[#27FFB4] font-medium text-center">Analyzing trends data<span class="dots-animation">...</span></p>
+        <div class="w-64 h-2 bg-gray-800 rounded-full mt-4 overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-blue-500 via-[#27FFB4] to-purple-500 rounded-full loading-progress"></div>
+        </div>
+        <style>
+            @keyframes matrixRain {
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(100%); }
+            }
+            .matrix-digits {
+                animation: matrixRain 3s linear infinite;
+            }
+            .dots-animation {
+                animation: dots 1.5s infinite;
+            }
+            @keyframes dots {
+                0%, 20% { content: '.'; }
+                40% { content: '..'; }
+                60%, 100% { content: '...'; }
+            }
+            .loading-progress {
+                width: 30%;
+                animation: progress 2s ease-in-out infinite alternate;
+            }
+            @keyframes progress {
+                0% { width: 5%; }
+                100% { width: 95%; }
+            }
+            @media (max-width: 640px) {
+                .matrix-digits span { font-size: 0.6rem; }
+            }
+        </style>
     </div>
     
     <!-- Error Container -->
