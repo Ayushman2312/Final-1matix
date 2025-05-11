@@ -20,7 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from .trends_handler import analyze_trends
+# from .trends_handler import analyze_trends
 
 logger = logging.getLogger(__name__)
 
@@ -553,41 +553,55 @@ def process_trends_data(trends_data):
             logger.error(f"Error processing time trends: {str(e)}", exc_info=True)
     
     # Process regional data if available - check both regions and region_data
-    if ('regions' in trends_data['data'] and trends_data['data']['regions']):
+    if 'region_data' in trends_data['data'] and trends_data['data']['region_data']:
         try:
-            regions = trends_data['data']['regions']
+            regions = trends_data['data']['region_data']
             processed_regions = []
             
-            for region in regions:
-                if 'name' in region and 'value' in region:
-                    processed_regions.append({
-                        'name': region['name'],
-                        'value': region['value']
-                    })
-            
-            # Sort by value in descending order
-            processed['region_data'] = sorted(processed_regions, key=lambda x: x['value'], reverse=True)
-            logger.info(f"Processed {len(processed['region_data'])} regions")
+            # Check the format of the data
+            if regions and isinstance(regions[0], dict) and 'geoName' in regions[0] and 'values' in regions[0]:
+                # New format - already properly structured for bar chart
+                processed['region_data'] = regions
+                logger.info(f"Processed {len(processed['region_data'])} regions in new format")
+            else:
+                # Old format with name/value pairs
+                for region in regions:
+                    if 'name' in region and 'value' in region:
+                        processed_regions.append({
+                            'name': region['name'],
+                            'value': region['value']
+                        })
+                
+                # Sort by value in descending order
+                processed['region_data'] = sorted(processed_regions, key=lambda x: x['value'], reverse=True)
+                logger.info(f"Processed {len(processed['region_data'])} regions in old format")
             
         except Exception as e:
             logger.error(f"Error processing region data: {str(e)}")
     
     # Process city data if available - check both cities and city_data
-    if ('cities' in trends_data['data'] and trends_data['data']['cities']):
+    if 'city_data' in trends_data['data'] and trends_data['data']['city_data']:
         try:
-            cities = trends_data['data']['cities']
+            cities = trends_data['data']['city_data']
             processed_cities = []
             
-            for city in cities:
-                if 'name' in city and 'value' in city:
-                    processed_cities.append({
-                        'name': city['name'],
-                        'value': city['value']
-                    })
-            
-            # Sort by value in descending order
-            processed['city_data'] = sorted(processed_cities, key=lambda x: x['value'], reverse=True)
-            logger.info(f"Processed {len(processed['city_data'])} cities")
+            # Check the format of the data
+            if cities and isinstance(cities[0], dict) and 'geoName' in cities[0] and 'values' in cities[0]:
+                # New format - already properly structured for bar chart
+                processed['city_data'] = cities
+                logger.info(f"Processed {len(processed['city_data'])} cities in new format")
+            else:
+                # Old format with name/value pairs
+                for city in cities:
+                    if 'name' in city and 'value' in city:
+                        processed_cities.append({
+                            'name': city['name'],
+                            'value': city['value']
+                        })
+                
+                # Sort by value in descending order
+                processed['city_data'] = sorted(processed_cities, key=lambda x: x['value'], reverse=True)
+                logger.info(f"Processed {len(processed['city_data'])} cities in old format")
             
         except Exception as e:
             logger.error(f"Error processing city data: {str(e)}")
@@ -1259,6 +1273,7 @@ def trends_api(request):
                         'status': 'error',
                         'message': 'Failed to retrieve trends data. Please try again later.'
                     }, status=500)
+                print(trends_data)
                 
                 return JsonResponse({
                     'status': 'success',
@@ -1270,7 +1285,6 @@ def trends_api(request):
                     'status': 'error',
                     'message': f'Error retrieving trends data: {str(e)}'
                 }, status=500)
-
     except Exception as e:
         logger.error(f"Error in trends_api: {str(e)}")
         return JsonResponse({

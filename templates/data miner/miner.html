@@ -1,5 +1,6 @@
 {% extends 'user_dashboard/base.html' %}
 {% block content %}
+{% load static %}
 
 <div class="container py-2 max-w-7xl">
     <!-- Header -->
@@ -570,4 +571,6 @@
     });
 </script>
 
+<!-- Load our custom JavaScript file -->
+<script src="{% static 'js/data_miner.js' %}"></script>
 {% endblock %}

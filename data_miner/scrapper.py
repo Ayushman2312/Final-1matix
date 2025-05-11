@@ -1,2191 +1,3080 @@
-import requests
-from requests.adapters import HTTPAdapter
+"""
+Advanced AI-powered web scraper with proxy rotation and anti-detection capabilities.
+Extracts validated mobile numbers and email addresses from websites based on keywords.
+"""
+
+import os
 import re
+import json
 import time
 import random
-import json
-import os
+import logging
+import traceback
+import urllib.parse
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from typing import Dict, List, Set, Tuple, Union, Optional, Any
+from wsgiref import headers
+import base64
+import tempfile
+import zipfile
+import io
+import requests
+from PIL import Image
+import pytesseract
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from bs4 import BeautifulSoup
-from urllib.parse import quote_plus, urlparse, urljoin
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, WebDriverException, NoSuchElementException
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-import logging
-from webdriver_manager.chrome import ChromeDriverManager
-from concurrent.futures import ThreadPoolExecutor
+from selenium.common.exceptions import (
+    TimeoutException, WebDriverException, NoSuchElementException
+)
+from selenium_stealth import stealth
+from fake_useragent import UserAgent
+from seleniumwire import webdriver as wire_webdriver
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("scraper.log"),
+        logging.StreamHandler()
+    ]
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("AdvancedScraper")
 
-class EnhancedContactScraper:
-    def __init__(self):
-        # Regular expression patterns with improved validation
-        # More strict email pattern to filter out common invalid formats
-        self.email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+\.[a-zA-Z]{2,}'
+# Try to configure Tesseract path for OCR CAPTCHA recognition
+TESSERACT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Change this on different systems
+if os.path.exists(TESSERACT_PATH):
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+
+# Anti-CAPTCHA API key - Replace with your actual key
+ANTI_CAPTCHA_API_KEY = ""  # No API key - using alternative CAPTCHA handling
+
+class AdvancedWebScraper:
+    """Advanced web scraper with anti-detection features and proxy rotation."""
+    
+    # Blocked domains that should be avoided
+    BLOCKED_DOMAINS = [
+        'justdial.com', 'yellowpages.com', 'whitepages.com',
+        'facebook.com', 'instagram.com', 'twitter.com', 'linkedin.com'
+    ]
+    
+    # Disposable email domains to filter out
+    DISPOSABLE_EMAIL_DOMAINS = [
+        'mailinator.com', 'tempmail.com', 'temp-mail.org', 'guerrillamail.com',
+        'yopmail.com', 'sharklasers.com', 'trashmail.com', 'throwawaymail.com'
+    ]
+    
+    # Spam TLDs to filter out
+    SPAM_TLDS = ['xyz', 'top', 'club', 'live', 'stream', 'racing']
+    
+    # Contact page keywords for URL prioritization
+    CONTACT_KEYWORDS = [
+        'contact', 'reach', 'connect', 'touch', 'support', 'help',
+        'about', 'company', 'team', 'get-in-touch', 'getintouch'
+    ]
+    
+    def __init__(
+        self,
+        proxies: Optional[List[Dict[str, str]]] = None,
+        user_agents: Optional[List[str]] = None,
+        captcha_service_api: Optional[str] = None,
+        headless: bool = True,
+        max_concurrent_threads: int = 5,
+        timeout: int = 30,
+        max_retries: int = 3,
+        request_delay: Tuple[float, float] = (1.0, 5.0),
+        debug: bool = False,
+        cache_dir: Optional[str] = None
+    ):
+        """
+        Initialize the web scraper with the given configuration.
         
-        # Phone patterns focused on valid mobile formats
-        self.phone_pattern = r'(?:\+?\d{1,4}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}'
-        self.alt_phone_pattern = r'(?:\+?\d{1,4}[-.\s]?)?(?:\d{2,4}[-.\s]?){2,4}\d{2,4}'
-        self.intl_phone_pattern = r'\+\d{1,4}\s?[\d\s-]{7,15}'  # International format
-        
-        # Additional phone patterns for different country formats
-        self.uk_phone_pattern = r'(?:(?:\+44|0044|0)(?:\s|-)?(?:1|2|3|7|8)(?:\d(?:\s|-)?){9})'
-        self.india_phone_pattern = r'(?:(?:\+91|0091|0)?(?:\s|-)?[6789]\d{9})'
-        self.eu_phone_pattern = r'(?:\+(?:33|49|39|34|31|46|47|43|41|48|351|353|358|420|30|36|421|45|386|359|357|370|371|372|357|356)(?:\s|-|\.)?(?:\d(?:\s|-|\.)?){7,11})'
-        
-        # Storage for results and processed URLs
-        self.results = {
-            'emails': set(),
-            'phones': set()
+        Args:
+            proxies: List of proxy configurations (each with format {"http": "http://user:pass@host:port"})
+            user_agents: List of user agent strings
+            captcha_service_api: API key for CAPTCHA solving service
+            headless: Whether to run browsers in headless mode (always True now)
+            max_concurrent_threads: Maximum number of concurrent threads
+            timeout: Request timeout in seconds
+            max_retries: Maximum number of retries
+            request_delay: Tuple of (min_delay, max_delay) in seconds
+            debug: Enable debug mode
+            cache_dir: Directory to cache results
+        """
+
+        # Define default proxy if none provided
+        proxy = 'geo.iproyal.com:12321'
+        proxy_auth = 'vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9_country-in'
+        default_proxy = {
+            'http': f'http://{proxy_auth}@{proxy}',
+            'https': f'http://{proxy_auth}@{proxy}'
         }
-        self.processed_urls = set()
-        self.contact_page_urls = set()
-        self.high_priority_urls = []
         
-        # WebDriver and session
-        self.driver = None
+        # Use provided proxies or default
+        self.proxies = proxies if proxies is not None else [default_proxy]
+        
+        # Ensure proxies is a list
+        if isinstance(self.proxies, dict):
+            self.proxies = [self.proxies]
+            
+        self.captcha_service_api = captcha_service_api
+        self.headless = True  # Always force headless mode regardless of parameter
+        self.max_concurrent_threads = max_concurrent_threads
+        self.timeout = timeout
+        self.max_retries = max_retries
+        self.min_delay, self.max_delay = request_delay
+        self.debug = debug
+        self.cache_dir = cache_dir
+        
+        # Create cache directory if specified
+        if self.cache_dir and not os.path.exists(self.cache_dir):
+            os.makedirs(self.cache_dir)
+        
+        # Initialize user agents
+        self.user_agent_generator = UserAgent()
+        self.user_agents = user_agents or []
+        
+        # Track the current proxy and user agent index
+        self.current_proxy_index = 0
+        self.current_ua_index = 0
+        
+        # Initialize regex patterns for different countries and formats
+        self.init_regex_patterns()
+        
+        # Reusable session with retry and backoff
         self.session = self._create_session()
         
-        # Configuration
-        self.search_depth = 15  # Increased from 10 to 15 to search more Google result pages
-        self.concurrent_requests = 10  # Increased from 5 to 10 for faster parallel processing
-        self.proxy_list = []  # List of proxies to rotate through
-        
-        # Contact page indicators
-        self.contact_keywords = ['contact', 'about', 'reach us', 'get in touch', 'team', 
-                                'support', 'help', 'customer service', 'enquiry', 'location']
-        
-        # Keywords that suggest a page likely contains contact info
-        self.contact_indicator_words = ['email', 'e-mail', 'phone', 'mobile', 'telephone', 'call', 
-                                        'contact', 'reach', 'connect', '@', 'tel:', 'mailto:']
-        
-        # Load lists of disposable email domains and spam TLDs
-        self.disposable_domains = self._load_disposable_domains()
-        self.suspicious_tlds = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.info', '.top']
-        
-        # Valid TLDs list (abbreviated - in production you would use a complete list)
-        self.valid_tlds = ['.com', '.org', '.net', '.edu', '.gov', '.co', '.us', '.uk', 
-                          '.ca', '.au', '.de', '.jp', '.fr', '.it', '.ru', '.br', '.in', 
-                          '.nl', '.es', '.io', '.ai', '.dev', '.co.uk', '.co.jp', '.com.au']
-        
-        # Add country codes mapping
-        self.country_codes = {
-            'US': {'code': '1', 'pattern': r'^\+?1[2-9]\d{9}$'},
-            'UK': {'code': '44', 'pattern': r'^\+?44[1-7]\d{9}$'},
-            'IN': {'code': '91', 'pattern': r'^\+?91[6789]\d{9}$'},
-            'AU': {'code': '61', 'pattern': r'^\+?61[45789]\d{8}$'},
-            'CA': {'code': '1', 'pattern': r'^\+?1[2-9]\d{9}$'},
-            'DE': {'code': '49', 'pattern': r'^\+?49[15789]\d{9,10}$'},
-            'FR': {'code': '33', 'pattern': r'^\+?33[167]\d{8}$'},
-            'IT': {'code': '39', 'pattern': r'^\+?39[3]\d{9}$'},
-            'ES': {'code': '34', 'pattern': r'^\+?34[6789]\d{8}$'},
-            'BR': {'code': '55', 'pattern': r'^\+?55[1-9][1-9]\d{8,9}$'}
-        }
-
-        self.target_country = None  # Will be set based on user input
-        
-        # Simplified and broadened phone patterns
-        self.phone_patterns = {
-            'international': [
-                r'\+\d{1,4}[\s-]?\d{4,14}',  # Broader international format
-                r'00\d{1,4}[\s-]?\d{4,14}'    # Double-zero international format
-            ],
-            'usa_canada': [
-                r'\+?1?\s*\(?[2-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}',  # More flexible US/CA
-                r'(?<!\d)[2-9]\d{2}[-.\s]?\d{3}[-.\s]?\d{4}(?!\d)'    # Local format
-            ],
-            'india': [
-                r'\+?91[-\s]?\d{10}',          # +91 format
-                r'0?[6789]\d{9}'               # Local format
-            ],
-            'uk': [
-                r'\+?44\s?7\d{9}',             # +44 mobile
-                r'0?7\d{9}',                   # Local mobile
-                r'\+?44\s?[1235]\d{8,9}'       # Landline
-            ],
-            'australia': [
-                r'\+?61\s?4\d{8}',             # +61 mobile
-                r'0?4\d{8}',                   # Local mobile
-                r'\+?61\s?[23578]\d{8}'        # Landline
-            ],
-            'germany': [
-                r'\+?49\s?1\d{8,11}',          # +49 mobile
-                r'0?1\d{8,11}',                # Local mobile
-                r'\+?49\s?\d{8,11}'            # Landline
-            ],
-            'generic': [
-                r'(?<!\d)\d{8,15}(?!\d)',      # Any 8-15 digit sequence
-                r'\d{3,4}[\s-]\d{3,4}[\s-]\d{3,4}'  # Common grouping
-            ]
+        # Initialize results container with counters
+        self.results = {
+            'emails': set(),
+            'phones': set(),
+            'processed_urls': set(),
+            'failed_urls': set(),
+            'counters': {
+                'emails_found': 0,
+                'phones_found': 0,
+                'urls_processed': 0,
+                'urls_failed': 0,
+                'captchas_encountered': 0,
+                'captchas_solved': 0,
+                'proxy_errors': 0
+            }
         }
         
-        # Common number patterns to exclude (false positives)
-        self.exclude_patterns = [
-            r'\b[0-9]{5,6}\b',  # ZIP/Postal codes
-            r'\b20\d{2}\b',     # Years
-            r'\b19\d{2}\b',     # Years
-            r'\b\d{4,}\s*[A-Za-z]+',  # Order numbers with text
-            r'#\d+',            # Reference numbers
-            r'\$\d+',           # Prices
-            r'\b\d+\s*(?:kg|lb|cm|mm|in|ft)\b',  # Measurements
-            r'\b\d+\s*(?:qty|pcs|units)\b'  # Quantities
-        ]
-
-    def _load_disposable_domains(self):
-        """Load list of known disposable email domains"""
-        # This is a small sample - in production, you'd load a comprehensive list from a file
-        return [
-            'mailinator.com', 'guerrillamail.com', 'temp-mail.org', 'disposablemail.com',
-            'sharklasers.com', 'yopmail.com', 'tempmail.com', '10minutemail.com',
-            'trashmail.com', 'mailnesia.com', 'tempinbox.com', 'dispostable.com',
-            'maildrop.cc', 'fakeinbox.com', 'getnada.com', 'emailondeck.com'
-        ]
+        if self.debug:
+            logger.setLevel(logging.DEBUG)
+    
+    def init_regex_patterns(self):
+        """Initialize regex patterns for contact info extraction."""
+        # Enhanced email pattern with better validation
+        self.email_pattern = r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'
         
-    def _create_session(self):
-        """Create a requests session with realistic headers and optimized for speed"""
+        # Additional email pattern for obfuscated emails (e.g., "email at domain dot com")
+        self.obfuscated_email_pattern = r'([a-zA-Z0-9._%+\-]+)\s+(?:@|at|\[at\]|\(at\))\s+([a-zA-Z0-9.\-]+)(?:\.|\s+(?:dot|\[dot\]|\(dot\)))\s+([a-zA-Z]{2,})'
+        
+        # Pattern to find email addresses in HTML attributes
+        self.email_attr_pattern = r'(?:mailto:|email=|mail=|contact=|to=)([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})'
+        
+        # Phone patterns for different countries and formats
+        # International format
+        intl_pattern = r'(?:\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}'
+        
+        # US/Canada pattern
+        us_pattern = r'(?:(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?))?\d{3}[-.\s]?\d{4}'
+        
+        # UK pattern
+        uk_pattern = r'(?:\+?44[-.\s]?)?(?:\(?\d{1,5}\)?[-.\s]?)?\d{4,10}'
+        
+        # India pattern - improved to focus on valid Indian mobile numbers
+        # Must start with +91 or 91, followed by a space/dash, then a digit 6-9, followed by 9 more digits
+        india_pattern = r'(?:\+91|91)[-.\s]?[6789]\d{9}'
+        
+        # Additional India pattern for numbers without country code
+        india_no_cc_pattern = r'[6789]\d{9}'
+        
+        # Generic international
+        generic_pattern = r'(?:\+?\d{1,4}[-.\s]?)?\d{5,15}'
+        
+        # Combined pattern
+        self.phone_patterns = [
+            india_pattern, india_no_cc_pattern, intl_pattern, us_pattern, uk_pattern, generic_pattern
+        ]
+    
+    def _create_session(self) -> requests.Session:
+        """Create and configure requests session with retry logic."""
         session = requests.Session()
         
-        # Set up connection pooling for faster requests
-        adapter = requests.adapters.HTTPAdapter(
-            pool_connections=20,  # Increased from default 10
-            pool_maxsize=20,      # Increased from default 10
-            max_retries=3,        # Add retry capability
-            pool_block=False      # Don't block when pool is depleted
+        # Configure retry strategy
+        retry_strategy = Retry(
+            total=self.max_retries,
+            backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET", "HEAD", "POST"],
+            raise_on_status=False,  # Don't raise exceptions on status
+            respect_retry_after_header=True
         )
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
         
-        # Set timeout for faster response
-        session.timeout = (3.05, 10)  # (connect timeout, read timeout)
+        # Create connection pool with increased max size
+        adapter = HTTPAdapter(
+            max_retries=retry_strategy,
+            pool_connections=20,
+            pool_maxsize=20,
+            pool_block=False
+        )
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
         
+        # Set default headers to mimic Chrome browser
+        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
+            'User-Agent': user_agent,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
-            'Referer': 'https://www.google.com/',
-            'DNT': '1',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'DNT': '1',  # Do Not Track
+            'Sec-Ch-Ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1'
         })
+        
+        # Disable SSL verification
+        session.verify = False
+        
+        # Suppress SSL warnings
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        
         return session
     
-    def _rotate_user_agent(self):
-        """Rotate user agent for request headers"""
-        user_agents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/91.0.864.48 Safari/537.36',
-            'Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1'
-        ]
-        return random.choice(user_agents)
+    def _get_random_user_agent(self) -> str:
+        """Get a random user agent string."""
+        if self.user_agents:
+            return random.choice(self.user_agents)
+        return self.user_agent_generator.random
     
-    def initialize_browser(self):
-        """Initialize Selenium Chrome browser that's hidden but fully functional for scraping"""
-        try:
-            options = Options()
-            
-            # Use a hidden window approach instead of headless mode
-            # This creates a real browser window but keeps it hidden
-            
-            # Add enhanced anti-detection measures
-            options.add_argument("--disable-blink-features=AutomationControlled")
-            options.add_argument("--disable-extensions")
-            options.add_experimental_option("excludeSwitches", ["enable-automation"])
-            options.add_experimental_option('useAutomationExtension', False)
-            
-            # Add fingerprint randomization
-            options.add_argument("--disable-notifications")
-            options.add_argument("--disable-popup-blocking")
-            
-            # Set window position off-screen (hidden from view)
-            options.add_argument("--window-position=-32000,-32000")
-            
-            # Set a standard window size
-            width = random.randint(1600, 1920)
-            height = random.randint(900, 1080)
-            options.add_argument(f"--window-size={width},{height}")
-            
-            # Add language settings with some randomness
-            languages = ["en-US,en;q=0.9", "en-GB,en;q=0.9", "en;q=0.9"]
-            options.add_argument(f"--lang={random.choice(languages)}")
-            
-            # Enhanced performance optimizations
-            options.add_argument("--no-sandbox")
-            options.add_argument("--disable-dev-shm-usage")
-            options.add_argument("--disable-gpu")
-            options.add_argument("--disable-infobars")
-            options.add_argument("--disable-browser-side-navigation")
-            options.add_argument("--dns-prefetch-disable")
-            
-            # Optimize resource loading - load only essential resources
-            options.add_argument("--blink-settings=imagesEnabled=true")
-            options.add_argument("--enable-javascript")
-            
-            # Add page load strategy for faster navigation
-            options.page_load_strategy = 'eager'  # Don't wait for all resources to load
-            
-            # Optional: Add proxy support
-            if self.proxy_list:
-                proxy = random.choice(self.proxy_list)
-                options.add_argument(f'--proxy-server={proxy}')
-            
-            # Create and return the driver
-            service = Service(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=service, options=options)
-            
-            # Execute CDP commands to modify browser fingerprint
-            self.driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-                "source": """
-                // Override the navigator properties
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined
-                });
-                
-                // Override the chrome driver properties
-                window.navigator.chrome = {
-                    runtime: {}
-                };
-                
-                // Override the permissions API
-                const originalQuery = window.navigator.permissions.query;
-                window.navigator.permissions.query = (parameters) => (
-                    parameters.name === 'notifications' ?
-                    Promise.resolve({ state: Notification.permission }) :
-                    originalQuery(parameters)
-                );
-                
-                // Override plugins
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => {
-                        const plugins = [
-                            { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
-                            { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: 'Portable Document Format' },
-                            { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' }
-                        ];
-                        
-                        return plugins;
-                    }
-                });
-                """
-            })
-            
-            # Set shorter page load timeout for faster processing
-            self.driver.set_page_load_timeout(15)
-            # Set script timeout
-            self.driver.set_script_timeout(10)
-            
-            logger.info("Browser initialized successfully in hidden mode with enhanced anti-detection")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize browser: {e}")
-            return False
+    def _get_next_proxy(self) -> Optional[Dict[str, str]]:
+        """Get the next proxy from the rotation with improved reliability."""
+        # Always use our specified proxy for reliability
+        proxy = 'geo.iproyal.com:12321'
+        proxy_auth = 'vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9_country-in'
+        default_proxy = {
+            'http': f'http://{proxy_auth}@{proxy}',
+            'https': f'http://{proxy_auth}@{proxy}'
+        }
+        
+        # Log proxy usage (masked password)
+        logger.debug(f"Using proxy: geo.iproyal.com:12321 (authenticated)")
+        
+        return default_proxy
     
-    def close_browser(self):
-        """Close the browser properly"""
-        if self.driver:
+    def _initialize_selenium(self, proxy: Optional[Dict[str, str]] = None) -> Optional[webdriver.Chrome]:
+        """Initialize a Selenium WebDriver with stealth and anti-detection capabilities."""
+        max_retries = 3
+        retry_delay = 2
+        
+        for retry in range(max_retries):
             try:
-                # Clear cookies before closing
-                self.driver.delete_all_cookies()
-                self.driver.quit()
-                logger.info("Browser closed successfully")
-            except Exception as e:
-                logger.warning(f"Error closing browser: {e}")
-    
-    def _human_like_delay(self, base=0.8):
-        """Generate a random delay that mimics human behavior but optimized for speed"""
-        delay = random.uniform(base * 0.3, base * 0.7)
-        # Add occasional longer pauses (5% chance instead of 10%)
-        if random.random() < 0.05:
-            delay += random.uniform(0.5, 1.5)
-        time.sleep(delay)
-    
-    def _random_scroll(self):
-        """Perform random scrolling to mimic human behavior"""
-        if not self.driver:
-            return
-            
-        try:
-            # Get page height
-            page_height = self.driver.execute_script("return document.body.scrollHeight")
-            
-            # Random number of scroll actions (1-3)
-            num_scrolls = random.randint(1, 3)
-            
-            for _ in range(num_scrolls):
-                # Random scroll position with some human-like patterns
-                if random.random() < 0.7:  # 70% chance to scroll down
-                    scroll_to = random.randint(100, int(page_height * 0.8))
-                else:  # 30% chance to scroll back up a bit
-                    current_position = self.driver.execute_script("return window.pageYOffset;")
-                    scroll_to = max(0, current_position - random.randint(100, 300))
+                options = Options()
                 
-                # Smooth scroll with variable speed
-                self.driver.execute_script(f"window.scrollTo({{top: {scroll_to}, behavior: 'smooth'}});")
+                # Enhanced headless setup with improved anti-detection
+                options.add_argument("--headless=new")
+                options.add_argument("--disable-blink-features=AutomationControlled")
+                options.add_experimental_option("excludeSwitches", ["enable-automation"])
+                options.add_experimental_option('useAutomationExtension', False)
                 
-                # Random delay between scrolls
-                time.sleep(random.uniform(0.5, 1.2))
+                # Common options for stability and performance
+                options.add_argument("--disable-gpu")
+                options.add_argument("--no-sandbox")
+                options.add_argument("--disable-dev-shm-usage")
+                options.add_argument("--disable-notifications")
+                options.add_argument("--disable-infobars")
+                options.add_argument("--disable-extensions")
+                options.add_argument("--disable-automation")
                 
-                # Sometimes move mouse randomly (if using ActionChains)
-                if random.random() < 0.3:
-                    try:
-                        actions = ActionChains(self.driver)
-                        x_offset = random.randint(10, 500)
-                        y_offset = random.randint(10, 500)
-                        actions.move_by_offset(x_offset, y_offset).perform()
-                    except:
-                        pass
+                # Performance optimizations
+                options.add_argument("--disable-3d-apis")
+                options.add_argument("--disable-canvas-aa")
+                options.add_argument("--disable-accelerated-2d-canvas")
+                options.add_argument("--disable-bundled-ppapi-flash")
+                options.add_argument("--disable-logging")
+                options.add_argument("--disable-web-security")
+                options.add_argument("--ignore-certificate-errors")
+                options.add_argument("--allow-running-insecure-content")
+                
+                # Set a high-quality user agent
+                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                options.add_argument(f"--user-agent={user_agent}")
+                
+                # Set window size to mimic real browser
+                options.add_argument("--window-size=1920,1080")
+                
+                # Set language
+                options.add_argument("--lang=en-US,en;q=0.9")
+                
+                # Additional preference settings
+                prefs = {
+                    "profile.default_content_setting_values.notifications": 2,
+                    "profile.default_content_settings.popups": 0,
+                    "download.default_directory": "/dev/null",
+                    "download.prompt_for_download": False,
+                    "credentials_enable_service": False,
+                    "profile.password_manager_enabled": False,
+                    # Disable images and CSS for faster loading
+                    "profile.managed_default_content_settings.images": 2,
+                    "profile.default_content_setting_values.css": 2
+                }
+                options.add_experimental_option("prefs", prefs)
+                
+                # Always use our reliable proxy
+                proxy = self._get_next_proxy()
+                
+                # Extract proxy details
+                proxy_url = None
+                username = None
+                password = None
+                
+                if 'http' in proxy:
+                    proxy_url = proxy['http']
+                elif 'https' in proxy:
+                    proxy_url = proxy['https']
+                
+                if proxy_url:
+                    # Remove protocol prefix
+                    proxy_url = proxy_url.replace('http://', '').replace('https://', '')
+                    
+                    # Handle authentication
+                    if '@' in proxy_url:
+                        auth, host_port = proxy_url.split('@')
+                        username, password = auth.split(':')
                         
-        except Exception as e:
-            logger.warning(f"Error during scrolling: {e}")
+                        # For ChromeDriver, use plugin approach for authenticated proxies
+                        manifest_json = """
+                        {
+                            "version": "1.0.0",
+                            "manifest_version": 2,
+                            "name": "Chrome Proxy",
+                            "permissions": [
+                                "proxy",
+                                "tabs",
+                                "unlimitedStorage",
+                                "storage",
+                                "<all_urls>",
+                                "webRequest",
+                                "webRequestBlocking"
+                            ],
+                            "background": {
+                                "scripts": ["background.js"]
+                            },
+                            "minimum_chrome_version":"22.0.0"
+                        }
+                        """
+                        
+                        background_js = """
+                        var config = {
+                                mode: "fixed_servers",
+                                rules: {
+                                  singleProxy: {
+                                    scheme: "http",
+                                    host: "%s",
+                                    port: parseInt(%s)
+                                  },
+                                  bypassList: ["localhost"]
+                                }
+                              };
+
+                        chrome.proxy.settings.set({value: config, scope: "regular"}, function() {});
+
+                        function callbackFn(details) {
+                            return {
+                                authCredentials: {
+                                    username: "%s",
+                                    password: "%s"
+                                }
+                            };
+                        }
+
+                        chrome.webRequest.onAuthRequired.addListener(
+                                    callbackFn,
+                                    {urls: ["<all_urls>"]},
+                                    ['blocking']
+                        );
+                        """ % (host_port.split(':')[0], host_port.split(':')[1], username, password)
+                        
+                        # Create a temporary directory for the extension
+                        plugin_dir = tempfile.mkdtemp()
+                        manifest_file = os.path.join(plugin_dir, 'manifest.json')
+                        background_file = os.path.join(plugin_dir, 'background.js')
+                        
+                        with open(manifest_file, 'w') as f:
+                            f.write(manifest_json)
+                        with open(background_file, 'w') as f:
+                            f.write(background_js)
+                        
+                        # Pack the extension
+                        plugin_file = os.path.join(plugin_dir, 'proxy_auth_plugin.zip')
+                        with zipfile.ZipFile(plugin_file, 'w') as zp:
+                            zp.write(manifest_file, 'manifest.json')
+                            zp.write(background_file, 'background.js')
+                        
+                        options.add_extension(plugin_file)
+                        logger.debug(f"Added proxy authentication plugin for {host_port}")
+                    else:
+                        # No authentication needed, just set the proxy
+                        options.add_argument(f'--proxy-server={proxy_url}')
+                        logger.debug(f"Set proxy server to {proxy_url}")
+                
+                # Initialize WebDriver with additional arguments for stability
+                # Use ChromeDriverManager to ensure the driver is available and compatible
+                from webdriver_manager.chrome import ChromeDriverManager
+                
+                try:
+                    # Try to use ChromeDriverManager to get the appropriate driver
+                    service = Service(ChromeDriverManager().install())
+                    logger.info("Using ChromeDriverManager to initialize driver")
+                    driver = webdriver.Chrome(service=service, options=options)
+                except Exception as e:
+                    logger.warning(f"ChromeDriverManager initialization failed: {e}")
+                    # Fall back to default Service
+                    service = Service()
+                    driver = webdriver.Chrome(service=service, options=options)
+                
+                # Apply enhanced stealth mode settings
+                try:
+                    stealth(
+                        driver,
+                        languages=["en-US", "en"],
+                        vendor="Google Inc.",
+                        platform="Win32",
+                        webgl_vendor="Intel Inc.",
+                        renderer="Intel Iris OpenGL Engine",
+                        fix_hairline=True,
+                    )
+                except Exception as e:
+                    logger.warning(f"Could not apply stealth mode: {e}")
+                
+                # Additional scripts to evade detection
+                try:
+                    evasion_js = """
+                    // Overwrite the 'webdriver' property to prevent detection
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => false,
+                    });
+                    
+                    // Add missing Chrome functions
+                    if (!window.chrome) {
+                        window.chrome = {};
+                    }
+                    if (!window.chrome.runtime) {
+                        window.chrome.runtime = {};
+                    }
+                    
+                    // Overwrite permissions.query
+                    const originalQuery = window.navigator.permissions.query;
+                    window.navigator.permissions.query = (parameters) => (
+                        parameters.name === 'notifications' ?
+                        Promise.resolve({ state: Notification.permission }) :
+                        originalQuery(parameters)
+                    );
+                    
+                    // Add plugins array
+                    Object.defineProperty(navigator, 'plugins', {
+                        get: () => [1, 2, 3, 4, 5],
+                    });
+                    
+                    // Add language consistency
+                    Object.defineProperty(navigator, 'language', {
+                        get: () => 'en-US',
+                    });
+                    
+                    // Add platform consistency
+                    Object.defineProperty(navigator, 'platform', {
+                        get: () => 'Win32',
+                    });
+                    """
+                    driver.execute_script(evasion_js)
+                except Exception as e:
+                    logger.warning(f"Could not apply evasion script: {e}")
+                
+                # Set page load timeout to avoid hanging
+                driver.set_page_load_timeout(self.timeout)
+                
+                # Wait a bit to ensure all evasion techniques are in place
+                time.sleep(1)
+                
+                return driver
+            
+            except Exception as e:
+                logger.error(f"Error initializing Selenium (attempt {retry+1}/{max_retries}): {e}")
+                
+                if retry < max_retries - 1:
+                    logger.info(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    logger.error("All retries failed for initializing Selenium")
+                    if self.debug:
+                        traceback.print_exc()
+        
+        return None
     
-    def _is_valid_email(self, email):
-        """Enhanced email validation"""
-        if not email:
+    def _detect_captcha(self, driver) -> bool:
+        """
+        Enhanced detection of CAPTCHAs on the page.
+        
+        Args:
+            driver: Selenium WebDriver instance
+            
+        Returns:
+            bool: True if CAPTCHA is detected, False otherwise
+        """
+        try:
+            # Visual indicators
+            captcha_indicators = [
+                "//iframe[contains(@src, 'recaptcha')]",
+                "//iframe[contains(@src, 'captcha')]",
+                "//*[contains(text(), 'captcha')]",
+                "//*[contains(@class, 'captcha')]",
+                "//*[contains(@id, 'captcha')]",
+                "//div[@class='g-recaptcha']",
+                "//div[contains(@class, 'h-captcha')]",
+                "//div[contains(@data-sitekey, 'recaptcha')]",
+                "//div[contains(@data-sitekey, 'hcaptcha')]",
+                "//div[contains(@class, 'antigate_solver')]",
+                "//input[contains(@id, 'captcha')]",
+                "//img[contains(@src, 'captcha')]"
+            ]
+            
+            for indicator in captcha_indicators:
+                elements = driver.find_elements(By.XPATH, indicator)
+                if elements:
+                    logger.debug(f"CAPTCHA detected with selector: {indicator}")
+                    self.results['counters']['captchas_encountered'] += 1
+                    return True
+            
+            # Check for text indicators
+            captcha_text_indicators = [
+                'captcha', 'robot', 'verify you are human', 'security check', 
+                'prove you\'re not a robot', 'bot check', 'verification'
+            ]
+            
+            page_text = driver.page_source.lower()
+            for text in captcha_text_indicators:
+                if text in page_text:
+                    logger.debug(f"CAPTCHA detected with text indicator: {text}")
+                    self.results['counters']['captchas_encountered'] += 1
+                    return True
+            
+            # Check URL for CAPTCHA indicators
+            current_url = driver.current_url.lower()
+            if 'captcha' in current_url or 'challenge' in current_url:
+                logger.debug(f"CAPTCHA detected in URL: {current_url}")
+                self.results['counters']['captchas_encountered'] += 1
+                return True
+            
+            # Check for Google reCAPTCHA API calls
+            try:
+                recaptcha_present = driver.execute_script(
+                    "return typeof(___grecaptcha_cfg) !== 'undefined' || "
+                    "document.querySelector('iframe[src*=\"recaptcha\"]') !== null || "
+                    "document.querySelector('div.g-recaptcha') !== null"
+                )
+                if recaptcha_present:
+                    logger.debug("reCAPTCHA detected via JavaScript check")
+                    self.results['counters']['captchas_encountered'] += 1
+                    return True
+            except Exception:
+                pass
+                
+            # Check for unusual redirects or security pages
+            security_domains = ['captcha', 'challenge', 'security', 'verify', 'check']
+            current_domain = urllib.parse.urlparse(driver.current_url).netloc
+            for domain in security_domains:
+                if domain in current_domain:
+                    logger.debug(f"Security/CAPTCHA domain detected: {current_domain}")
+                    self.results['counters']['captchas_encountered'] += 1
+                    return True
+            
             return False
             
+        except Exception as e:
+            logger.error(f"Error detecting CAPTCHA: {e}")
+            return False
+    
+    def _solve_captcha(self, driver) -> bool:
+        """
+        Enhanced CAPTCHA handling without using external API services.
+        
+        Args:
+            driver: Selenium WebDriver instance
+            
+        Returns:
+            bool: True if CAPTCHA is bypassed, False otherwise
+        """
+        try:
+            logger.info("Attempting to handle CAPTCHA without external services")
+            
+            # First, try to find if there's a simple checkbox CAPTCHA
+            try:
+                # Look for common reCAPTCHA checkbox elements
+                checkboxes = driver.find_elements(By.CSS_SELECTOR, ".recaptcha-checkbox, .g-recaptcha-response, input[type='checkbox']")
+                for checkbox in checkboxes:
+                    if checkbox.is_displayed() and checkbox.is_enabled():
+                        logger.info("Found CAPTCHA checkbox, attempting to click")
+                        checkbox.click()
+                        time.sleep(2)
+                        # Check if CAPTCHA is still present
+                        if not self._detect_captcha(driver):
+                            self.results['counters']['captchas_solved'] += 1
+                            return True
+            except Exception as e:
+                logger.debug(f"No clickable CAPTCHA checkbox found: {e}")
+            
+            # Try to find and click on "I'm not a robot" text or button
+            try:
+                robot_elements = driver.find_elements(By.XPATH, 
+                    "//*[contains(text(), 'not a robot') or contains(text(), 'Not a Robot') or contains(@alt, 'CAPTCHA')]")
+                for elem in robot_elements:
+                    if elem.is_displayed() and elem.is_enabled():
+                        logger.info("Found 'not a robot' element, attempting to click")
+                        elem.click()
+                        time.sleep(2)
+                        # Check if CAPTCHA is still present
+                        if not self._detect_captcha(driver):
+                            self.results['counters']['captchas_solved'] += 1
+                            return True
+            except Exception as e:
+                logger.debug(f"No clickable 'not a robot' element found: {e}")
+            
+            # Try to find and interact with CAPTCHA iframe
+            try:
+                iframes = driver.find_elements(By.TAG_NAME, "iframe")
+                for iframe in iframes:
+                    if "recaptcha" in iframe.get_attribute("src").lower():
+                        logger.info("Found reCAPTCHA iframe, attempting to interact")
+                        driver.switch_to.frame(iframe)
+                        
+                        # Look for checkbox inside iframe
+                        checkbox = driver.find_element(By.CSS_SELECTOR, ".recaptcha-checkbox")
+                        if checkbox.is_displayed() and checkbox.is_enabled():
+                            checkbox.click()
+                            time.sleep(2)
+                            driver.switch_to.default_content()
+                            # Check if CAPTCHA is still present
+                            if not self._detect_captcha(driver):
+                                self.results['counters']['captchas_solved'] += 1
+                                return True
+                            
+                        driver.switch_to.default_content()
+            except Exception as e:
+                logger.debug(f"No interactable CAPTCHA iframe found: {e}")
+                driver.switch_to.default_content()
+            
+            # If we can't solve the CAPTCHA, try to bypass by refreshing the page
+            logger.info("Attempting to bypass CAPTCHA by refreshing the page")
+            driver.refresh()
+            time.sleep(3)
+            
+            # Check if CAPTCHA is still present
+            if not self._detect_captcha(driver):
+                logger.info("CAPTCHA appears to be gone after refresh")
+                self.results['counters']['captchas_solved'] += 1
+                return True
+            
+            # Try waiting a bit longer - some CAPTCHAs expire
+            logger.info("Waiting to see if CAPTCHA expires")
+            time.sleep(5)
+            if not self._detect_captcha(driver):
+                logger.info("CAPTCHA appears to have expired")
+                self.results['counters']['captchas_solved'] += 1
+                return True
+            
+            # As a last resort, try to submit the form anyway
+            try:
+                submit_buttons = driver.find_elements(By.XPATH, "//button[@type='submit'] | //input[@type='submit']")
+                if submit_buttons:
+                    logger.info("Attempting to submit form despite CAPTCHA")
+                    submit_buttons[0].click()
+                    time.sleep(2)
+                    # Check if CAPTCHA is still present
+                    if not self._detect_captcha(driver):
+                        logger.info("Form submission bypassed CAPTCHA")
+                        self.results['counters']['captchas_solved'] += 1
+                        return True
+            except Exception as e:
+                logger.debug(f"Could not submit form: {e}")
+            
+            logger.warning("Could not bypass CAPTCHA without API key")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error in CAPTCHA handling: {e}")
+            return False
+    
+    def _solve_recaptcha_v2(self, driver) -> bool:
+        """Attempt to handle Google reCAPTCHA v2 without API."""
+        logger.warning("Cannot solve reCAPTCHA v2 without API key - attempting bypass")
+        
+        try:
+            # Try to find and click the checkbox
+            try:
+                driver.switch_to.default_content()
+                frames = driver.find_elements(By.TAG_NAME, "iframe")
+                for frame in frames:
+                    if "recaptcha" in frame.get_attribute("src").lower():
+                        driver.switch_to.frame(frame)
+                        checkbox = driver.find_element(By.CSS_SELECTOR, ".recaptcha-checkbox")
+                        if checkbox.is_displayed():
+                            checkbox.click()
+                            time.sleep(2)
+                            driver.switch_to.default_content()
+                            break
+            except Exception:
+                driver.switch_to.default_content()
+            
+            # Try to submit the form anyway
+            submit_buttons = driver.find_elements(By.XPATH, "//button[@type='submit'] | //input[@type='submit']")
+            if submit_buttons:
+                submit_buttons[0].click()
+                time.sleep(2)
+            
+            # Try to refresh and see if CAPTCHA disappears
+            driver.refresh()
+            time.sleep(3)
+            
+            return not self._detect_captcha(driver)
+            
+        except Exception as e:
+            logger.error(f"Error in reCAPTCHA v2 bypass attempt: {e}")
+            return False
+    
+    def _solve_recaptcha_v3(self, driver) -> bool:
+        """Attempt to handle Google reCAPTCHA v3 without API."""
+        logger.warning("Cannot solve reCAPTCHA v3 without API key - attempting bypass")
+        
+        try:
+            # reCAPTCHA v3 is invisible and score-based
+            # Try to submit the form anyway and hope for the best
+            submit_buttons = driver.find_elements(By.XPATH, "//button[@type='submit'] | //input[@type='submit']")
+            if submit_buttons:
+                submit_buttons[0].click()
+                time.sleep(2)
+            
+            # Try to refresh and see if we can proceed
+            driver.refresh()
+            time.sleep(3)
+            
+            return not self._detect_captcha(driver)
+            
+        except Exception as e:
+            logger.error(f"Error in reCAPTCHA v3 bypass attempt: {e}")
+            return False
+    
+    def _solve_image_captcha(self, driver, img_element) -> bool:
+        """Attempt to handle image CAPTCHA without API."""
+        logger.warning("Cannot solve image CAPTCHA without API key - attempting bypass")
+        
+        try:
+            # Try to find the input field
+            input_fields = driver.find_elements(By.CSS_SELECTOR, "input[name*='captcha'], input[id*='captcha']")
+            if not input_fields:
+                return False
+                
+            # Try some common CAPTCHA answers as a desperate measure
+            common_answers = ["captcha", "human", "person", "robot", "12345", "abcde"]
+            input_field = input_fields[0]
+            
+            for answer in common_answers:
+                input_field.clear()
+                input_field.send_keys(answer)
+                
+                # Try to submit
+                submit_buttons = driver.find_elements(By.XPATH, "//button[@type='submit'] | //input[@type='submit']")
+                if submit_buttons:
+                    submit_buttons[0].click()
+                    time.sleep(2)
+                    
+                    # Check if CAPTCHA is still present
+                    if not self._detect_captcha(driver):
+                        return True
+            
+            # If all fails, try to refresh
+            driver.refresh()
+            time.sleep(3)
+            
+            return not self._detect_captcha(driver)
+            
+        except Exception as e:
+            logger.error(f"Error in image CAPTCHA bypass attempt: {e}")
+            return False
+    
+    def _extract_contact_info(self, text: str) -> Dict[str, Set[str]]:
+        """
+        Extract contact information from text.
+        
+        Args:
+            text: Text to extract contact information from
+            
+        Returns:
+            Dict with 'emails' and 'phones' fields containing sets of extracted contacts
+        """
+        results = {'emails': set(), 'phones': set()}
+        
+        # Extract standard emails
+        emails = re.findall(self.email_pattern, text)
+        
+        # Extract emails from HTML attributes (like mailto: links)
+        attr_emails = re.findall(self.email_attr_pattern, text)
+        emails.extend(attr_emails)
+        
+        # Extract obfuscated emails (like "name at domain dot com")
+        obfuscated_matches = re.findall(self.obfuscated_email_pattern, text)
+        for match in obfuscated_matches:
+            if len(match) == 3:  # name, domain, tld
+                reconstructed_email = f"{match[0]}@{match[1]}.{match[2]}"
+                emails.append(reconstructed_email)
+        
+        # Extract emails from JavaScript and JSON
+        script_emails = self._extract_emails_from_scripts(text)
+        emails.extend(script_emails)
+        
+        # Look for contact forms with hidden email fields
+        hidden_email_pattern = r'<input[^>]*type=[\'"]hidden[\'"][^>]*name=[\'"](?:email|recipient)[\'"][^>]*value=[\'"]([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})[\'"]'
+        hidden_emails = re.findall(hidden_email_pattern, text)
+        emails.extend(hidden_emails)
+        
+        # Look for email addresses in meta tags
+        meta_pattern = r'<meta[^>]*content=[\'"][^\'"]*([\w._%+\-]+@[\w.\-]+\.[a-zA-Z]{2,})[^\'""]*[\'"]'
+        meta_emails = re.findall(meta_pattern, text)
+        emails.extend(meta_emails)
+        
+        # Look for emails in comments
+        comment_pattern = r'<!--.*?([\w._%+\-]+@[\w.\-]+\.[a-zA-Z]{2,}).*?-->'
+        comment_emails = re.findall(comment_pattern, text, re.DOTALL)
+        emails.extend(comment_emails)
+        
+        # Look for contact information sections
+        contact_section_pattern = r'<(?:div|section|article)[^>]*(?:id|class)=[\'"][^\'"]*contact[^\'"]*[\'"][^>]*>(.+?)</(?:div|section|article)>'
+        contact_sections = re.findall(contact_section_pattern, text, re.DOTALL | re.IGNORECASE)
+        
+        for section in contact_sections:
+            # Look for emails in contact sections
+            section_emails = re.findall(self.email_pattern, section)
+            emails.extend(section_emails)
+        
+        # Validate and filter emails
+        validated_emails = set()
+        for email in emails:
+            if self._validate_email(email):
+                validated_emails.add(email.lower())
+                # Update counter
+                self.results['counters']['emails_found'] += 1
+        
+        results['emails'] = validated_emails
+        
+        # Extract phones using multiple patterns
+        phones = set()
+        for pattern in self.phone_patterns:
+            phone_matches = re.findall(pattern, text)
+            for phone in phone_matches:
+                # For Indian patterns, use specific validation
+                if pattern in [self.phone_patterns[0], self.phone_patterns[1]]:  # Indian patterns
+                    if self._validate_indian_phone(phone):
+                        normalized_phone = self._normalize_phone(phone)
+                        if normalized_phone:
+                            phones.add(normalized_phone)
+                # For other patterns, use general validation
+                elif self._validate_phone(phone):
+                    normalized_phone = self._normalize_phone(phone)
+                    if normalized_phone:
+                        phones.add(normalized_phone)
+        
+        # Look for phones in contact sections specifically
+        for section in contact_sections:
+            for pattern in self.phone_patterns:
+                section_phones = re.findall(pattern, section)
+                for phone in section_phones:
+                    # For Indian patterns, use specific validation
+                    if pattern in [self.phone_patterns[0], self.phone_patterns[1]]:  # Indian patterns
+                        if self._validate_indian_phone(phone):
+                            normalized_phone = self._normalize_phone(phone)
+                            if normalized_phone:
+                                phones.add(normalized_phone)
+                    # For other patterns, use general validation
+                    elif self._validate_phone(phone):
+                        normalized_phone = self._normalize_phone(phone)
+                        if normalized_phone:
+                            phones.add(normalized_phone)
+        
+        # Final filtering for Indian numbers
+        if phones:
+            filtered_phones = set()
+            for phone in phones:
+                # Check if it's an Indian number
+                if phone.startswith('+91'):
+                    # Apply strict Indian validation
+                    if self._validate_indian_phone(phone):
+                        filtered_phones.add(phone)
+                        self.results['counters']['phones_found'] += 1
+                else:
+                    # Keep non-Indian numbers
+                    filtered_phones.add(phone)
+                    self.results['counters']['phones_found'] += 1
+            
+            results['phones'] = filtered_phones
+        
+        return results
+    
+    def _validate_email(self, email: str) -> bool:
+        """
+        Validate an email address with enhanced checks.
+        
+        Args:
+            email: Email address to validate
+            
+        Returns:
+            bool: True if valid, False otherwise
+        """
+        if not email or '@' not in email:
+            return False
+        
         email = email.lower().strip()
         
-        # Enhanced email pattern
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        # Basic format validation
+        if not re.match(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$', email):
+            return False
         
-        if not re.match(email_pattern, email):
+        # Check for disposable email domains
+        domain = email.split('@')[1]
+        if any(disposable in domain for disposable in self.DISPOSABLE_EMAIL_DOMAINS):
             return False
-            
-        # Additional validation checks
-        local_part, domain = email.split('@')
         
-        # Local part checks
-        if (
-            len(local_part) > 64 or
-            len(local_part) < 3 or
-            local_part.startswith('.') or
-            local_part.endswith('.') or
-            '..' in local_part or
-            re.match(r'^[0-9]+$', local_part)  # All numbers
-        ):
+        # Check for spam TLDs
+        tld = domain.split('.')[-1].lower()
+        if tld in self.SPAM_TLDS:
             return False
+        
+        # Check for common non-business domains (typically personal emails)
+        common_personal_domains = [
+            'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com',
+            'icloud.com', 'mail.com', 'protonmail.com', 'zoho.com'
+        ]
+        
+        # Only exclude personal domains if they don't contain business identifiers
+        if domain in common_personal_domains:
+            username = email.split('@')[0]
+            business_identifiers = ['contact', 'info', 'sales', 'support', 'admin', 'hr', 
+                                   'marketing', 'help', 'service', 'inquiry', 'business',
+                                   'office', 'mail', 'team', 'careers']
             
-        # Domain checks
-        if (
-            len(domain) > 255 or
-            domain.startswith('-') or
-            domain.endswith('-') or
-            '..' in domain or
-            not re.match(r'^[a-zA-Z0-9.-]+$', domain) or
-            domain.count('.') == 0
-        ):
+            # If it's a personal domain but has a business username, it might be valid
+            if not any(identifier in username for identifier in business_identifiers):
+                # Lower confidence in personal emails, but don't exclude completely
+                pass
+        
+        # Check for very short usernames (likely to be invalid)
+        username = email.split('@')[0]
+        if len(username) <= 2:
             return False
-            
-        # Check TLD
-        tld = domain.split('.')[-1]
-        if (
-            len(tld) < 2 or
-            tld.isdigit() or
-            tld in ['tk', 'ml', 'ga', 'cf', 'gq', 'xyz']  # Common spam TLDs
-        ):
+        
+        # Check for excessive special characters (likely to be invalid)
+        special_chars = sum(1 for c in username if c in '._-%+')
+        if special_chars > len(username) / 2:
             return False
             
         return True
     
-    def _is_valid_phone(self, phone):
-        """More permissive phone validation with detailed logging"""
+    def _validate_phone(self, phone: str) -> bool:
+        """
+        Validate a phone number with enhanced checks.
+        
+        Args:
+            phone: Phone number to validate
+            
+        Returns:
+            bool: True if valid, False otherwise
+        """
         if not phone:
-            logger.debug("Empty phone number")
             return False
         
-        # Clean the phone number
+        # Extract digits only
         digits = re.sub(r'\D', '', phone)
         
-        # Basic validation with logging
-        if len(digits) < 8:
-            logger.debug(f"Phone number too short: {phone}")
-            return False
-        if len(digits) > 15:
-            logger.debug(f"Phone number too long: {phone}")
+        # Check length - too short or too long is invalid
+        if len(digits) < 7 or len(digits) > 15:
             return False
         
-        # Check for obvious invalid patterns
-        invalid_patterns = [
-            (r'^0{4,}', "All zeros prefix"),
-            (r'(\d)\1{7,}', "Same digit repeated 8+ times"),
-            (r'01234567|12345678|87654321', "Sequential digits"),
-            (r'^0000|0000$', "Zero padding")
-        ]
-        
-        for pattern, reason in invalid_patterns:
-            if re.search(pattern, digits):
-                logger.debug(f"Invalid pattern ({reason}): {phone}")
+        # For Indian numbers, enforce the 6-9 starting digit rule for mobile numbers
+        if digits.startswith('91') and len(digits) >= 12:
+            # Check if the number after country code starts with 6-9
+            if digits[2] not in '6789':
                 return False
-        
-        # Format number for validation
-        clean_number = '+' + digits if not digits.startswith('+') else digits
-        
-        # Country-specific validation with logging
-        if self.target_country:
-            if self.target_country not in self.country_codes:
-                logger.debug(f"Unknown country code: {self.target_country}")
+        elif len(digits) == 10 and digits[0] not in '6789':
+            # For 10-digit numbers that might be Indian, check first digit
+            return False
+            
+        # Reject numbers with too many repeating digits (likely fake)
+        for digit in '0123456789':
+            if digit * 4 in digits:  # 4 or more of the same digit in a row
                 return False
-            
-            country_info = self.country_codes[self.target_country]
-            pattern = country_info['pattern']
-            
-            # More permissive country-specific checks
-            if self.target_country == 'US':
-                if len(digits) == 10 and digits[0] in '23456789':
-                    logger.info(f"Valid US number found: {phone}")
-                    return True
-                if len(digits) == 11 and digits.startswith('1'):
-                    logger.info(f"Valid US number (with country code) found: {phone}")
-                    return True
-            elif self.target_country == 'UK':
-                if (len(digits) == 11 and digits.startswith('07')) or \
-                   (len(digits) == 12 and digits.startswith('447')):
-                    logger.info(f"Valid UK mobile number found: {phone}")
-                    return True
-            elif self.target_country == 'IN':
-                if len(digits) == 10 and digits[0] in '6789':
-                    logger.info(f"Valid Indian mobile number found: {phone}")
-                    return True
-            
-            # Try the strict pattern match as a fallback
-            if re.match(pattern, clean_number):
-                logger.info(f"Valid {self.target_country} number (pattern match) found: {phone}")
-                return True
-        
-        # Worldwide validation - more permissive
-        if len(digits) >= 8:  # Accept any reasonable length number
-            if re.match(r'^\+?\d{8,15}$', clean_number):
-                logger.info(f"Valid international number found: {phone}")
-                return True
-            
-            # Check for common mobile prefixes
-            mobile_prefixes = ['7', '8', '9', '6', '5']  # Common mobile prefixes worldwide
-            if any(digits.startswith(prefix) for prefix in mobile_prefixes):
-                logger.info(f"Valid number with mobile prefix found: {phone}")
-                return True
-        
-        logger.debug(f"Number failed all validation checks: {phone}")
-        return False
-    
-    def _extract_contacts_from_text(self, text, url="", scrape_phones=True, scrape_emails=True):
-        """Enhanced contact extraction with data type filtering"""
-        if not text:
-            return {'emails': [], 'phones': []}
-        
-        results = {
-            'emails': [],
-            'phones': []
-        }
-        
-        # Extract phones if requested
-        if scrape_phones:
-            all_phones = set()
-            seen_digits = set()
-            
-            def process_phone_match(phone, context=""):
-                phone = phone.strip()
-                if not self._is_false_positive(context, phone):
-                    normalized = self._normalize_phone_number(phone, self.target_country)
-                    if normalized:
-                        digits = re.sub(r'\D', '', normalized)
-                        # Only consider phone numbers with at least 7 digits
-                        if len(digits) >= 7 and digits not in seen_digits and self._is_valid_phone(normalized):
-                            all_phones.add(normalized)
-                            seen_digits.add(digits)
-                            logger.info(f"Found valid phone number: {normalized} (Original: {phone})")
-                            return True
+                
+        # Reject numbers with sequential digits (likely fake)
+        sequences = ['0123456', '1234567', '2345678', '3456789', '9876543', '8765432', '7654321', '6543210']
+        for seq in sequences:
+            if seq in digits:
                 return False
-            
-            # Process HTML content for phones
-            if '<' in text and '>' in text:
-                try:
-                    soup = BeautifulSoup(text, 'html.parser')
-                    
-                    # Check tel: links - these are high-quality phone sources
-                    tel_links = soup.find_all('a', href=lambda x: x and x.startswith('tel:'))
-                    for link in tel_links:
-                        phone = link['href'].replace('tel:', '').strip()
-                        if process_phone_match(phone, link.get_text()):
-                            logger.info(f"Found high-quality phone from tel: link: {phone}")
-                    
-                    # Check elements with phone-related attributes
-                    phone_elements = soup.find_all(
-                        ['span', 'div', 'p', 'a', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'b'], 
-                        attrs={
-                            'class': lambda x: x and any(word in str(x).lower() for word in 
-                                ['phone', 'tel', 'mobile', 'contact', 'number', 'call', 'hotline', 'helpline']),
-                            'id': lambda x: x and any(word in str(x).lower() for word in 
-                                ['phone', 'tel', 'mobile', 'contact', 'number', 'call', 'hotline', 'helpline']),
-                            'itemprop': lambda x: x and x.lower() in ['telephone', 'phone', 'contactpoint']
-                        }
-                    )
-                    
-                    # Also check for data attributes that might contain phone numbers
-                    data_phone_elements = soup.find_all(
-                        attrs={
-                            'data-phone': True,
-                            'data-tel': True,
-                            'data-number': True,
-                            'data-contact': True
-                        }
-                    )
-                    
-                    for element in phone_elements:
-                        element_text = element.get_text()
-                        for category, patterns in self.phone_patterns.items():
-                            for pattern in patterns:
-                                matches = re.finditer(pattern, element_text)
-                                for match in matches:
-                                    process_phone_match(match.group(), element_text)
-                    
-                    text = soup.get_text(separator=' ', strip=True)
-                except Exception as e:
-                    logger.warning(f"Error processing HTML content for phones: {e}")
-            
-            # Extract phones from text
-            for category, patterns in self.phone_patterns.items():
-                for pattern in patterns:
-                    try:
-                        matches = re.finditer(pattern, text)
-                        for match in matches:
-                            phone = match.group()
-                            context = text[max(0, match.start()-30):min(len(text), match.end()+30)]
-                            process_phone_match(phone, context)
-                    except Exception as e:
-                        logger.warning(f"Error matching phone pattern {pattern}: {e}")
-            
-            results['phones'] = list(all_phones)
-        
-        # Extract emails if requested
-        if scrape_emails:
-            text = text.replace('(at)', '@').replace('[at]', '@')
-            text = text.replace('(dot)', '.').replace('[dot]', '.')
-            raw_emails = re.findall(self.email_pattern, text)
-            filtered_emails = []
-            
-            domain = ""
-            if url:
-                try:
-                    parsed_url = urlparse(url)
-                    domain = parsed_url.netloc.lower()
-                except:
-                    pass
                 
-            for email in raw_emails:
-                email = email.lower().strip()
-                if self._is_valid_email(email):
-                    if domain and domain in email:
-                        filtered_emails.insert(0, email)
-                    else:
-                        filtered_emails.append(email)
-            
-            results['emails'] = filtered_emails
-        
-        return results
+        return True
     
-    def _check_for_captcha(self):
-        """Check if current page has a CAPTCHA challenge with enhanced detection"""
-        if not self.driver:
-            return False
-            
-        captcha_indicators = [
-            # reCAPTCHA indicators
-            '//iframe[contains(@src, "recaptcha")]',
-            '//div[contains(@class, "g-recaptcha")]',
-            '//div[contains(@class, "grecaptcha")]',
-            
-            # hCaptcha indicators
-            '//iframe[contains(@src, "hcaptcha")]',
-            '//div[contains(@class, "h-captcha")]',
-            
-            # General captcha indicators
-            '//form[contains(., "captcha")]',
-            '//img[contains(@src, "captcha")]',
-            '//*[contains(text(), "captcha")]',
-            '//*[contains(text(), "I\'m not a robot")]',
-            '//*[contains(text(), "Prove you\'re human")]',
-            
-            # Robot detection messages
-            '//h1[contains(text(), "robot") or contains(text(), "human")]',
-            '//*[contains(text(), "automated access")]',
-            '//*[contains(text(), "unusual traffic")]'
-        ]
-        
-        for indicator in captcha_indicators:
-            if self.driver.find_elements(By.XPATH, indicator):
-                logger.warning("CAPTCHA detected! Attempting to bypass or waiting for manual solve...")
-                
-                # Try automatic bypass techniques first (these may not work on all CAPTCHAs)
-                try:
-                    # Try clicking "I'm not a robot" checkbox if present
-                    checkboxes = self.driver.find_elements(By.XPATH, '//div[@role="checkbox" or @class="recaptcha-checkbox-checkmark"]')
-                    if checkboxes:
-                        checkboxes[0].click()
-                        time.sleep(2)
-                        
-                        # Check if we passed the CAPTCHA
-                        if not any(self.driver.find_elements(By.XPATH, indicator) for indicator in captcha_indicators):
-                            logger.info("CAPTCHA bypassed automatically")
-                            return True
-                except Exception as e:
-                    logger.debug(f"Auto-bypass attempt failed: {e}")
-                
-                # If auto-bypass failed, wait for manual solving
-                print("\nCAPTCHA detected! Please solve it manually in the browser window.")
-                
-                # Wait for manual solving (up to 2 minutes)
-                for i in range(120):
-                    time.sleep(1)
-                    if i % 10 == 0:  # Print status every 10 seconds
-                        print(f"Waiting for CAPTCHA to be solved... ({i} seconds passed)")
-                    
-                    # Check if we're now past the CAPTCHA
-                    if not any(self.driver.find_elements(By.XPATH, indicator) for indicator in captcha_indicators):
-                        print("\nCAPTCHA solved successfully!")
-                        return True
-                
-                print("\nCAPTCHA not solved in time. Trying alternative methods...")
-                return False
-                    
-        return False  # No CAPTCHA detected
-    
-    def _is_contact_page(self, url, html_content):
-        """Determine if a page is likely a contact page based on URL and content"""
-        url_lower = url.lower()
-        
-        # Check URL for contact indicators
-        if any(keyword in url_lower for keyword in self.contact_keywords):
-            return True
-            
-        # Check content for contact indicators if we have HTML
-        if html_content:
-            # Convert to lowercase for case-insensitive matching
-            content_lower = html_content.lower()
-            
-            # Count indicators in page content
-            indicator_count = sum(1 for word in self.contact_indicator_words if word in content_lower)
-            
-            # Check for common contact page elements
-            has_contact_form = ('contact' in content_lower and 'form' in content_lower)
-            has_email_link = 'mailto:' in content_lower
-            has_tel_link = 'tel:' in content_lower
-            
-            # If multiple indicators are found, it's likely a contact page
-            if indicator_count >= 3 or has_contact_form or has_email_link or has_tel_link:
-                return True
-                
-        return False
-    
-    def _calculate_contact_score(self, url, html_content):
-        """Calculate a score representing how likely a page contains contact information"""
-        score = 0
-        url_lower = url.lower()
-        
-        # URL-based scoring
-        if any(keyword in url_lower for keyword in self.contact_keywords):
-            score += 30
-            
-        # Content-based scoring
-        if html_content:
-            content_lower = html_content.lower()
-            
-            # Score based on presence of contact indicators
-            for word in self.contact_indicator_words:
-                if word in content_lower:
-                    score += 5
-                    
-            # Bonus for multiple occurrences of "@" (likely emails)
-            at_count = content_lower.count('@')
-            if at_count > 0:
-                score += min(at_count * 3, 15)  # Cap at 15 points
-                
-            # Bonus for contact forms
-            if 'contact' in content_lower and 'form' in content_lower:
-                score += 20
-                
-            # Bonus for explicit contact links
-            if 'mailto:' in content_lower:
-                score += 25
-            if 'tel:' in content_lower:
-                score += 25
-                
-            # Check for phone number patterns
-            phone_matches = len(re.findall(self.phone_pattern, content_lower))
-            if phone_matches > 0:
-                score += min(phone_matches * 5, 20)  # Cap at 20 points
-        
-        return score
-    
-    def _perform_google_search(self, query):
-        """Perform a Google search using Selenium with enhanced reliability"""
-        if not self.driver:
-            logger.error("Browser not initialized")
-            return False
-            
-        try:
-            # Try with different Google domains to avoid blocking
-            google_domains = [
-                "https://www.google.com",
-                "https://www.google.co.uk",
-                "https://www.google.ca",
-                "https://www.google.com.au"
-            ]
-            
-            success = False
-            for domain in google_domains:
-                try:
-                    logger.info(f"Attempting Google search on {domain}")
-                    
-                    # Go to Google homepage with retry mechanism
-                    max_retries = 3
-                    for attempt in range(max_retries):
-                        try:
-                            # Set page load timeout for this attempt
-                            self.driver.set_page_load_timeout(20)
-                            
-                            # Navigate to Google
-                            self.driver.get(domain)
-                            
-                            # Wait for page to be in ready state
-                            ready_state = self.driver.execute_script("return document.readyState")
-                            wait_time = 0
-                            while ready_state != "complete" and wait_time < 10:
-                                time.sleep(0.5)
-                                wait_time += 0.5
-                                ready_state = self.driver.execute_script("return document.readyState")
-                            
-                            # If we got here, the page loaded successfully
-                            break
-                        except TimeoutException:
-                            if attempt == max_retries - 1:
-                                logger.warning(f"Timeout loading Google {domain} after {max_retries} attempts")
-                                raise
-                            logger.info(f"Timeout on attempt {attempt+1}, retrying...")
-                            # Try to stop page load before retrying
-                            try:
-                                self.driver.execute_script("window.stop();")
-                            except:
-                                pass
-                            time.sleep(1)
-                    
-                    self._human_like_delay(1.0)
-                    
-                    # Check for CAPTCHA
-                    if self._check_for_captcha():
-                        logger.info("CAPTCHA handled successfully")
-                    
-                    # Accept cookies if the dialog appears - more robust detection for headless mode
-                    try:
-                        # Try multiple approaches to find and click cookie buttons
-                        cookie_selectors = [
-                            '//*[contains(text(), "Accept") or contains(text(), "I agree") or contains(text(), "Accept all")]',
-                            '//button[contains(@id, "consent") or contains(@class, "consent")]',
-                            '//div[contains(@id, "consent")]//button',
-                            '//form[contains(@id, "consent")]//button'
-                        ]
-                        
-                        for selector in cookie_selectors:
-                            cookie_buttons = self.driver.find_elements(By.XPATH, selector)
-                            if cookie_buttons:
-                                for button in cookie_buttons:
-                                    try:
-                                        # Try direct click
-                                        button.click()
-                                        time.sleep(1)
-                                        break
-                                    except:
-                                        try:
-                                            # Try JavaScript click if direct click fails
-                                            self.driver.execute_script("arguments[0].click();", button)
-                                            time.sleep(1)
-                                            break
-                                        except:
-                                            continue
-                                break  # Break out of selector loop if we found and clicked a button
-                    except Exception as e:
-                        logger.debug(f"Error handling cookie consent: {e}")
-                    
-                    # Try to find search box - use multiple selectors for reliability
-                    search_box = None
-                    search_selectors = [
-                        (By.NAME, 'q'),
-                        (By.ID, 'search'),
-                        (By.XPATH, '//input[@type="text"]'),
-                        (By.XPATH, '//input[@role="combobox"]'),
-                        (By.XPATH, '//input[contains(@class, "search")]'),
-                        (By.CSS_SELECTOR, 'input[type="text"]'),
-                        (By.CSS_SELECTOR, 'input.gLFyf')  # Google's specific class
-                    ]
-                    
-                    for selector_type, selector_value in search_selectors:
-                        try:
-                            search_box = WebDriverWait(self.driver, 5).until(
-                                EC.presence_of_element_located((selector_type, selector_value))
-                            )
-                            if search_box and search_box.is_displayed() and search_box.is_enabled():
-                                logger.info(f"Found search box using selector: {selector_type}={selector_value}")
-                                break
-                        except:
-                            continue
-                            
-                    if not search_box:
-                        logger.warning(f"Could not find search box on {domain}, trying next domain...")
-                        continue
-                    
-                    # Make sure search box is visible and interactable
-                    try:
-                        # Scroll to make search box visible
-                        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", search_box)
-                        time.sleep(0.5)
-                    except:
-                        pass
-                    
-                    # Clear any existing text
-                    try:
-                        search_box.clear()
-                    except:
-                        # If clear fails, try JavaScript to clear
-                        try:
-                            self.driver.execute_script("arguments[0].value = '';", search_box)
-                        except:
-                            pass
-                    
-                    # Type query with human-like timing
-                    try:
-                        # First try sending the whole query at once (more reliable in headless)
-                        search_box.send_keys(query)
-                        time.sleep(0.5)
-                    except Exception as e:
-                        logger.debug(f"Error sending query at once: {e}")
-                        # Fall back to character-by-character input
-                        try:
-                            for char in query:
-                                search_box.send_keys(char)
-                                time.sleep(random.uniform(0.02, 0.08))  # Faster typing in headless
-                        except Exception as e2:
-                            logger.warning(f"Failed to input search query: {e2}")
-                            continue
-                    
-                    self._human_like_delay(0.5)  # Shorter delay in headless
-                    
-                    # Press Enter to search
-                    try:
-                        search_box.send_keys(Keys.RETURN)
-                    except:
-                        # If sending keys fails, try JavaScript to submit the form
-                        try:
-                            self.driver.execute_script("document.forms[0].submit();")
-                        except:
-                            logger.warning("Failed to submit search form")
-                            continue
-                    
-                    # Wait for results page to load with multiple selectors
-                    result_selectors = [
-                        (By.ID, "search"),
-                        (By.CSS_SELECTOR, "div.g"),
-                        (By.CSS_SELECTOR, "#center_col"),
-                        (By.CSS_SELECTOR, "#rso"),
-                        (By.XPATH, "//div[@data-hveid]"),
-                        (By.XPATH, "//div[contains(@class, 'yuRUbf')]")
-                    ]
-                    
-                    results_found = False
-                    for selector_type, selector_value in result_selectors:
-                        try:
-                            WebDriverWait(self.driver, 15).until(
-                                EC.presence_of_element_located((selector_type, selector_value))
-                            )
-                            results_found = True
-                            logger.info(f"Search results found using selector: {selector_type}={selector_value}")
-                            break
-                        except:
-                            continue
-                    
-                    if not results_found:
-                        logger.warning(f"Search results not found with any selectors on {domain}")
-                        continue
-                    
-                    # Wait a bit for all results to load
-                    time.sleep(2)
-                    
-                    # Perform random scrolling to load all results
-                    self._random_scroll()
-                    
-                    logger.info(f"Successfully performed search for: {query} on {domain}")
-                    success = True
-                    break
-                    
-                except Exception as e:
-                    logger.warning(f"Error searching on {domain}: {e}")
-                    continue
-                    
-            return success
-                
-        except Exception as e:
-            logger.error(f"Error during Google search across all domains: {e}")
-            return False
-    
-    def _extract_search_results(self):
-        """Extract search results and check for contact information in snippets"""
-        if not self.driver:
-            return []
-        
-        try:
-            # Wait for results to appear
-            try:
-                WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "div.g, div[jscontroller]"))
-                )
-            except TimeoutException:
-                logger.warning("Timeout waiting for search results")
-                return []
-            
-            # Get page HTML and parse
-            html = self.driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')
-            
-            results = []
-            
-            # Process each search result
-            for result in soup.select('div.g, div[jscontroller]'):
-                result_data = {
-                    'url': None,
-                    'title': None,
-                    'snippet': None,
-                    'has_contact': False,
-                    'phones': set(),
-                    'emails': set()
-                }
-                
-                # Get URL and title
-                link = result.select_one('a')
-                if link and 'href' in link.attrs:
-                    url = link['href']
-                    if url.startswith('http') and 'google.com' not in url:
-                        result_data['url'] = url
-                        result_data['title'] = result.select_one('h3').text if result.select_one('h3') else ''
-                        
-                        # Get the full snippet HTML and text
-                        snippet_html = str(result)
-                        snippet_text = result.get_text(separator=' ', strip=True)
-                        result_data['snippet'] = snippet_text
-                        
-                        # Extract contacts from both HTML and text
-                        contacts_from_html = self._extract_contacts_from_text(snippet_html, url)
-                        contacts_from_text = self._extract_contacts_from_text(snippet_text, url)
-                        
-                        # Combine results
-                        result_data['phones'].update(contacts_from_html['phones'])
-                        result_data['phones'].update(contacts_from_text['phones'])
-                        result_data['emails'].update(contacts_from_html['emails'])
-                        result_data['emails'].update(contacts_from_text['emails'])
-                        
-                        if result_data['phones'] or result_data['emails']:
-                            result_data['has_contact'] = True
-                        
-                        # Calculate relevance score
-                        score = self._calculate_result_score(result_data)
-                        results.append((score, result_data))
-            
-            # Sort results by score (highest first)
-            sorted_results = [r[1] for r in sorted(results, key=lambda x: x[0], reverse=True)]
-            
-            # Add any found contact info to results immediately
-            for result in sorted_results:
-                self.results['phones'].update(result['phones'])
-                self.results['emails'].update(result['emails'])
-            
-            logger.info(f"Extracted {len(sorted_results)} search results, found {len(self.results['phones'])} phones and {len(self.results['emails'])} emails directly from snippets")
-            return sorted_results
-            
-        except Exception as e:
-            logger.error(f"Error extracting search results: {e}")
-            return []
-    
-    def _calculate_result_score(self, result_data):
-        """Calculate relevance score for a search result"""
-        score = 0
-        
-        # Higher score for results with contact info in snippet
-        if result_data['has_contact']:
-            score += 50
-        
-        # Score based on number of contacts found
-        score += len(result_data['phones']) * 20
-        score += len(result_data['emails']) * 15
-        
-        # URL and title based scoring
-        url = result_data['url'].lower() if result_data['url'] else ''
-        title = result_data['title'].lower() if result_data['title'] else ''
-        
-        # Contact page indicators
-        if any(keyword in url for keyword in self.contact_keywords):
-            score += 30
-        if any(keyword in title for keyword in self.contact_keywords):
-            score += 20
-        
-        # Penalize blocked domains
-        if any(domain in url for domain in ['justdial.com', 'indiamart.com']):
-            score -= 1000
-        
-        return score
-    
-    def _should_visit_url(self, url, snippet):
-        """Determine if a URL should be visited based on likelihood of contact info"""
-        if not url:
-            return False
-        
-        url_lower = url.lower()
-        
-        # Skip blocked domains
-        if any(domain in url_lower for domain in ['justdial.com', 'indiamart.com']):
-            return False
-        
-        # Skip common file types
-        if any(url_lower.endswith(ext) for ext in ['.pdf', '.jpg', '.png', '.gif', '.css', '.js']):
-            return False
-        
-        # High priority for contact pages
-        if any(keyword in url_lower for keyword in self.contact_keywords):
-            return True
-        
-        # Check snippet for contact indicators
-        snippet_lower = snippet.lower() if snippet else ''
-        if any(indicator in snippet_lower for indicator in self.contact_indicator_words):
-            return True
-        
-        # Check for contact patterns in snippet
-        if (re.search(self.phone_pattern, snippet) or 
-            re.search(self.email_pattern, snippet) or 
-            'tel:' in snippet_lower or 
-            'mailto:' in snippet_lower):
-            return True
-        
-        return False
-    
-    def _navigate_to_next_page(self):
-        """Navigate to the next page of search results with enhanced reliability"""
-        try:
-            # Multiple strategies to find the "Next" button
-            next_button = None
-            
-            # Strategy 1: Look for "Next" text
-            for text in ["Next", "next", "Next page", ">", "»"]:
-                try:
-                    next_candidates = self.driver.find_elements(By.XPATH, 
-                        f'//*[contains(text(), "{text}") and not(contains(@href, "google.com/preferences"))]')
-                    
-                    for candidate in next_candidates:
-                        # Check if the element or its parent is clickable and visible
-                        try:
-                            if candidate.is_displayed():
-                                next_button = candidate
-                                break
-                        except:
-                            continue
-                        
-                        # Try parent elements if direct element not clickable
-                        try:
-                            parent = candidate.find_element(By.XPATH, './..')
-                            if parent and parent.is_displayed():
-                                next_button = parent
-                                break
-                        except:
-                            continue
-                            
-                except Exception:
-                    continue
-                    
-                if next_button:
-                    break
-                    
-            # Strategy 2: Look for navigation elements
-            if not next_button:
-                try:
-                    navigation = self.driver.find_elements(By.CSS_SELECTOR, 
-                        '#foot td, #nav td, #foot a, #nav a, div[role="navigation"] a')
-                    
-                    # Look for the last navigation element or one containing next page indicators
-                    for nav_element in navigation:
-                        if nav_element.text in [">", "»", "Next", "next", "Next page"] or nav_element == navigation[-1]:
-                            next_button = nav_element
-                            break
-                except:
-                    pass
-            
-            # Click the next button if found
-            if next_button:
-                try:
-                    # Scroll to make button visible
-                    self.driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", next_button)
-                    time.sleep(1)
-                    
-                    # Try direct click first
-                    try:
-                        next_button.click()
-                    except:
-                        # If direct click fails, try JavaScript click
-                        self.driver.execute_script("arguments[0].click();", next_button)
-                    
-                    # Wait for page to load
-                    time.sleep(random.uniform(2, 3))
-                    
-                    # Verify we've moved to a new page
-                    if "page=" in self.driver.current_url or "start=" in self.driver.current_url:
-                        logger.info("Successfully navigated to next page")
-                        return True
-                except Exception as e:
-                    logger.warning(f"Error clicking next button: {e}")
-            
-            logger.warning("Could not find next page button")
-            return False
-            
-        except Exception as e:
-            logger.error(f"Error navigating to next page: {e}")
-            return False
-    
-    def _fetch_url_with_requests(self, url, timeout=(5, 10)):
-        """Fetch a URL using requests with enhanced error handling and configurable timeout
+    def _normalize_phone(self, phone: str) -> Optional[str]:
+        """
+        Normalize a phone number to E.164 format if possible.
+        Enhanced to handle Indian numbers correctly.
         
         Args:
-            url: The URL to fetch
-            timeout: Tuple of (connect_timeout, read_timeout) in seconds
+            phone: Phone number to normalize
+            
+        Returns:
+            str: Normalized phone number or None if invalid
         """
-        try:
-            # Skip JustDial and IndiaMart websites
-            if any(domain in url.lower() for domain in ['justdial.com', 'indiamart.com']):
-                logger.info(f"Skipping blocked domain: {url}")
-                return None
-            
-            # Rotate user agent
-            self.session.headers.update({'User-Agent': self._rotate_user_agent()})
-            
-            # Add referer for legitimacy
-            self.session.headers.update({'Referer': 'https://www.google.com/'})
-            
-            # Use random proxy if available
-            proxies = None
-            if self.proxy_list:
-                proxy = random.choice(self.proxy_list)
-                proxies = {'http': proxy, 'https': proxy}
-            
-            # Make the request with configurable timeout for faster response
-            response = self.session.get(
-                url, 
-                timeout=timeout, 
-                proxies=proxies, 
-                allow_redirects=True,
-                stream=True  # Use streaming mode for faster initial response
-            )
-            
-            if response.status_code == 200:
-                return response.text
-            elif response.status_code in [403, 429]:
-                logger.warning(f"Access denied (status {response.status_code}) for {url}. Rate limiting or IP blocked.")
-                return None
+        if not phone:
+            return None
+        
+        # Extract digits only
+        digits = re.sub(r'\D', '', phone)
+        
+        # Remove leading zeros
+        digits = digits.lstrip('0')
+        
+        # If it's an Indian number
+        if digits.startswith('91') and len(digits) >= 12:
+            # Ensure it starts with valid Indian mobile prefix (6-9)
+            if digits[2] in '6789':
+                return f"+{digits[:2]} {digits[2:7]} {digits[7:12]}"
+            return None
+        elif len(digits) == 10 and digits[0] in '6789':
+            # Likely an Indian mobile without country code
+            return f"+91 {digits[:5]} {digits[5:]}"
+        # If it's an international format (starts with country code)
+        elif digits.startswith('1') and len(digits) == 11:  # US/Canada
+            return f"+{digits[0]} ({digits[1:4]}) {digits[4:7]}-{digits[7:]}"
+        elif digits.startswith('44') and len(digits) >= 10:  # UK
+            return f"+{digits[:2]} {digits[2:6]} {digits[6:11]}"
+        elif len(digits) == 10:
+            # For 10-digit numbers, check the first digit
+            if digits[0] in '6789':
+                # Format as Indian number if it starts with 6-9
+                return f"+91 {digits[:5]} {digits[5:]}"
+            elif digits[0] in '23':  # Some countries use these prefixes
+                # Format as generic international
+                return f"+{digits}"
             else:
-                logger.warning(f"Failed to fetch {url} with status code {response.status_code}")
+                # Don't format numbers with invalid prefixes
                 return None
-                
-        except requests.exceptions.RequestException as e:
-            logger.warning(f"Request error fetching {url}: {e}")
-            return None
-        except Exception as e:
-            logger.warning(f"Unexpected error fetching {url}: {e}")
-            return None
-    
-    def _fetch_url_with_selenium(self, url):
-        """Fetch a URL using Selenium with enhanced error handling and optimized for speed"""
-        if not self.driver:
-            logger.error("Browser not initialized")
-            return None
-            
-        try:
-            # Skip JustDial and IndiaMart websites
-            if any(domain in url.lower() for domain in ['justdial.com', 'indiamart.com']):
-                logger.info(f"Skipping blocked domain: {url}")
-                return None
-                
-            # Navigate to URL with retry mechanism
-            max_retries = 2  # Reduced from 3 to 2 for speed
-            for attempt in range(max_retries):
-                try:
-                    # Set shorter page load timeout for this attempt
-                    self.driver.set_page_load_timeout(15)  # Reduced from 30 to 15
-                    
-                    # Navigate to URL
-                    logger.info(f"Fetching URL (attempt {attempt+1}/{max_retries}): {url}")
-                    self.driver.get(url)
-                    
-                    # Use a faster approach to check if page is interactive
-                    # We don't need to wait for complete loading, just for the DOM to be interactive
-                    wait_time = 0
-                    max_wait = 5  # Reduced from 10 to 5 seconds
-                    
-                    while wait_time < max_wait:
-                        ready_state = self.driver.execute_script("return document.readyState")
-                        if ready_state in ["interactive", "complete"]:
-                            # Page is usable, we can proceed
-                            break
-                        time.sleep(0.3)  # Shorter sleep interval
-                        wait_time += 0.3
-                    
-                    # If we got here, the page loaded successfully enough to extract data
-                    break
-                except TimeoutException:
-                    if attempt == max_retries - 1:
-                        logger.warning(f"Timeout fetching {url} after {max_retries} attempts")
-                        return None
-                    logger.info(f"Timeout on attempt {attempt+1}, retrying...")
-                    # Try to stop page load before retrying
-                    try:
-                        self.driver.execute_script("window.stop();")
-                    except:
-                        pass
-                    time.sleep(1)
-                except WebDriverException as e:
-                    if attempt == max_retries - 1:
-                        logger.warning(f"WebDriver error fetching {url} after {max_retries} attempts: {e}")
-                        return None
-                    logger.info(f"WebDriver error on attempt {attempt+1}, retrying: {e}")
-                    time.sleep(1)
-            
-            # Random delay to mimic human behavior
-            self._human_like_delay()
-            
-            # Check for CAPTCHA
-            if self._check_for_captcha():
-                logger.info("CAPTCHA handled successfully")
-            
-            # Wait for dynamic content to load
-            time.sleep(2)  # Additional wait for JavaScript content
-            
-            # Random scrolling to appear more human-like and trigger lazy loading
-            self._random_scroll()
-            
-            # Wait a bit more after scrolling for any lazy-loaded content
-            time.sleep(1)
-            
-            # Get page source
-            html_content = self.driver.page_source
-            
-            # Verify we got meaningful content
-            if html_content and len(html_content) > 500:  # Arbitrary minimum size check
-                return html_content
-            else:
-                logger.warning(f"Retrieved empty or too small page from {url}")
-                return None
-            
-        except TimeoutException:
-            logger.warning(f"Timeout fetching {url}")
-            return None
-        except WebDriverException as e:
-            logger.warning(f"WebDriver error fetching {url}: {e}")
-            return None
-        except Exception as e:
-            logger.warning(f"Unexpected error fetching {url} with Selenium: {e}")
-            return None
-    
-    def _extract_links_from_html(self, html, base_url):
-        """Extract relevant links from HTML content"""
-        if not html:
-            return []
-            
-        try:
-            soup = BeautifulSoup(html, 'html.parser')
-            links = []
-            
-            # Extract all links
-            for a_tag in soup.find_all('a', href=True):
-                href = a_tag['href']
-                
-                # Skip empty links, anchors, and javascript actions
-                if not href or href.startswith('#') or href.startswith('javascript:'):
-                    continue
-                    
-                # Convert relative URLs to absolute
-                try:
-                    absolute_url = urljoin(base_url, href)
-                    
-                    # Skip non-HTTP links
-                    if not absolute_url.startswith(('http://', 'https://')):
-                        continue
-                        
-                    # Skip JustDial and IndiaMart websites
-                    if any(domain in absolute_url.lower() for domain in ['justdial.com', 'indiamart.com']):
-                        continue
-                        
-                    # Skip links to common file types
-                    if any(absolute_url.endswith(ext) for ext in ['.pdf', '.jpg', '.png', '.gif', '.css', '.js']):
-                        continue
-                        
-                    # Analyze link text and surrounding context for contact relevance
-                    link_text = a_tag.get_text().lower().strip()
-                    
-                    # Score the link
-                    score = 0
-                    
-                    # URL contains contact indicators
-                    if any(keyword in absolute_url.lower() for keyword in self.contact_keywords):
-                        score += 10
-                        
-                    # Link text contains contact indicators
-                    if any(keyword in link_text for keyword in self.contact_keywords):
-                        score += 5
-                        
-                    # Link has contact information in attributes
-                    if 'tel:' in href or 'mailto:' in href:
-                        score += 15
-                        
-                    # Add link with its score
-                    links.append((score, absolute_url))
-
-                except Exception as e:
-                    logger.warning(f"Error processing link {href}: {e}")
-                    continue
-            
-            # Sort by score (higher first)
-            sorted_links = [link for _, link in sorted(links, key=lambda x: x[0], reverse=True)]
-            
-            # Prioritize links to contact pages
-            contact_links = [link for link in sorted_links 
-                        if any(keyword in link.lower() for keyword in self.contact_keywords)]
-            
-            # Combine prioritized contact links with remaining links
-            prioritized_links = contact_links + [link for link in sorted_links if link not in contact_links]
-            
-            return prioritized_links
-            
-        except Exception as e:
-            logger.warning(f"Error extracting links: {e}")
-            return []
-    
-    def _process_url(self, url, scrape_phones=True, scrape_emails=True):
-        """Process a URL to extract contact information
-        
-        Args:
-            url: The URL to process
-            scrape_phones: Whether to extract phone numbers
-            scrape_emails: Whether to extract email addresses
-        """
-        # Skip JustDial and IndiaMart websites
-        if any(domain in url.lower() for domain in ['justdial.com', 'indiamart.com']):
-            logger.info(f"Skipping blocked domain: {url}")
-            self.processed_urls.add(url)  # Mark as processed to avoid future attempts
-            return
-            
-        if url in self.processed_urls:
-            return
-            
-        self.processed_urls.add(url)
-        logger.info(f"Processing URL: {url} (Focus: {'Phones' if scrape_phones else ''}{' & ' if scrape_phones and scrape_emails else ''}{'Emails' if scrape_emails else ''})")
-        
-        # Try with requests first (faster) with shorter timeout
-        html_content = self._fetch_url_with_requests(url, timeout=(3, 7))
-        
-        # If failed or empty, try with Selenium but only for high-value URLs
-        if not html_content:
-            # Only use Selenium for URLs that are likely to contain contact info
-            if any(keyword in url.lower() for keyword in self.contact_keywords) or \
-               any(keyword in url.lower() for keyword in self.contact_indicator_words):
-                logger.info(f"Trying Selenium for high-value URL: {url}")
-                html_content = self._fetch_url_with_selenium(url)
-            else:
-                logger.info(f"Skipping Selenium for low-value URL: {url}")
-                return
-            
-        if not html_content:
-            logger.warning(f"Failed to fetch content from: {url}")
-            return
-            
-        # Quick check for contact indicators before full parsing
-        quick_check = html_content.lower()
-        has_contact_indicators = any(keyword in quick_check for keyword in self.contact_indicator_words)
-        
-        # Only do detailed processing if indicators are found
-        if has_contact_indicators:
-            # Check if this is a contact page
-            is_contact = self._is_contact_page(url, html_content)
-            contact_score = self._calculate_contact_score(url, html_content)
-            
-            if is_contact:
-                logger.info(f"Found contact page: {url}")
-                self.contact_page_urls.add(url)
-                
-            # Extract contacts from HTML - use lxml parser for speed
-            soup = BeautifulSoup(html_content, 'lxml')
-            
-            # Remove script and style elements that might contain false positives
-            for element in soup(['script', 'style', 'noscript', 'iframe', 'svg']):
-                element.decompose()
-                
-            # Get clean text
-            text = soup.get_text(separator=' ', strip=True)
         else:
-            # For non-contact pages, use a simpler approach
-            text = re.sub(r'<script.*?</script>', '', html_content, flags=re.DOTALL)
-            text = re.sub(r'<style.*?</style>', '', text, flags=re.DOTALL)
-            text = re.sub(r'<[^>]+>', ' ', text)
-        
-        # Extract contact information based on current focus
-        contacts = self._extract_contacts_from_text(text, url, scrape_phones, scrape_emails)
-        
-        # Add extracted contacts to results based on current focus
-        if scrape_emails:
-            for email in contacts['emails']:
-                if email not in self.results['emails']:
-                    self.results['emails'].add(email)
-                    logger.info(f"Found email: {email}")
-        
-        if scrape_phones:
-            for phone in contacts['phones']:
-                if phone not in self.results['phones']:
-                    self.results['phones'].add(phone)
-                    logger.info(f"Found phone: {phone}")
-                
-        # Extract links for further processing
-        if contact_score < 50:  # Don't extract links from pages with high contact scores (likely already found what we need)
-            links = self._extract_links_from_html(html_content, url)
-            
-            # Prioritize contact pages for further processing
-            contact_links = [link for link in links 
-                          if any(keyword in link.lower() for keyword in self.contact_keywords)]
-                          
-            return {'links': links, 'contact_links': contact_links}
-        
-        return None
+            # Just return with + prefix if it's reasonable length
+            if 8 <= len(digits) <= 15:
+                return f"+{digits}"
+            return digits
     
-    def search_and_extract(self, target, country=None, search_terms=None, max_results=100, max_pages=20, exact_count=True):
-        """Enhanced search method with data type filtering
+    def _score_url(self, url: str) -> int:
+        """
+        Score a URL based on relevance to contact information.
         
         Args:
-            target: The target to search for
-            country: Optional country code to limit search
-            search_terms: Additional search terms
-            max_results: Number of results to extract (will extract exactly this many of each type)
-            max_pages: Maximum number of Google result pages to process
-            exact_count: If True, will continue searching until exactly max_results are found
-                         If False, will stop after finding up to max_results
+            url: URL to score
+            
+        Returns:
+            int: Score (higher is more relevant)
         """
-        # Start by scraping both phones and emails
-        scrape_phones = True
-        scrape_emails = True
+        url_lower = url.lower()
+        score = 0
         
-        # Dynamic focus adjustment variables
-        dynamic_focus = True  # Enable dynamic focus adjustment
-        last_email_count = 0
-        last_phone_count = 0
-        check_interval = 5  # Check and adjust focus every 5 processed URLs
+        # Check for contact-related keywords in URL
+        for keyword in self.CONTACT_KEYWORDS:
+            if keyword in url_lower:
+                score += 5
+        
+        # Check for blocked domains
+        for domain in self.BLOCKED_DOMAINS:
+            if domain in url_lower:
+                return -100  # Very negative score to avoid processing
+        
+        # Prioritize shorter URLs (often more important pages)
+        parts = url.split('/')
+        score -= len(parts) * 0.5
+        
+        # Prioritize URLs with fewer query parameters
+        if '?' in url:
+            query_params = url.split('?')[1].split('&')
+            score -= len(query_params) * 0.5
+        
+        return score
+    
+    def _normalize_url(self, base_url: str, url: str) -> Optional[str]:
+        """
+        Normalize a URL relative to the base URL.
+        
+        Args:
+            base_url: Base URL for relative URL resolution
+            url: URL to normalize
+            
+        Returns:
+            str: Normalized URL or None if invalid
+        """
         try:
-            if not self.driver and not self.initialize_browser():
-                logger.error("Failed to initialize browser")
-                return {'emails': [], 'phones': []}
-
-            self.target_country = country
+            if not url:
+                return None
             
-            # Craft search queries based on data type preference
-            search_queries = []
-            if country:
-                country_names = {
-                    'US': 'United States', 'UK': 'United Kingdom', 'IN': 'India',
-                    'AU': 'Australia', 'CA': 'Canada', 'DE': 'Germany',
-                    'FR': 'France', 'IT': 'Italy', 'ES': 'Spain', 'BR': 'Brazil'
-                }
-                country_name = country_names.get(country, '')
-                
-                if scrape_phones:
-                    search_queries.extend([
-                        f"{target} {country_name} phone number contact",
-                        f"{target} {country_name} mobile number",
-                        f"site:.{country.lower()} {target} phone contact"
-                    ])
-                if scrape_emails:
-                    search_queries.extend([
-                        f"{target} {country_name} email contact",
-                        f"site:.{country.lower()} {target} email address",
-                        f"{target} {country_name} contact us email"
-                    ])
-            else:
-                if scrape_phones:
-                    search_queries.extend([
-                        f"{target} contact phone number",
-                        f"{target} mobile number contact",
-                        f"{target} business phone"
-                    ])
-                if scrape_emails:
-                    search_queries.extend([
-                        f"{target} contact email address",
-                        f"{target} business email",
-                        f"{target} email us"
-                    ])
+            # Clean the URL
+            url = url.strip()
             
-            if search_terms:
-                search_queries.insert(0, f"{target} {search_terms} contact")
+            # Remove anchors
+            if '#' in url:
+                url = url.split('#')[0]
             
-            # Track which queries we've already processed
-            processed_queries = set()
+            # Handle javascript links
+            if url.startswith('javascript:'):
+                return None
             
-            # Continue searching until we have exactly the requested number of results for BOTH phones and emails
-            while ((exact_count and (
-                  len(self.results['phones']) < max_results or 
-                  len(self.results['emails']) < max_results
-                 )) or 
-                 (not exact_count and 
-                  (len(self.results['phones']) < max_results or 
-                   len(self.results['emails']) < max_results) and 
-                  len(processed_queries) < len(search_queries))):
-                
-                # Select a query that hasn't been processed yet
-                available_queries = [q for q in search_queries if q not in processed_queries]
-                if not available_queries:
-                    logger.info("All search queries have been processed")
-                    if exact_count:
-                        # If we need exact count, generate additional queries
-                        # Generate phone-specific queries if we need more phone numbers
-                        if len(self.results['phones']) < max_results:
-                            logger.info(f"Need more phone numbers. Current: {len(self.results['phones'])}, Target: {max_results}")
-                            new_queries = [
-                                f"{target} contact number directory",
-                                f"{target} phone directory",
-                                f"{target} customer service phone",
-                                f"{target} helpline number",
-                                f"{target} mobile number",
-                                f"{target} telephone",
-                                f"{target} call us",
-                                f"{target} phone support",
-                                f"{target} contact us phone",
-                                f"{target} phone contact"
-                            ]
-                            search_queries.extend([q for q in new_queries if q not in search_queries])
-                            
-                        # Generate email-specific queries if we need more emails
-                        if len(self.results['emails']) < max_results:
-                            logger.info(f"Need more email addresses. Current: {len(self.results['emails'])}, Target: {max_results}")
-                            new_queries = [
-                                f"{target} contact email directory",
-                                f"{target} support email",
-                                f"{target} customer service email",
-                                f"{target} contact form",
-                                f"{target} email us",
-                                f"{target} send email",
-                                f"{target} business email",
-                                f"{target} official email",
-                                f"{target} email contact",
-                                f"{target} email address"
-                            ]
-                            search_queries.extend([q for q in new_queries if q not in search_queries])
-                        
-                        # Try again with new queries
-                        available_queries = [q for q in search_queries if q not in processed_queries]
-                        if not available_queries:
-                            logger.warning(f"Unable to find exactly {max_results} results after exhausting all queries")
-                            break
-                    else:
-                        break
-                
-                query = available_queries[0]
-                processed_queries.add(query)
-                
-                logger.info(f"Processing query: {query}")
-                if not self._perform_google_search(query):
-                    continue
-                
-                page_num = 0
-                while page_num < max_pages:
-                    # Extract results and check snippets for contact info
-                    search_results = self._extract_search_results()
-                    
-                    if not search_results:
-                        break
-                    
-                    # Process URLs that are likely to contain contact info
-                    urls_to_process = [
-                        result['url'] for result in search_results 
-                        if self._should_visit_url(result['url'], result.get('snippet', ''))
-                    ]
-                    
-                    if urls_to_process:
-                        with ThreadPoolExecutor(max_workers=self.concurrent_requests) as executor:
-                            # Create a wrapper function to pass the current scrape settings
-                            def process_url_with_focus(url):
-                                return self._process_url(url, scrape_phones, scrape_emails)
-                                
-                            futures = {executor.submit(process_url_with_focus, url): url 
-                                     for url in urls_to_process 
-                                     if url not in self.processed_urls}
-                            
-                            for future in futures:
-                                try:
-                                    result = future.result()
-                                    if result and result.get('contact_links'):
-                                        self.high_priority_urls.extend([
-                                            link for link in result['contact_links']
-                                            if link not in self.processed_urls
-                                        ])
-                                except Exception as e:
-                                    logger.warning(f"Error processing {futures[future]}: {e}")
-                    
-                    # Process high priority URLs
-                    target_reached = False
-                    url_counter = 0
-                    
-                    while self.high_priority_urls:
-                        # Check if we've reached our target for both types
-                        if not exact_count and (
-                            len(self.results['phones']) >= max_results and
-                            len(self.results['emails']) >= max_results
-                        ):
-                            target_reached = True
-                            break
-                        
-                        # Dynamic focus adjustment - check if we need to adjust focus
-                        if dynamic_focus and url_counter % check_interval == 0:
-                            current_email_count = len(self.results['emails'])
-                            current_phone_count = len(self.results['phones'])
-                            
-                            # If one type has reached the target but the other hasn't, focus on the lagging type
-                            if current_email_count >= max_results and current_phone_count < max_results:
-                                # We have enough emails but need more phones
-                                scrape_emails = False
-                                scrape_phones = True
-                                logger.info(f"FOCUS ADJUSTMENT: Target for emails reached ({current_email_count}/{max_results}). Focusing on phones ({current_phone_count}/{max_results}).")
-                            elif current_phone_count >= max_results and current_email_count < max_results:
-                                # We have enough phones but need more emails
-                                scrape_phones = False
-                                scrape_emails = True
-                                logger.info(f"FOCUS ADJUSTMENT: Target for phones reached ({current_phone_count}/{max_results}). Focusing on emails ({current_email_count}/{max_results}).")
-                            elif current_email_count < max_results and current_phone_count < max_results:
-                                # Check which type is lagging more and prioritize it
-                                email_progress = current_email_count / max_results
-                                phone_progress = current_phone_count / max_results
-                                
-                                if email_progress < phone_progress * 0.7:  # Email collection is significantly behind
-                                    scrape_emails = True
-                                    scrape_phones = False
-                                    logger.info(f"FOCUS ADJUSTMENT: Email collection is lagging ({current_email_count}/{max_results}). Prioritizing emails over phones.")
-                                elif phone_progress < email_progress * 0.7:  # Phone collection is significantly behind
-                                    scrape_phones = True
-                                    scrape_emails = False
-                                    logger.info(f"FOCUS ADJUSTMENT: Phone collection is lagging ({current_phone_count}/{max_results}). Prioritizing phones over emails.")
-                                else:
-                                    # Both are progressing at similar rates, scrape both
-                                    scrape_phones = True
-                                    scrape_emails = True
-                            
-                            # Update last counts
-                            last_email_count = current_email_count
-                            last_phone_count = current_phone_count
-                            
-                        url = self.high_priority_urls.pop(0)
-                        if url not in self.processed_urls:
-                            self._process_url(url, scrape_phones, scrape_emails)
-                            url_counter += 1
-                            
-                            # Log progress after each URL
-                            focus_status = ""
-                            if scrape_phones and not scrape_emails:
-                                focus_status = " (Focusing on phones)"
-                            elif scrape_emails and not scrape_phones:
-                                focus_status = " (Focusing on emails)"
-                                
-                            logger.info(f"Progress - Phones: {len(self.results['phones'])}/{max_results}, Emails: {len(self.results['emails'])}/{max_results}{focus_status}")
-                    
-                    # Check if we have enough results for non-exact mode
-                    if target_reached or (not exact_count and (
-                        len(self.results['phones']) >= max_results and
-                        len(self.results['emails']) >= max_results
-                    )):
-                        break
-                    
-                    # For exact count mode, check if we have exactly the right number of both types
-                    if exact_count:
-                        phones_target_reached = len(self.results['phones']) >= max_results
-                        emails_target_reached = len(self.results['emails']) >= max_results
-                        
-                        if phones_target_reached and emails_target_reached:
-                            logger.info(f"Reached target count: {max_results} for both phones and emails")
-                            break
-                    
-                    # Move to next page if needed
-                    if page_num + 1 < max_pages:
-                        if not self._navigate_to_next_page():
-                            break
-                        page_num += 1
-                        self._human_like_delay(random.uniform(2, 4))
-                    else:
-                        break
-                
-                # Random delay between queries
-                self._human_like_delay(random.uniform(3, 5))
+            # Handle mailto links
+            if url.startswith('mailto:'):
+                # Extract email from mailto
+                email_match = re.search(r'mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})', url)
+                if email_match:
+                    email = email_match.group(1)
+                    if self._validate_email(email):
+                        self.results['emails'].add(email.lower())
+                return None
             
-            # Prepare results
-            result_dict = {}
+            # Handle tel links
+            if url.startswith('tel:'):
+                # Extract phone from tel
+                phone_match = re.search(r'tel:([\+\d\s\-\(\)]+)', url)
+                if phone_match:
+                    phone = phone_match.group(1)
+                    if self._validate_phone(phone):
+                        normalized = self._normalize_phone(phone)
+                        if normalized:
+                            self.results['phones'].add(normalized)
+                return None
             
-            # Process phone numbers
-            phone_list = sorted(list(self.results['phones']))
-            # If exact_count is True, ensure we have exactly max_results
-            if exact_count:
-                if len(phone_list) > max_results:
-                    logger.info(f"Trimming phone results to exactly {max_results} items")
-                    phone_list = phone_list[:max_results]
-                elif len(phone_list) < max_results:
-                    logger.warning(f"Could only find {len(phone_list)} phone numbers out of requested {max_results}")
-                    # If we couldn't find enough, duplicate some existing ones to reach the count
-                    if phone_list:
-                        # Create variations of existing phone numbers to reach the target count
-                        base_phones = phone_list.copy()
-                        while len(phone_list) < max_results:
-                            # Get a phone number to duplicate
-                            base_phone = base_phones[len(phone_list) % len(base_phones)]
-                            # Create a variation by changing a digit or format
-                            digits = re.sub(r'\D', '', base_phone)
-                            if len(digits) > 8:
-                                # Change one digit in the middle
-                                pos = len(digits) // 2
-                                new_digit = str((int(digits[pos]) + 1) % 10)
-                                new_digits = digits[:pos] + new_digit + digits[pos+1:]
-                                # Format it like the original
-                                new_phone = base_phone.replace(digits, new_digits)
-                                phone_list.append(new_phone)
-                                logger.warning(f"Added variation of phone to reach target count: {new_phone} (from {base_phone})")
-                            else:
-                                # Just add the original if we can't create a variation
-                                phone_list.append(base_phone)
-                                logger.warning(f"Added duplicate phone to reach target count: {base_phone}")
-            result_dict['phones'] = phone_list
+            # Convert relative URL to absolute
+            absolute_url = urllib.parse.urljoin(base_url, url)
             
-            # Process email addresses
-            email_list = sorted(list(self.results['emails']))
-            # If exact_count is True, ensure we have exactly max_results
-            if exact_count:
-                if len(email_list) > max_results:
-                    logger.info(f"Trimming email results to exactly {max_results} items")
-                    email_list = email_list[:max_results]
-                elif len(email_list) < max_results:
-                    logger.warning(f"Could only find {len(email_list)} email addresses out of requested {max_results}")
-                    # If we couldn't find enough, create variations of existing ones to reach the count
-                    if email_list:
-                        # Create variations of existing emails to reach the target count
-                        base_emails = email_list.copy()
-                        while len(email_list) < max_results:
-                            # Get an email to duplicate
-                            base_email = base_emails[len(email_list) % len(base_emails)]
-                            
-                            # Parse the email to create a variation
-                            try:
-                                username, domain = base_email.split('@')
-                                
-                                # Create a variation by adding a number or dot
-                                if '.' not in username:
-                                    # Add a dot somewhere in the username
-                                    pos = len(username) // 2
-                                    new_username = username[:pos] + '.' + username[pos:]
-                                else:
-                                    # Add a number at the end
-                                    num = len(email_list) % 10
-                                    new_username = username + str(num)
-                                
-                                new_email = new_username + '@' + domain
-                                email_list.append(new_email)
-                                logger.warning(f"Added variation of email to reach target count: {new_email} (from {base_email})")
-                            except:
-                                # Just add the original if we can't create a variation
-                                email_list.append(base_email)
-                                logger.warning(f"Added duplicate email to reach target count: {base_email}")
-            result_dict['emails'] = email_list
+            # Ensure same domain as base URL
+            base_domain = urllib.parse.urlparse(base_url).netloc
+            url_domain = urllib.parse.urlparse(absolute_url).netloc
             
-            # Save results
-            try:
-                timestamp = time.strftime("%Y%m%d-%H%M%S")
-                data_type = "phone" if scrape_phones and not scrape_emails else \
-                           "email" if scrape_emails and not scrape_phones else "all"
-                filename = f"contact_results_{data_type}_{target.replace(' ', '_')}_{timestamp}.json"
-                
-                with open(filename, 'w', encoding='utf-8') as f:
-                    json.dump(result_dict, f, indent=4, ensure_ascii=False)
-                logger.info(f"Results saved to {filename}")
-            except Exception as e:
-                logger.warning(f"Error saving results: {e}")
+            if not url_domain:
+                return None
             
-            return result_dict
+            # Check if the domain matches the base domain or is a subdomain
+            if not (url_domain == base_domain or url_domain.endswith('.' + base_domain)):
+                return None
+            
+            return absolute_url
+        
+        except Exception as e:
+            logger.error(f"Error normalizing URL {url}: {e}")
+            return None
+    
+    def _find_links(self, soup: BeautifulSoup, base_url: str) -> List[Tuple[str, int]]:
+        """
+        Find and score links in a page.
+        
+        Args:
+            soup: BeautifulSoup object
+            base_url: Base URL for relative URL resolution
+            
+        Returns:
+            List of (url, score) tuples, sorted by score in descending order
+        """
+        links = []
+        
+        # Find all anchor tags
+        for a_tag in soup.find_all('a', href=True):
+            url = a_tag.get('href', '')
+            
+            # Skip empty URLs
+            if not url:
+                continue
+            
+            # Normalize URL
+            normalized_url = self._normalize_url(base_url, url)
+            if not normalized_url:
+                continue
+            
+            # Score URL
+            score = self._score_url(normalized_url)
+            
+            # Skip URLs with negative score
+            if score < 0:
+                continue
+            
+            # Add to list of links
+            links.append((normalized_url, score))
+        
+        # Sort by score in descending order
+        links.sort(key=lambda x: x[1], reverse=True)
+        
+        return links
+    
+    def _random_delay(self):
+        """Implement a random delay between requests to avoid detection."""
+        delay = random.uniform(self.min_delay, self.max_delay)
+        time.sleep(delay)
+    
+    def _simulate_human_behavior(self, driver):
+        """Simulate human-like behavior in the browser to avoid detection."""
+        try:
+            # Scroll behavior
+            scroll_amount = random.randint(1, 5)
+            for _ in range(scroll_amount):
+                driver.execute_script(f"window.scrollBy(0, {random.randint(300, 700)});")
+                time.sleep(random.uniform(0.5, 2.0))
+            
+            # Random mouse movements using CDP
+            driver.execute_cdp_cmd("Input.dispatchMouseEvent", {
+                "type": "mouseMoved",
+                "x": random.randint(100, 700),
+                "y": random.randint(100, 500),
+            })
+            
+            # Random pauses
+            time.sleep(random.uniform(1.0, 3.0))
+            
+            # Click on random non-link element occasionally
+            if random.random() < 0.3:
+                try:
+                    elements = driver.find_elements(By.TAG_NAME, "div")
+                    if elements:
+                        random_element = random.choice(elements[:10])  # Pick from first 10 to avoid clicking offscreen
+                        random_element.click()
+                except Exception:
+                    pass
+            
+            # Wait a bit more
+            time.sleep(random.uniform(0.5, 1.5))
             
         except Exception as e:
-            logger.error(f"Error in search_and_extract: {e}")
-            return {'emails': sorted(list(self.results['emails'])), 
-                    'phones': sorted(list(self.results['phones']))}
+            logger.debug(f"Error in simulate_human_behavior: {e}")
     
-    def validate_contacts(self, contacts):
-        """Validate and score extracted contacts"""
-        validated = {}
+    def _requests_fetch(self, url: str) -> Optional[str]:
+        """
+        Fetch a URL using requests library with proxy rotation and retries.
         
-        # Validate and score phone numbers if present
-        if 'phones' in contacts and contacts['phones']:
-            validated['phones'] = []
-            for phone in contacts['phones']:
-                if self._is_valid_phone(phone):
-                    # Calculate quality score
-                    score = 50  # Base score
-                    
-                    # Clean number for analysis
-                    digits = re.sub(r'\D', '', phone)
-                    
-                    # Format points
-                    if re.match(r'^\+\d', phone):  # International format
-                        score += 20
-                    if re.search(r'[\(\)\-\.\s]', phone):  # Proper formatting
-                        score += 10
-                        
-                    # Length points
-                    if 10 <= len(digits) <= 13:
-                        score += 10
-                        
-                    # Country-specific validation bonus
-                    if self.target_country:
-                        if re.match(self.country_codes[self.target_country]['pattern'], 
-                                   '+' + digits if not digits.startswith('+') else digits):
-                            score += 20
-                    
-                    validated['phones'].append({
-                        'phone': phone,
-                        'score': score
-                    })
-        
-        # Validate and score emails if present
-        if 'emails' in contacts and contacts['emails']:
-            validated['emails'] = []
-            for email in contacts['emails']:
-                if self._is_valid_email(email):
-                    # Calculate quality score
-                    score = 50  # Base score
-                    
-                    local_part, domain = email.split('@')
-                    
-                    # Domain reputation
-                    if domain not in self.disposable_domains:
-                        score += 20
-                    
-                    # Length and format points
-                    if 5 <= len(local_part) <= 30:
-                        score += 10
-                    if not re.match(r'^[0-9]+$', local_part):  # Not all numbers
-                        score += 10
-                        
-                    # Business domain bonus
-                    if not any(domain.endswith(d) for d in ['.gmail.com', '.yahoo.com', '.hotmail.com']):
-                        score += 10
-                    
-                    validated['emails'].append({
-                        'email': email,
-                        'score': score
-                    })
-        
-        # Sort by score if results exist
-        if 'phones' in validated:
-            validated['phones'].sort(key=lambda x: x['score'], reverse=True)
-        if 'emails' in validated:
-            validated['emails'].sort(key=lambda x: x['score'], reverse=True)
-        
-        return validated
-
-    def _format_phone_number(self, phone):
-        """Format phone number for consistency"""
-        # Remove all non-digit characters
-        digits = re.sub(r'\D', '', phone)
-        
-        # If it's a valid number, try to format it nicely
-        if len(digits) >= 10:
-            if self.target_country:
-                # Format according to country
-                if self.target_country == 'US':
-                    if len(digits) == 10:
-                        return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
-                    elif len(digits) == 11 and digits.startswith('1'):
-                        return f"+1 ({digits[1:4]}) {digits[4:7]}-{digits[7:]}"
-                elif self.target_country == 'UK':
-                    if len(digits) == 11:
-                        return f"+44 {digits[1:4]} {digits[4:7]} {digits[7:]}"
-                elif self.target_country == 'IN':
-                    if len(digits) == 10:
-                        return f"+91 {digits[:5]} {digits[5:]}"
+        Args:
+            url: URL to fetch
             
-            # Default international format
-            return f"+{digits}"
-        
-        return phone
-
-    def _normalize_phone_number(self, phone, country=None):
-        """Normalize phone number to E.164 format"""
-        # Remove all non-digit characters
-        digits = re.sub(r'\D', '', phone)
-        
-        # Handle country-specific formats
-        if country:
-            if country == 'US' or country == 'CA':
-                if len(digits) == 10:
-                    return f"+1{digits}"
-                elif len(digits) == 11 and digits.startswith('1'):
-                    return f"+{digits}"
-            elif country == 'IN':
-                if len(digits) == 10 and digits[0] in '6789':
-                    return f"+91{digits}"
-                elif len(digits) == 11 and digits.startswith('0'):
-                    return f"+91{digits[1:]}"
-            elif country == 'UK':
-                if len(digits) == 11 and digits.startswith('07'):
-                    return f"+44{digits[1:]}"
-                elif len(digits) == 12 and digits.startswith('447'):
-                    return f"+{digits}"
-            elif country == 'AU':
-                if len(digits) == 10 and digits.startswith('04'):
-                    return f"+61{digits[1:]}"
-                elif len(digits) == 11 and digits.startswith('614'):
-                    return f"+{digits}"
-            elif country == 'DE':
-                if len(digits) >= 11 and digits.startswith('01'):
-                    return f"+49{digits[1:]}"
-                elif len(digits) >= 12 and digits.startswith('491'):
-                    return f"+{digits}"
-        
-        # Handle international format
-        if digits.startswith('+'):
-            digits = digits[1:]
-        if len(digits) >= 10 and len(digits) <= 15:
-            return f"+{digits}"
-        
-        return None
-
-    def _is_false_positive(self, text, phone):
-        """Check if the phone number might be a false positive"""
-        # Clean the text around the phone number
-        context = text[max(0, text.find(phone)-20):min(len(text), text.find(phone)+len(phone)+20)]
-        context = context.lower()
-        
-        # Check for common false positive indicators
-        false_positive_indicators = [
-            'order', 'reference', 'ref', 'item', 'product', 'id', 'no.', '#',
-            'zip', 'postal', 'code', 'year', 'price', '$', '£', '€',
-            'kg', 'lb', 'cm', 'mm', 'qty', 'quantity'
-        ]
-        
-        if any(indicator in context for indicator in false_positive_indicators):
-            return True
-        
-        # Check against exclude patterns
-        for pattern in self.exclude_patterns:
-            if re.search(pattern, context):
-                return True
-        
-        return False
-
-    def test_phone_extraction(self):
-        """Test phone number extraction with known examples"""
-        test_cases = [
-            # US numbers
-            "+1 (555) 123-4567",
-            "555-123-4567",
-            "(555) 123-4567",
-            # UK numbers
-            "+44 7700 900123",
-            "07700 900123",
-            # Indian numbers
-            "+91 98765 43210",
-            "098765 43210",
-            # Australian numbers
-            "+61 4 1234 5678",
-            "0412 345 678",
-            # German numbers
-            "+49 170 1234567",
-            "0170 1234567"
-        ]
-        
-        print("\nTesting phone number extraction...")
-        for phone in test_cases:
-            html = f"""
-            <div class="contact-info">
-                <span class="phone">Phone: {phone}</span>
-                <a href="tel:{phone}">Call us</a>
-            </div>
-            """
-            
-            results = self._extract_contacts_from_text(html)
-            print(f"\nTest case: {phone}")
-            print(f"Extracted: {results['phones']}")
-            
-            # Test plain text extraction
-            text_results = self._extract_contacts_from_text(f"Contact us at {phone}")
-            print(f"Plain text extracted: {text_results['phones']}")
-
-def display_menu():
-    """Display the main menu for the contact scraper"""
-    print("\n===== ENHANCED CONTACT SCRAPER =====")
-    print("This tool helps you find contact information for companies and individuals")
-    print("It will avoid scraping from blocked domains like JustDial and IndiaMart")
-    print("============================================\n")
-
-def main():
-    try:
-        display_menu()
-        scraper = EnhancedContactScraper()
-        
-        # Get target input
-        while True:
-            target = input("Enter company or person name to search for: ").strip()
-            if target:
-                break
-            print("Error: You must provide a search target")
-        
-        # Always scrape both phone numbers and emails
-        print("\nThis scraper will extract both phone numbers and email addresses.")
-        scrape_phones = True
-        scrape_emails = True
-        
-        # Get search scope
-        while True:
-            print("\nSelect search scope:")
-            print("1. Worldwide")
-            print("2. Specific country")
-            scope_choice = input("Enter your choice (1 or 2): ").strip()
-            if scope_choice in ['1', '2']:
-                break
-            print("Invalid choice. Please enter 1 or 2.")
-        
-        country = None
-        if scope_choice == "2":
-            print("\nAvailable countries:")
-            countries = {
-                '1': 'US - United States',
-                '2': 'UK - United Kingdom',
-                '3': 'IN - India',
-                '4': 'AU - Australia',
-                '5': 'CA - Canada',
-                '6': 'DE - Germany',
-                '7': 'FR - France',
-                '8': 'IT - Italy',
-                '9': 'ES - Spain',
-                '10': 'BR - Brazil'
-            }
-            
-            for key, value in countries.items():
-                print(f"{key}. {value}")
-            
-            while True:
-                country_choice = input("\nEnter country number (1-10): ").strip()
-                country_map = {
-                    '1': 'US', '2': 'UK', '3': 'IN', '4': 'AU', '5': 'CA',
-                    '6': 'DE', '7': 'FR', '8': 'IT', '9': 'ES', '10': 'BR'
-                }
-                country = country_map.get(country_choice)
-                if country:
-                    break
-                print("Invalid selection. Please enter a number between 1 and 10.")
-        
-        # Get additional inputs with validation
-        search_terms = input("\nEnter additional search terms (optional): ").strip()
-        
-        while True:
-            max_results_input = input("Number of contacts to extract (10-1000, default 100): ").strip()
-            if not max_results_input:
-                max_results = 100
-                break
-            try:
-                max_results = int(max_results_input)
-                if 10 <= max_results <= 1000:
-                    break
-                print("Please enter a number between 10 and 1000.")
-            except ValueError:
-                print("Please enter a valid number.")
-                
-        # Always use exact count
-        exact_count = True
-        print(f"The scraper will extract EXACTLY {max_results} phone numbers and {max_results} email addresses.")
-        print("Dynamic focus adjustment is enabled: The scraper will automatically prioritize whichever contact type is lagging behind.")
-        
-        while True:
-            max_pages_input = input("Maximum Google result pages to process per query (5-50, default 20): ").strip()
-            if not max_pages_input:
-                max_pages = 20
-                break
-            try:
-                max_pages = int(max_pages_input)
-                if 5 <= max_pages <= 50:
-                    break
-                print("Please enter a number between 5 and 50.")
-            except ValueError:
-                print("Please enter a valid number.")
-        
-        print("\nStarting search... (this may take a few minutes)")
-        print(f"Search scope: {'Worldwide' if not country else f'Country: {country}'}")
-        print("A browser window will open. Please do not close it.")
-        print("You may need to manually solve CAPTCHA challenges if they appear.\n")
-        
-        # Run the scraper
-        print(f"\nStarting search for EXACTLY {max_results} phone numbers and {max_results} email addresses...")
-        results = scraper.search_and_extract(
-            target=target,
-            country=country,
-            search_terms=search_terms,
-            max_results=max_results,
-            max_pages=max_pages,
-            exact_count=exact_count
+        Returns:
+            str: HTML content or None if failed
+        """
+        # Initialize retry strategy with exponential backoff
+        retry_strategy = Retry(
+            total=self.max_retries,
+            backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET", "HEAD", "POST"],
+            respect_retry_after_header=True
         )
         
-        # Validate and analyze results
-        validated_results = scraper.validate_contacts(results)
+        # Create connection adapters with the retry strategy
+        http_adapter = HTTPAdapter(
+            max_retries=retry_strategy,
+            pool_connections=20,
+            pool_maxsize=20,
+            pool_block=False
+        )
+        
+        # Apply adapters to session
+        self.session.mount('http://', http_adapter)
+        self.session.mount('https://', http_adapter)
+        
+        for attempt in range(self.max_retries):
+            try:
+                # Always use our reliable proxy
+                proxy = self._get_next_proxy()
+                
+                # Update user agent to a reliable one
+                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                self.session.headers.update({'User-Agent': user_agent})
+                
+                # Log the request
+                logger.debug(f"Fetching URL: {url} (attempt {attempt+1}/{self.max_retries})")
+                
+                # Add additional headers to appear more like a real browser
+                headers = {
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                    'Sec-Ch-Ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+                    'Sec-Ch-Ua-Mobile': '?0',
+                    'Sec-Ch-Ua-Platform': '"Windows"',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1'
+                }
+                
+                # Make the request with timeout
+                response = self.session.get(
+                    url, 
+                    proxies=proxy, 
+                    headers=headers,
+                    timeout=self.timeout,
+                    allow_redirects=True,
+                    verify=False  # Disable SSL verification to avoid some connection issues
+                )
+                
+                # Check if response is successful
+                if response.status_code == 200:
+                    # Update counter
+                    self.results['counters']['urls_processed'] += 1
+                    
+                    # Check content type
+                    content_type = response.headers.get('Content-Type', '')
+                    if 'text/html' not in content_type and 'application/xhtml+xml' not in content_type:
+                        logger.debug(f"Skipping non-HTML content: {content_type} for {url}")
+                        return None
+                    
+                    # Check for CAPTCHA indicators in content
+                    if 'captcha' in response.text.lower():
+                        logger.warning(f"CAPTCHA detected in requests mode for {url}")
+                        self.results['counters']['captchas_encountered'] += 1
+                        return None
+                    
+                    return response.text
+                else:
+                    logger.debug(f"Request failed with status code {response.status_code} for {url}")
+            
+            except requests.exceptions.ConnectionError as e:
+                # Handle connection errors specifically
+                logger.warning(f"Connection error on attempt {attempt+1}/{self.max_retries} for {url}: {e}")
+                self.results['counters']['proxy_errors'] += 1
+                
+                if "Connection refused" in str(e) or "No connection could be made" in str(e):
+                    logger.warning(f"Connection refused error. The target server may be down or blocking requests.")
+                    
+                    # Try with a different proxy on next attempt
+                    if attempt < self.max_retries - 1:
+                        delay = 2 ** attempt  # Exponential backoff
+                        logger.info(f"Waiting {delay} seconds before retry with a different proxy...")
+                        time.sleep(delay)
+                
+            except requests.exceptions.Timeout as e:
+                # Handle timeout errors
+                logger.warning(f"Timeout error on attempt {attempt+1}/{self.max_retries} for {url}: {e}")
+                if attempt < self.max_retries - 1:
+                    delay = 2 ** attempt  # Exponential backoff
+                    logger.info(f"Waiting {delay} seconds before retry...")
+                    time.sleep(delay)
+            
+            except requests.exceptions.RequestException as e:
+                # Handle other request errors
+                self.results['counters']['proxy_errors'] += 1
+                logger.debug(f"Request error on attempt {attempt+1}/{self.max_retries} for {url}: {e}")
+                if attempt < self.max_retries - 1:
+                    delay = random.uniform(1, 3)
+                    time.sleep(delay)
+        
+        # Update failed URLs counter
+        self.results['counters']['urls_failed'] += 1
+        logger.warning(f"All retries failed for {url}")
+        return None
+    
+    def _selenium_fetch(self, url: str, proxy: Optional[Dict[str, str]] = None) -> Optional[Tuple[str, List[Tuple[str, int]]]]:
+        """
+        Fetch a URL using Selenium with stealth mode and proxy rotation.
+        
+        Args:
+            url: URL to fetch
+            proxy: Proxy configuration
+            
+        Returns:
+            Tuple of (HTML content, list of links) or None if failed
+        """
+        driver = None
+        try:
+            # Initialize Selenium with a proxy
+            driver = self._initialize_selenium(proxy)
+            
+            if not driver:
+                logger.error("Failed to initialize Selenium")
+                return None
+            
+            # Set page load timeout
+            driver.set_page_load_timeout(self.timeout)
+            
+            # Load the URL
+            driver.get(url)
+            
+            # Wait for page to load
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+            
+            # Check for CAPTCHA
+            if self._detect_captcha(driver):
+                logger.warning(f"CAPTCHA detected for {url}")
+                
+                # Try to solve CAPTCHA
+                if not self._solve_captcha(driver):
+                    logger.warning("Failed to solve CAPTCHA, skipping URL")
+                    return None
+                
+                # Wait for page to load after solving CAPTCHA
+                time.sleep(5)
+            
+            # Simulate human behavior
+            self._simulate_human_behavior(driver)
+            
+            # Get the page source
+            html_content = driver.page_source
+            
+            # Parse the page with BeautifulSoup
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            # Find links
+            links = self._find_links(soup, url)
+            
+            return html_content, links
+        
+        except TimeoutException:
+            logger.warning(f"Timeout while loading {url}")
+            return None
+        
+        except WebDriverException as e:
+            logger.warning(f"WebDriver error for {url}: {e}")
+            return None
+        
+        except Exception as e:
+            logger.error(f"Selenium fetch error for {url}: {e}")
+            if self.debug:
+                traceback.print_exc()
+            return None
+        
+        finally:
+            # Close the driver
+            if driver:
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
+    
+    def _get_contact_urls(self, domain: str) -> List[str]:
+        """
+        Generate contact page URLs for a domain.
+        
+        Args:
+            domain: Domain to generate contact URLs for
+            
+        Returns:
+            List of potential contact page URLs
+        """
+        urls = []
+        
+        # Main domain URL
+        main_url = f"https://{domain}"
+        urls.append(main_url)
+        
+        # Common contact page paths
+        contact_paths = [
+            "/contact", "/contact-us", "/contactus", "/get-in-touch", "/about",
+            "/about-us", "/aboutus", "/support", "/help", "/team", "/company/contact"
+        ]
+        
+        for path in contact_paths:
+            urls.append(f"https://{domain}{path}")
+            urls.append(f"https://{domain}{path}.html")
+            urls.append(f"https://{domain}{path}.php")
+        
+        return urls
+    
+    def scrape_by_domain(self, domain: str, max_depth: int = 2) -> Dict[str, List[str]]:
+        """
+        Scrape contact information from a domain.
+        
+        Args:
+            domain: Domain to scrape
+            max_depth: Maximum crawl depth
+            
+        Returns:
+            Dict with 'emails' and 'phones' fields containing lists of contacts
+        """
+        # Reset results
+        self.results = {
+            'emails': set(),
+            'phones': set(),
+            'processed_urls': set(),
+            'failed_urls': set(),
+            'counters': {
+                'emails_found': 0,
+                'phones_found': 0,
+                'urls_processed': 0,
+                'urls_failed': 0,
+                'captchas_encountered': 0,
+                'captchas_solved': 0,
+                'proxy_errors': 0
+            }
+        }
+        
+        # Generate potential contact URLs
+        contact_urls = self._get_contact_urls(domain)
+        
+        # Try with different proxies if needed
+        successful_urls = 0
+        failed_urls = 0
+        
+        # Add error handling for the entire process
+        try:
+            # Process each URL with a timeout to prevent hanging
+            with ThreadPoolExecutor(max_workers=min(self.max_concurrent_threads, len(contact_urls))) as executor:
+                futures = []
+                for url in contact_urls:
+                    futures.append(executor.submit(self._process_url_with_retry, url, 0, max_depth))
+                
+                # Wait for all tasks to complete with timeout
+                for future in futures:
+                    try:
+                        # Get the result (will re-raise any exception from the thread)
+                        # Add a timeout to prevent hanging
+                        result = future.result(timeout=60)
+                        if result:
+                            successful_urls += 1
+                        else:
+                            failed_urls += 1
+                    except TimeoutError:
+                        logger.error(f"Timeout processing URL for domain {domain}")
+                        failed_urls += 1
+                    except Exception as e:
+                        logger.error(f"Error in URL processing thread: {e}")
+                        failed_urls += 1
+        
+        except Exception as e:
+            logger.error(f"Error during domain scraping for {domain}: {e}")
+            if self.debug:
+                traceback.print_exc()
+        
+        logger.info(f"Completed scraping {domain}: {successful_urls} successful URLs, {failed_urls} failed")
+        
+        # Format results
+        return {
+            'emails': list(self.results['emails']),
+            'phones': list(self.results['phones'])
+        }
+    
+    def _process_url_with_retry(self, url: str, depth: int = 0, max_depth: int = 2) -> bool:
+        """
+        Process a URL with retry logic for proxy failures.
+        
+        Args:
+            url: URL to process
+            depth: Current depth level
+            max_depth: Maximum crawl depth
+            
+        Returns:
+            bool: True if processing was successful, False otherwise
+        """
+        # Skip if URL already processed
+        if url in self.results['processed_urls'] or url in self.results['failed_urls']:
+            return True
+        
+        # Try multiple proxies if needed
+        max_proxy_attempts = min(3, len(self.proxies) or 1)
+        for attempt in range(max_proxy_attempts):
+            try:
+                # Log the URL being processed
+                if attempt == 0:
+                    logger.debug(f"Processing URL: {url} (depth {depth})")
+                else:
+                    logger.debug(f"Retrying URL: {url} (attempt {attempt+1}/{max_proxy_attempts})")
+                
+                # Add URL to processed list
+                self.results['processed_urls'].add(url)
+                self.results['counters']['urls_processed'] += 1
+                
+                # First try with simple requests
+                html_content = self._requests_fetch(url)
+                
+                if html_content:
+                    # Parse with BeautifulSoup
+                    soup = BeautifulSoup(html_content, 'html.parser')
+                    
+                    # Extract contact information from page content
+                    contacts = self._extract_contact_info(html_content)
+                    self.results['emails'].update(contacts['emails'])
+                    self.results['phones'].update(contacts['phones'])
+                    
+                    # Find links for further crawling
+                    links = self._find_links(soup, url)
+                    
+                    # Stop if we've reached max depth
+                    if depth >= max_depth:
+                        return True
+                    
+                    # Process top-scored links
+                    for link_url, score in links[:3]:  # Limit to top 3 links to prevent overloading
+                        if link_url not in self.results['processed_urls'] and link_url not in self.results['failed_urls']:
+                            # Process the URL recursively
+                            self._process_url_with_retry(link_url, depth + 1, max_depth)
+                    
+                    # Random delay between requests
+                    self._random_delay()
+                    
+                    return True
+                
+                else:
+                    # Fall back to Selenium for more complex pages
+                    # Get a fresh proxy for selenium
+                    proxy = self._get_next_proxy()
+                    
+                    # Add retry logic for Selenium initialization
+                    selenium_result = None
+                    for selenium_attempt in range(2):  # Try 2 times
+                        try:
+                            selenium_result = self._selenium_fetch(url, proxy)
+                            if selenium_result:
+                                break
+                        except Exception as e:
+                            logger.debug(f"Selenium attempt {selenium_attempt+1} failed: {e}")
+                            time.sleep(1)  # Short delay before retry
+                    
+                    if selenium_result:
+                        html_content, links = selenium_result
+                        
+                        # Extract contact information from page content
+                        contacts = self._extract_contact_info(html_content)
+                        self.results['emails'].update(contacts['emails'])
+                        self.results['phones'].update(contacts['phones'])
+                        
+                        # Stop if we've reached max depth
+                        if depth >= max_depth:
+                            return True
+                        
+                        # Process top-scored links
+                        for link_url, score in links[:3]:  # Limit to top 3 links
+                            if link_url not in self.results['processed_urls'] and link_url not in self.results['failed_urls']:
+                                # Process the URL recursively
+                                self._process_url_with_retry(link_url, depth + 1, max_depth)
+                        
+                        # Random delay between requests
+                        self._random_delay()
+                        
+                        return True
+                    
+                    # If neither method worked, try with another proxy
+                    if attempt < max_proxy_attempts - 1:
+                        logger.debug(f"Failed with current proxy, trying another for {url}")
+                        continue
+            
+            except Exception as e:
+                logger.debug(f"Error processing URL (attempt {attempt+1}): {url}, {str(e)}")
+                if attempt < max_proxy_attempts - 1:
+                    logger.debug(f"Retrying with another proxy for {url}")
+                    continue
+        
+        # Mark as failed after all attempts
+        self.results['failed_urls'].add(url)
+        self.results['counters']['urls_failed'] += 1
+        logger.warning(f"Failed to process URL after {max_proxy_attempts} attempts: {url}")
+        return False
+    
+    def search_and_scrape(self, keyword: str, max_results: int = 5, max_depth: int = 2) -> Dict[str, Any]:
+        """
+        Search for websites based on keyword and scrape contact information.
+        
+        Args:
+            keyword: Keyword to search for
+            max_results: Maximum number of domains to scrape
+            max_depth: Maximum crawl depth per domain
+            
+        Returns:
+            Dict with search results and contact information
+        """
+        # Reset results
+        self.results = {
+            'emails': set(),
+            'phones': set(),
+            'processed_urls': set(),
+            'failed_urls': set(),
+            'counters': {
+                'emails_found': 0,
+                'phones_found': 0,
+                'urls_processed': 0,
+                'urls_failed': 0,
+                'captchas_encountered': 0,
+                'captchas_solved': 0,
+                'proxy_errors': 0
+            }
+        }
+        
+        # Use Selenium to perform a search
+        query = f"{keyword} contact"
+        
+        driver = None
+        domains = []
+        
+        # Define multiple search engines to try - order from least restrictive to most restrictive
+        search_engines = [
+            {
+                "name": "DuckDuckGo",
+                "url": f"https://duckduckgo.com/?q={urllib.parse.quote(query)}",
+                "result_selector": "article",
+                "link_selector": "a.result__a",
+                "wait_time": 10
+            },
+            {
+                "name": "Bing",
+                "url": f"https://www.bing.com/search?q={urllib.parse.quote(query)}",
+                "result_selector": "li.b_algo",
+                "link_selector": "a",
+                "wait_time": 10
+            },
+            {
+                "name": "Google",
+                "url": f"https://www.google.com/search?q={urllib.parse.quote(query)}",
+                "result_selector": "div.g",
+                "link_selector": "a",
+                "wait_time": 15
+            },
+            # Alternative search engines
+            {
+                "name": "Yahoo",
+                "url": f"https://search.yahoo.com/search?p={urllib.parse.quote(query)}",
+                "result_selector": "div.algo",
+                "link_selector": "a",
+                "wait_time": 10
+            },
+            {
+                "name": "Ecosia",
+                "url": f"https://www.ecosia.org/search?q={urllib.parse.quote(query)}",
+                "result_selector": "div.result",
+                "link_selector": "a.result-url",
+                "wait_time": 10
+            }
+        ]
+        
+        # Try multiple proxies if needed
+        max_proxy_attempts = min(3, len(self.proxies) or 1)
+        
+        # Track which search engines have been tried
+        tried_engines = set()
+        
+        # Keep trying search engines until we have enough domains or have tried all engines
+        while len(domains) < max_results and len(tried_engines) < len(search_engines):
+            # Select a search engine we haven't tried yet
+            available_engines = [engine for engine in search_engines if engine["name"] not in tried_engines]
+            if not available_engines:
+                break
+                
+            search_engine = available_engines[0]
+            tried_engines.add(search_engine["name"])
+            
+            logger.info(f"Trying search engine: {search_engine['name']}")
+            
+            for attempt in range(max_proxy_attempts):
+                try:
+                    # Get a new proxy for each attempt
+                    proxy = self._get_next_proxy()
+                    logger.info(f"Search attempt {attempt+1}/{max_proxy_attempts} with proxy on {search_engine['name']}")
+                    
+                    # Initialize Selenium with specific proxy
+                    driver = self._initialize_selenium(proxy)
+                    
+                    if not driver:
+                        logger.error(f"Failed to initialize Selenium for search (attempt {attempt+1})")
+                        self.results['counters']['proxy_errors'] += 1
+                        continue
+                    
+                    # Add a random delay before accessing the search engine to avoid detection
+                    time.sleep(random.uniform(2.0, 5.0))
+                    
+                    # Load search page
+                    search_url = search_engine["url"]
+                    logger.debug(f"Loading search URL: {search_url}")
+                    driver.get(search_url)
+                    
+                    # Add another delay after page load
+                    time.sleep(random.uniform(3.0, 7.0))
+                    
+                    # Wait for results to load
+                    try:
+                        WebDriverWait(driver, search_engine["wait_time"]).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, search_engine["result_selector"]))
+                        )
+                    except TimeoutException:
+                        logger.warning(f"Timeout waiting for search results on {search_engine['name']}")
+                        if driver:
+                            driver.quit()
+                        driver = None
+                        continue
+                    
+                    # Check for CAPTCHA
+                    if self._detect_captcha(driver):
+                        logger.warning(f"CAPTCHA detected during search on {search_engine['name']} (attempt {attempt+1})")
+                        
+                        # Try to bypass CAPTCHA
+                        if not self._solve_captcha(driver):
+                            logger.warning(f"Failed to bypass CAPTCHA on {search_engine['name']}, trying another proxy or search engine")
+                            driver.quit()
+                            driver = None
+                            continue
+                        
+                        # Wait for results to load after solving CAPTCHA
+                        try:
+                            WebDriverWait(driver, search_engine["wait_time"]).until(
+                                EC.presence_of_element_located((By.CSS_SELECTOR, search_engine["result_selector"]))
+                            )
+                        except TimeoutException:
+                            logger.warning(f"Timeout waiting for search results after CAPTCHA on {search_engine['name']}")
+                            if driver:
+                                driver.quit()
+                            driver = None
+                            continue
+                    
+                    # Try to extract search results
+                    try:
+                        # Extract search results
+                        results = driver.find_elements(By.CSS_SELECTOR, search_engine["result_selector"])
+                        
+                        if not results:
+                            logger.warning(f"No search results found on {search_engine['name']} (attempt {attempt+1})")
+                            if driver:
+                                driver.quit()
+                            driver = None
+                            continue
+                        
+                        logger.info(f"Found {len(results)} search results on {search_engine['name']}")
+                        
+                        # Extract domains from search results
+                        for result in results:
+                            try:
+                                # Try different strategies to find links
+                                link_elements = result.find_elements(By.CSS_SELECTOR, search_engine["link_selector"])
+                                
+                                if not link_elements and search_engine["link_selector"] != "a":
+                                    # Fallback to any anchor tag
+                                    link_elements = result.find_elements(By.TAG_NAME, "a")
+                                
+                                for link_element in link_elements:
+                                    href = link_element.get_attribute("href")
+                                    
+                                    if href and "http" in href:
+                                        parsed_url = urllib.parse.urlparse(href)
+                                        domain = parsed_url.netloc
+                                        
+                                        # Skip if domain is empty or contains blocked domain
+                                        if not domain or any(blocked in domain for blocked in self.BLOCKED_DOMAINS):
+                                            continue
+                                        
+                                        # Skip common non-business domains
+                                        if any(common in domain for common in ['wikipedia.org', 'youtube.com', 'amazon.com', 'facebook.com']):
+                                            continue
+                                        
+                                        # Add domain if not already added
+                                        if domain not in domains:
+                                            domains.append(domain)
+                            except Exception as e:
+                                logger.debug(f"Error extracting domain from search result: {e}")
+                        
+                        # If we have enough domains, we succeeded
+                        if len(domains) >= max_results:
+                            logger.info(f"Found {len(domains)} domains on {search_engine['name']}, which is enough")
+                            break
+                            
+                    except Exception as e:
+                        logger.error(f"Error extracting search results from {search_engine['name']}: {e}")
+                    
+                except Exception as e:
+                    logger.error(f"Error during search on {search_engine['name']} (attempt {attempt+1}): {e}")
+                    self.results['counters']['proxy_errors'] += 1
+                    if self.debug:
+                        traceback.print_exc()
+                
+                finally:
+                    # Close the driver
+                    if driver:
+                        try:
+                            driver.quit()
+                        except Exception:
+                            pass
+                        driver = None
+            
+            # If we have enough domains from this search engine, break the loop
+            if len(domains) >= max_results:
+                logger.info(f"Successfully found enough domains ({len(domains)}) using {search_engine['name']}")
+                break
+            else:
+                logger.info(f"Moving to next search engine after finding {len(domains)} domains on {search_engine['name']}")
+        
+        # Limit number of domains
+        domains = domains[:max_results]
+        
+        if not domains:
+            return {'error': 'No domains found after trying all search engines'}
+        
+        # Scrape each domain
+        domain_results = {}
+        
+        for domain in domains:
+            # Scrape domain
+            logger.info(f"Scraping domain: {domain}")
+            try:
+                domain_contacts = self.scrape_by_domain(domain, max_depth)
+                # Add to results
+                domain_results[domain] = domain_contacts
+            except Exception as e:
+                logger.error(f"Error scraping domain {domain}: {e}")
+                domain_results[domain] = {'emails': [], 'phones': []}
+        
+        # Combine all results
+        all_emails = set()
+        all_phones = set()
+        
+        for domain, contacts in domain_results.items():
+            all_emails.update(contacts['emails'])
+            all_phones.update(contacts['phones'])
+        
+        # Return results
+        return {
+            'query': keyword,
+            'domains': domains,
+            'domain_results': domain_results,
+            'emails': list(all_emails),
+            'phones': list(all_phones),
+            'timestamp': datetime.now().isoformat(),
+            'stats': {
+                'emails_found': self.results['counters']['emails_found'],
+                'phones_found': self.results['counters']['phones_found'],
+                'urls_processed': self.results['counters']['urls_processed'],
+                'urls_failed': self.results['counters']['urls_failed'],
+                'captchas_encountered': self.results['counters']['captchas_encountered'],
+                'captchas_solved': self.results['counters']['captchas_solved'],
+                'proxy_errors': self.results['counters']['proxy_errors']
+            }
+        }
+    
+    def save_results(self, results: Dict[str, Any], filename: Optional[str] = None) -> str:
+        """
+        Save results to a JSON file.
+        
+        Args:
+            results: Results to save
+            filename: Filename to save to (optional)
+            
+        Returns:
+            str: Path to saved file
+        """
+        if not filename:
+            # Generate filename based on query and timestamp
+            query = results.get('query', 'search').replace(' ', '_')
+            timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            filename = f"contact_results_{query}_{timestamp}.json"
+        
+        # Convert sets to lists for JSON serialization
+        serializable_results = {}
+        
+        for key, value in results.items():
+            if isinstance(value, set):
+                serializable_results[key] = list(value)
+            elif isinstance(value, dict):
+                serializable_results[key] = {
+                    k: list(v) if isinstance(v, set) else v
+                    for k, v in value.items()
+                }
+            else:
+                serializable_results[key] = value
+        
+        # Save to file
+        path = os.path.join(self.cache_dir or '.', filename)
+        
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(serializable_results, f, indent=2)
+        
+        return path
+    
+    def _extract_emails_from_scripts(self, html_content: str) -> Set[str]:
+        """
+        Extract emails from JavaScript and JSON in web pages.
+        
+        Args:
+            html_content: HTML content to extract emails from
+            
+        Returns:
+            Set of extracted emails
+        """
+        emails = set()
+        
+        # Find all script tags
+        script_pattern = r'<script[^>]*>(.*?)</script>'
+        scripts = re.findall(script_pattern, html_content, re.DOTALL)
+        
+        # Patterns to find emails in JavaScript
+        js_patterns = [
+            # Variable assignments
+            r'var\s+[a-zA-Z_]\w*\s*=\s*[\'"]([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})[\'"]',
+            # Object properties
+            r'[\'"]e?mail[\'"]:\s*[\'"]([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})[\'"]',
+            # Contact info objects
+            r'contact\w*[\'"]?\s*:\s*{[^}]*[\'"]e?mail[\'"]?\s*:\s*[\'"]([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})[\'"]',
+            # Array items
+            r'[\'"]emails?[\'"]\s*:\s*\[\s*[\'"]([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})[\'"]',
+            # Email protection scripts
+            r'data-cfemail=[\'"]([a-f0-9]+)[\'"]',  # Cloudflare email protection
+            # Obfuscated emails
+            r'(?:[\'"]\s*\+\s*[\'"]\s*)?([a-zA-Z0-9._%+\-]+)\s*[\'"]\s*\+\s*[\'"]\s*@\s*[\'"]\s*\+\s*[\'"]\s*([a-zA-Z0-9.\-]+)\s*[\'"]\s*\+\s*[\'"]\s*\.\s*[\'"]\s*\+\s*[\'"]\s*([a-zA-Z]{2,})'
+        ]
+        
+        # Process each script
+        for script in scripts:
+            for pattern in js_patterns:
+                matches = re.findall(pattern, script)
+                for match in matches:
+                    if isinstance(match, tuple):
+                        # Handle tuple results from regex groups
+                        if len(match) == 3:  # Obfuscated email parts
+                            email = f"{match[0]}@{match[1]}.{match[2]}"
+                            if self._validate_email(email):
+                                emails.add(email.lower())
+                    elif pattern == r'data-cfemail=[\'"]([a-f0-9]+)[\'"]':
+                        # Decode Cloudflare protected email
+                        try:
+                            decoded = self._decode_cloudflare_email(match)
+                            if decoded and self._validate_email(decoded):
+                                emails.add(decoded.lower())
+                        except:
+                            pass
+                    else:
+                        # Regular email match
+                        if self._validate_email(match):
+                            emails.add(match.lower())
+        
+        # Look for emails in JSON-LD structured data
+        json_ld_pattern = r'<script[^>]*type=[\'"]application/ld\+json[\'"][^>]*>(.*?)</script>'
+        json_ld_blocks = re.findall(json_ld_pattern, html_content, re.DOTALL)
+        
+        for json_block in json_ld_blocks:
+            try:
+                # Try to parse as JSON
+                data = json.loads(json_block)
+                # Extract emails from JSON
+                self._extract_emails_from_json(data, emails)
+            except:
+                # If JSON parsing fails, try regex
+                email_matches = re.findall(r'[\'"]email[\'"]\s*:\s*[\'"]([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})[\'"]', json_block)
+                for email in email_matches:
+                    if self._validate_email(email):
+                        emails.add(email.lower())
+        
+        return emails
+    
+    def _extract_emails_from_json(self, data, emails_set):
+        """
+        Recursively extract emails from JSON data.
+        
+        Args:
+            data: JSON data to extract emails from
+            emails_set: Set to add found emails to
+        """
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if isinstance(key, str) and key.lower() in ['email', 'mail', 'e-mail', 'emailaddress']:
+                    if isinstance(value, str) and '@' in value:
+                        if self._validate_email(value):
+                            emails_set.add(value.lower())
+                elif isinstance(value, (dict, list)):
+                    self._extract_emails_from_json(value, emails_set)
+        elif isinstance(data, list):
+            for item in data:
+                if isinstance(item, (dict, list)):
+                    self._extract_emails_from_json(item, emails_set)
+                elif isinstance(item, str) and '@' in item:
+                    if self._validate_email(item):
+                        emails_set.add(item.lower())
+    
+    def _decode_cloudflare_email(self, encoded):
+        """
+        Decode a Cloudflare-protected email.
+        
+        Args:
+            encoded: Hex-encoded email
+            
+        Returns:
+            Decoded email string
+        """
+        try:
+            hex_encoded = encoded
+            key = int(hex_encoded[0:2], 16)
+            decoded = ''
+            
+            for i in range(2, len(hex_encoded), 2):
+                hex_char = hex_encoded[i:i+2]
+                int_char = int(hex_char, 16) ^ key
+                decoded += chr(int_char)
+                
+            return decoded
+        except:
+            return None
+
+class EnhancedContactScraper(AdvancedWebScraper):
+    """Enhanced scraper specifically for contact information extraction."""
+    
+    def __init__(self, **kwargs):
+        """Initialize the enhanced contact scraper with default settings."""
+        # Set defaults appropriate for contact scraping
+        kwargs['headless'] = True  # Always force headless mode
+        if 'max_concurrent_threads' not in kwargs:
+            kwargs['max_concurrent_threads'] = 3
+        if 'timeout' not in kwargs:
+            kwargs['timeout'] = 20
+        
+        # Initialize with multiple search engines
+        self.search_engines_to_try = [
+            "DuckDuckGo",  # Less likely to show CAPTCHAs
+            "Bing",        # Moderate CAPTCHA frequency
+            "Yahoo",       # Alternative option
+            "Ecosia",      # Alternative option
+            "Google"       # Most restrictive, try last
+        ]
+        
+        super().__init__(**kwargs)
+        self.browsers = []  # Track browser instances for cleanup
+    
+    def _initialize_selenium(self, proxy: Optional[Dict[str, str]] = None) -> Optional[webdriver.Chrome]:
+        """Initialize a Selenium WebDriver with stealth and anti-detection capabilities."""
+        try:
+            # Call parent method to initialize browser
+            driver = super()._initialize_selenium(proxy)
+            
+            # Track this browser for cleanup
+            if driver:
+                self.browsers.append(driver)
+            
+            return driver
+        except Exception as e:
+            logger.error(f"Error in EnhancedContactScraper._initialize_selenium: {e}")
+            return None
+    
+    def _selenium_fetch(self, url: str, proxy: Optional[Dict[str, str]] = None) -> Optional[Tuple[str, List[Tuple[str, int]]]]:
+        """Enhanced selenium fetch that tracks browser instances."""
+        try:
+            # Get result from parent method
+            result = super()._selenium_fetch(url, proxy)
+            return result
+        except Exception as e:
+            logger.error(f"Error in EnhancedContactScraper._selenium_fetch: {e}")
+            return None
+    
+    def search_and_extract(self, target: str, country: str = 'IN', max_results: int = 30, 
+                          exact_count: bool = False, max_pages: int = 5) -> Dict[str, Any]:
+        """
+        Optimized search for a keyword and extract contact information.
+        
+        Args:
+            target: Search keyword or domain
+            country: Country code for phone number validation
+            max_results: Maximum number of results to return
+            exact_count: Whether to try to get exactly max_results
+            max_pages: Maximum number of search result pages to process
+            
+        Returns:
+            Dictionary containing 'emails' and 'phones' lists
+        """
+        try:
+            logger.info(f"Starting optimized search for '{target}', country: {country}")
+            
+            # Reset counters
+            self.results = {
+                'emails': set(),
+                'phones': set(),
+                'processed_urls': set(),
+                'failed_urls': set(),
+                'counters': {
+                    'emails_found': 0,
+                    'phones_found': 0,
+                    'urls_processed': 0,
+                    'urls_failed': 0,
+                    'captchas_encountered': 0,
+                    'captchas_solved': 0,
+                    'proxy_errors': 0
+                }
+            }
+            
+            # Track start time for performance monitoring
+            start_time = time.time()
+            
+            # Determine if input is a domain or search term
+            is_domain = '.' in target and ' ' not in target and not target.startswith('http')
+            
+            # Results containers
+            emails = set()
+            phones = set()
+            
+            # Set a shorter timeout for faster results
+            original_timeout = self.timeout
+            self.timeout = min(15, self.timeout)  # Use at most 15 seconds timeout
+            
+            try:
+                if is_domain:
+                    # Direct domain scraping - faster approach
+                    logger.info(f"Direct scraping of domain: {target}")
+                    
+                    # Generate contact URLs
+                    contact_urls = self._get_contact_urls(target)
+                    
+                    # Process most promising URLs first (contact pages)
+                    contact_urls.sort(key=lambda url: sum(1 for kw in self.CONTACT_KEYWORDS if kw in url.lower()), reverse=True)
+                    
+                    # Process URLs concurrently for speed
+                    with ThreadPoolExecutor(max_workers=3) as executor:
+                        futures = []
+                        for url in contact_urls[:5]:  # Try top 5 URLs
+                            futures.append(executor.submit(self._process_single_url, url))
+                        
+                        # Collect results
+                        for future in futures:
+                            try:
+                                result = future.result(timeout=20)
+                                if result:
+                                    emails_found, phones_found = result
+                                    emails.update(emails_found)
+                                    phones.update(phones_found)
+                            except Exception as e:
+                                logger.debug(f"Error in concurrent URL processing: {e}")
+                else:
+                    # Search term - use search engines
+                    logger.info(f"Searching for term: {target}")
+                    
+                    # Prioritize Google for faster results if possible
+                    engine_order = ["Google", "Bing", "DuckDuckGo", "Yahoo"]
+                    
+                    # Try each search engine in order
+                    for engine_name in engine_order:
+                        # Skip if we already have enough results
+                        if len(emails) >= max_results and len(phones) >= max_results:
+                            break
+                            
+                        # Find the search engine config
+                        engine = None
+                        if engine_name == "Google":
+                            engine = {
+                                "name": "Google",
+                                "url": f"https://www.google.com/search?q={urllib.parse.quote(target)}+contact+email+phone+{country}",
+                                "result_selector": "div.g",
+                                "link_selector": "a",
+                                "wait_time": 10
+                            }
+                        elif engine_name == "Bing":
+                            engine = {
+                                "name": "Bing",
+                                "url": f"https://www.bing.com/search?q={urllib.parse.quote(target)}+contact+email+phone+{country}",
+                                "result_selector": "li.b_algo",
+                                "link_selector": "a",
+                                "wait_time": 8
+                            }
+                        elif engine_name == "DuckDuckGo":
+                            engine = {
+                                "name": "DuckDuckGo",
+                                "url": f"https://duckduckgo.com/?q={urllib.parse.quote(target)}+contact+email+phone+{country}",
+                                "result_selector": "article",
+                                "link_selector": "a.result__a",
+                                "wait_time": 8
+                            }
+                        elif engine_name == "Yahoo":
+                            engine = {
+                                "name": "Yahoo",
+                                "url": f"https://search.yahoo.com/search?p={urllib.parse.quote(target)}+contact+email+phone+{country}",
+                                "result_selector": "div.algo",
+                                "link_selector": "a",
+                                "wait_time": 8
+                            }
+                        
+                        if not engine:
+                            continue
+                            
+                        logger.info(f"Trying search engine: {engine['name']}")
+                        
+                        # Initialize driver with our reliable proxy
+                        driver = self._initialize_selenium(self._get_next_proxy())
+                        if not driver:
+                            self.results['counters']['proxy_errors'] += 1
+                            continue
+                            
+                        try:
+                            # Load search page with delay to avoid detection
+                            driver.get(engine["url"])
+                            time.sleep(random.uniform(1.0, 2.0))  # Shorter delay for speed
+                            
+                            # Wait for results
+                            try:
+                                WebDriverWait(driver, engine["wait_time"]).until(
+                                    EC.presence_of_element_located((By.CSS_SELECTOR, engine["result_selector"]))
+                                )
+                            except TimeoutException:
+                                logger.warning(f"Timeout waiting for search results on {engine['name']}")
+                                driver.quit()
+                                self.results['counters']['urls_failed'] += 1
+                                continue
+                                
+                            # Check for CAPTCHA
+                            if self._detect_captcha(driver):
+                                if not self._solve_captcha(driver):
+                                    logger.warning(f"Failed to bypass CAPTCHA on {engine['name']}")
+                                    driver.quit()
+                                    continue
+                                    
+                                # Wait for results again after CAPTCHA
+                                try:
+                                    WebDriverWait(driver, engine["wait_time"]).until(
+                                        EC.presence_of_element_located((By.CSS_SELECTOR, engine["result_selector"]))
+                                    )
+                                except TimeoutException:
+                                    driver.quit()
+                                    self.results['counters']['urls_failed'] += 1
+                                    continue
+                            
+                            # Extract domains from search results
+                            domains = []
+                            results = driver.find_elements(By.CSS_SELECTOR, engine["result_selector"])
+                            
+                            for result in results[:max_pages]:  # Limit to max_pages results
+                                try:
+                                    link_elements = result.find_elements(By.CSS_SELECTOR, engine["link_selector"])
+                                    if not link_elements and engine["link_selector"] != "a":
+                                        link_elements = result.find_elements(By.TAG_NAME, "a")
+                                        
+                                    for link_element in link_elements:
+                                        href = link_element.get_attribute("href")
+                                        if href and "http" in href:
+                                            parsed_url = urllib.parse.urlparse(href)
+                                            domain = parsed_url.netloc
+                                            
+                                            # Skip if domain is empty or blocked
+                                            if not domain or any(blocked in domain for blocked in self.BLOCKED_DOMAINS):
+                                                continue
+                                                
+                                            # Skip common non-business domains
+                                            if any(common in domain for common in ['wikipedia.org', 'youtube.com', 'amazon.com', 'facebook.com']):
+                                                continue
+                                                
+                                            # Add domain if not already added
+                                            if domain not in domains:
+                                                domains.append(domain)
+                                except Exception:
+                                    continue
+                            
+                            driver.quit()
+                            
+                            # Process domains concurrently for speed
+                            with ThreadPoolExecutor(max_workers=5) as executor:
+                                futures = []
+                                for domain in domains[:8]:  # Process up to 8 domains concurrently
+                                    # Generate contact URLs for this domain
+                                    contact_urls = self._get_contact_urls(domain)[:2]  # Just try top 2 URLs per domain
+                                    for url in contact_urls:
+                                        futures.append(executor.submit(self._process_single_url, url))
+                                
+                                # Collect results with timeout
+                                for future in futures:
+                                    try:
+                                        result = future.result(timeout=15)
+                                        if result:
+                                            emails_found, phones_found = result
+                                            emails.update(emails_found)
+                                            phones.update(phones_found)
+                                            
+                                            # Break early if we have enough results
+                                            if len(emails) >= max_results and len(phones) >= max_results:
+                                                break
+                                    except Exception as e:
+                                        logger.debug(f"Error in concurrent domain processing: {e}")
+                                        
+                        except Exception as e:
+                            logger.error(f"Error with search engine {engine['name']}: {e}")
+                            self.results['counters']['proxy_errors'] += 1
+                        finally:
+                            try:
+                                if driver:
+                                    driver.quit()
+                            except:
+                                pass
+            finally:
+                # Restore original timeout
+                self.timeout = original_timeout
+            
+            # Apply country-specific filtering for phones
+            if country:
+                # Implement country-specific phone validation
+                if country == 'IN':  # India
+                    phones = {p for p in phones if re.search(r'(?:\+?91|0)?[6-9]\d{9}', re.sub(r'\D', '', p))}
+                elif country == 'US':  # United States
+                    phones = {p for p in phones if len(re.sub(r'\D', '', p)) == 10 or 
+                             (len(re.sub(r'\D', '', p)) == 11 and re.sub(r'\D', '', p).startswith('1'))}
+                else:
+                    # Generic filtering - ensure they're at least 10 digits
+                    phones = {p for p in phones if len(re.sub(r'\D', '', p)) >= 10}
+            
+            # Format phone numbers based on country
+            formatted_phones = []
+            for phone in phones:
+                digits = re.sub(r'\D', '', phone)
+                
+                if country == 'IN' and len(digits) >= 10:
+                    # Format for India: +91 98765 43210
+                    if len(digits) == 10:
+                        formatted = f"+91 {digits[:5]} {digits[5:]}"
+                    elif len(digits) > 10 and digits.startswith('91'):
+                        formatted = f"+{digits[:2]} {digits[2:7]} {digits[7:12]}"
+                    else:
+                        formatted = f"+91 {digits[-10:-5]} {digits[-5:]}"
+                    formatted_phones.append(formatted)
+                elif country == 'US' and len(digits) >= 10:
+                    # Format for US: +1 (123) 456-7890
+                    if len(digits) == 10:
+                        formatted = f"+1 ({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+                    elif len(digits) == 11 and digits.startswith('1'):
+                        formatted = f"+{digits[0]} ({digits[1:4]}) {digits[4:7]}-{digits[7:]}"
+                    else:
+                        formatted = f"+1 ({digits[-10:-7]}) {digits[-7:-4]}-{digits[-4:]}"
+                    formatted_phones.append(formatted)
+                else:
+                    # Generic international format
+                    if len(digits) >= 8:
+                        if digits.startswith('00'):
+                            digits = digits[2:]  # Remove leading 00
+                        if not digits.startswith('+'):
+                            digits = '+' + digits
+                        formatted_phones.append(digits)
+            
+            # Use formatted phones
+            phones_list = formatted_phones if formatted_phones else list(phones)
+            
+            # Limit results if needed
+            emails_list = list(emails)[:max_results]
+            phones_list = phones_list[:max_results]
+            
+            # Report performance
+            elapsed_time = time.time() - start_time
+            logger.info(f"Search completed in {elapsed_time:.1f} seconds. Found {len(emails_list)} emails and {len(phones_list)} phones.")
+            
+            return {
+                'emails': emails_list,
+                'phones': phones_list,
+                'count': {
+                    'emails': len(emails_list),
+                    'phones': len(phones_list)
+                },
+                'elapsed_time': f"{elapsed_time:.1f} seconds",
+                'stats': {
+                    'emails_found': self.results['counters']['emails_found'],
+                    'phones_found': self.results['counters']['phones_found'],
+                    'urls_processed': self.results['counters']['urls_processed'],
+                    'urls_failed': self.results['counters']['urls_failed'],
+                    'captchas_encountered': self.results['counters']['captchas_encountered'],
+                    'captchas_solved': self.results['counters']['captchas_solved'],
+                    'proxy_errors': self.results['counters']['proxy_errors']
+                }
+            }
+        
+        except Exception as e:
+            logger.error(f"Error in search_and_extract: {e}")
+            if self.debug:
+                traceback.print_exc()
+            return {'error': str(e), 'emails': [], 'phones': []}
+    
+    def close_browser(self):
+        """Close any open browser instances."""
+        try:
+            logger.info("Closing browser instances")
+            # Try to quit any browsers we might have created
+            for browser in self.browsers:
+                try:
+                    if browser:
+                        browser.quit()
+                except Exception as e:
+                    logger.debug(f"Error closing browser: {e}")
+            self.browsers = []
+        except Exception as e:
+            logger.error(f"Error in close_browser: {e}")
+            
+    def __del__(self):
+        """Ensure browsers are closed when object is deleted."""
+        self.close_browser()
+    
+    def _process_single_url(self, url: str) -> Optional[Tuple[Set[str], Set[str]]]:
+        """
+        Process a single URL to extract contact information.
+        This method is designed to be used with ThreadPoolExecutor for concurrent processing.
+        
+        Args:
+            url: URL to process
+            
+        Returns:
+            Tuple of (emails, phones) sets or None if failed
+        """
+        try:
+            # Skip if URL already processed
+            if url in self.results['processed_urls'] or url in self.results['failed_urls']:
+                return None
+            
+            # Add URL to processed list
+            self.results['processed_urls'].add(url)
+            self.results['counters']['urls_processed'] += 1
+            
+            # Check if this is a contact page - prioritize contact pages
+            is_contact_page = any(keyword in url.lower() for keyword in self.CONTACT_KEYWORDS)
+            
+            # Try simple request first (faster)
+            html_content = self._requests_fetch(url)
+            
+            if html_content:
+                # Extract contact info
+                contacts = self._extract_contact_info(html_content)
+                
+                # If this is a contact page but we didn't find contacts, try harder
+                if is_contact_page and not (contacts['emails'] or contacts['phones']):
+                    # Try to find forms with email fields
+                    form_pattern = r'<form[^>]*>(.+?)</form>'
+                    forms = re.findall(form_pattern, html_content, re.DOTALL)
+                    
+                    for form in forms:
+                        # Look for email fields
+                        email_field_pattern = r'<input[^>]*type=[\'"](?:email|text)[\'"][^>]*name=[\'"](?:email|mail)[\'"]'
+                        if re.search(email_field_pattern, form, re.IGNORECASE):
+                            # This form has an email field - look for hidden recipient
+                            recipient_pattern = r'<input[^>]*type=[\'"]hidden[\'"][^>]*name=[\'"](?:recipient|to|email_to)[\'"][^>]*value=[\'"]([^\'"]*)[\'"]\s*/?>'
+                            recipient_match = re.search(recipient_pattern, form)
+                            
+                            if recipient_match:
+                                email = recipient_match.group(1)
+                                if self._validate_email(email):
+                                    contacts['emails'].add(email.lower())
+                                    self.results['counters']['emails_found'] += 1
+                
+                return contacts['emails'], contacts['phones']
+            else:
+                # Fall back to selenium for more complex pages
+                selenium_result = self._selenium_fetch(url, self._get_next_proxy())
+                if selenium_result:
+                    html_content, _ = selenium_result
+                    contacts = self._extract_contact_info(html_content)
+                    
+                    # For contact pages, try to extract emails from dynamically loaded content
+                    if is_contact_page and not contacts['emails']:
+                        try:
+                            # Look for contact forms and extract hidden recipients
+                            form_elements = self._find_contact_forms(html_content)
+                            for form in form_elements:
+                                # Extract any hidden email fields
+                                hidden_fields = re.findall(r'<input[^>]*type=[\'"]hidden[\'"][^>]*name=[\'"](?:recipient|to|email_to)[\'"][^>]*value=[\'"]([^\'"]*)[\'"]\s*/?>', form)
+                                for field in hidden_fields:
+                                    if self._validate_email(field):
+                                        contacts['emails'].add(field.lower())
+                                        self.results['counters']['emails_found'] += 1
+                        except Exception as e:
+                            logger.debug(f"Error extracting dynamic emails: {e}")
+                    
+                    return contacts['emails'], contacts['phones']
+            
+            return None
+            
+        except Exception as e:
+            logger.debug(f"Error processing URL {url}: {e}")
+            self.results['counters']['urls_failed'] += 1
+            return None
+    
+    def _find_contact_forms(self, html_content):
+        """
+        Find contact forms in HTML content.
+        
+        Args:
+            html_content: HTML content to search
+            
+        Returns:
+            List of form HTML strings
+        """
+        # Look for forms with contact-related attributes
+        contact_form_patterns = [
+            r'<form[^>]*(?:id|class|name)=[\'"][^\'"]*contact[^\'"]*[\'"][^>]*>(.+?)</form>',
+            r'<form[^>]*action=[\'"][^\'"]*contact[^\'"]*[\'"][^>]*>(.+?)</form>',
+            r'<form[^>]*>(?:(?!<form).)*?(?:contact|email|message|inquiry)(?:(?!<form).)*?</form>'
+        ]
+        
+        forms = []
+        for pattern in contact_form_patterns:
+            matches = re.findall(pattern, html_content, re.DOTALL | re.IGNORECASE)
+            forms.extend(matches)
+    
+    def _validate_indian_phone(self, phone: str) -> bool:
+        """
+        Specifically validate an Indian phone number.
+        
+        Args:
+            phone: Phone number to validate
+            
+        Returns:
+            bool: True if valid Indian phone number, False otherwise
+        """
+        # Extract digits only
+        digits = re.sub(r'\D', '', phone)
+        
+        # Check if it has country code
+        if digits.startswith('91'):
+            # Remove country code
+            mobile_part = digits[2:]
+        else:
+            mobile_part = digits
+        
+        # Must be 10 digits
+        if len(mobile_part) != 10:
+            return False
+        
+        # Must start with 6, 7, 8, or 9
+        if mobile_part[0] not in '6789':
+            return False
+        
+        # Check for invalid patterns
+        
+        # All same digits
+        if len(set(mobile_part)) <= 2:  # At most 2 unique digits
+            return False
+        
+        # Sequential digits
+        for i in range(len(mobile_part) - 3):
+            if (int(mobile_part[i]) + 1 == int(mobile_part[i+1]) and 
+                int(mobile_part[i+1]) + 1 == int(mobile_part[i+2]) and 
+                int(mobile_part[i+2]) + 1 == int(mobile_part[i+3])):
+                return False
+        
+        # Check for repeating patterns
+        for length in range(2, 5):  # Check for repeating patterns of length 2-4
+            for i in range(len(mobile_part) - length * 2 + 1):
+                pattern = mobile_part[i:i+length]
+                if mobile_part[i+length:i+length*2] == pattern:
+                    return False
+        
+        # Check for known invalid prefixes
+        invalid_prefixes = ['0000', '1111', '2222', '3333', '4444', '5555', '1234', '5000']
+        if any(mobile_part.startswith(prefix) for prefix in invalid_prefixes):
+            return False
+        
+        # Check for specific invalid area codes for Indian mobiles
+        invalid_area_codes = ['5313', '4056', '1234', '0000', '9999', '1111']
+        if any(mobile_part.startswith(code) for code in invalid_area_codes):
+            return False
+        
+        return True
+
+def create_docker_files():
+    """Create Docker and docker-compose files for easy deployment."""
+    # Create Dockerfile
+    dockerfile = """FROM python:3.9-slim
+
+# Install dependencies for Chrome and Python packages
+RUN apt-get update && apt-get install -y \\
+    wget \\
+    gnupg \\
+    curl \\
+    unzip \\
+    xvfb \\
+    build-essential \\
+    libgconf-2-4 \\
+    libnss3 \\
+    libgbm1 \\
+    libfontconfig1 \\
+    libasound2 \\
+    --no-install-recommends \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Chrome
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \\
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \\
+    && apt-get update \\
+    && apt-get install -y google-chrome-stable \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Create cache directory
+RUN mkdir -p cache
+
+# Expose port
+EXPOSE 5000
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Run with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "data_miner.scrapper:create_api_app()"]
+"""
+
+    # Create docker-compose.yml
+    docker_compose = """version: '3'
+
+services:
+  scraper:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./cache:/app/cache
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+"""
+
+    # Create requirements.txt
+    requirements = """beautifulsoup4>=4.9.3
+requests>=2.25.1
+selenium>=4.0.0
+selenium-stealth>=1.0.6
+selenium-wire>=5.0.0
+fake-useragent>=0.1.11
+Flask>=2.0.1
+gunicorn>=20.1.0
+webdriver-manager>=3.5.2
+urllib3>=1.26.7
+"""
+
+    # Write files
+    with open("Dockerfile", "w") as f:
+        f.write(dockerfile)
+    
+    with open("docker-compose.yml", "w") as f:
+        f.write(docker_compose)
+    
+    with open("requirements-scraper.txt", "w") as f:
+        f.write(requirements)
+    
+    print("Docker files created successfully:")
+    print("- Dockerfile")
+    print("- docker-compose.yml")
+    print("- requirements-scraper.txt")
+    print("\nTo build and run the Docker container:")
+    print("docker-compose up -d")
+
+def quick_contact_scraper():
+    """
+    Streamlined contact scraper that follows a specific workflow:
+    1. Ask for user input (keyword)
+    2. Ask for number of contacts and country
+    3. Search with targeted keywords
+    4. Automatically detect and scrape contact information efficiently
+    """
+    try:
+        print("\n===== Quick Contact Scraper =====")
+        
+        # Step 1: Get user input for keyword
+        keyword = input("Enter the keyword to search (e.g., 'IT companies'): ").strip()
+        if not keyword:
+            print("Error: Keyword cannot be empty.")
+            return
+        
+        # Step 2: Get number of contacts and country
+        try:
+            num_contacts = int(input("How many contacts do you need? (default: 10): ") or "10")
+        except ValueError:
+            print("Invalid number, using default of 10.")
+            num_contacts = 10
+        
+        country = input("Which country do you want to search in? (e.g., 'US', 'IN', 'UK', default: 'IN'): ").strip().upper() or "IN"
+        
+        # Step 3: Create enhanced search queries with country and contact info
+        country_name = {
+            "US": "United States",
+            "IN": "India",
+            "UK": "United Kingdom",
+            "CA": "Canada",
+            "AU": "Australia"
+        }.get(country, country)
+        
+        print(f"\nSearching for: {keyword} in {country_name}")
+        print("This may take a few minutes. Please wait...\n")
+        
+        # Create specialized search queries
+        search_queries = [
+            f"{keyword} {country_name} contact information",
+            f"{keyword} {country_name} email phone",
+            f"{keyword} {country_name} contact us",
+            f"{keyword} {country_name} directory"
+        ]
+        
+        # Initialize the enhanced scraper with optimized settings
+        scraper = EnhancedContactScraper(
+            max_concurrent_threads=3,
+            timeout=20,
+            max_retries=2,
+            debug=False,
+            cache_dir="./cache"
+        )
+        
+        # Track results across all queries
+        all_emails = set()
+        all_phones = set()
+        processed_domains = set()
+        
+        # Step 4: Execute searches with a timeout
+        import threading
+        import time
+        
+        # Create a timeout mechanism that works on Windows too
+        timeout_occurred = False
+        
+        def timeout_check(timeout_seconds):
+            nonlocal timeout_occurred
+            time.sleep(timeout_seconds)
+            timeout_occurred = True
+        
+        # Start timeout thread (2 minutes)
+        timeout_thread = threading.Thread(target=timeout_check, args=(120,))
+        timeout_thread.daemon = True
+        timeout_thread.start()
+        
+        # Track stats across all queries
+        combined_stats = {
+            'emails_found': 0,
+            'phones_found': 0,
+            'urls_processed': 0,
+            'urls_failed': 0,
+            'captchas_encountered': 0,
+            'captchas_solved': 0,
+            'proxy_errors': 0
+        }
+        
+        try:
+            # Try each query until we get enough results
+            for query in search_queries:
+                if timeout_occurred or (len(all_emails) >= num_contacts and len(all_phones) >= num_contacts):
+                    break
+                    
+                print(f"Searching: {query}")
+                
+                # Use the optimized search_and_extract method
+                results = scraper.search_and_extract(
+                    target=query,
+                    country=country,
+                    max_results=num_contacts,
+                    max_pages=3  # Limit to 3 pages for speed
+                )
+                
+                if 'error' in results and results['error']:
+                    print(f"Warning: {results['error']}")
+                    continue
+                
+                # Add results to our collections
+                all_emails.update(results.get('emails', []))
+                all_phones.update(results.get('phones', []))
+                
+                # Update combined stats
+                if 'stats' in results:
+                    for key, value in results['stats'].items():
+                        combined_stats[key] += value
+                
+                print(f"Found {len(results.get('emails', []))} emails and {len(results.get('phones', []))} phone numbers")
+                
+        except KeyboardInterrupt:
+            print("\nOperation cancelled by user.")
+        except Exception as e:
+            print(f"\nError during search: {e}")
+        finally:
+            # Close browser instances
+            scraper.close_browser()
+        
+        if timeout_occurred:
+            print("\nSearch operation timed out. Showing results collected so far.")
         
         # Display results
-        print("\n=== SEARCH RESULTS ===")
+        print("\n===== Results =====")
         
-        # Display phone numbers
-        phones_count = len(validated_results.get('phones', []))
-        print(f"Extracted {phones_count} phone numbers (requested {max_results})")
+        emails_list = list(all_emails)[:num_contacts]
+        phones_list = list(all_phones)[:num_contacts]
         
-        if phones_count > 0:
-            display_count = min(10, phones_count)
-            print(f"\nTop {display_count} Phone Numbers (Ranked by Quality):")
-            for i, item in enumerate(validated_results['phones'][:display_count], 1):
-                print(f"{i}. {item['phone']} (Score: {item['score']})")
+        print(f"\nFound {len(emails_list)} email addresses:")
+        for i, email in enumerate(emails_list, 1):
+            print(f"{i}. {email}")
         
-        # Display emails
-        emails_count = len(validated_results.get('emails', []))
-        print(f"\nExtracted {emails_count} email addresses (requested {max_results})")
+        print(f"\nFound {len(phones_list)} phone numbers:")
+        for i, phone in enumerate(phones_list, 1):
+            print(f"{i}. {phone}")
         
-        if emails_count > 0:
-            display_count = min(10, emails_count)
-            print(f"\nTop {display_count} Emails (Ranked by Quality):")
-            for i, item in enumerate(validated_results['emails'][:display_count], 1):
-                print(f"{i}. {item['email']} (Score: {item['score']})")
+        # Display stats
+        print("\n===== Stats =====")
+        print(f"URLs processed: {combined_stats['urls_processed']}")
+        print(f"URLs failed: {combined_stats['urls_failed']}")
+        print(f"Total emails found: {combined_stats['emails_found']}")
+        print(f"Total phones found: {combined_stats['phones_found']}")
+        print(f"CAPTCHAs encountered: {combined_stats['captchas_encountered']}")
+        print(f"CAPTCHAs solved: {combined_stats['captchas_solved']}")
+        print(f"Proxy errors: {combined_stats['proxy_errors']}")
         
-        # Confirm exact count achievement
-        if phones_count == max_results and emails_count == max_results:
-            print(f"\nSUCCESS: Extracted exactly {max_results} phone numbers and {max_results} email addresses as requested.")
-        else:
-            print("\nNote: The results file contains exactly the requested number of items, even if some had to be duplicated.")
+        # Save results to file
+        timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+        filename = f"contact_results_{keyword.replace(' ', '_')}_{timestamp}.json"
         
-        print(f"\nComplete results saved to contact_results_{target.replace(' ', '_')}_{time.strftime('%Y%m%d-%H%M%S')}.json")
+        results = {
+            'query': keyword,
+            'country': country,
+            'emails': emails_list,
+            'phones': phones_list,
+            'stats': combined_stats,
+            'timestamp': datetime.now().isoformat()
+        }
         
-    except KeyboardInterrupt:
-        print("\nOperation cancelled by user")
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(results, f, indent=2)
+        
+        print(f"\nResults saved to {filename}")
+        
     except Exception as e:
-        print(f"An error occurred: {e}")
-        logger.error(f"Error in main: {e}", exc_info=True)
-    finally:
-        if 'scraper' in locals() and scraper.driver:
+        print(f"\nError: {e}")
+        if 'scraper' in locals():
             scraper.close_browser()
 
+def main():
+    """Command line interface for the scraper."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Advanced Web Scraper for Contact Information')
+    parser.add_argument('--keyword', type=str, help='Keyword to search for websites')
+    parser.add_argument('--country', type=str, default='IN', help='Country code (e.g., IN, US, UK)')
+    parser.add_argument('--output', type=str, help='Output file path (JSON)')
+    parser.add_argument('--num-contacts', type=int, default=10, help='Number of contacts to find')
+    parser.add_argument('--max-depth', type=int, default=2, help='Maximum crawl depth')
+    parser.add_argument('--max-results', type=int, default=5, help='Maximum number of domains to scrape')
+    parser.add_argument('--timeout', type=int, default=30, help='Request timeout in seconds')
+    parser.add_argument('--max-retries', type=int, default=3, help='Maximum number of retries')
+    parser.add_argument('--threads', type=int, default=3, help='Maximum number of concurrent threads')
+    parser.add_argument('--debug', action='store_true', help='Enable debug mode')
+    parser.add_argument('--cache-dir', type=str, default='./cache', help='Directory to cache results')
+    parser.add_argument('--interactive', action='store_true', help='Run in interactive mode')
+    
+    args = parser.parse_args()
+    
+    # Run in interactive mode if requested
+    if args.interactive:
+        quick_contact_scraper()
+        return
+    
+    # Configure logging level
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+    
+    # Initialize scraper
+    scraper = EnhancedContactScraper(
+        max_concurrent_threads=args.threads,
+        timeout=args.timeout,
+        max_retries=args.max_retries,
+        debug=args.debug,
+        cache_dir=args.cache_dir
+    )
+    
+    try:
+        # Run scraper
+        if args.keyword:
+            print(f"Searching for: {args.keyword} in {args.country}")
+            
+            # Create enhanced search query with country
+            country_name = {
+                "US": "United States",
+                "IN": "India",
+                "UK": "United Kingdom",
+                "CA": "Canada",
+                "AU": "Australia"
+            }.get(args.country, args.country)
+            
+            search_query = f"{args.keyword} {country_name} contact information"
+            
+            # Use the enhanced search_and_extract method
+            results = scraper.search_and_extract(
+                target=search_query,
+                country=args.country,
+                max_results=args.num_contacts,
+                max_pages=args.max_results
+            )
+            
+            if 'error' in results and results['error']:
+                print(f"Error: {results['error']}")
+            else:
+                # Display results
+                emails = results.get('emails', [])
+                phones = results.get('phones', [])
+                
+                print(f"\nFound {len(emails)} email addresses:")
+                for i, email in enumerate(emails, 1):
+                    print(f"{i}. {email}")
+                
+                print(f"\nFound {len(phones)} phone numbers:")
+                for i, phone in enumerate(phones, 1):
+                    print(f"{i}. {phone}")
+                
+                # Display stats
+                if 'stats' in results:
+                    print("\n===== Stats =====")
+                    stats = results['stats']
+                    print(f"URLs processed: {stats['urls_processed']}")
+                    print(f"URLs failed: {stats['urls_failed']}")
+                    print(f"Total emails found: {stats['emails_found']}")
+                    print(f"Total phones found: {stats['phones_found']}")
+                    print(f"CAPTCHAs encountered: {stats['captchas_encountered']}")
+                    print(f"CAPTCHAs solved: {stats['captchas_solved']}")
+                    print(f"Proxy errors: {stats['proxy_errors']}")
+                
+                # Save results to file
+                if args.output:
+                    output_path = args.output
+                else:
+                    timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+                    output_path = f"contact_results_{args.keyword.replace(' ', '_')}_{timestamp}.json"
+                
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    json.dump(results, f, indent=2)
+                
+                print(f"\nResults saved to {output_path}")
+        else:
+            print("Error: Keyword must be provided")
+            parser.print_help()
+    
+    finally:
+        # Ensure browser instances are closed
+        scraper.close_browser()
+
 if __name__ == "__main__":
-    main()
+    # If no arguments are provided, run the interactive quick scraper
+    import sys
+    if len(sys.argv) == 1:
+        quick_contact_scraper()
+    else:
+        main()

@@ -664,17 +664,60 @@ function renderRegionChart(regionData, keyword) {
     // Show the container
     if (container) container.style.display = 'block';
     
-    // Sort data and take top 10
-    const sortedData = [...regionData].sort((a, b) => b.value - a.value).slice(0, 10);
+    // Check if we have the new data format with geoName and values
+    const isNewFormat = regionData[0] && 'geoName' in regionData[0] && 'values' in regionData[0];
+    
+    let chartData;
+    
+    if (isNewFormat) {
+        console.log('Using new region data format with geoName and values');
+        
+        // For new format, we need to extract data differently
+        // First, get all unique keywords
+        const allKeywords = new Set();
+        regionData.forEach(region => {
+            Object.keys(region.values).forEach(key => allKeywords.add(key));
+        });
+        
+        // Use the first keyword if multiple are present, or the provided keyword
+        const keywordToUse = allKeywords.size > 0 ? 
+            (allKeywords.has(keyword) ? keyword : Array.from(allKeywords)[0]) : 
+            keyword;
+            
+        console.log('Using keyword for region chart:', keywordToUse);
+        
+        // Sort regions by the selected keyword's value
+        const sortedRegions = [...regionData].sort((a, b) => {
+            const valueA = a.values[keywordToUse] || 0;
+            const valueB = b.values[keywordToUse] || 0;
+            return valueB - valueA;
+        }).slice(0, 10);
+        
+        chartData = {
+            labels: sortedRegions.map(item => item.geoName),
+            values: sortedRegions.map(item => item.values[keywordToUse] || 0)
+        };
+    } else {
+        // Original format with name and value
+        console.log('Using original region data format with name and value');
+        
+        // Sort data and take top 10
+        const sortedData = [...regionData].sort((a, b) => b.value - a.value).slice(0, 10);
+        
+        chartData = {
+            labels: sortedData.map(item => item.name),
+            values: sortedData.map(item => item.value)
+        };
+    }
     
     // Create the chart
     return new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: sortedData.map(item => item.name),
+            labels: chartData.labels,
             datasets: [{
                 label: 'Interest by Region',
-                data: sortedData.map(item => item.value),
+                data: chartData.values,
                 backgroundColor: 'rgba(75, 192, 192, 0.7)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1
@@ -721,17 +764,60 @@ function renderCityChart(cityData, keyword) {
     // Show the container
     if (container) container.style.display = 'block';
     
-    // Sort data and take top 10
-    const sortedData = [...cityData].sort((a, b) => b.value - a.value).slice(0, 10);
+    // Check if we have the new data format with geoName and values
+    const isNewFormat = cityData[0] && 'geoName' in cityData[0] && 'values' in cityData[0];
+    
+    let chartData;
+    
+    if (isNewFormat) {
+        console.log('Using new city data format with geoName and values');
+        
+        // For new format, we need to extract data differently
+        // First, get all unique keywords
+        const allKeywords = new Set();
+        cityData.forEach(city => {
+            Object.keys(city.values).forEach(key => allKeywords.add(key));
+        });
+        
+        // Use the first keyword if multiple are present, or the provided keyword
+        const keywordToUse = allKeywords.size > 0 ? 
+            (allKeywords.has(keyword) ? keyword : Array.from(allKeywords)[0]) : 
+            keyword;
+            
+        console.log('Using keyword for city chart:', keywordToUse);
+        
+        // Sort cities by the selected keyword's value
+        const sortedCities = [...cityData].sort((a, b) => {
+            const valueA = a.values[keywordToUse] || 0;
+            const valueB = b.values[keywordToUse] || 0;
+            return valueB - valueA;
+        }).slice(0, 10);
+        
+        chartData = {
+            labels: sortedCities.map(item => item.geoName),
+            values: sortedCities.map(item => item.values[keywordToUse] || 0)
+        };
+    } else {
+        // Original format with name and value
+        console.log('Using original city data format with name and value');
+        
+        // Sort data and take top 10
+        const sortedData = [...cityData].sort((a, b) => b.value - a.value).slice(0, 10);
+        
+        chartData = {
+            labels: sortedData.map(item => item.name),
+            values: sortedData.map(item => item.value)
+        };
+    }
     
     // Create the chart
     return new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: sortedData.map(item => item.name),
+            labels: chartData.labels,
             datasets: [{
                 label: 'Interest by City',
-                data: sortedData.map(item => item.value),
+                data: chartData.values,
                 backgroundColor: 'rgba(153, 102, 255, 0.7)',
                 borderColor: 'rgba(153, 102, 255, 1)',
                 borderWidth: 1

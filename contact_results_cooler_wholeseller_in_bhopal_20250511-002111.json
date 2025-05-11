@@ -1,0 +1,16 @@
+{
+  "query": "cooler wholeseller in bhopal",
+  "country": "IN",
+  "emails": [],
+  "phones": [],
+  "stats": {
+    "emails_found": 0,
+    "phones_found": 0,
+    "urls_processed": 0,
+    "urls_failed": 2,
+    "captchas_encountered": 8,
+    "captchas_solved": 0,
+    "proxy_errors": 0
+  },
+  "timestamp": "2025-05-11T00:21:11.504161"
+}

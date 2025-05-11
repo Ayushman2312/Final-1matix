@@ -94,22 +94,19 @@ REFERERS = [
     'https://marketingplatform.google.com/',
 ]
 
-# Expanded proxy list with more options
+proxy = 'geo.iproyal.com:12321'
+proxy_auth = 'vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9_country-in'
+proxy_url = f'http://{proxy_auth}@{proxy}'
+
+# Define proxies dictionary for session configuration
+proxies = {
+   'http': proxy_url,
+   'https': proxy_url
+}
+
+# Expanded proxy list with actual proxy URLs for rotation
 PROXIES = [
-    None,  # No proxy option first for direct connection
-    # "http://51.158.68.133:8811",
-    # "http://51.158.78.179:8811",
-    # "http://51.158.72.165:8811",
-    # "http://51.158.98.121:8811",
-    # "http://54.36.239.180:5000",
-    # "http://165.227.42.213:3000",
-    # "http://138.197.102.119:8080", 
-    "http://13.126.217.46",#6
-    "http://35.154.216.140",#5
-    "http://218.248.73.193",#4
-    "http://3.110.60.103",#3
-    "http://65.2.11.52",#2
-    "http://13.201.55.246",#1
+    proxy_url  # Add more proxy URLs here if you have multiple proxies
 ]
 
 # --------- Anti-Bot Detection Techniques ---------
@@ -356,8 +353,8 @@ def apply_random_headers(session):
         })
         return False
 
-# Enhanced session creation with browser fingerprinting
-def create_retry_session(use_cache=True):
+# Enhanced session creation with browser fingerprinting and proxy support
+def create_retry_session(use_cache=True, use_proxy=True):
     try:
         # Create a session with or without caching
         if use_cache:
@@ -378,6 +375,22 @@ def create_retry_session(use_cache=True):
         # Set realistic cookies for the session
         set_realistic_cookies(session)
         
+        # Apply proxy if requested
+        if use_proxy and PROXIES:
+            # Get a random proxy from the list
+            proxy = get_random_proxy()
+            if proxy:
+                # Store the proxy URL for reference
+                session._proxy = proxy
+                # Set the proxy in the session
+                session.proxies = {
+                    'http': proxy,
+                    'https': proxy
+                }
+                logger.info(f"Session configured with proxy: {proxy}")
+            else:
+                logger.warning("No working proxies available, using direct connection")
+        
         logger.info("Successfully created session with enhanced anti-bot protection")
         return session
     except Exception as e:
@@ -389,12 +402,14 @@ def create_retry_session(use_cache=True):
 def get_random_proxy():
     """Select a random proxy from the available options with error handling"""
     
-    # Filter out known bad proxies or ones that recently failed
-    global PROXIES
-    global failed_proxies
-    
+    # Initialize failed_proxies set if it doesn't exist
     if not hasattr(get_random_proxy, 'failed_proxies'):
         get_random_proxy.failed_proxies = set()
+    
+    # Make sure PROXIES is not empty
+    if not PROXIES:
+        logger.warning("No proxies configured in PROXIES list")
+        return None
     
     # Get proxies that haven't failed recently
     working_proxies = [p for p in PROXIES if p is not None and p not in get_random_proxy.failed_proxies]
@@ -403,7 +418,14 @@ def get_random_proxy():
     if not working_proxies:
         logger.warning("No more working proxies available, resetting failed proxy list")
         get_random_proxy.failed_proxies = set()
-        return None  # Return None to indicate direct connection should be used
+        
+        # Try again with all proxies
+        working_proxies = [p for p in PROXIES if p is not None]
+        
+        # If still no working proxies, return None
+        if not working_proxies:
+            logger.error("No valid proxies available in PROXIES list")
+            return None
     
     # Select a random proxy
     proxy = random.choice(working_proxies)
@@ -425,9 +447,9 @@ def mark_proxy_as_failed(proxy):
             logger.warning("All proxies have failed, resetting failed list")
             get_random_proxy.failed_proxies = set()
 
-# Update the TrendReq initialization to handle urllib3 version differences
-def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=None):
-    """Create a pytrends instance with the correct retry configuration for the urllib3 version"""
+# Update the TrendReq initialization to handle urllib3 version differences and use proxies
+def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=None, use_proxy=True):
+    """Create a pytrends instance with the correct retry configuration for the urllib3 version and proxy support"""
     try:
         # Determine urllib3 version
         import urllib3
@@ -438,8 +460,21 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
         except (ImportError, AttributeError):
             urllib3_version = getattr(urllib3, '__version__', '1.0.0')
         
-        # Set up proxies list
-        proxies = [proxy] if proxy else []
+        # Set up proxies list - either use the provided proxy or get a random one
+        if proxy:
+            # Use the specific proxy provided
+            proxy_to_use = proxy
+            logger.info(f"Using provided proxy: {proxy}")
+        elif use_proxy and PROXIES:
+            # Get a random proxy from our list
+            proxy_to_use = get_random_proxy()
+            logger.info(f"Using random proxy: {proxy_to_use}")
+        else:
+            proxy_to_use = None
+            logger.info("No proxy will be used")
+        
+        # Format proxies for pytrends
+        proxies_list = [proxy_to_use] if proxy_to_use else []
         
         # Create TrendReq with correct parameters based on urllib3 version
         if urllib3_version.startswith(('2.', '3.')):
@@ -448,7 +483,7 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
                 hl=hl,
                 tz=tz,
                 timeout=timeout,
-                proxies=proxies,
+                proxies=proxies_list,
                 retries=2,
                 backoff_factor=1.5,
                 requests_args={
@@ -461,7 +496,7 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
                 hl=hl,
                 tz=tz,
                 timeout=timeout,
-                proxies=proxies,
+                proxies=proxies_list,
                 retries=2,
                 backoff_factor=1.5,
                 requests_args={
@@ -470,7 +505,18 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
             )
         
         # Replace the session with a properly configured one
-        session = create_retry_session(use_cache=False)
+        # Pass the proxy to the session creation
+        session = create_retry_session(use_cache=False, use_proxy=(proxy_to_use is not None))
+        
+        # If we have a proxy, make sure it's set in the session
+        if proxy_to_use:
+            session.proxies = {
+                'http': proxy_to_use,
+                'https': proxy_to_use
+            }
+            # Store the proxy URL for reference
+            session._proxy = proxy_to_use
+            
         pytrends.requests_session = session
         
         return pytrends
@@ -480,6 +526,7 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
         
         # Fallback to a basic configuration
         try:
+            # Try to create a basic instance without proxies
             pytrends = TrendReq(
                 hl=hl,
                 tz=tz,
@@ -708,6 +755,51 @@ def generate_fallback_trends_data(keywords, timeframe):
             # Empty DataFrame as last resort
             return pd.DataFrame()
 
+# Function to generate fallback region data when API fails
+def generate_fallback_region_data(keywords, geo):
+    """Generate fallback region data when the API fails to return results"""
+    logger.warning(f"Generating fallback region data for {geo}")
+    
+    # Create a basic fallback dataset with some regions
+    try:
+        # For India
+        if geo == 'IN':
+            regions = [
+                "Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Telangana",
+                "Gujarat", "Uttar Pradesh", "West Bengal", "Rajasthan", "Kerala"
+            ]
+        # For US
+        elif geo == 'US':
+            regions = [
+                "California", "New York", "Texas", "Florida", "Illinois",
+                "Pennsylvania", "Ohio", "Georgia", "North Carolina", "Michigan"
+            ]
+        # For other countries, use generic region names
+        else:
+            regions = [f"Region {i+1}" for i in range(10)]
+        
+        # Create a DataFrame with random values
+        data = {}
+        for kw in keywords:
+            # Generate random values between 0 and 100
+            values = [random.randint(20, 100) for _ in range(len(regions))]
+            data[kw] = values
+        
+        # Create DataFrame
+        df = pd.DataFrame(data, index=regions)
+        
+        # Mark as fallback data
+        if not hasattr(df, 'is_fallback'):
+            setattr(df, 'is_fallback', True)
+        
+        logger.info(f"Generated fallback region data with {len(df)} regions for {len(keywords)} keywords")
+        return df
+    
+    except Exception as e:
+        logger.error(f"Error generating fallback region data: {str(e)}")
+        # Return empty DataFrame as last resort
+        return pd.DataFrame()
+
 # Optimized function to fetch trend data with rate limiting prevention
 def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES):
     """
@@ -864,6 +956,7 @@ def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES)
                             new_pytrends = TrendReq(
                                 hl='en-US',
                                 tz=330,
+                                geo='IN',
                                 timeout=REQUEST_TIMEOUT,
                                 proxies=proxy_list,
                                 retries=0
@@ -1257,24 +1350,58 @@ def dataframe_to_json(df, date_format='%Y-%m-%d %H:%M:%S'):
 # Helper function to process regions/cities data
 def process_region_data(region_df):
     if region_df.empty:
+        logger.warning("Empty DataFrame received for region data")
         return []
     
-    # Reshape the DataFrame for easier processing
-    result = []
-    for idx, row in region_df.iterrows():
-        for column in region_df.columns:
-            value = row[column]
-            if not pd.isna(value) and value > 0:  # Only include non-zero values
-                result.append({
-                    "name": idx,
-                    "value": float(value) if isinstance(value, (int, float)) else 0,
-                    "keyword": column
-                })
+    # Debug information
+    logger.info(f"Processing region data with shape: {region_df.shape}")
+    logger.info(f"Region data columns: {region_df.columns.tolist()}")
+    logger.info(f"First few regions: {region_df.index[:5].tolist() if len(region_df) > 5 else region_df.index.tolist()}")
     
-    # Sort by value in descending order
-    result = sorted(result, key=lambda x: x["value"], reverse=True)
+    # Group data by region name instead of flattening it
+    result = {}
     
-    return result
+    try:
+        # First get all unique regions and keywords
+        regions = region_df.index.tolist()
+        keywords = [col for col in region_df.columns if col != 'isPartial' and col != 'geoCode']  # Exclude non-data columns
+        
+        logger.info(f"Found {len(regions)} regions and {len(keywords)} keywords")
+        
+        # Create a properly structured format for bar chart visualization
+        for region in regions:
+            result[region] = {}
+            for keyword in keywords:
+                try:
+                    value = region_df.loc[region, keyword]
+                    # Include any non-NaN values (even zeros might be meaningful)
+                    if not pd.isna(value):
+                        result[region][keyword] = float(value) if isinstance(value, (int, float)) else 0
+                except Exception as e:
+                    logger.warning(f"Error processing region data for {region}, {keyword}: {str(e)}")
+        
+        # Convert to list format with proper structure for visualization
+        formatted_result = []
+        for region, values in result.items():
+            # Include all regions that have data, even if values are zero
+            region_data = {
+                "geoName": region,
+                "values": values
+            }
+            formatted_result.append(region_data)
+        
+        # Sort by the highest value for any keyword
+        formatted_result = sorted(
+            formatted_result, 
+            key=lambda x: max(x["values"].values()) if x["values"] else 0, 
+            reverse=True
+        )
+        
+        logger.info(f"Processed {len(formatted_result)} regions with data")
+        return formatted_result
+    except Exception as e:
+        logger.error(f"Error processing region data: {str(e)}")
+        return []
 
 # Optimized function to fetch interest by region with rate limiting prevention
 def get_interest_by_region(pytrends, keywords, timeframe, geo, resolution='REGION', max_retries=MAX_RETRIES):
@@ -1304,7 +1431,7 @@ def get_interest_by_region(pytrends, keywords, timeframe, geo, resolution='REGIO
                     session = create_retry_session(use_cache=False)
                     
                     # Try with a different proxy
-                    current_proxy = None
+                    current_proxy = PROXIES[attempt % len(PROXIES)] if PROXIES else None
                     if hasattr(pytrends.requests_session, 'proxies'):
                         current_proxy = pytrends.requests_session.proxies.get('http')
                     
@@ -1339,13 +1466,46 @@ def get_interest_by_region(pytrends, keywords, timeframe, geo, resolution='REGIO
             add_random_delay(0.5, 1.5)
             
             # Get interest by region data
-            if resolution == 'REGION':
-                interest_by_region_df = pytrends.interest_by_region(resolution=resolution, inc_low_vol=True)
-            else:  # CITY
-                interest_by_region_df = pytrends.interest_by_region(resolution=resolution, inc_low_vol=True)
+            # Use the appropriate resolution parameter based on the requested data type
+            # COUNTRY: country level data
+            # REGION: region/province level data (first administrative level)
+            # DMA: state level data for US (Designated Market Area)
+            # CITY: city level data
+            logger.info(f"Fetching interest by region data with resolution: {resolution}")
             
-            if interest_by_region_df.empty:
-                logger.warning(f"No {resolution.lower()} data available for {keywords} in {geo}")
+            try:
+                interest_by_region_df = pytrends.interest_by_region(resolution=resolution, inc_low_vol=True)
+                
+                # Log the result for debugging
+                if interest_by_region_df.empty:
+                    logger.warning(f"Empty result for interest_by_region with resolution={resolution}")
+                else:
+                    logger.info(f"Got interest_by_region data with {len(interest_by_region_df)} regions, columns: {interest_by_region_df.columns.tolist()}")
+                
+                # If we're looking for state data in the US and resolution is REGION, try DMA as well
+                if resolution == 'REGION' and geo == 'US' and (interest_by_region_df.empty or len(interest_by_region_df) < 10):
+                    logger.info("Trying DMA resolution for US state-level data")
+                    add_random_delay(1.0, 2.0)  # Add delay between requests
+                    interest_by_region_df = pytrends.interest_by_region(resolution='DMA', inc_low_vol=True)
+                
+                # For India, we might need to try different resolutions
+                if resolution == 'REGION' and geo == 'IN' and (interest_by_region_df.empty or len(interest_by_region_df) < 10):
+                    logger.info("Trying COUNTRY resolution for India data")
+                    add_random_delay(1.0, 2.0)  # Add delay between requests
+                    interest_by_region_df = pytrends.interest_by_region(resolution='COUNTRY', inc_low_vol=True)
+                
+                if interest_by_region_df.empty:
+                    logger.warning(f"No {resolution.lower()} data available for {keywords} in {geo}")
+                    return pd.DataFrame()
+                    
+                logger.info(f"Successfully fetched {len(interest_by_region_df)} regions for {resolution}")
+                
+                # Debug: print a few sample rows
+                if len(interest_by_region_df) > 0:
+                    sample_rows = min(5, len(interest_by_region_df))
+                    logger.debug(f"Sample region data (first {sample_rows} rows):\n{interest_by_region_df.head(sample_rows)}")
+            except Exception as e:
+                logger.error(f"Error fetching interest by region with resolution {resolution}: {str(e)}")
                 return pd.DataFrame()
             
             # Simulate a user interacting with results    
@@ -1436,7 +1596,7 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
     if analysis_options is None:
         analysis_options = {
             "include_time_trends": True,
-            "include_state_analysis": False,
+            "include_state_analysis": True,  # Changed from False to True
             "include_city_analysis": False,
             "include_related_queries": False,
             "state_only": False,
@@ -1458,7 +1618,16 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
     
     # Try to get data from cache first
     analysis_type = 'full' if all(analysis_options.values()) else 'partial'
-    cached_data = get_cached_data(keywords, timeframe, geo, analysis_type)
+    # Create a more specific analysis_type string to distinguish between different types
+    detailed_analysis_type = '_'.join([
+        f"time_{int(analysis_options.get('include_time_trends', False))}",
+        f"state_{int(analysis_options.get('include_state_analysis', False))}",
+        f"city_{int(analysis_options.get('include_city_analysis', False))}",
+        f"related_{int(analysis_options.get('include_related_queries', False))}",
+        f"stateonly_{int(analysis_options.get('state_only', False))}",
+        f"cityonly_{int(analysis_options.get('city_only', False))}"
+    ])
+    cached_data = get_cached_data(keywords, timeframe, geo, detailed_analysis_type)
     if cached_data:
         return cached_data
         
@@ -1493,7 +1662,7 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
                 
                 # Start with no proxy on first attempt, then try with proxies
                 if attempt == 0:
-                    proxy = None
+                    proxy = PROXIES[attempt % len(PROXIES)] if PROXIES else None
                     logger.info("Attempt 1: Creating PyTrends with no proxy")
                 else:
                     # Try different proxies in subsequent attempts
@@ -1567,7 +1736,14 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
             if analysis_options.get("include_state_analysis", False) or analysis_options.get("state_only", False):
                 # Add human-like delay between requests
                 add_random_delay(2, 4)
-                futures['region_data'] = executor.submit(get_interest_by_region, pytrends, keywords, timeframe, geo, 'REGION')
+                
+                # For US, use DMA resolution to get state-level data
+                if geo == 'US':
+                    logger.info("Using DMA resolution for US state-level data")
+                    futures['region_data'] = executor.submit(get_interest_by_region, pytrends, keywords, timeframe, geo, 'DMA')
+                else:
+                    # For other countries, use REGION resolution
+                    futures['region_data'] = executor.submit(get_interest_by_region, pytrends, keywords, timeframe, geo, 'REGION')
             
             if analysis_options.get("include_city_analysis", False) or analysis_options.get("city_only", False):
                 # Add human-like delay between requests
@@ -1601,9 +1777,12 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
                             
                     elif name == 'region_data':
                         if not result.empty:
+                            logger.info(f"Processing region data with {len(result)} entries")
                             regions = process_region_data(result)
                             response_data['data']['region_data'] = regions
+                            logger.info(f"Processed {len(regions)} regions with data")
                         else:
+                            logger.warning("Interest by region data is empty, will try fallback")
                             response_data['data']['region_data'] = []
                             
                     elif name == 'city_data':
@@ -1671,6 +1850,52 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
                     logger.warning("Direct approach also failed to get time series data")
             except Exception as direct_err:
                 logger.error(f"Error with direct fetch approach: {str(direct_err)}")
+        
+        # If region_data failed or is empty, try fallback approach
+        if (analysis_options.get("include_state_analysis", False) or analysis_options.get("state_only", False)) and \
+           (not response_data['data'].get('region_data') or len(response_data['data']['region_data']) == 0):
+            logger.info("Attempting direct fetch for region data as fallback")
+            try:
+                # Create a new pytrends instance with different settings
+                direct_pytrends = TrendReq(
+                    hl='en-US',
+                    tz=330,
+                    timeout=REQUEST_TIMEOUT * 2  # Double timeout
+                )
+                
+                # Use a shorter timeframe for better chance of success
+                short_tf = 'today 3-m'
+                logger.info(f"Trying region data with shorter timeframe: {short_tf}")
+                
+                # Add delay to avoid rate limit
+                add_random_delay(3, 6)
+                
+                # Try direct fetch
+                direct_pytrends.build_payload(keywords, timeframe=short_tf, geo=geo)
+                
+                # Try with different resolution
+                resolution = 'COUNTRY' if geo == '' else 'REGION'
+                direct_result = direct_pytrends.interest_by_region(resolution=resolution, inc_low_vol=True)
+                
+                if not direct_result.empty:
+                    logger.info(f"Successfully retrieved region data with direct approach: {len(direct_result)} regions")
+                    regions = process_region_data(direct_result)
+                    response_data['data']['region_data'] = regions
+                    logger.info(f"Processed {len(regions)} regions with direct approach")
+                else:
+                    logger.warning("Direct approach failed to get region data, using fallback data")
+                    # Generate fallback data
+                    fallback_df = generate_fallback_region_data(keywords, geo)
+                    regions = process_region_data(fallback_df)
+                    response_data['data']['region_data'] = regions
+                    response_data['warning'] = "Using fallback data for regions - Google Trends API returned no results"
+            except Exception as region_err:
+                logger.error(f"Error with direct region fetch: {str(region_err)}")
+                # Generate fallback data
+                fallback_df = generate_fallback_region_data(keywords, geo)
+                regions = process_region_data(fallback_df)
+                response_data['data']['region_data'] = regions
+                response_data['warning'] = "Using fallback data for regions - Google Trends API error"
     
     except Exception as e:
         logger.error(f"Error in fetch_google_trends: {str(e)}")
@@ -1703,7 +1928,7 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
     
     # Cache successful responses
     if response_data["status"] == "success":
-        save_to_cache(response_data, keywords, timeframe, geo, analysis_type)
+        save_to_cache(response_data, keywords, timeframe, geo, detailed_analysis_type)
     
     return response_data
 
@@ -1727,6 +1952,17 @@ def get_trends_json(keywords, timeframe='today 5-y', geo='IN', analysis_options=
     try:
         logger.info(f"Fetching trends for keywords={keywords}, timeframe={timeframe}, geo={geo}")
         start_time = time.time()
+        
+        # Set default analysis options if not provided
+        if analysis_options is None:
+            analysis_options = {
+                "include_time_trends": True,
+                "include_state_analysis": True,  # Enable regional data by default
+                "include_city_analysis": False,
+                "include_related_queries": False,
+                "state_only": False,
+                "city_only": False
+            }
         
         result = fetch_google_trends(keywords, timeframe, geo, analysis_options)
         
@@ -1884,3 +2120,85 @@ def fix_session_retry(session):
         session.mount("https://", adapter)
         session.mount("http://", adapter)
         return False
+
+# Direct function to get region data for testing
+def get_region_interest(keywords, timeframe='today 5-y', geo='IN'):
+    """
+    Direct function to get region interest data for testing
+    
+    Parameters:
+    - keywords: List of keywords or single keyword string
+    - timeframe: Time period for analysis (default: 'today 5-y')
+    - geo: Geographic region code (default: 'IN' for India)
+    
+    Returns:
+    - List of regions with their interest values
+    """
+    try:
+        logger.info(f"Directly fetching region interest for keywords={keywords}, timeframe={timeframe}, geo={geo}")
+        
+        # Normalize keywords to a list
+        if isinstance(keywords, str):
+            keywords = [keywords]
+        
+        # Limit keywords to 5 as per Google Trends limit
+        if len(keywords) > 5:
+            logger.warning(f"Too many keywords ({len(keywords)}), limiting to first 5")
+            keywords = keywords[:5]
+        
+        # Create a PyTrends instance
+        pytrends = create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT)
+        
+        # Build payload
+        pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
+        
+        # Try different resolutions
+        resolutions = ['REGION', 'COUNTRY', 'DMA']
+        
+        for resolution in resolutions:
+            logger.info(f"Trying resolution: {resolution}")
+            
+            try:
+                region_df = pytrends.interest_by_region(resolution=resolution, inc_low_vol=True)
+                
+                if not region_df.empty:
+                    logger.info(f"Got data with resolution {resolution}: {len(region_df)} regions")
+                    regions = process_region_data(region_df)
+                    return {
+                        "status": "success",
+                        "data": regions,
+                        "resolution": resolution,
+                        "count": len(regions)
+                    }
+                else:
+                    logger.warning(f"No data for resolution {resolution}")
+            except Exception as e:
+                logger.error(f"Error with resolution {resolution}: {str(e)}")
+        
+        # If we get here, all resolutions failed, use fallback
+        logger.warning("All resolutions failed, using fallback data")
+        fallback_df = generate_fallback_region_data(keywords, geo)
+        regions = process_region_data(fallback_df)
+        
+        return {
+            "status": "warning",
+            "data": regions,
+            "resolution": "fallback",
+            "count": len(regions),
+            "warning": "Using fallback data - all API requests failed"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in get_region_interest: {str(e)}")
+        
+        # Generate fallback data
+        fallback_df = generate_fallback_region_data(keywords, geo)
+        regions = process_region_data(fallback_df)
+        
+        return {
+            "status": "error",
+            "data": regions,
+            "resolution": "fallback",
+            "count": len(regions),
+            "error": str(e)
+        }

@@ -13,6 +13,7 @@ import json
 from openpyxl import Workbook
 import asyncio
 import time
+import traceback
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -41,36 +42,43 @@ class DataMinerView(TemplateView):
                 
                 if keyword and len(keyword) >= 3:
                     # Initialize scraper
-                    scraper = EnhancedContactScraper()
-                    results = scraper.search_and_extract(
-                        target=keyword,
-                        country=country,
-                        max_results=30,
-                        exact_count=False,
-                        max_pages=3
+                    scraper = EnhancedContactScraper(
+                        max_concurrent_threads=3,
+                        timeout=20,
+                        max_retries=2,
+                        debug=False,
+                        cache_dir=os.path.join(settings.MEDIA_ROOT, 'cache')
                     )
                     
-                    if results and not isinstance(results, dict) or ('error' not in results):
-                        context['initial_results'] = {
-                            'success': True,
-                            'data': results,
-                            'message': f"Found {len(results.get('phones', [])) if data_type == 'phone' else len(results.get('emails', []))} results"
-                        }
-                    else:
-                        context['initial_results'] = {
-                            'error': results.get('error', 'No results found')
-                        }
+                    try:
+                        results = scraper.search_and_extract(
+                            target=keyword,
+                            country=country,
+                            max_results=30,
+                            exact_count=False,
+                            max_pages=3
+                        )
+                        
+                        if results and ('error' not in results or not results['error']):
+                            context['initial_results'] = {
+                                'success': True,
+                                'data': results,
+                                'message': f"Found {len(results.get('phones', [])) if data_type == 'phone' else len(results.get('emails', []))} results"
+                            }
+                        else:
+                            context['initial_results'] = {
+                                'error': results.get('error', 'No results found')
+                            }
+                    finally:
+                        # Ensure browser is closed
+                        scraper.close_browser()
+                        
             except Exception as e:
                 logger.error(f"Error in GET request search: {e}")
+                logger.error(traceback.format_exc())
                 context['initial_results'] = {
                     'error': 'An error occurred during the search'
                 }
-            finally:
-                if 'scraper' in locals():
-                    try:
-                        scraper.close_browser()
-                    except:
-                        pass
         
         return context
 
@@ -90,6 +98,16 @@ class DataMinerView(TemplateView):
         
         # Return relative path from MEDIA_ROOT
         return os.path.join('mining_results', filename)
+
+    def dispatch(self, request, *args, **kwargs):
+        # Check if an action is specified in kwargs
+        action = kwargs.pop('action', None)
+        if action:
+            # Call the specified method
+            if hasattr(self, action) and callable(getattr(self, action)):
+                return getattr(self, action)(request, *args, **kwargs)
+        # Otherwise use default dispatch
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         # Check if it's a download request
@@ -139,6 +157,7 @@ class DataMinerView(TemplateView):
                 
             except Exception as e:
                 logger.error(f"Error generating Excel file: {e}")
+                logger.error(traceback.format_exc())
                 return JsonResponse({'error': 'Failed to generate Excel file'}, status=500)
 
         # If not a download request, proceed with the original post method
@@ -182,15 +201,29 @@ class DataMinerView(TemplateView):
                                 'message': f"Found {len(results)} results (cached)",
                                 'elapsed_time': 0
                             })
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.error(f"Error reading cached results: {e}")
+                        # Continue with new search if cache read fails
 
             # Initialize scraper with proper error handling
+            scraper = None
             try:
-                scraper = EnhancedContactScraper()
+                # Create cache directory if it doesn't exist
+                cache_dir = os.path.join(settings.MEDIA_ROOT, 'cache')
+                os.makedirs(cache_dir, exist_ok=True)
+                
+                # Initialize the scraper with optimized settings
+                scraper = EnhancedContactScraper(
+                    max_concurrent_threads=3,
+                    timeout=20,
+                    max_retries=2,
+                    debug=False,
+                    cache_dir=cache_dir
+                )
                 logger.info(f"Initialized scraper for keyword: {keyword}, data type: {data_type}")
             except Exception as e:
                 logger.error(f"Failed to initialize scraper: {e}")
+                logger.error(traceback.format_exc())
                 return JsonResponse({'error': 'Failed to initialize search. Please try again.'}, status=500)
             
             try:
@@ -250,84 +283,88 @@ class DataMinerView(TemplateView):
                         max_pages=10
                     )
                     
-                    if additional_results and isinstance(additional_results, dict):
-                        if data_type == 'phone' and 'phones' in additional_results:
+                    if additional_results and 'error' not in additional_results:
+                        if data_type == 'phone':
                             additional_phones = additional_results.get('phones', [])
-                            filtered_results['phones'] = list(set(filtered_results.get('phones', []) + additional_phones))[:max_results]
+                            # Add new unique phones
+                            for phone in additional_phones:
+                                if phone not in filtered_results['phones'] and len(filtered_results['phones']) < max_results:
+                                    filtered_results['phones'].append(phone)
                             final_results = filtered_results['phones']
-                        if data_type == 'email' and 'emails' in additional_results:
+                            
+                        if data_type == 'email':
                             additional_emails = additional_results.get('emails', [])
-                            filtered_results['emails'] = list(set(filtered_results.get('emails', []) + additional_emails))[:max_results]
+                            # Add new unique emails
+                            for email in additional_emails:
+                                if email not in filtered_results['emails'] and len(filtered_results['emails']) < max_results:
+                                    filtered_results['emails'].append(email)
                             final_results = filtered_results['emails']
 
+                # Save results to database if user is authenticated
+                if request.user.is_authenticated and final_results:
+                    # Generate Excel file
+                    excel_path = self.generate_excel(final_results, keyword, data_type)
+                    
+                    # Create mining history record
+                    mining_history = MiningHistory(
+                        user=request.user,
+                        keyword=keyword,
+                        country=country,
+                        data_type=data_type,
+                        results_count=len(final_results),
+                        excel_file=excel_path
+                    )
+                    mining_history.save()
+                
                 # Calculate elapsed time
                 elapsed_time = time.time() - start_time
-
-                # Ensure we have at least some results
-                if not final_results:
-                    return JsonResponse({
-                        'warning': 'No valid results found. Try broadening your search.',
-                        'data': filtered_results,
-                        'message': "No results found",
-                        'elapsed_time': elapsed_time
-                    }, status=200)
-
-                # Generate Excel file and save to database if user is authenticated
-                if request.user.is_authenticated and final_results:
-                    try:
-                        excel_path = self.generate_excel(final_results, keyword, data_type)
-                        
-                        # Save to database
-                        MiningHistory.objects.create(
-                            user=request.user,
-                            keyword=keyword,
-                            country=country,
-                            data_type=data_type,
-                            results_count=len(final_results),
-                            excel_file=excel_path
-                        )
-                    except Exception as e:
-                        logger.error(f"Error saving mining history: {str(e)}")
-                        # Continue with the response even if saving fails
                 
+                # Return results
                 return JsonResponse({
                     'success': True,
-                    'data': filtered_results,
-                    'message': f"Found {len(final_results)} results",
+                    'data': {data_type + 's': final_results},
+                    'message': f"Found {len(final_results)} results in {elapsed_time:.1f} seconds",
                     'elapsed_time': elapsed_time
                 })
-
+                
             except Exception as e:
-                logger.error(f"Error during search and extract: {str(e)}")
+                logger.error(f"Error during search: {e}")
+                logger.error(traceback.format_exc())
                 return JsonResponse({
-                    'error': 'An error occurred during the search. Please try again.',
-                    'elapsed_time': time.time() - start_time
+                    'error': f"An error occurred during the search: {str(e)}",
+                    'elapsed_time': time.time() - start_time if 'start_time' in locals() else 0
                 }, status=500)
-
+            finally:
+                # Ensure browser is closed
+                if scraper:
+                    try:
+                        scraper.close_browser()
+                    except Exception as e:
+                        logger.error(f"Error closing browser: {e}")
+                
         except Exception as e:
-            logger.error(f"Unexpected error in post method: {str(e)}")
-            return JsonResponse({
-                'error': 'An unexpected error occurred. Please try again.',
-                'elapsed_time': 0
-            }, status=500)
-        finally:
-            # Ensure scraper resources are cleaned up
-            if 'scraper' in locals():
-                try:
-                    scraper.close_browser()
-                except:
-                    pass
+            logger.error(f"Unexpected error: {e}")
+            logger.error(traceback.format_exc())
+            return JsonResponse({'error': f"An unexpected error occurred: {str(e)}"}, status=500)
 
     def get_excel(self, request, history_id):
+        """Download Excel file for a specific mining history"""
         try:
-            history = MiningHistory.objects.get(id=history_id, user=request.user)
-            if history.excel_file:
-                return FileResponse(
-                    open(history.excel_file.path, 'rb'),
-                    as_attachment=True,
-                    filename=f'mining_results_{history.keyword}.xlsx'
-                )
+            # Get the mining history record
+            mining_history = MiningHistory.objects.get(id=history_id, user=request.user)
+            
+            # Check if file exists
+            if not mining_history.excel_file or not os.path.exists(mining_history.excel_file.path):
+                return HttpResponse("File not found", status=404)
+            
+            # Return the file
+            return FileResponse(
+                open(mining_history.excel_file.path, 'rb'),
+                as_attachment=True,
+                filename=f"mining_results_{mining_history.keyword.replace(' ', '_')}.xlsx"
+            )
         except MiningHistory.DoesNotExist:
-            return JsonResponse({'error': 'File not found'}, status=404)
+            return HttpResponse("Mining history not found", status=404)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            logger.error(f"Error downloading Excel file: {e}")
+            return HttpResponse("Error downloading file", status=500)

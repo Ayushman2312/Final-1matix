@@ -1,0 +1,16 @@
+{
+  "query": "stationary wholesellers in delhi",
+  "country": "IN",
+  "emails": [],
+  "phones": [],
+  "stats": {
+    "emails_found": 1,
+    "phones_found": 90,
+    "urls_processed": 8,
+    "urls_failed": 9,
+    "captchas_encountered": 28,
+    "captchas_solved": 1,
+    "proxy_errors": 14
+  },
+  "timestamp": "2025-05-11T02:10:06.775692"
+}
