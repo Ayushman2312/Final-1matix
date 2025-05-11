@@ -113,7 +113,6 @@ propcache==0.2.1
 proto-plus==1.26.1
 protobuf==5.29.3
 psutil==7.0.0
-psycopg2==2.9.10
 py==1.11.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
@@ -136,7 +135,6 @@ python-docx==1.1.2
 python-dotenv==1.1.0
 pytrends==4.9.2
 pytz==2025.2
-pywin32==310
 PyYAML==6.0.2
 qrcode==8.0
 RapidFuzz==3.13.0
@@ -193,7 +191,6 @@ websocket-client==1.8.0
 websockets==15.0.1
 wget==3.2
 whitenoise==6.8.2
-WMI==1.5.1
 worldmap==0.1.7
 wsproto==1.2.0
 yarl==1.18.3
