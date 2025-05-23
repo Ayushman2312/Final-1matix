@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 DEBUG = False
 
 
-ALLOWED_HOSTS = ["89.116.20.128","1matrix.io","www.1matrix.io"]
+ALLOWED_HOSTS = ["195.35.20.151","1matrix.io","www.1matrix.io"]
 # =======
 # ALLOWED_HOSTS = ["89.116.20.128","1matrix.io", "www.1matrix.io"]
 # >>>>>>> ac94a6656f60d6c11fd129499c5e7675087f9e41
