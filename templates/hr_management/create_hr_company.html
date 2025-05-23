@@ -9,16 +9,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     {% comment %} <title>Document</title> {% endcomment %}
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen flex items-center bg-gray-50">
-        <div class="w-[80%]">
-            <form id="companyForm" class="space-y-3" enctype="multipart/form-data">
+<body>
+        <div class="w-full">
+            <form id="companyForm" class="space-y-5" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="bg-white rounded-lg shadow p-6 space-y-6">
+                <div class="bg-white rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] p-6 space-y-6">
                     <!-- Basic Info Section -->
-                    <div class="border-b pb-4">
+                    <div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
-                        <div class="col-span-2 md:col-span-1">
+                        <div class="max-w-[15%] my-4">
                             <label for="company_logo" class="block text-sm font-medium text-gray-700 mb-1">Company Logo </label>
                             <div class="flex items-center justify-center w-full">
                                 <label class="w-full flex flex-col items-center px-3 py-4 bg-white rounded-md border-2 border-dashed border-gray-300 cursor-pointer hover:border-blue-500 transition duration-200">
@@ -36,29 +35,12 @@
                                 </label>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="col-span-2 md:col-span-1">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
                                 <label for="company_name" class="block text-sm font-medium text-gray-700 mb-1">Company Name <span class="text-red-500">*</span></label>
                                 <input type="text" name="company_name" id="company_name" required 
                                     class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200">
                             </div>
-                            
-                            <div class="col-span-2 md:col-span-1">
-                                <label for="company_gst_number" class="block text-sm font-medium text-gray-700 mb-1">GST Number (Optional) </label>
-                                <input type="text" name="company_gst_number" id="company_gst_number" 
-                                    pattern="^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$"
-                                    title="Please enter valid GSTIN (Format: 22AAAAA0000A1Z5)"
-                                    maxlength="15"
-                                    class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200">
-                                <p class="mt-0.5 text-xs text-gray-500">Format: 22AAAAA0000A1Z5</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contact Details Section -->
-                    <div class="border-b pb-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Contact Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="company_mobile_number" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number <span class="text-red-500">*</span></label>
                                 <input type="tel" name="company_mobile_number" id="company_mobile_number" required 
@@ -72,10 +54,19 @@
                         </div>
                     </div>
 
-                    <!-- Additional Details Section -->
+                    <!-- Contact Details Section -->
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Details</h3>
-                        <div class="space-y-4">
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label for="company_gst" class="block text-sm font-medium text-gray-700 mb-1">GST Number <span class="text-red-500">*</span></label>
+                                <input type="text" name="company_gst" id="company_gst" required 
+                                    class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                            </div>
+                            <div>
+                                <label for="company_id" class="block text-sm font-medium text-gray-700 mb-1">Identification Number <span class="text-red-500">*</span></label>
+                                <input type="text" name="company_id" id="company_id" required 
+                                    class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                            </div>
                             <div>
                                 <label for="company_state" class="block text-sm font-medium text-gray-700 mb-1">State <span class="text-red-500">*</span></label>
                                 <select name="company_state" id="company_state" required
@@ -119,12 +110,29 @@
                                     <option value="Puducherry">Puducherry</option>
                                 </select>
                             </div>
-                            <div>
-                                <label for="company_address" class="block text-sm font-medium text-gray-700 mb-1">Company Address <span class="text-red-500">*</span></label>
-                                <textarea name="company_address" id="company_address" rows="3" required 
-                                    class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Additional Details Section -->
+                    <div>
+                        <div class="space-y-4">
+                            
+                            <div class="flex gap-4">
+                                <div class="w-[67.5%]">
+                                    <label for="company_address" class="block text-sm font-medium text-gray-700 mb-1">Company Address <span class="text-red-500">*</span></label>
+                                    <textarea name="company_address" id="company_address" rows="1" required 
+                                        class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200"></textarea>
+                                </div>
+                                <div class="w-[32.5%]">
+                                    <label for="company_pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode <span class="text-red-500">*</span></label>
+                                    <input type="text" name="company_pincode" id="company_pincode" required
+                                        pattern="[0-9]{6}"
+                                        maxlength="6"
+                                        title="Please enter a valid 6-digit pincode"
+                                        class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                                </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% comment %} <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="company_pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode <span class="text-red-500">*</span></label>
                                     <input type="text" name="company_pincode" id="company_pincode" required
@@ -139,14 +147,14 @@
                                         title="Please enter a valid 6-digit pincode"
                                         class="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-transparent transition duration-200">
                                 </div>
-                            </div>
+                            </div> {% endcomment %}
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-6">
+                <div class="flex justify-end">
                     <button type="submit" 
-                        class="flex items-center justify-center px-6 py-2 text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
+                        class="flex items-center justify-center px-6 py-2 text-sm font-medium rounded-md text-white bg-[#7B3DF3] focus:outline-none focus:ring-1 focus:ring-offset-2 focus:ring-blue-500 transition duration-200">
                         <span id="submitText" class="flex items-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -164,7 +172,6 @@
                 </div>
             </form>
         </div>
-    </div>
     <script src="{% static 'js/hr/create_hr.js' %}"></script>
 </body>
 </html>

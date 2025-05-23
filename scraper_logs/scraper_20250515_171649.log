@@ -1,0 +1,11 @@
+2025-05-15 17:16:49,908 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-15 17:16:49,957 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-15 17:17:04,404 - ContactScraper - INFO - Browser requesting URL: https://example.com
+2025-05-15 17:17:04,917 - ContactScraper - INFO - Network became idle
+2025-05-15 17:17:04,972 - ContactScraper - DEBUG - Found essential element: body
+2025-05-15 17:17:04,978 - ContactScraper - INFO - Initial page content length: 1248
+2025-05-15 17:17:05,067 - ContactScraper - INFO - Saved CAPTCHA check screenshot to captcha_check.png
+2025-05-15 17:17:05,093 - ContactScraper - WARNING - Suspiciously little content: 189 chars, 1 links
+2025-05-15 17:17:05,113 - ContactScraper - INFO - Successfully retrieved content for https://example.com, length: 1248
+2025-05-15 17:17:06,137 - ContactScraper - ERROR - Error parsing HTML for CAPTCHA detection: list index out of range
+2025-05-15 17:17:06,142 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 22.48 seconds

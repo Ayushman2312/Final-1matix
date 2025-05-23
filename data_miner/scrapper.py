@@ -113,15 +113,15 @@ class AdvancedWebScraper:
         """
 
         # Define default proxy if none provided
-        proxy = 'geo.iproyal.com:12321'
-        proxy_auth = 'vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9_country-in'
-        default_proxy = {
-            'http': f'http://{proxy_auth}@{proxy}',
-            'https': f'http://{proxy_auth}@{proxy}'
+        proxy = 'geo.iproyal.com:11200'
+        proxy_auth = 'vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9'
+        proxies = {
+        'http': f'socks5://{proxy_auth}@{proxy}',
+        'https': f'socks5://{proxy_auth}@{proxy}'
         }
         
         # Use provided proxies or default
-        self.proxies = proxies if proxies is not None else [default_proxy]
+        self.proxies = proxies if proxies is not None else [proxies]
         
         # Ensure proxies is a list
         if isinstance(self.proxies, dict):

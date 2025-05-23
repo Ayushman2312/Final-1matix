@@ -1,147 +1,929 @@
 {% extends 'user_dashboard/base.html' %}
 {% load static %}
-{% block title %}Trends Analysis{% endblock %}
+{% block title %}TrendIQ Analysis{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <!-- Header Section -->
-    <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">Trends Analysis</h1>
-        <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Analyze search trends and discover insights about keywords and topics.</p>
-    </div>
-    
-    <!-- Search Form -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8 max-w-3xl mx-auto">
-        <form id="trendsForm" onsubmit="return false;" class="space-y-6">
-            <!-- Keyword Input -->
-            <div class="form-floating">
-                <input type="text" class="form-control shadow-sm focus:ring-2 focus:ring-blue-500 block w-full px-4 py-3 border border-gray-300 rounded-lg transition-all" id="keywordInput" name="keyword" placeholder="Enter a keyword" required>
-                <label for="keywordInput" class="text-gray-500">Keyword to analyze</label>
-            </div>
-            
-            <!-- Analysis Type -->
-            <div class="form-floating">
-                <select class="form-control shadow-sm focus:ring-2 focus:ring-blue-500 block w-full px-4 py-3 border border-gray-300 rounded-lg transition-all" id="analysisTypeSelect" name="analysis_type">
-                    <option value="1">Time Trends Analysis</option>
-                    <option value="2">Regional Analysis</option>
-                    <option value="6">City-Level Analysis</option>
-                    <option value="7">Complete Analysis</option>
-                </select>
-                <label for="analysislabel" class="text-gray-500">Analysis Type</label>
+<h1 class="ml-4 text-2xl bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent" style="font-weight:800;">Welcome to the TrendIQ</h1>
+<div class="mx-auto p-4">
+    <div class="mx-auto">
+        <!-- Top Search Section -->
+        <div class="p-3 mb-6 rounded-2xl shadow-[0_0_7px_rgba(0,0,0,0.1)]">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-3 gap-4 items-center">
+                
+                <!-- Search Input -->
+                <div class="relative col-span-1 sm:col-span-2 md:col-span-2">
+                    <div class="neumorphic-input-container">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input type="text" id="keywordInput" class="w-full pl-10 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Search Query">
+                    </div>
+                </div>
+                
+                <!-- Options and Submit -->
+                <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4 col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
+                    <div class="neumorphic-select-container relative w-full">
+                        <select id="analysis_type" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500">
+                            <option value="1">Time Trends Analysis</option>
+                            {% comment %} <option value="2">Regional Analysis</option>
+                            <option value="6">City-Level Analysis</option>
+                            <option value="7">Complete Analysis</option> {% endcomment %}
+                        </select>
+                    </div>
+                    <div class="neumorphic-select-container relative w-full">
+                        <select id="business_intent" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500">
+                            <option value="" class="text-gray-500">Business intent</option>
+                            <option value="yes">Yes, want to start</option>
+                            <option value="no">No, already in business</option>
+                            <option value="not_sure">Not sure</option>
+                        </select>
+                    </div>
+                    <button id="analyzeButton" class="neumorphic-button px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-xl hover:shadow-blue-500/20 hover:shadow-lg transition-all w-full sm:w-auto">
+                        Submit
+                    </button>
+                </div>
             </div>
             
             <!-- Hidden fields with default values -->
             <input type="hidden" id="timeframeSelect" name="timeframe" value="today 5-y">
             <input type="hidden" id="regionSelect" name="geo" value="IN">
-            
-            <!-- Submit Button -->
-            <div class="text-center">
-                <button type="submit" id="analyzeButton" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
-                    <i class="fas fa-chart-line mr-2"></i>Analyze Trends
-                </button>
-            </div>
-        </form>
-    </div>
-    
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 mb-8 bg-gradient-to-r from-gray-900 to-black rounded-lg shadow-2xl" style="display: none;">
-        <div class="relative w-24 h-24 mb-4">
-            <!-- Matrix-like digit animation container -->
-            <div class="absolute inset-0 overflow-hidden rounded-full border-2 border-[#27FFB4] shadow-lg shadow-[#27FFB4]/30">
-                <div class="matrix-digits absolute inset-0 flex items-center justify-center">
-                    <span class="text-[#27FFB4] font-mono text-xs opacity-80">10110101</span>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="resultsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6" style="display: none;">
+            <!-- Graph Panel - Fixed Height, Not Scrollable -->
+            <div class="lg:col-span-2 neumorphic-card bg-white rounded-xl p-6 hover:shadow-xl transition-shadow duration-300 sticky-chart">
+                <h2 class="text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 6a1 1 0 000 2h9a1 1 0 100-2H3zm0 6a1 1 0 100 2h5a1 1 0 100-2H3z" clip-rule="evenodd" />
+                    </svg>
+                    Trend Visualization
+                </h2>
+                <div id="chartContainer" class="relative h-96 mb-4 rounded-xl neumorphic-chart-container bg-gradient-to-br from-gray-50 to-gray-100 p-3">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+                
+                <!-- Regional Analysis Chart Panel -->
+                <div id="regionChartContainer" class="lg:col-span-2 neumorphic-card bg-white rounded-xl p-6 hover:shadow-xl transition-shadow duration-300 mt-6" style="display: none;">
+                    <h2 class="text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd" />
+                        </svg>
+                        Regional Interest
+                    </h2>
+                    <div id="regionChartWrapper" class="relative h-96 mb-4 rounded-xl neumorphic-chart-container bg-gradient-to-br from-gray-50 to-gray-100 p-3">
+                        <canvas id="regionChart"></canvas>
+                    </div>
+                    
+                    <!-- Region Chart Settings -->
+                    <div class="flex flex-wrap gap-2 mt-4 justify-between items-center">
+                        <div class="flex gap-2">
+                            <button id="sortByValueBtn" class="region-sort-btn neumorphic-tag-button px-3 py-1.5 hover:bg-blue-500/20 hover:border-blue-500" data-sort="value">Sort by Value</button>
+                            <button id="sortByNameBtn" class="region-sort-btn neumorphic-tag-button px-3 py-1.5 hover:bg-blue-500/20 hover:border-blue-500" data-sort="name">Sort by Name</button>
+                        </div>
+                        <div>
+                            <div class="neumorphic-select-container">
+                                <select id="regionLimitSelect" class="neumorphic-select px-3 py-1.5 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 appearance-none pr-8">
+                                    <option value="10">Top 10 Regions</option>
+                                    <option value="15">Top 15 Regions</option>
+                                    <option value="20">Top 20 Regions</option>
+                                    <option value="all">All Regions</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Filters -->
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <button class="time-unit-btn neumorphic-tag-button px-3 py-1.5 hover:bg-blue-500/20 hover:border-blue-500 transition-all duration-200" data-unit="day">Daily</button>
+                    <button class="time-unit-btn neumorphic-tag-button px-3 py-1.5 hover:bg-blue-500/20 hover:border-blue-500 transition-all duration-200" data-unit="week">Weekly</button>
+                    <button class="time-unit-btn neumorphic-tag-button px-3 py-1.5 hover:bg-blue-500/20 hover:border-blue-500 transition-all duration-200 bg-blue-500/20 border-blue-500" data-unit="month">Monthly</button>
+                    <button class="time-unit-btn neumorphic-tag-button px-3 py-1.5 hover:bg-blue-500/20 hover:border-blue-500 transition-all duration-200" data-unit="quarter">Quarterly</button>
+                    <button class="time-unit-btn neumorphic-tag-button px-3 py-1.5 hover:bg-blue-500/20 hover:border-blue-500 transition-all duration-200" data-unit="year">Yearly</button>
+                    
+                    <!-- Yearly Filter Dropdown (initially hidden) -->
+                    <div id="yearlyFilterContainer" class="hidden ml-2">
+                        <div class="neumorphic-select-container relative">
+                            <select id="yearlyFilter" class="neumorphic-select px-3 py-1.5 rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 appearance-none pr-8">
+                                <option value="all">All Years</option>
+                                <!-- Years will be populated dynamically -->
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- Pulsing outer ring -->
-            <div class="absolute inset-0 rounded-full border-4 border-[#27FFB4]/30 animate-pulse"></div>
-            <!-- Spinning inner circle -->
-            <div class="absolute inset-2 rounded-full border-t-4 border-[#27FFB4] animate-spin"></div>
-            <!-- 1Matrix logo/text in center -->
-            <div class="absolute inset-0 flex items-center justify-center">
-                <span class="text-white font-bold text-xl">1M</span>
-            </div>
-        </div>
-        <p class="text-[#27FFB4] font-medium text-center">Analyzing trends data<span class="dots-animation">...</span></p>
-        <div class="w-64 h-2 bg-gray-800 rounded-full mt-4 overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-blue-500 via-[#27FFB4] to-purple-500 rounded-full loading-progress"></div>
-        </div>
-        <style>
-            @keyframes matrixRain {
-                0% { transform: translateY(-100%); }
-                100% { transform: translateY(100%); }
-            }
-            .matrix-digits {
-                animation: matrixRain 3s linear infinite;
-            }
-            .dots-animation {
-                animation: dots 1.5s infinite;
-            }
-            @keyframes dots {
-                0%, 20% { content: '.'; }
-                40% { content: '..'; }
-                60%, 100% { content: '...'; }
-            }
-            .loading-progress {
-                width: 30%;
-                animation: progress 2s ease-in-out infinite alternate;
-            }
-            @keyframes progress {
-                0% { width: 5%; }
-                100% { width: 95%; }
-            }
-            @media (max-width: 640px) {
-                .matrix-digits span { font-size: 0.6rem; }
-            }
-        </style>
-    </div>
-    
-    <!-- Error Container -->
-    <div id="errorContainer" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm hidden max-w-3xl mx-auto">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <i class="fas fa-exclamation-circle text-red-500"></i>
-            </div>
-            <div class="ml-3">
-                <p class="text-sm" id="errorMessage"></p>
-            </div>
-            <div class="ml-auto pl-3">
-                <div class="-mx-1.5 -my-1.5">
-                    <button type="button" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-200 focus:outline-none" onclick="document.getElementById('errorContainer').style.display='none'">
-                        <span class="sr-only">Dismiss</span>
-                        <i class="fas fa-times"></i>
+            
+            <!-- Analysis and Recommendation - Scrollable Section -->
+            <div class="lg:col-span-1 flex flex-col gap-6 right-panel">
+                <!-- Analysis Panel -->
+                <div class="neumorphic-card bg-white rounded-xl p-6 hover:shadow-xl transition-shadow duration-300 mb-6">
+                    <h2 class="text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text mb-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                            Analysis
+                            <span id="aiAnalysisIndicator" class="ml-2 hidden px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-sm">AI</span>
+                        </div>
+                        <button class="expand-btn text-blue-500 text-sm flex items-center font-medium hover:text-blue-600 transition-colors" data-target="analysisContent">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 8V7a5 5 0 0110 0v1h1a2 2 0 012 2v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2h1zm5-3a3 3 0 00-3 3v1h6V8a3 3 0 00-3-3z" clip-rule="evenodd" />
+                            </svg>
+                            Expand
+                        </button>
+                    </h2>
+                    <div id="analysisContent" class="prose prose-sm max-w-none ai-content leading-relaxed overflow-y-auto scrollable-content neumorphic-content">
+                        <!-- Analysis content will be populated by AI -->
+                        <div class="flex items-center justify-center p-6 text-gray-500 text-sm italic">
+                            Trend analysis will appear here after search
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recommendation Panel -->
+                <div class="neumorphic-card bg-white rounded-xl p-6 hover:shadow-xl transition-shadow duration-300">
+                    <h2 class="text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text mb-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                            </svg>
+                            Recommendation
+                            <span id="aiRecommendationIndicator" class="ml-2 hidden px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-sm">AI</span>
+                        </div>
+                        <button class="expand-btn text-blue-500 text-sm flex items-center font-medium hover:text-blue-600 transition-colors" data-target="recommendationContent">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 8V7a5 5 0 0110 0v1h1a2 2 0 012 2v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2h1zm5-3a3 3 0 00-3 3v1h6V8a3 3 0 00-3-3z" clip-rule="evenodd" />
+                            </svg>
+                            Expand
+                        </button>
+                    </h2>
+                    <div id="recommendationContent" class="prose prose-sm max-w-none ai-content leading-relaxed overflow-y-auto scrollable-content neumorphic-content">
+                        <!-- Recommendation content will be populated by AI -->
+                        <div class="flex items-center justify-center p-6 text-gray-500 text-sm italic">
+                            Trend recommendations will appear here after search
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Download Results Button (initially hidden) -->
+                <div id="downloadButtonContainer" class="mt-6 hidden">
+                    <button id="downloadReportBtn" class="neumorphic-button w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium rounded-xl hover:shadow-indigo-500/20 hover:shadow-lg transition-all flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Download Report as PDF
                     </button>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Charts Container -->
-    <div id="chartsContainer" class="flex flex-col gap-6" style="display: none;">
-        <!-- Time Series Chart -->
-        <div id="timeSeriesChartContainer" class="bg-white p-4 rounded-lg shadow-lg" style="display: none;">
-            <h3 class="text-lg font-semibold mb-4 text-gray-700">Interest Over Time</h3>
-            <div class="relative h-96">
-                <canvas id="timeSeriesChart"></canvas>
+        
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 mb-8 neumorphic-card rounded-2xl" style="display: none;">
+            <div class="relative w-24 h-24 mb-4">
+                <!-- Matrix-like digit animation container -->
+                <div class="absolute inset-0 overflow-hidden rounded-full neumorphic-circle border-2 border-blue-400">
+                    <div class="matrix-digits absolute inset-0 flex items-center justify-center">
+                        {% comment %} <span class="text-[#27FFB4] font-mono text-xs opacity-80">10110101</span> {% endcomment %}
+                    </div>
+                </div>
+                <!-- Pulsing outer ring -->
+                <div class="absolute inset-0 rounded-full border-4 border-blue-500/30 animate-pulse"></div>
+                <!-- Spinning inner circle -->
+                <div class="absolute inset-2 rounded-full border-t-4 border-blue-500 animate-spin"></div>
+                <!-- 1Matrix logo/text in center -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-blue-600 font-bold text-xl">1M</span>
+                </div>
+            </div>
+            <p class="text-blue-500 font-medium text-center">Analyzing trends data<span class="dots-animation">...</span></p>
+            <div class="w-64 h-2 bg-gray-200 rounded-full mt-4 overflow-hidden neumorphic-progress-container">
+                <div class="h-full bg-gradient-to-r from-blue-600 via-blue-400 to-blue-300 rounded-full loading-progress"></div>
             </div>
         </div>
         
-        <!-- Region Chart -->
-        <div id="regionChartContainer" class="bg-white p-4 rounded-lg shadow-lg" style="display: none;">
-            <h3 class="text-lg font-semibold mb-4 text-gray-700">Interest by Region</h3>
-            <div class="relative h-96">
-                <canvas id="regionChart"></canvas>
-            </div>
-        </div>
-        
-        <!-- City Chart -->
-        <div id="cityChartContainer" class="bg-white p-4 rounded-lg shadow-lg" style="display: none;">
-            <h3 class="text-lg font-semibold mb-4 text-gray-700">Interest by City</h3>
-            <div class="relative h-96">
-                <canvas id="cityChart"></canvas>
+        <!-- Error Container -->
+        <div id="errorContainer" class="neumorphic-error bg-white border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-xl shadow-lg hidden max-w-3xl mx-auto">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm" id="errorMessage"></p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button type="button" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-200 focus:outline-none neumorphic-tag-button-small" onclick="document.getElementById('errorContainer').style.display='none'">
+                            <span class="sr-only">Dismiss</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Add Expand Modal -->
+<div id="expandModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform transition-all">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h3 id="modalTitle" class="text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text"></h3>
+            <button id="closeModal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <!-- Modal Content -->
+        <div id="modalContent" class="p-6 overflow-y-auto flex-grow">
+            <!-- Content will be populated dynamically -->
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Neumorphic Styles */
+    .neumorphic-card {
+        background: #f0f4f8;
+        box-shadow: 10px 10px 20px rgba(166, 180, 200, 0.25), 
+                   -10px -10px 20px rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .neumorphic-card:hover {
+        box-shadow: 12px 12px 24px rgba(166, 180, 200, 0.3), 
+                   -12px -12px 24px rgba(255, 255, 255, 0.6);
+    }
+    
+    .neumorphic-input-container, .neumorphic-select-container {
+        position: relative;
+    }
+    
+    /* Enhanced select styles for more professional appearance */
+    .neumorphic-select {
+        background: linear-gradient(175deg, #f8fafc, #eef2f7);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 6px rgba(71, 85, 105, 0.08), 0 1px 3px rgba(100, 116, 139, 0.05);
+        border-radius: 12px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #334155;
+        appearance: none;
+        padding-right: 2.5rem;
+    }
+    
+    .neumorphic-input {
+        background: linear-gradient(175deg, #f8fafc, #eef2f7);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+    }
+    
+    .neumorphic-input:focus {
+        box-shadow: inset 2px 2px 5px rgba(166, 180, 200, 0.25), 
+                    inset -2px -2px 5px rgba(255, 255, 255, 0.9),
+                    0 0 0 3px rgba(59, 130, 246, 0.25);
+        outline: none;
+    }
+    
+    .neumorphic-select:focus {
+        box-shadow: 0 4px 12px rgba(56, 114, 224, 0.15), 0 0 0 2px rgba(59, 130, 246, 0.2);
+        border-color: rgba(59, 130, 246, 0.6);
+        outline: none;
+        transform: translateY(-1px);
+    }
+    
+    .neumorphic-select:hover {
+        box-shadow: 0 3px 8px rgba(71, 85, 105, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    /* Enhanced styling for dropdown options */
+    .neumorphic-select option {
+        background-color: white;
+        padding: 12px 16px;
+        font-weight: 500;
+        color: #334155;
+        border-radius: 8px;
+        margin: 4px 0;
+    }
+    
+    .neumorphic-select option:checked {
+        background-color: rgba(59, 130, 246, 0.08);
+        color: #3b82f6;
+    }
+    
+    .neumorphic-select option:hover {
+        background-color: rgba(59, 130, 246, 0.04);
+    }
+    
+    /* Elegant dropdown arrow styling */
+    .neumorphic-select-container::after {
+        content: '';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-bottom: 2px solid #64748b;
+        border-right: 2px solid #64748b;
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+    
+    .neumorphic-select-container:hover::after {
+        border-color: #3b82f6;
+    }
+    
+    /* Custom select style for dropdown to match professional design */
+    .neumorphic-select-container select {
+        appearance: none;
+        width: 100%;
+        padding: 12px 18px;
+        background-color: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 2px 6px rgba(71, 85, 105, 0.08);
+        font-size: 14.5px;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        outline: none;
+    }
+    
+    /* Styling for placeholder options */
+    .neumorphic-select-container select option[value=""] {
+        color: #94a3b8;
+        font-style: italic;
+    }
+    
+    /* Enhanced selected option styling */
+    .neumorphic-select-container select.selected {
+        background-color: #f1f5fd;
+        border-color: #3b82f6;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* States for the select element */
+    .neumorphic-select-container select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), 0 0 0 2px rgba(59, 130, 246, 0.15);
+        transform: translateY(-1px);
+    }
+    
+    .neumorphic-select-container select:hover {
+        background-color: #f8fafc;
+        border-color: rgba(59, 130, 246, 0.4);
+        box-shadow: 0 3px 8px rgba(71, 85, 105, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    /* Media queries for responsiveness */
+    @media (max-width: 768px) {
+        .grid.grid-cols-1.md\:grid-cols-3 {
+            grid-template-columns: 1fr;
+        }
+        
+        .flex.gap-4 {
+            flex-direction: column;
+        }
+        
+        .neumorphic-select-container {
+            margin-bottom: 12px;
+            width: 100%;
+        }
+        
+        #analyzeButton {
+            width: 100%;
+        }
+        
+        .neumorphic-select-container select {
+            padding: 12px 16px;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .neumorphic-select-container select {
+            font-size: 14px;
+            padding: 10px 14px;
+        }
+        
+        .neumorphic-select-container::after {
+            right: 14px;
+            width: 8px;
+            height: 8px;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .neumorphic-select {
+            font-size: 13px;
+        }
+    }
+    
+    /* Original styles continue below */
+    @keyframes matrixRain {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+    }
+    .matrix-digits {
+        animation: matrixRain 3s linear infinite;
+    }
+    .dots-animation {
+        animation: dots 1.5s infinite;
+    }
+    @keyframes dots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60%, 100% { content: '...'; }
+    }
+    .loading-progress {
+        width: 30%;
+        animation: progress 2s ease-in-out infinite alternate;
+    }
+    @keyframes progress {
+        0% { width: 5%; }
+        100% { width: 95%; }
+    }
+    
+    /* Chart animation and styling */
+    #chartContainer {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    #chartContainer:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Button animations */
+    .time-unit-btn {
+        transition: all 0.2s ease-in-out;
+    }
+    .time-unit-btn:hover {
+        transform: translateY(-1px);
+    }
+    .time-unit-btn:active {
+        transform: translateY(1px);
+    }
+    
+    /* AI Content Styling */
+    .ai-content p {
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+    
+    .ai-content strong {
+        color: #4b5563;
+        font-weight: 600;
+    }
+    
+    .ai-content ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .ai-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .ai-content h3 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    /* Recommendation styling */
+    .ai-content ol li div.font-medium {
+        font-weight: 600;
+        color: #7e22ce;
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Animation for content transition */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+    
+    /* Yearly filter styling */
+    #yearlyFilterContainer {
+        transition: all 0.3s ease-in-out;
+    }
+    
+    #yearlyFilter {
+        min-width: 120px;
+        background-color: white;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2327FFB4'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1.25em 1.25em;
+        padding-right: 2rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    #yearlyFilter:focus {
+        border-color: #27FFB4;
+        box-shadow: 0 0 0 2px rgba(39, 255, 180, 0.2);
+        outline: none;
+    }
+    
+    #yearlyFilter option {
+        padding: 0.5rem;
+    }
+    
+    /* Apply fade-in animation to the dropdown */
+    #yearlyFilterContainer.fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+    
+    /* Sticky Chart and Scrollable Content Styles */
+    .sticky-chart {
+        position: sticky;
+        top: 1.5rem;
+        height: fit-content;
+        z-index: 10;
+        transition: all 0.3s ease;
+    }
+    
+    .scrollable-content {
+        max-height: calc(100vh - 15rem);
+        overscroll-behavior: contain;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+        padding-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .scrollable-content::-webkit-scrollbar {
+        width: 5px;
+    }
+    
+    .scrollable-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .scrollable-content::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.5);
+        border-radius: 9999px;
+    }
+    
+    .scrollable-content::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(156, 163, 175, 0.7);
+    }
+    
+    .right-panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .sticky-chart {
+            position: relative;
+            top: 0;
+        }
+        
+        #resultsContainer {
+            gap: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .matrix-digits span { font-size: 0.6rem; }
+        .ai-content { font-size: 0.9rem; }
+        
+        #resultsContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .sticky-chart {
+            margin-bottom: 1rem;
+        }
+    }
+    
+    /* When analysis and recommendation content is small, limit scrolling */
+    .right-panel.has-small-content .scrollable-content {
+        overflow-y: visible;
+        max-height: none;
+    }
+    
+    /* Neumorphic Progress Bar */
+    .neumorphic-progress-container {
+        box-shadow: inset 2px 2px 5px rgba(166, 180, 200, 0.5),
+                    inset -2px -2px 5px rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Neumorphic Animated Circle */
+    .neumorphic-circle {
+        background: linear-gradient(145deg, #f0f4f8, #ffffff);
+        box-shadow: 6px 6px 12px rgba(166, 180, 200, 0.4),
+                   -6px -6px 12px rgba(255, 255, 255, 0.8),
+                   inset 1px 1px 2px rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Neumorphic Chart Container */
+    .neumorphic-chart-container {
+        box-shadow: inset 2px 2px 5px rgba(166, 180, 200, 0.3),
+                    inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Neumorphic Tag Buttons */
+    .neumorphic-tag-button {
+        background: linear-gradient(145deg, #f0f4f8, #ffffff);
+        box-shadow: 2px 2px 4px rgba(166, 180, 200, 0.3),
+                   -2px -2px 4px rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .neumorphic-tag-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 3px 3px 6px rgba(166, 180, 200, 0.4),
+                   -3px -3px 6px rgba(255, 255, 255, 0.9);
+    }
+    
+    .neumorphic-tag-button:active {
+        transform: translateY(1px);
+        box-shadow: 1px 1px 2px rgba(166, 180, 200, 0.4),
+                   -1px -1px 2px rgba(255, 255, 255, 0.7),
+                   inset 1px 1px 2px rgba(166, 180, 200, 0.2);
+    }
+    
+    /* Neumorphic Content Area */
+    .neumorphic-content {
+        background-color: #f8fafc;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        box-shadow: inset 1px 1px 3px rgba(166, 180, 200, 0.2),
+                    inset -1px -1px 3px rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Neumorphic Error Container */
+    .neumorphic-error {
+        background: linear-gradient(145deg, #fff5f5, #fee2e2);
+        box-shadow: 4px 4px 8px rgba(166, 180, 200, 0.3),
+                   -4px -4px 8px rgba(255, 255, 255, 0.8);
+        border-left: 4px solid #ef4444;
+        transition: all 0.3s ease;
+    }
+    
+    .neumorphic-tag-button-small {
+        background: linear-gradient(145deg, #fee2e2, #fff5f5);
+        box-shadow: 1px 1px 2px rgba(166, 180, 200, 0.2),
+                   -1px -1px 2px rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 0.25rem;
+        transition: all 0.2s ease;
+    }
+    
+    .neumorphic-tag-button-small:hover {
+        transform: translateY(-1px);
+        box-shadow: 2px 2px 4px rgba(166, 180, 200, 0.3),
+                   -2px -2px 4px rgba(255, 255, 255, 0.8);
+    }
+    
+    .neumorphic-tag-button-small:active {
+        transform: translateY(1px);
+        box-shadow: inset 1px 1px 2px rgba(166, 180, 200, 0.2),
+                    inset -1px -1px 2px rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Neumorphic Button */
+    .neumorphic-button {
+        box-shadow: 4px 4px 10px rgba(166, 180, 200, 0.5), 
+                   -4px -4px 10px rgba(255, 255, 255, 0.8),
+                   inset 1px 1px 1px rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .neumorphic-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 6px 6px 12px rgba(166, 180, 200, 0.6), 
+                   -6px -6px 12px rgba(255, 255, 255, 0.9),
+                   inset 1px 1px 1px rgba(255, 255, 255, 0.3);
+    }
+    
+    .neumorphic-button:active {
+        transform: translateY(1px);
+        box-shadow: 2px 2px 5px rgba(166, 180, 200, 0.4), 
+                   -2px -2px 5px rgba(255, 255, 255, 0.7),
+                   inset 1px 1px 2px rgba(166, 180, 200, 0.2);
+    }
+    
+    /* Enhanced select container - clear the SVG arrows */
+    .neumorphic-select-container {
+        position: relative;
+    }
+    
+    .neumorphic-select-container svg {
+        display: none;
+    }
+    
+    /* Enhanced select styles for more professional appearance */
+    .neumorphic-select {
+        background: linear-gradient(175deg, #f8fafc, #eef2f7);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 2px 6px rgba(71, 85, 105, 0.08);
+        border-radius: 12px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 500;
+        color: #334155;
+        appearance: none;
+        padding: 12px 18px;
+        padding-right: 2.5rem;
+        width: 100%;
+        font-size: 14.5px;
+        cursor: pointer;
+        outline: none;
+    }
+    
+    .neumorphic-input {
+        background: linear-gradient(175deg, #f8fafc, #eef2f7);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+    }
+    
+    .neumorphic-input:focus {
+        box-shadow: inset 2px 2px 5px rgba(166, 180, 200, 0.25), 
+                    inset -2px -2px 5px rgba(255, 255, 255, 0.9),
+                    0 0 0 3px rgba(59, 130, 246, 0.25);
+        outline: none;
+    }
+    
+    .neumorphic-select:focus {
+        box-shadow: 0 4px 12px rgba(56, 114, 224, 0.15), 0 0 0 2px rgba(59, 130, 246, 0.2);
+        border-color: rgba(59, 130, 246, 0.6);
+        outline: none;
+        transform: translateY(-1px);
+    }
+    
+    .neumorphic-select:hover {
+        box-shadow: 0 3px 8px rgba(71, 85, 105, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    /* Enhanced styling for dropdown options */
+    .neumorphic-select option {
+        background-color: white;
+        padding: 12px 16px;
+        font-weight: 500;
+        color: #334155;
+        border-radius: 8px;
+        margin: 4px 0;
+    }
+    
+    .neumorphic-select option:checked {
+        background-color: rgba(59, 130, 246, 0.08);
+        color: #3b82f6;
+    }
+    
+    .neumorphic-select option:hover {
+        background-color: rgba(59, 130, 246, 0.04);
+    }
+    
+    /* Elegant dropdown arrow styling */
+    .neumorphic-select-container::after {
+        content: '';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-bottom: 2px solid #64748b;
+        border-right: 2px solid #64748b;
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+        transition: all 0.2s ease;
+        z-index: 1;
+    }
+    
+    .neumorphic-select-container:hover::after {
+        border-color: #3b82f6;
+    }
+    
+    /* Styling for placeholder options */
+    .neumorphic-select option[value=""] {
+        color: #94a3b8;
+        font-style: italic;
+    }
+    
+    /* Enhanced selected option styling */
+    .neumorphic-select-container select.selected {
+        background-color: #f1f5fd;
+        border-color: #3b82f6;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .flex.flex-col.md\:flex-row {
+            gap: 12px;
+        }
+        
+        .neumorphic-select {
+            padding: 10px 16px;
+            padding-right: 2.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        /* Stack elements vertically on mobile */
+        .flex.flex-col.md\:flex-row {
+            gap: 16px;
+        }
+        
+        .neumorphic-select-container {
+            width: 100%;
+        }
+        
+        .neumorphic-select {
+            width: 100%;
+            padding: 12px 16px;
+            padding-right: 2.5rem;
+            font-size: 14px;
+        }
+        
+        #analyzeButton {
+            width: 100%;
+            margin-top: 8px;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .neumorphic-select {
+            padding: 10px 14px;
+            padding-right: 2.2rem;
+            font-size: 13px;
+        }
+        
+        .neumorphic-select-container::after {
+            right: 14px;
+            width: 8px;
+            height: 8px;
+        }
+    }
+    
+    /* Modal styling */
+    #expandModal {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    h1{
+        font-weight: 800 !important;
+    }
+    /* Standardize all font weights to 450 */
+     {% comment %} {
+        font-weight: 450 !important;
+    } {% endcomment %}
+
+    /* Ensure these specific elements have font-weight 450 */
+    h1, h2, h3, h4, h5, h6,
+    p, span, div, button, input, select, option, textarea,
+    .font-bold, .font-medium, .font-semibold,
+    .text-xl, .text-2xl,
+    .neumorphic-input, .neumorphic-select, .neumorphic-button, .neumorphic-tag-button {
+        font-weight: 450 !important;
+    }
+
+    #expandModal.active {
+        opacity: 1;
+        visibility: visible;
+    }
+</style>
 
 <!-- Include Chart.js and its date adapter -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -149,4 +931,412 @@
 
 <!-- Include custom JS -->
 <script src="{% static 'js/trends-charts.js' %}"></script>
+<script src="{% static 'js/trends-ai-analysis.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+    // Function to show AI indicators when AI analysis is used
+    document.addEventListener('DOMContentLoaded', function() {
+        // Listen for custom event when AI analysis is complete
+        document.addEventListener('aiAnalysisComplete', function(e) {
+            if (e.detail && e.detail.isAi) {
+                // Show AI indicators
+                document.getElementById('aiAnalysisIndicator').classList.remove('hidden');
+                document.getElementById('aiRecommendationIndicator').classList.remove('hidden');
+            }
+        });
+
+        // Add event listener for analysis type dropdown to show/hide charts
+        const analysisTypeSelect = document.getElementById('analysis_type');
+        const regionChartContainer = document.getElementById('regionChartContainer');
+        const timeChartContainer = document.getElementById('chartContainer').parentElement;
+        const yearlyFilterContainer = document.getElementById('yearlyFilterContainer');
+
+        if (analysisTypeSelect && regionChartContainer && timeChartContainer) {
+            analysisTypeSelect.addEventListener('change', function() {
+                const selectedValue = this.value;
+                
+                // Reset - hide region chart
+                if (regionChartContainer) {
+                    regionChartContainer.style.display = 'none';
+                }
+                
+                // Reset - show time chart and yearly filter (default)
+                if (timeChartContainer) {
+                    timeChartContainer.style.display = 'block';
+                }
+                if (yearlyFilterContainer) {
+                    yearlyFilterContainer.style.display = 'block';
+                }
+                
+                // Handle specific analysis types
+                if (selectedValue === '2') { // Regional Analysis
+                    // For regional analysis, hide time chart, show region chart
+                    if (timeChartContainer) {
+                        timeChartContainer.style.display = 'none';
+                    }
+                    if (yearlyFilterContainer) {
+                        yearlyFilterContainer.style.display = 'none';
+                    }
+                    if (regionChartContainer) {
+                        regionChartContainer.style.display = 'block';
+                    }
+                } else if (selectedValue === '7') { // Complete Analysis
+                    // For complete analysis, show both charts
+                    if (timeChartContainer) {
+                        timeChartContainer.style.display = 'block';
+                    }
+                    if (regionChartContainer) {
+                        regionChartContainer.style.display = 'block';
+                    }
+                    if (yearlyFilterContainer) {
+                        yearlyFilterContainer.style.display = 'block';
+                    }
+                }
+            });
+        }
+
+        // Add event listeners for time unit buttons
+        const timeUnitButtons = document.querySelectorAll('.time-unit-btn');
+        
+        timeUnitButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const unit = this.getAttribute('data-unit');
+                
+                // Show/hide yearly filter based on selected time unit
+                if (yearlyFilterContainer) {
+                    // Only show yearly filter for month or day views
+                    if (unit === 'month' || unit === 'day') {
+                        yearlyFilterContainer.classList.remove('hidden');
+                    } else {
+                        yearlyFilterContainer.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Add event listener for yearly filter changes
+        document.getElementById('yearlyFilter').addEventListener('change', function() {
+            const selectedYear = this.value;
+            console.log('Year filter changed to:', selectedYear);
+            
+            // Apply visual feedback
+            this.classList.add('border-[#27FFB4]');
+            setTimeout(() => {
+                this.classList.remove('border-[#27FFB4]');
+            }, 500);
+            
+            // The actual filtering is handled by the trends-charts.js updateChartWithYearFilter function
+        });
+        
+        // Function to check content height and adjust scrolling behavior
+        function adjustScrollableContent() {
+            const rightPanel = document.querySelector('.right-panel');
+            const analysisContent = document.getElementById('analysisContent');
+            const recommendationContent = document.getElementById('recommendationContent');
+            
+            if (!rightPanel || !analysisContent || !recommendationContent) return;
+            
+            // Calculate viewport height
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            
+            // Calculate content heights
+            const analysisHeight = analysisContent.scrollHeight;
+            const recommendationHeight = recommendationContent.scrollHeight;
+            const totalContentHeight = analysisHeight + recommendationHeight;
+            
+            // Apply or remove the small content class
+            if (totalContentHeight < viewportHeight * 0.7) {
+                rightPanel.classList.add('has-small-content');
+            } else {
+                rightPanel.classList.remove('has-small-content');
+            }
+            
+            // For mobile screens, set appropriate max heights
+            if (viewportWidth < 768) {
+                // Mobile view
+                analysisContent.style.maxHeight = '250px';
+                recommendationContent.style.maxHeight = '250px';
+            } else if (viewportWidth < 1024) {
+                // Tablet view
+                analysisContent.style.maxHeight = '300px';
+                recommendationContent.style.maxHeight = '300px';
+            } else {
+                // Desktop view
+                const maxHeight = Math.max(300, Math.floor(viewportHeight * 0.4));
+                analysisContent.style.maxHeight = `${maxHeight}px`;
+                recommendationContent.style.maxHeight = `${maxHeight}px`;
+            }
+            
+            // Clear any previous observers
+            if (window.contentResizeObserver) {
+                window.contentResizeObserver.disconnect();
+            }
+            
+            // Create new resize observer
+            window.contentResizeObserver = new ResizeObserver(() => {
+                setTimeout(() => {
+                    // Check if content is smaller than container
+                    if (analysisContent.scrollHeight <= analysisContent.clientHeight &&
+                        recommendationContent.scrollHeight <= recommendationContent.clientHeight) {
+                        rightPanel.classList.add('has-small-content');
+                    } else {
+                        rightPanel.classList.remove('has-small-content');
+                    }
+                }, 300);
+            });
+            
+            // Observe content containers
+            window.contentResizeObserver.observe(analysisContent);
+            window.contentResizeObserver.observe(recommendationContent);
+        }
+        
+        // Adjust content on page load and when results are shown
+        const resultsContainer = document.getElementById('resultsContainer');
+        
+        // Use MutationObserver to detect when results become visible
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'style' && 
+                    resultsContainer.style.display !== 'none') {
+                    adjustScrollableContent();
+                }
+            });
+        });
+        
+        // Start observing
+        if (resultsContainer) {
+            observer.observe(resultsContainer, { attributes: true });
+        }
+        
+        // Also adjust on window resize
+        window.addEventListener('resize', adjustScrollableContent);
+        
+        // Listen for content updated event from AI analysis
+        document.addEventListener('contentUpdated', adjustScrollableContent);
+        
+        // Initial adjustment
+        setTimeout(adjustScrollableContent, 500);
+
+        // Add selected class when dropdown has a selection
+        const businessIntentSelect = document.getElementById('business_intent');
+        if (businessIntentSelect) {
+            businessIntentSelect.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('selected');
+                } else {
+                    this.classList.remove('selected');
+                }
+            });
+        }
+
+        // Make dropdowns responsive and fix any styling issues
+        const updateDropdownStyles = () => {
+            const dropdowns = document.querySelectorAll('.neumorphic-select');
+            const dropdownContainers = document.querySelectorAll('.neumorphic-select-container');
+            
+            dropdowns.forEach(dropdown => {
+                // Add selected class when dropdown has a value
+                if (dropdown.value) {
+                    dropdown.classList.add('selected');
+                } else {
+                    dropdown.classList.remove('selected');
+                }
+                
+                // Listen for changes
+                dropdown.addEventListener('change', function() {
+                    if (this.value) {
+                        this.classList.add('selected');
+                    } else {
+                        this.classList.remove('selected');
+                    }
+                });
+            });
+            
+            // Ensure proper arrow positioning
+            dropdownContainers.forEach(container => {
+                const svg = container.querySelector('svg');
+                if (svg) svg.style.display = 'none';
+            });
+        };
+        
+        // Run initially and on window resize
+        updateDropdownStyles();
+        window.addEventListener('resize', updateDropdownStyles);
+
+        // Variables for expand functionality
+        const expandModal = document.getElementById('expandModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const closeModal = document.getElementById('closeModal');
+        
+        // Variables for PDF download
+        const downloadReportBtn = document.getElementById('downloadReportBtn');
+        const downloadButtonContainer = document.getElementById('downloadButtonContainer');
+        
+        // Show download button when AI content is loaded
+        document.addEventListener('aiAnalysisComplete', function(e) {
+            if (e.detail && e.detail.isAi) {
+                downloadButtonContainer.classList.remove('hidden');
+            }
+        });
+        
+        // Expand button functionality
+        const expandButtons = document.querySelectorAll('.expand-btn');
+        expandButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetContent = document.getElementById(targetId);
+                const sectionTitle = this.parentElement.querySelector('div').textContent.trim();
+                
+                // Set modal title and content
+                modalTitle.textContent = sectionTitle;
+                modalContent.innerHTML = targetContent.innerHTML;
+                
+                // Show modal with animation
+                expandModal.classList.remove('hidden');
+                setTimeout(() => {
+                    expandModal.classList.add('active');
+                }, 10);
+            });
+        });
+        
+        // Close modal when clicking the close button
+        closeModal.addEventListener('click', function() {
+            expandModal.classList.remove('active');
+            setTimeout(() => {
+                expandModal.classList.add('hidden');
+            }, 300);
+        });
+        
+        // Close modal when clicking outside
+        expandModal.addEventListener('click', function(e) {
+            if (e.target === expandModal) {
+                expandModal.classList.remove('active');
+                setTimeout(() => {
+                    expandModal.classList.add('hidden');
+                }, 300);
+            }
+        });
+        
+        // PDF Download functionality
+        if (downloadReportBtn) {
+            downloadReportBtn.addEventListener('click', function() {
+                generatePDF();
+            });
+        }
+        
+        // Function to generate PDF
+        function generatePDF() {
+            // Show loading state
+            const originalBtnText = downloadReportBtn.innerHTML;
+            downloadReportBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 pdf-loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M16 12l-4 4-4-4"></path>
+                    <path d="M12 8v8"></path>
+                </svg>
+                Generating PDF...
+            `;
+            downloadReportBtn.disabled = true;
+            
+            // Delay to allow button state to update
+            setTimeout(() => {
+                // Get content for PDF
+                const chartContainer = document.getElementById('chartContainer');
+                const analysisContent = document.getElementById('analysisContent');
+                const recommendationContent = document.getElementById('recommendationContent');
+                const searchQuery = document.getElementById('keywordInput').value;
+                
+                // Create a temporary container for capturing PDF content
+                const pdfContainer = document.createElement('div');
+                pdfContainer.style.padding = '40px';
+                pdfContainer.style.background = 'white';
+                pdfContainer.style.width = '800px';
+                pdfContainer.style.position = 'absolute';
+                pdfContainer.style.left = '-9999px';
+                
+                // Create PDF content with professional styling
+                pdfContainer.innerHTML = `
+                    <div style="padding-bottom: 30px; border-bottom: 2px solid #e5e7eb;">
+                        <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 8px;">TrendIQ Analysis Report</h1>
+                        <p style="color: #6b7280; font-size: 14px;">Generated on ${new Date().toLocaleDateString()} for search query: "${searchQuery}"</p>
+                    </div>
+                    
+                    <div style="margin-top: 30px; margin-bottom: 40px;">
+                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px;">Trend Visualization</h2>
+                        <div id="pdfChart" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; background: #f9fafb;"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px;">Analysis</h2>
+                        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; background: #f9fafb;">${analysisContent.innerHTML}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 40px;">
+                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px;">Recommendations</h2>
+                        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; background: #f9fafb;">${recommendationContent.innerHTML}</div>
+                    </div>
+                    
+                    <div style="margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
+                        <p style="color: #6b7280; font-size: 12px;">© ${new Date().getFullYear()} 1Matrix TrendIQ. All rights reserved.</p>
+                    </div>
+                `;
+                
+                document.body.appendChild(pdfContainer);
+                
+                // Clone chart into PDF container
+                const pdfChart = pdfContainer.querySelector('#pdfChart');
+                html2canvas(chartContainer, {scale: 2}).then(canvas => {
+                    pdfChart.appendChild(canvas);
+                    
+                    // Create PDF
+                    setTimeout(() => {
+                        html2canvas(pdfContainer, {
+                            scale: 1,
+                            useCORS: true,
+                            allowTaint: true,
+                            backgroundColor: '#ffffff'
+                        }).then(canvas => {
+                            // Remove temporary container
+                            document.body.removeChild(pdfContainer);
+                            
+                            // Create PDF document
+                            const { jsPDF } = window.jspdf;
+                            const pdf = new jsPDF('p', 'mm', 'a4');
+                            
+                            // Canvas dimensions
+                            const imgData = canvas.toDataURL('image/png');
+                            const imgWidth = 210; // A4 width in mm
+                            const pageHeight = 295; // A4 height in mm
+                            const imgHeight = canvas.height * imgWidth / canvas.width;
+                            let heightLeft = imgHeight;
+                            
+                            let position = 0;
+                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                            
+                            // Add new pages if content is larger than one page
+                            while (heightLeft >= 0) {
+                                position = heightLeft - imgHeight;
+                                pdf.addPage();
+                                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                                heightLeft -= pageHeight;
+                            }
+                            
+                            // Save PDF
+                            pdf.save(`TrendIQ_Analysis_${new Date().toISOString().slice(0,10)}.pdf`);
+                            
+                            // Reset button state
+                            downloadReportBtn.innerHTML = originalBtnText;
+                            downloadReportBtn.disabled = false;
+                        });
+                    }, 500);
+                });
+            }, 100);
+        }
+    });
+</script>
 {% endblock %} 

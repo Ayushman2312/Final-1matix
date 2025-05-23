@@ -483,7 +483,6 @@ class FeeCalculatorView(TemplateView):
         context['categories'] = Category.objects.all()
         context['subcategories'] = SubCategory.objects.all()
         context['amazon_programs'] = AmazonProgram.objects.all()
-        context['app_name'] = 'Fee Calculator'
         
         print("Context data prepared successfully")
         return context

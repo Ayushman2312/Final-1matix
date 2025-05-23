@@ -1,0 +1,16 @@
+2025-05-15 15:27:41,241 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-15 15:27:41,241 - ContactScraper - WARNING - Could not initialize fake-useragent: FakeUserAgent.__init__() got an unexpected keyword argument 'verify_ssl'. Using fallback user agents.
+2025-05-15 15:27:47,693 - ContactScraper - INFO - Starting scrape for keyword: 'Digital Marketing Agency in Bhopal'
+2025-05-15 15:27:47,697 - ContactScraper - INFO - Searching Google (page 1) for 'Digital Marketing Agency in Bhopal'
+2025-05-15 15:28:01,838 - ContactScraper - INFO - Closing browser page...
+2025-05-15 15:28:01,872 - ContactScraper - INFO - Closing browser context...
+2025-05-15 15:28:01,920 - ContactScraper - INFO - Closing browser...
+2025-05-15 15:28:03,022 - ContactScraper - INFO - Stopping playwright...
+2025-05-15 15:28:03,051 - ContactScraper - INFO - Browser resources cleanup completed
+2025-05-15 15:28:11,634 - ContactScraper - ERROR - Error in direct Google scraping for domain ca: HTTPSConnectionPool(host='www.google.ca', port=443): Max retries exceeded with url: /search?q=Digital+Marketing+Agency+in+Bhopal&num=30&start=0 (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
+2025-05-15 15:28:21,810 - ContactScraper - ERROR - Error in direct Google scraping for domain co.uk: HTTPSConnectionPool(host='www.google.co.uk', port=443): Max retries exceeded with url: /search?q=Digital+Marketing+Agency+in+Bhopal&num=30&start=0 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2025-05-15 15:28:26,400 - ContactScraper - INFO - Rotated to next proxy: proxy {'http': 'http://vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9@geo.iproyal.com:11200', 'https': 'http://vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9@geo.iproyal.com:11200'}
+2025-05-15 15:28:31,801 - ContactScraper - ERROR - Error in alternative keyword Google search: ('Connection broken: IncompleteRead(6884 bytes read, 3356 more expected)', IncompleteRead(6884 bytes read, 3356 more expected))
+2025-05-15 15:28:31,807 - ContactScraper - INFO - Google search completed. Found 0 unique URLs
+2025-05-15 15:28:31,814 - ContactScraper - INFO - Found 0 URLs to scrape from search page 1
+2025-05-15 15:28:31,818 - ContactScraper - INFO - Searching Google (page 2) for 'Digital Marketing Agency in Bhopal'

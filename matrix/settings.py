@@ -23,10 +23,10 @@ load_dotenv(env_path)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
-ALLOWED_HOSTS = ["89.116.20.128","1matrix.io","www.1matrix.io"]
+ALLOWED_HOSTS = ["89.116.20.128","1matrix.io","www.1matrix.io", "*"]
 # =======
 # ALLOWED_HOSTS = ["89.116.20.128","1matrix.io", "www.1matrix.io"]
 # >>>>>>> ac94a6656f60d6c11fd129499c5e7675087f9e41
@@ -136,24 +136,24 @@ CORS_ALLOW_CREDENTIALS = True
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': '1matrix',
-        'USER': 'ayushman',
-        'PASSWORD': 'Ayushman@23122003',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': '1matrix',
+#         'USER': 'ayushman',
+#         'PASSWORD': 'Ayushman@23122003',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
 #     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation
@@ -319,3 +319,27 @@ FILE_UPLOAD_HANDLERS = [
 # Ensure uploaded files are handled properly
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 FILE_UPLOAD_PERMISSIONS = 0o644
+
+# Add to the bottom of settings.py
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Redis and Celery connection settings
+# CELERY_BROKER_CONNECTION_RETRY = True
+# CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+# CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+# CELERY_BROKER_CONNECTION_TIMEOUT = 30
+# CELERY_REDIS_SOCKET_CONNECT_TIMEOUT = 30
+# CELERY_REDIS_SOCKET_TIMEOUT = 30
+# CELERY_REDIS_RETRY_ON_TIMEOUT = True
+# CELERY_TASK_ACKS_LATE = True
+# CELERY_TASK_REJECT_ON_WORKER_LOST = True
+# CELERY_TASK_RETRY_POLICY = {
+#     'max_retries': 3,
+#     'interval_start': 0,
+#     'interval_step': 0.2,
+#     'interval_max': 0.5,
+# }
+
+# Data Mining Service Settings
+DATA_MINER_AUTOSTART_SERVICES = False  # Auto-start Redis and Celery when needed

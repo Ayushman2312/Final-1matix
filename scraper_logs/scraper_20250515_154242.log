@@ -1,0 +1,13 @@
+2025-05-15 15:42:42,065 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-15 15:42:42,165 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-15 15:42:47,613 - ContactScraper - INFO - Starting scrape for keyword: 'Digital Marketing Agency in Bhopal'
+2025-05-15 15:42:47,622 - ContactScraper - INFO - Searching Google (page 1) for 'Digital Marketing Agency in Bhopal'
+2025-05-15 15:43:13,920 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-15 15:46:20,168 - ContactScraper - INFO - Rotated to next proxy: proxy {'http': 'http://vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9@geo.iproyal.com:11200', 'https': 'http://vnkl9BGvMRlmvWfO:EjFoKHcjcchVYwZ9@geo.iproyal.com:11200'}
+2025-05-15 15:46:20,177 - ContactScraper - INFO - Closing browser page...
+2025-05-15 15:46:20,199 - ContactScraper - INFO - Closing browser context...
+2025-05-15 15:46:20,236 - ContactScraper - INFO - Closing browser...
+2025-05-15 15:46:21,866 - ContactScraper - INFO - Stopping playwright...
+2025-05-15 15:46:21,894 - ContactScraper - INFO - Browser resources cleanup completed
+2025-05-15 15:47:07,180 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-15 15:47:57,952 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'

@@ -1,11 +1,24 @@
 {% extends 'user_dashboard/base.html' %}
 {% block content %}
 {% load static %}
-
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<h1 class="text-[#7B3DF3] font-bold text-[3rem]">Welcome to the LeadX</h1>
 <div class="container py-2 max-w-7xl">
     <!-- Header -->
-    <p class="text-gray-700 font-md text-lg mb-2">Extract valuable contact information with precision</p>
-    <p class="text-gray-600 text-sm">Default: 30 results from India</p>
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <p class="text-gray-700 font-md text-lg mb-2">Extract valuable contact information with precision</p>
+            <p class="text-gray-600 text-sm">Default: 30 results from India</p>
+        </div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'background_tasks' %}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                View All Tasks
+            </a>
+        {% endif %}
+    </div>
 
     <div class="grid grid-cols-[1fr,1.2fr] gap-8">
         <!-- Search Form -->
@@ -15,31 +28,47 @@
                 <!-- Search and Country Row -->
                 <div class="flex gap-4">
                     <div class="w-[70%]">
-                        <label class="block text-gray-700 mb-2 font-medium">Search Keyword</label>
-                        <input type="text" 
-                               name="keyword" 
-                               id="keyword"
-                               class="w-full p-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-sm placeholder:text-sm"
-                               placeholder="Digital Marketing Company in Mumbai"
-                               value="{{ request.GET.keyword|default:'' }}"
-                               required>
+                        <label class="block text-gray-700 mb-2 font-medium tracking-wide">Search Keyword</label>
+                        <div class="relative group">
+                            <div class="absolute -inset-0.5 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                            <div class="relative">
+                                <input type="text" 
+                                      name="keyword" 
+                                      id="keyword"
+                                      class="w-full p-3.5 bg-white border-[3px] border-[#7B3DF3] rounded-lg shadow-xl focus:outline-none focus:ring-4 focus:ring-[#7B3DF3]/50 transition-all duration-300 text-sm placeholder:text-sm backdrop-blur-sm bg-white/95 peer hover:shadow-[0_0_15px_rgba(123,61,243,0.3)]"
+                                      placeholder="Digital Marketing Company in Mumbai"
+                                      value="{{ request.GET.keyword|default:'' }}"
+                                      required>
+                                <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hover:scale-110 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        {% comment %} <p class="text-xs text-purple-700 mt-1.5 ml-2 font-medium italic drop-shadow-sm">Discover high-quality leads with enterprise-grade search intelligence</p> {% endcomment %}
                     </div>
 
                     <div class="w-[30%]">
-                        <label class="block text-gray-700 mb-2 font-medium">Country</label>
-                        <select name="country" 
-                                id="country"
-                                class="w-full p-1.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-colors text-sm placeholder:text-sm"
-                                required>
-                            <option value="">Select Country</option>
-                            <option value="IN" {% if request.GET.country == 'IN' or not request.GET.country %}selected{% endif %}>India</option>
-                            <option value="US" {% if request.GET.country == 'US' %}selected{% endif %}>United States</option>
-                            <option value="UK" {% if request.GET.country == 'UK' %}selected{% endif %}>United Kingdom</option>
-                            <option value="CA" {% if request.GET.country == 'CA' %}selected{% endif %}>Canada</option>
-                            <option value="AU" {% if request.GET.country == 'AU' %}selected{% endif %}>Australia</option>
-                            <option value="SG" {% if request.GET.country == 'SG' %}selected{% endif %}>Singapore</option>
-                            <option value="AE" {% if request.GET.country == 'AE' %}selected{% endif %}>UAE</option>
-                        </select>
+                        <label class="block text-gray-700 mb-2 font-medium tracking-wide">Country</label>
+                        <div class="relative group">
+                            <div class="absolute -inset-0.5 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+                            <div class="relative">
+                                <select name="country" 
+                                        id="country"
+                                        class="w-full p-3.5 bg-white rounded-lg border border-gray-300 text-sm placeholder:text-sm backdrop-blur-sm bg-white/95 peer hover:shadow-[0_0_15px_rgba(123,61,243,0.3)]"
+                                        required>
+                                    <option value="">Select Country</option>
+                                    <option value="IN" {% if request.GET.country == 'IN' or not request.GET.country %}selected{% endif %}>India</option>
+                                    <option value="US" {% if request.GET.country == 'US' %}selected{% endif %}>United States</option>
+                                    <option value="UK" {% if request.GET.country == 'UK' %}selected{% endif %}>United Kingdom</option>
+                                    <option value="CA" {% if request.GET.country == 'CA' %}selected{% endif %}>Canada</option>
+                                    <option value="AU" {% if request.GET.country == 'AU' %}selected{% endif %}>Australia</option>
+                                    <option value="SG" {% if request.GET.country == 'SG' %}selected{% endif %}>Singapore</option>
+                                    <option value="AE" {% if request.GET.country == 'AE' %}selected{% endif %}>UAE</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -57,13 +86,67 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-[30%] bg-indigo-600 text-white px-8 py-2.5 rounded-md hover:bg-indigo-700 transition-colors duration-200">
-                    Get
-                </button>
+                <div class="flex items-center justify-between">
+                    <label class="inline-flex items-center">
+                        <input type="checkbox" class="form-checkbox text-indigo-600" name="background" value="true" checked>
+                        <span class="ml-2 text-sm text-gray-700">Run in background</span>
+                    </label>
+                    <button type="submit" class="w-[30%] bg-indigo-600 text-white px-8 py-2.5 rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                        Get
+                    </button>
+                </div>
             </form>
 
-            <!-- Recent Minings -->
+            <!-- Running Background Tasks -->
+            {% if user.is_authenticated and running_tasks %}
             <div class="mt-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-medium">Running Tasks</h2>
+                    <a href="{% url 'background_tasks' %}" class="text-sm text-indigo-600 hover:text-indigo-800">View all</a>
+                </div>
+                <div class="space-y-4">
+                    {% for task in running_tasks|slice:":3" %}
+                    <div class="p-4 border border-gray-200 rounded-lg shadow-sm task-item" data-task-id="{{ task.task_id }}">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-medium text-gray-800">{{ task.task_name }}</h3>
+                                <p class="text-sm text-gray-600 mt-1">Started {{ task.created_at|timesince }} ago</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <!-- Progress Circle -->
+                                <div class="relative w-10 h-10 flex items-center justify-center">
+                                    <svg class="w-full h-full" viewBox="0 0 36 36">
+                                        <!-- Background Circle -->
+                                        <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" stroke-width="2"></circle>
+                                        
+                                        <!-- Progress Circle -->
+                                        <circle class="task-progress-circle" cx="18" cy="18" r="16" fill="none" stroke="#4f46e5" 
+                                            stroke-width="2" stroke-dasharray="{{ task.progress|default:0 }} 100" 
+                                            stroke-dashoffset="0" transform="rotate(-90 18 18)"></circle>
+                                        <!-- Progress Text -->
+                                        <text x="18" y="18" fill="#4f46e5" font-size="8" text-anchor="middle" alignment-baseline="middle" class="task-progress-text">
+                                            {{ task.progress }}%
+                                        </text>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Cancel Button -->
+                                <button type="button" class="cancel-task-btn inline-flex items-center px-3 py-1.5 border border-red-300 text-sm text-red-600 font-medium rounded-md hover:bg-red-50 focus:outline-none" data-task-id="{{ task.task_id }}">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Stop
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Minings -->
+            <div class="bg-white p-4 rounded-lg shadow-[0_0_7px_rgba(0,0,0,0.1)] mt-8">
                 <h2 class="text-xl font-medium mb-4">Recent 5 minings</h2>
                 <div id="recentMinings" class="space-y-3 p-4 rounded-lg shadow-sm border border-gray-100">
                     {% if recent_minings %}
@@ -139,7 +222,7 @@
                             <button id="copyAllResults" 
                                     class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
                                 </svg>
                                 Copy All
                             </button>
@@ -170,6 +253,8 @@
     let seconds = 0;
     let progressInterval;
     let progressValue = 0;
+    let currentTaskId = null;
+    let statusCheckInterval;
     
     const progressMessages = [
         "Initializing search...",
@@ -196,378 +281,541 @@
             clearInterval(timerInterval);
             timerInterval = null;
         }
+        
         if (progressInterval) {
             clearInterval(progressInterval);
             progressInterval = null;
         }
-        progressValue = 0;
+        
+        if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
+            statusCheckInterval = null;
+        }
     }
     
     function updateTimer() {
+        seconds++;
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
-        const timerElement = document.getElementById('timer');
-        if (timerElement) {
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-            seconds++;
-        }
+        
+        document.getElementById('timer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
     
     function startProgress() {
-        let messageIndex = 0;
         progressValue = 0;
+        updateProgress(0);
         
-        // Update progress bar and message
-        function updateProgress() {
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            
+        // Set random message from array
+        let messageIndex = 0;
+        updateProgressMessage(progressMessages[messageIndex]);
+        
+        progressInterval = setInterval(() => {
+            // Increment progress more slowly when approaching milestones
             if (progressValue < 90) {
-                progressValue += Math.random() * 2;
-                if (progressValue > 90) progressValue = 90;
-                
-                progressBar.style.width = `${progressValue}%`;
-                
-                // Update message every ~20%
-                if (progressValue > messageIndex * 20 && messageIndex < progressMessages.length) {
-                    progressText.textContent = progressMessages[messageIndex];
-                    messageIndex++;
+                if (progressValue < 20) {
+                    progressValue += 0.8;
+                } else if (progressValue < 40) {
+                    progressValue += 0.5;
+                } else if (progressValue < 60) {
+                    progressValue += 0.3;
+                } else {
+                    progressValue += 0.2;
                 }
+                
+                // Change message at certain thresholds
+                const newMessageIndex = Math.floor(progressValue / 20);
+                if (newMessageIndex !== messageIndex && newMessageIndex < progressMessages.length) {
+                    messageIndex = newMessageIndex;
+                    updateProgressMessage(progressMessages[messageIndex]);
+                }
+                
+                updateProgress(progressValue);
             }
-        }
-        
-        progressInterval = setInterval(updateProgress, 300);
+        }, 300);
     }
     
-    function completeProgress() {
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-        
-        progressBar.style.width = '100%';
-        progressText.textContent = 'Search completed!';
-        
-        if (progressInterval) {
-            clearInterval(progressInterval);
-            progressInterval = null;
-        }
+    function updateProgress(value) {
+        document.getElementById('progressBar').style.width = `${value}%`;
     }
-
-    function showLoading() {
-        // Hide results and error message first
+    
+    function updateProgressMessage(message) {
+        document.getElementById('progressText').textContent = message;
+    }
+    
+    // Handle form submission
+    document.getElementById('miningForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const formData = new FormData(this);
+        const keyword = formData.get('keyword');
+        const dataType = formData.get('data_type');
+        const country = formData.get('country');
+        const runInBackground = formData.get('background') === 'true';
+        
+        // Validate
+        if (!keyword || keyword.length < 3) {
+            alert('Please enter a keyword with at least 3 characters');
+            return;
+        }
+        
+        // Show loading state
+        document.getElementById('loading').classList.remove('hidden');
         document.getElementById('results').classList.add('hidden');
         document.getElementById('errorMessage').classList.add('hidden');
         
-        // Show loading state
-        const loadingElement = document.getElementById('loading');
-        loadingElement.classList.remove('hidden');
-        loadingElement.style.display = 'block';
-        
-        // Start the timer and progress
+        // Start timer and progress animation
         startTimer();
+        
+        // Send request to server
+        fetch('/data_miner/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // If task_id is provided, start checking task status
+                if (data.task_id) {
+                    currentTaskId = data.task_id;
+                    // Store task ID in DataMinerTasks for persistence across page navigation
+                    if (typeof DataMinerTasks !== 'undefined') {
+                        DataMinerTasks.storeTask(data.task_id);
+                    } else if (typeof trackNewTask === 'function') {
+                        trackNewTask(data.task_id);
+                    }
+                    startTaskStatusCheck(data.task_id);
+                } else if (data.data) {
+                    // If data is provided directly (cached results), display it
+                    showResults(data);
+                } else {
+                    // In-process task, keep checking status
+                    inProcessStatusCheck();
+                }
+            } else {
+                showError(data.error || 'An error occurred');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('An error occurred while communicating with the server');
+        });
+    });
+    
+    function startTaskStatusCheck(taskId) {
+        statusCheckInterval = setInterval(() => {
+            fetch(`/data_miner/api/task-status/${taskId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Task status:', data);
+                    
+                    // Update progress if provided
+                    if (data.progress) {
+                        updateProgress(data.progress);
+                    }
+                    
+                    // Update message if provided
+                    if (data.message) {
+                        updateProgressMessage(data.message);
+                    }
+                    
+                    // Check status
+                    if (data.status === 'completed') {
+                        stopTimer();
+                        
+                        // Get results if history_id is provided
+                        if (data.history_id) {
+                            window.location.href = `/data_miner/download/${data.history_id}/`;
+                        } else if (data.results) {
+                            // Show results directly
+                            showResults({
+                                data: { [data.data_type + 's']: data.results },
+                                message: data.message
+                            });
+                        } else {
+                            // Reload page to see updated history
+                            window.location.reload();
+                        }
+                    } else if (data.status === 'error' || data.status === 'cancelled') {
+                        stopTimer();
+                        showError(data.message || 'An error occurred during processing');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking task status:', error);
+                });
+        }, 2000);
     }
-
-    function hideLoading() {
-        // Stop the timer
-        stopTimer();
+    
+    function inProcessStatusCheck() {
+        // For in-process tasks, we just update progress animation
+        // The results will be shown via websocket or polling mechanism
+        // This is just a placeholder
+    }
+    
+    function showResults(data) {
+        // Hide loading
+        document.getElementById('loading').classList.add('hidden');
         
-        // Complete the progress animation
-        completeProgress();
+        // Prepare results container
+        const resultsContainer = document.getElementById('resultsList');
+        resultsContainer.innerHTML = '';
         
-        // Hide loading state after a short delay to show completion
-        setTimeout(() => {
-            const loadingElement = document.getElementById('loading');
-            loadingElement.classList.add('hidden');
-            loadingElement.style.display = 'none';
+        // Get result type and count
+        let resultType, results;
+        if (data.data.phones) {
+            resultType = 'phones';
+            results = data.data.phones;
+        } else if (data.data.emails) {
+            resultType = 'emails';
+            results = data.data.emails;
+        } else {
+            showError('No results found');
+            return;
+        }
+        
+        // Set count text
+        document.getElementById('resultsCount').textContent = `Found ${results.length} ${resultType}`;
+        
+        // Add each result to the list
+        results.forEach((result, index) => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'flex items-center justify-between px-4 py-3';
             
-            // Show results
-            document.getElementById('results').classList.remove('hidden');
-        }, 500);
-    }
-
-    function showError(message) {
-        // Stop the timer
-        stopTimer();
+            const resultContent = document.createElement('div');
+            resultContent.className = 'flex items-center';
+            
+            const resultNumber = document.createElement('span');
+            resultNumber.className = 'mr-3 text-gray-400';
+            resultNumber.textContent = `${index + 1}.`;
+            
+            const resultValue = document.createElement('span');
+            resultValue.className = 'text-gray-800';
+            resultValue.textContent = result;
+            
+            const copyButton = document.createElement('button');
+            copyButton.className = 'text-indigo-600 hover:text-indigo-800 text-sm';
+            copyButton.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                </svg>
+            `;
+            copyButton.addEventListener('click', () => {
+                navigator.clipboard.writeText(result).then(() => {
+                    copyButton.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    `;
+                    setTimeout(() => {
+                        copyButton.innerHTML = `
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                            </svg>
+                        `;
+                    }, 1000);
+                });
+            });
+            
+            resultContent.appendChild(resultNumber);
+            resultContent.appendChild(resultValue);
+            resultItem.appendChild(resultContent);
+            resultItem.appendChild(copyButton);
+            resultsContainer.appendChild(resultItem);
+        });
         
+        // Show results
+        document.getElementById('results').classList.remove('hidden');
+        
+        // Set up download button
+        document.getElementById('downloadResults').addEventListener('click', function() {
+            downloadResults(results, resultType);
+        });
+        
+        // Set up copy all button
+        document.getElementById('copyAllResults').addEventListener('click', function() {
+            const allText = results.join('\n');
+            navigator.clipboard.writeText(allText).then(() => {
+                this.innerHTML = `
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Copied!
+                `;
+                setTimeout(() => {
+                    this.innerHTML = `
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                        </svg>
+                        Copy All
+                    `;
+                }, 2000);
+            });
+        });
+    }
+    
+    function downloadResults(results, resultType) {
+        const keyword = document.getElementById('keyword').value;
+        const dataType = resultType === 'phones' ? 'phone' : 'email';
+        const country = document.getElementById('country').value;
+        
+        // Call API to get Excel file
+        fetch('/data_miner/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                results: results,
+                keyword: keyword,
+                data_type: dataType,
+                country: country
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.history_id) {
+                    // Direct download for authenticated users
+                    window.location.href = `/data_miner/download/${data.history_id}/`;
+                } else if (data.temp_file) {
+                    // Use form to download temp file for anonymous users
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/data_miner/';
+                    
+                    const csrfField = document.createElement('input');
+                    csrfField.type = 'hidden';
+                    csrfField.name = 'csrfmiddlewaretoken';
+                    csrfField.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    
+                    const tempFileField = document.createElement('input');
+                    tempFileField.type = 'hidden';
+                    tempFileField.name = 'temp_file';
+                    tempFileField.value = data.temp_file;
+                    
+                    form.appendChild(csrfField);
+                    form.appendChild(tempFileField);
+                    document.body.appendChild(form);
+                    form.submit();
+                    document.body.removeChild(form);
+                }
+            } else {
+                alert(data.error || 'Error downloading results');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while downloading results');
+        });
+    }
+    
+    function showError(message) {
         // Hide loading and results
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('results').classList.add('hidden');
         
         // Show error message
-        const errorDiv = document.getElementById('errorMessage');
-        errorDiv.textContent = message;
-        errorDiv.classList.remove('hidden');
+        const errorElement = document.getElementById('errorMessage');
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
     }
-
-    function displayResults(results) {
-        const resultsList = document.getElementById('resultsList');
-        const resultsCount = document.getElementById('resultsCount');
-        resultsList.innerHTML = '';
-
-        if (!results || results.length === 0) {
-            resultsList.innerHTML = `
-                <div class="text-center py-8">
-                    <p class="text-gray-500">No ${document.querySelector('input[name="data_type"]:checked').value === 'phone' ? 'phone numbers' : 'email addresses'} found</p>
-                    <p class="text-sm text-gray-400 mt-2">Try adjusting your search criteria</p>
-                </div>`;
-            resultsCount.textContent = 'No results found';
-            return;
-        }
-
-        // Update results count
-        const dataType = document.querySelector('input[name="data_type"]:checked').value;
-        resultsCount.textContent = `Found ${results.length} ${dataType}${results.length === 1 ? '' : 's'}`;
-
-        results.forEach((result, index) => {
-            const resultItem = document.createElement('div');
-            resultItem.className = 'flex justify-between items-center p-4 hover:bg-gray-50 transition-colors group';
-            
-            // Format the result based on data type
-            const formattedResult = dataType === 'phone'
-                ? formatPhoneNumber(result)
-                : result;
-
-            resultItem.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <span class="text-gray-400 font-medium">${(index + 1).toString().padStart(2, '0')}</span>
-                    <span class="text-gray-700 font-mono">${formattedResult}</span>
-                </div>
-                <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onclick="copyToClipboard('${result}')" 
-                            class="text-sm text-indigo-600 hover:text-indigo-800 px-3 py-1 rounded-md hover:bg-indigo-50 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
-                        </svg>
-                        Copy
-                    </button>
-                </div>
-            `;
-            resultsList.appendChild(resultItem);
-        });
-    }
-
-    function formatPhoneNumber(phone) {
-        // Remove all non-digits
-        const cleaned = phone.replace(/\D/g, '');
+    
+    function cancelTask(taskId) {
+        if (!taskId) return;
         
-        // Check if it's an international number (more than 10 digits)
-        if (cleaned.length > 10) {
-            // Format as international number
-            return '+' + cleaned.slice(0, cleaned.length - 10) + ' ' + 
-                   cleaned.slice(-10, -7) + ' ' + 
-                   cleaned.slice(-7, -4) + ' ' + 
-                   cleaned.slice(-4);
-        }
+        if (!confirm('Are you sure you want to stop this task?')) return;
         
-        // Format as local number
-        return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-    }
-
-    function updateRecentMinings(search) {
-        // This function is no longer needed as we're using server-side rendering
-        // The page will refresh after each mining operation
-        window.location.reload();
-    }
-
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300 flex items-center';
-            toast.innerHTML = `
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Copied to clipboard!
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        });
-    }
-
-    // Form submission handler
-    document.getElementById('miningForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        
-        // Show loading state before making the request
-        showLoading();
-
-        try {
-            const response = await fetch('/data_miner/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(formData)
-            });
-
-            if (!response.ok) {
-                if (response.headers.get('content-type')?.includes('application/json')) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to fetch results');
-                } else {
-                    throw new Error('Server error occurred. Please try again.');
-                }
+        fetch(`/data_miner/api/cancel-task/${taskId}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
             }
-
-            const data = await response.json();
-            
-            // Hide loading state after getting response
-            hideLoading();
-
-            // Get the selected data type
-            const dataType = formData.get('data_type');
-            let results = [];
-
-            // Extract results based on data type
-            if (data.success && data.data) {
-                results = dataType === 'phone' ? data.data.phones || [] : data.data.emails || [];
-            }
-
-            // Filter results based on data type
-            let filteredResults = [];
-            if (results.length > 0) {
-                if (dataType === 'phone') {
-                    // Filter for phone numbers (matches patterns like +91XXXXXXXXXX or regular 10-digit numbers)
-                    filteredResults = results.filter(result => 
-                        /^(\+\d{1,3}[-.\s]?)?\d{10}$/.test(result.replace(/\D/g, ''))
-                    );
-                } else if (dataType === 'email') {
-                    // Filter for email addresses
-                    filteredResults = results.filter(result => 
-                        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result)
-                    );
-                }
-            }
-
-            displayResults(filteredResults);
+        })
+        .then(response => response.json())
+        .then(data => {
             if (data.success) {
-                // Update URL with search parameters without reloading the page
-                const params = new URLSearchParams(formData);
-                const newUrl = `${window.location.pathname}?${params.toString()}`;
-                window.history.pushState({}, '', newUrl);
-                updateRecentMinings(formData.get('keyword'));
+                // Reload the page to refresh task list
+                window.location.reload();
+            } else {
+                alert(data.error || 'Error cancelling task');
             }
-
-        } catch (error) {
-            showError(error.message);
-        }
-    });
-
-    // Download results handler
-    document.getElementById('downloadResults').addEventListener('click', async () => {
-        const results = Array.from(document.getElementById('resultsList').children)
-            .map(item => item.querySelector('span:last-child').textContent);
-        
-        const dataType = document.querySelector('input[name="data_type"]:checked').value;
-        const keyword = document.getElementById('keyword').value;
-        
-        try {
-            // Show loading toast
-            const loadingToast = document.createElement('div');
-            loadingToast.className = 'fixed bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300 flex items-center';
-            loadingToast.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Preparing download...
-            `;
-            document.body.appendChild(loadingToast);
-
-            const response = await fetch('/data_miner/download/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: JSON.stringify({
-                    results: results,
-                    keyword: keyword,
-                    data_type: dataType
-                })
-            });
-
-            // Remove loading toast
-            loadingToast.remove();
-
-            if (!response.ok) {
-                throw new Error('Failed to generate Excel file');
-            }
-
-            // Get the blob from the response
-            const blob = await response.blob();
-            
-            // Create a download link and trigger it
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = `mining_results_${keyword.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            
-            // Cleanup
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-
-            // Show success toast
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300 flex items-center';
-            toast.innerHTML = `
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Excel file downloaded successfully!
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-
-        } catch (error) {
-            console.error('Download error:', error);
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300 flex items-center';
-            toast.innerHTML = `
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Failed to download Excel file
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }
-    });
-
-    // Add copy all functionality
-    document.getElementById('copyAllResults').addEventListener('click', () => {
-        const results = Array.from(document.getElementById('resultsList').children)
-            .map(item => item.querySelector('span:last-child').textContent)
-            .join('\n');
-        
-        navigator.clipboard.writeText(results).then(() => {
-            const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-300 flex items-center';
-            toast.innerHTML = `
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                All results copied to clipboard!
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while cancelling the task');
         });
+    }
+    
+    // Handle task cancellation
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up cancel buttons
+        document.querySelectorAll('.cancel-task-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const taskId = this.dataset.taskId;
+                cancelTask(taskId);
+            });
+        });
+        
+        // Update running task status
+        function updateRunningTasks() {
+            document.querySelectorAll('.task-item').forEach(taskItem => {
+                const taskId = taskItem.dataset.taskId;
+                
+                fetch(`/data_miner/api/task-status/${taskId}/`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update progress
+                    const progress = data.progress || 0;
+                    const progressText = taskItem.querySelector('.task-progress-text');
+                    if (progressText) {
+                        progressText.textContent = `${progress}%`;
+                    }
+                    
+                    // Update progress circle
+                    const progressCircle = taskItem.querySelector('.task-progress-circle');
+                    if (progressCircle) {
+                        progressCircle.setAttribute('stroke-dasharray', `${progress * 1.005} 100`);
+                    }
+                    
+                    // Check if completed
+                    if (data.status === 'completed' || data.status === 'error' || data.status === 'cancelled') {
+                        // Show notification
+                        showTaskNotification({
+                            id: taskId,
+                            name: taskItem.querySelector('h3').textContent.trim(),
+                            status: data.status,
+                            historyId: data.history_id
+                        });
+                        
+                        // Reload to update UI
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating task status:', error);
+                });
+            });
+        }
+        
+        // Function to show desktop notification when task completes
+        function showTaskNotification(task) {
+            // Check if Notification API is supported
+            if (!("Notification" in window)) {
+                console.log("This browser does not support desktop notifications");
+                return;
+            }
+            
+            // Check if permission is already granted
+            if (Notification.permission === "granted") {
+                createNotification(task);
+            } 
+            // Otherwise, request permission
+            else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(function (permission) {
+                    if (permission === "granted") {
+                        createNotification(task);
+                    }
+                });
+            }
+        }
+        
+        // Create notification
+        function createNotification(task) {
+            const options = {
+                body: `Task "${task.name}" has ${task.status === 'completed' ? 'completed successfully' : 'finished with status: ' + task.status}`,
+                icon: '/static/img/logo-icon.png', // Path to an icon
+                tag: 'task-notification'
+            };
+            
+            const notification = new Notification("Data Mining Task Update", options);
+            
+            // Close the notification after 10 seconds
+            setTimeout(notification.close.bind(notification), 10000);
+            
+            // Add click handler
+            notification.onclick = function() {
+                window.focus();
+                notification.close();
+                if (task.status === 'completed' && task.historyId) {
+                    window.location.href = `/data_miner/download/${task.historyId}/`;
+                }
+            };
+        }
+        
+        // Store task IDs in localStorage so we can track them across page reloads
+        function storeTaskId(taskId) {
+            if (!taskId) return;
+            
+            let tasks = JSON.parse(localStorage.getItem('dataMinerTasks') || '[]');
+            if (!tasks.includes(taskId)) {
+                tasks.push(taskId);
+                localStorage.setItem('dataMinerTasks', JSON.stringify(tasks));
+            }
+        }
+        
+        // Check for stored tasks on page load and resume tracking
+        function checkStoredTasks() {
+            const tasks = JSON.parse(localStorage.getItem('dataMinerTasks') || '[]');
+            
+            if (tasks.length > 0) {
+                // We have stored tasks, check their status
+                tasks.forEach(taskId => {
+                    fetch(`/data_miner/api/task-status/${taskId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // If task is still running, we don't need to do anything special
+                            // If task completed while user was away, show notification
+                            if (data.status === 'completed' || data.status === 'error' || data.status === 'cancelled') {
+                                showTaskNotification({
+                                    id: taskId,
+                                    name: data.task_name || 'Data Mining Task',
+                                    status: data.status,
+                                    historyId: data.history_id
+                                });
+                                
+                                // Remove this task from localStorage
+                                removeStoredTask(taskId);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking stored task:', error);
+                            // Remove invalid tasks
+                            removeStoredTask(taskId);
+                        });
+                });
+            }
+        }
+        
+        // Remove a task from localStorage
+        function removeStoredTask(taskId) {
+            let tasks = JSON.parse(localStorage.getItem('dataMinerTasks') || '[]');
+            tasks = tasks.filter(id => id !== taskId);
+            localStorage.setItem('dataMinerTasks', JSON.stringify(tasks));
+        }
+        
+        // Request notification permission on page load
+        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+            Notification.requestPermission();
+        }
+        
+        // Check stored tasks when page loads
+        checkStoredTasks();
+        
+        // Update task status every 5 seconds
+        if (document.querySelectorAll('.task-item').length > 0) {
+            updateRunningTasks(); // Initial check
+            setInterval(updateRunningTasks, 5000);
+        }
     });
 </script>
 

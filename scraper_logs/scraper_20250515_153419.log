@@ -1,0 +1,5 @@
+2025-05-15 15:34:19,857 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-15 15:34:19,952 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-15 15:34:25,093 - ContactScraper - INFO - Starting scrape for keyword: 'Digital Marketing Agency in Bhopal'
+2025-05-15 15:34:25,097 - ContactScraper - INFO - Searching Google (page 1) for 'Digital Marketing Agency in Bhopal'
+2025-05-15 15:34:46,017 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'

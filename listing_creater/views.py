@@ -80,9 +80,6 @@ def analyze_image(image_data):
 @csrf_exempt
 def ai_chat_view(request):
     logger.info(f"Received {request.method} request")
-    context = {
-        "app_name": "AI Listing Creator"
-    }
     if request.method == "POST":
         try:
             # Decode and parse JSON data
@@ -313,4 +310,4 @@ def ai_chat_view(request):
                 "log": f"Server error: {str(e)}"
             }, status=500)
 
-    return render(request, "listing_creater/listingcreater.html", context)
+    return render(request, "listing_creater/listingcreater.html")

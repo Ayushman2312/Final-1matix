@@ -1,0 +1,235 @@
+{
+  "status": "success",
+  "metadata": {
+    "keywords": [
+      "Bitcoin"
+    ],
+    "timeframe": "today 1-m",
+    "region": "IN",
+    "timestamp": "2025-05-13 16:00:51"
+  },
+  "data": {
+    "time_trends": [
+      {
+        "date": "2025-04-13 00:00:00",
+        "Bitcoin": 91,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-14 00:00:00",
+        "Bitcoin": 100,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-15 00:00:00",
+        "Bitcoin": 92,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-16 00:00:00",
+        "Bitcoin": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-17 00:00:00",
+        "Bitcoin": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-18 00:00:00",
+        "Bitcoin": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-19 00:00:00",
+        "Bitcoin": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-20 00:00:00",
+        "Bitcoin": 88,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-21 00:00:00",
+        "Bitcoin": 99,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-22 00:00:00",
+        "Bitcoin": 95,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-23 00:00:00",
+        "Bitcoin": 94,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-24 00:00:00",
+        "Bitcoin": 82,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-25 00:00:00",
+        "Bitcoin": 76,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-26 00:00:00",
+        "Bitcoin": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-27 00:00:00",
+        "Bitcoin": 69,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-28 00:00:00",
+        "Bitcoin": 77,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-29 00:00:00",
+        "Bitcoin": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2025-04-30 00:00:00",
+        "Bitcoin": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-01 00:00:00",
+        "Bitcoin": 79,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-02 00:00:00",
+        "Bitcoin": 75,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-03 00:00:00",
+        "Bitcoin": 73,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-04 00:00:00",
+        "Bitcoin": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-05 00:00:00",
+        "Bitcoin": 70,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-06 00:00:00",
+        "Bitcoin": 68,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-07 00:00:00",
+        "Bitcoin": 63,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-08 00:00:00",
+        "Bitcoin": 83,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-09 00:00:00",
+        "Bitcoin": 87,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-10 00:00:00",
+        "Bitcoin": 84,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-11 00:00:00",
+        "Bitcoin": 86,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-12 00:00:00",
+        "Bitcoin": 98,
+        "isPartial": false
+      },
+      {
+        "date": "2025-05-13 00:00:00",
+        "Bitcoin": 77,
+        "isPartial": true
+      }
+    ],
+    "region_data": [
+      {
+        "geoName": "Maharashtra",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Delhi",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Karnataka",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Tamil Nadu",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Telangana",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Gujarat",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Uttar Pradesh",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "West Bengal",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Rajasthan",
+        "values": {
+          "Bitcoin": 0
+        }
+      },
+      {
+        "geoName": "Kerala",
+        "values": {
+          "Bitcoin": 0
+        }
+      }
+    ],
+    "city_data": [],
+    "related_queries": {}
+  },
+  "warning": "Using fallback data for regions - Google Trends API error"
+}

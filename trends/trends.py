@@ -23,12 +23,32 @@ import socket
 from fake_useragent import UserAgent
 import socks
 import backoff
+import urllib3
 from itertools import cycle
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 from requests_cache import CachedSession
 from time import sleep
 import hashlib
+# Import exceptions from correct modules
+from urllib3.exceptions import (
+    ReadTimeoutError,
+    ProtocolError,
+    NewConnectionError,
+    MaxRetryError,
+    ConnectTimeoutError
+)
+# Import ConnectionError and TimeoutError from requests instead
+from requests.exceptions import (
+    ConnectionError as RequestsConnectionError,
+    ChunkedEncodingError,
+    ReadTimeout,
+    ProxyError,
+    Timeout as RequestsTimeoutError
+)
+# Import http.client exceptions for RemoteDisconnected
+import http.client
+from serpapi import GoogleSearch
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -448,7 +468,7 @@ def mark_proxy_as_failed(proxy):
             get_random_proxy.failed_proxies = set()
 
 # Update the TrendReq initialization to handle urllib3 version differences and use proxies
-def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=None, use_proxy=True):
+def create_pytrends_instance(hl='en', tz=420, timeout=None, proxy=None, use_proxy=True):
     """Create a pytrends instance with the correct retry configuration for the urllib3 version and proxy support"""
     try:
         # Determine urllib3 version
@@ -466,47 +486,47 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
             proxy_to_use = proxy
             logger.info(f"Using provided proxy: {proxy}")
         elif use_proxy and PROXIES:
-            # Get a random proxy from our list
-            proxy_to_use = get_random_proxy()
-            logger.info(f"Using random proxy: {proxy_to_use}")
+            # Get a random proxy from our list with pre-validation
+            proxy_to_use = get_validated_proxy()
+            logger.info(f"Using validated random proxy: {proxy_to_use}")
         else:
-            proxy_to_use = None
-            logger.info("No proxy will be used")
+            # Get a random proxy if specified, or None if direct connection
+            proxy_to_use = get_validated_proxy() if use_proxy else None
+            if proxy_to_use:
+                logger.info(f"No proxy specified, using validated random proxy: {proxy_to_use}")
+            else:
+                logger.info("No proxy specified, using direct connection")
+                # Skip the availability check when direct connection is intended
+                if use_proxy:
+                    logger.warning("No proxies available, forced to use direct connection")
         
         # Format proxies for pytrends
         proxies_list = [proxy_to_use] if proxy_to_use else []
         
-        # Create TrendReq with correct parameters based on urllib3 version
-        if urllib3_version.startswith(('2.', '3.')):
-            # For urllib3 >= 2.0
-            pytrends = TrendReq(
-                hl=hl,
-                tz=tz,
-                timeout=timeout,
-                proxies=proxies_list,
-                retries=2,
-                backoff_factor=1.5,
-                requests_args={
-                    'verify': True
-                }
-            )
-        else:
-            # For urllib3 < 2.0
-            pytrends = TrendReq(
-                hl=hl,
-                tz=tz,
-                timeout=timeout,
-                proxies=proxies_list,
-                retries=2,
-                backoff_factor=1.5,
-                requests_args={
-                    'verify': True
-                }
-            )
+        # Use a higher timeout value to prevent premature connection termination
+        if timeout is None:
+            timeout = REQUEST_TIMEOUT
+        extended_timeout = max(timeout * 2, 60)  # At least 60 seconds or double the normal timeout
+        
+        # Configure the request args
+        requests_args = {
+            'verify': True,
+            'timeout': (15, extended_timeout)  # (connect, read) timeout
+        }
+        
+        # Create the TrendReq instance - do NOT pass timeout parameter directly
+        pytrends = TrendReq(
+            hl=hl,
+            tz=tz,
+            retries=3,  # Increase retries
+            backoff_factor=2.0,  # More aggressive backoff
+            proxies=proxies_list,
+            requests_args=requests_args
+        )
         
         # Replace the session with a properly configured one
         # Pass the proxy to the session creation
-        session = create_retry_session(use_cache=False, use_proxy=(proxy_to_use is not None))
+        session = create_retry_session(use_cache=False, use_proxy=use_proxy and proxy_to_use is not None)
         
         # If we have a proxy, make sure it's set in the session
         if proxy_to_use:
@@ -516,6 +536,34 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
             }
             # Store the proxy URL for reference
             session._proxy = proxy_to_use
+            # Test the proxy with a simple request to ensure it's working
+            try:
+                test_url = "https://trends.google.com/trends/"
+                logger.debug(f"Testing proxy connection to {test_url}")
+                # Use a short timeout for the test to fail fast if there's an issue
+                test_response = session.get(test_url, timeout=(5, 10))
+                if test_response.status_code == 200:
+                    logger.info(f"Proxy connection test successful: {proxy_to_use}")
+                else:
+                    logger.warning(f"Proxy connection test returned status {test_response.status_code}: {proxy_to_use}")
+            except Exception as e:
+                logger.warning(f"Proxy connection test failed for {proxy_to_use}: {str(e)}")
+                # If test failed, try to get another proxy
+                mark_proxy_as_failed(proxy_to_use)
+                new_proxy = get_validated_proxy()
+                if new_proxy:
+                    logger.info(f"Switching to backup proxy: {new_proxy}")
+                    session.proxies = {
+                        'http': new_proxy,
+                        'https': new_proxy
+                    }
+                    session._proxy = new_proxy
+        
+        # Configure the session with proper keep-alive settings to prevent disconnects
+        session.headers.update({
+            'Connection': 'keep-alive',
+            'Keep-Alive': '300'  # Keep connection alive for 300 seconds
+        })
             
         pytrends.requests_session = session
         
@@ -526,16 +574,101 @@ def create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT, proxy=
         
         # Fallback to a basic configuration
         try:
-            # Try to create a basic instance without proxies
+            # Try to create a basic instance - with proxy if available, otherwise direct
+            proxy_to_use = get_validated_proxy() if use_proxy else None
+            if proxy_to_use:
+                logger.info(f"Fallback: Using validated random proxy: {proxy_to_use}")
+            else:
+                logger.info("Fallback: Using direct connection (no proxy)")
+                
+            proxies_list = [proxy_to_use] if proxy_to_use else []
+            
+            # Create with simple parameters but longer timeout
+            extended_timeout = 60 if timeout is None else max(timeout * 2, 60)
+            requests_args = {
+                'verify': True,
+                'timeout': (15, extended_timeout)  # (connect, read) timeout
+            }
+            
             pytrends = TrendReq(
                 hl=hl,
                 tz=tz,
-                timeout=timeout
+                geo='IN',
+                proxies=proxies_list,
+                requests_args=requests_args
             )
+            
+            # Configure session
+            session = create_retry_session(use_cache=False, use_proxy=use_proxy and proxy_to_use is not None)
+            if proxy_to_use:
+                session.proxies = {
+                    'http': proxy_to_use,
+                    'https': proxy_to_use
+                }
+                session._proxy = proxy_to_use
+            
+            # Add keep-alive to prevent connection closing
+            session.headers.update({
+                'Connection': 'keep-alive',
+                'Keep-Alive': '300'
+            })
+            
+            pytrends.requests_session = session
+            
             return pytrends
         except Exception as fallback_err:
             logger.error(f"Failed to create fallback PyTrends instance: {str(fallback_err)}")
             raise
+
+# Function to get a validated proxy that actually works
+def get_validated_proxy():
+    """Get a random proxy and validate it actually works before returning"""
+    # Try up to 3 different proxies
+    for attempt in range(3):
+        proxy = get_random_proxy()
+        if not proxy:
+            logger.warning("No proxies available")
+            return None
+            
+        # Test if the proxy actually works
+        try:
+            logger.debug(f"Testing proxy {proxy}")
+            test_session = requests.Session()
+            test_session.proxies = {
+                'http': proxy,
+                'https': proxy
+            }
+            # Use a simple test URL with a short timeout
+            test_urls = [
+                "https://www.google.com",
+                "https://trends.google.com"
+            ]
+            
+            # Try multiple URLs in case one is blocked
+            for test_url in test_urls:
+                try:
+                    # Use a very short timeout to fail fast
+                    response = test_session.get(test_url, timeout=(5, 5))
+                    if response.status_code == 200:
+                        logger.info(f"Proxy validation successful on {test_url}: {proxy}")
+                        return proxy
+                    else:
+                        logger.warning(f"Proxy validation failed with status {response.status_code} on {test_url}: {proxy}")
+                except Exception as url_error:
+                    logger.warning(f"Proxy test failed for {test_url}: {str(url_error)}")
+                    continue
+            
+            # If we get here, all test URLs failed
+            logger.warning(f"All test URLs failed for proxy: {proxy}")
+            mark_proxy_as_failed(proxy)
+            
+        except Exception as e:
+            logger.warning(f"Proxy validation failed with error: {str(e)}")
+            mark_proxy_as_failed(proxy)
+    
+    # Try direct connection as last resort
+    logger.warning("No working proxies found, trying direct connection")
+    return None
 
 # Function to add random delay to avoid rate limiting
 def add_random_delay(min_seconds=1, max_seconds=3):
@@ -683,22 +816,22 @@ def generate_fallback_trends_data(keywords, timeframe):
             months = int(months_match.group(1))
             start_date = now - datetime.timedelta(days=30*months)
             periods = months
-            freq = 'M'  # Monthly
+            freq = 'ME'  # Monthly
         elif years_match:
             years = int(years_match.group(1))
             start_date = now - datetime.timedelta(days=365*years)
             periods = years * 12
-            freq = 'M'  # Monthly
+            freq = 'ME'  # Monthly
         else:
             # Default to 1 year
             start_date = now - datetime.timedelta(days=365)
             periods = 12
-            freq = 'M'  # Monthly
+            freq = 'ME'  # Monthly
     else:
         # Default to 1 year
         start_date = now - datetime.timedelta(days=365)
         periods = 12
-        freq = 'M'  # Monthly
+        freq = 'ME'  # Monthly
     
     # Generate date range
     try:
@@ -746,7 +879,7 @@ def generate_fallback_trends_data(keywords, timeframe):
         
         # Create a very basic fallback if all else fails
         try:
-            dates = pd.date_range(start='2023-01-01', periods=12, freq='M')
+            dates = pd.date_range(start=(datetime.datetime.now() - datetime.timedelta(days=365*5)).strftime('%Y-%m-%d'), periods=12, freq='M')
             data = {kw: [random.randint(20, 80) for _ in range(12)] for kw in keywords}
             df = pd.DataFrame(data, index=dates)
             df['isPartial'] = False
@@ -848,6 +981,9 @@ def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES)
         except Exception as click_error:
             logger.debug(f"Error simulating user interface interaction: {str(click_error)}")
     
+    connection_errors = 0
+    max_connection_errors = 3
+    
     for attempt in range(max_retries):
         try:
             # Build the payload with error handling
@@ -890,21 +1026,79 @@ def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES)
                         if current_proxy:
                             mark_proxy_as_failed(current_proxy)
                         
-                        new_proxy = get_random_proxy()
+                        # Use a validated proxy to avoid RemoteDisconnected errors
+                        new_proxy = get_validated_proxy()
                         if new_proxy:
                             # Update the session proxy
                             pytrends.requests_session.proxies = {"http": new_proxy, "https": new_proxy}
-                            logger.info(f"Retry {attempt+1}: using different proxy: {new_proxy}")
+                            logger.info(f"Retry {attempt+1}: using different validated proxy: {new_proxy}")
+                            
+                            # Refresh connection keep-alive settings
+                            pytrends.requests_session.headers.update({
+                                'Connection': 'keep-alive',
+                                'Keep-Alive': '300'
+                            })
                         else:
                             # Use no proxy if none available
                             pytrends.requests_session.proxies = {}
                             logger.info(f"Retry {attempt+1}: using direct connection (no available proxy)")
                 
-                # Build the payload
-                pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
+                # Build the payload - catch specific connection errors
+                try:
+                    pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
+                except (RequestsConnectionError, RequestsTimeoutError, requests.exceptions.ConnectionError,
+                       ChunkedEncodingError, ReadTimeout,
+                       ProtocolError, http.client.RemoteDisconnected) as conn_err:
+                    logger.warning(f"Connection error during build_payload: {str(conn_err)}")
+                    connection_errors += 1
+                    
+                    if connection_errors >= max_connection_errors:
+                        logger.error(f"Too many connection errors ({connection_errors}), falling back to cached data")
+                        return generate_fallback_trends_data(keywords, timeframe)
+                        
+                    # Try again with a different proxy after a longer delay
+                    delay = backoff_with_jitter(attempt + connection_errors, base_delay=10, max_delay=60)
+                    logger.info(f"Connection error recovery: waiting {delay:.2f} seconds before retry")
+                    time.sleep(delay)
+                    
+                    # Create a fresh session with a new proxy
+                    pytrends.requests_session = create_retry_session(use_cache=False, use_proxy=True)
+                    new_proxy = get_validated_proxy()
+                    if new_proxy:
+                        pytrends.requests_session.proxies = {"http": new_proxy, "https": new_proxy}
+                        logger.info(f"Using new validated proxy after connection error: {new_proxy}")
+                    
+                    # Try again with the new session
+                    pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
                 
             except Exception as build_error:
                 logger.warning(f"Error building payload: {str(build_error)}")
+                
+                # Check if this is a RemoteDisconnected error
+                if "RemoteDisconnected" in str(build_error) or "ConnectionError" in str(build_error):
+                    logger.warning("RemoteDisconnected error detected during build_payload")
+                    connection_errors += 1
+                    
+                    if connection_errors >= max_connection_errors:
+                        logger.error(f"Too many connection errors ({connection_errors}), falling back to cached data")
+                        return generate_fallback_trends_data(keywords, timeframe)
+                        
+                    # Wait with exponential backoff
+                    delay = backoff_with_jitter(attempt + connection_errors, base_delay=10, max_delay=60)
+                    logger.info(f"RemoteDisconnected recovery: waiting {delay:.2f} seconds before retry with new proxy")
+                    time.sleep(delay)
+                    
+                    # Create a fresh pytrends instance with a validated proxy
+                    new_proxy = get_validated_proxy()
+                    if new_proxy:
+                        pytrends = create_pytrends_instance(proxy=new_proxy)
+                        logger.info(f"Created new PyTrends instance with validated proxy: {new_proxy}")
+                    else:
+                        pytrends = create_pytrends_instance(use_proxy=False)
+                        logger.info("Created new PyTrends instance with direct connection")
+                    
+                    # Try again with the new instance
+                    continue
                 
                 # If the error is about parsing JSON, it might be an IP block or rate limit
                 if "json" in str(build_error).lower():
@@ -925,10 +1119,10 @@ def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES)
                             logger.info("Trying with direct connection")
                         else:
                             # Try with a new proxy
-                            new_proxy = get_random_proxy()
+                            new_proxy = get_validated_proxy()
                             if new_proxy:
                                 pytrends.requests_session.proxies = {"http": new_proxy, "https": new_proxy}
-                                logger.info(f"Trying with new proxy: {new_proxy}")
+                                logger.info(f"Trying with new validated proxy: {new_proxy}")
                         
                         continue
                     else:
@@ -947,17 +1141,16 @@ def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES)
                     if hasattr(pytrends.requests_session, '_proxy'):
                         current_proxy = pytrends.requests_session._proxy
                     
-                    new_proxy = get_random_proxy()
+                    new_proxy = get_validated_proxy()
                     if new_proxy:
-                        logger.info(f"Switching to different proxy: {new_proxy}")
+                        logger.info(f"Switching to different validated proxy: {new_proxy}")
                         proxy_list = [new_proxy] if new_proxy else []
                         # Create a new pytrends instance with the new proxy
                         try:
                             new_pytrends = TrendReq(
-                                hl='en-US',
-                                tz=330,
+                                hl='en',
+                                tz=420,
                                 geo='IN',
-                                timeout=REQUEST_TIMEOUT,
                                 proxies=proxy_list,
                                 retries=0
                             )
@@ -979,10 +1172,42 @@ def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES)
             # Simulate user waiting for results (with jitter)
             add_random_delay(0.8, 2.2)
             
-            # Get interest over time data
+            # Get interest over time data - protect against connection errors
             try:
                 interest_over_time_df = pytrends.interest_over_time()
                 logger.info(f"Retrieved interest_over_time data for {keywords}, empty: {interest_over_time_df.empty}")
+            except (RequestsConnectionError, RequestsTimeoutError, requests.exceptions.ConnectionError,
+                   ChunkedEncodingError, ReadTimeout,
+                   ProtocolError, http.client.RemoteDisconnected) as conn_err:
+                logger.warning(f"Connection error during interest_over_time: {str(conn_err)}")
+                connection_errors += 1
+                
+                if connection_errors >= max_connection_errors:
+                    logger.error(f"Too many connection errors ({connection_errors}), falling back to cached data")
+                    return generate_fallback_trends_data(keywords, timeframe)
+                
+                # Wait with exponential backoff
+                delay = backoff_with_jitter(attempt + connection_errors, base_delay=10, max_delay=60)
+                logger.info(f"Connection error recovery: waiting {delay:.2f} seconds before retry")
+                time.sleep(delay)
+                
+                # Try with a different proxy before retrying
+                if attempt < max_retries - 1:
+                    # Create a fresh pytrends instance with a validated proxy
+                    new_proxy = get_validated_proxy()
+                    if new_proxy:
+                        pytrends = create_pytrends_instance(proxy=new_proxy)
+                        logger.info(f"Created new PyTrends instance with validated proxy: {new_proxy}")
+                    else:
+                        pytrends = create_pytrends_instance(use_proxy=False)
+                        logger.info("Created new PyTrends instance with direct connection")
+                    
+                    # Continue to the next attempt
+                    continue
+                else:
+                    # Last attempt failed with connection error, return fallback data
+                    logger.warning("Max retries reached with connection errors, using fallback data")
+                    return generate_fallback_trends_data(keywords, timeframe)
             except Exception as e:
                 logger.error(f"Error retrieving interest_over_time data: {str(e)}")
                 
@@ -1002,141 +1227,104 @@ def get_trends_data(pytrends, keywords, timeframe, geo, max_retries=MAX_RETRIES)
                         
                         # Try with a new session and different region
                         try:
-                            # Create a new session
-                            new_session = create_retry_session(use_cache=False)
-                            pytrends.requests_session = new_session
-                            
-                            # Try with worldwide data if using a specific region
-                            if geo != "":
-                                logger.info("Trying with worldwide data (empty geo)")
-                                pytrends.build_payload(keywords, timeframe=modified_timeframe, geo="")
-                            else:
-                                # Just try with the modified timeframe
-                                pytrends.build_payload(keywords, timeframe=modified_timeframe, geo=geo)
-                                
-                            # Try again
+                            logger.info("Creating new session for retry")
+                            pytrends.requests_session = create_retry_session(use_cache=False)
+                            pytrends.build_payload(keywords, timeframe=modified_timeframe, geo=geo)
                             interest_over_time_df = pytrends.interest_over_time()
-                            
-                            if not interest_over_time_df.empty:
-                                logger.info("Successfully retrieved data with modified parameters")
-                                return interest_over_time_df
+                            logger.info(f"Retry successful with modified timeframe: {modified_timeframe}")
                         except Exception as retry_err:
-                            logger.warning(f"Retry with modified parameters failed: {str(retry_err)}")
+                            logger.warning(f"Retry failed with modified timeframe: {str(retry_err)}")
+                            
+                            if attempt == max_retries - 2:  # Last retry
+                                # For final retry, use fallback data
+                                logger.warning("Final retry failed, using fallback data")
+                                return generate_fallback_trends_data(keywords, timeframe)
+                            
+                            # Continue to next retry attempt
+                            continue
                     else:
-                        # If we've tried everything, generate fallback data
-                        logger.warning("All retrieval attempts failed, generating fallback data")
+                        # If all retries failed, provide fallback data
+                        logger.warning("All retries failed with 'No time series data available', using fallback data")
                         return generate_fallback_trends_data(keywords, timeframe)
                 else:
-                    # For other types of errors, retry if possible
+                    # For other errors, retry with different parameters if attempts remain
                     if attempt < max_retries - 1:
+                        logger.warning(f"Unexpected error, will retry: {str(e)}")
+                        # Add backoff delay
+                        delay = backoff_with_jitter(attempt, base_delay=10, max_delay=60)
+                        time.sleep(delay)
+                        
+                        # Try with a new pytrends instance
+                        new_proxy = get_validated_proxy()
+                        if new_proxy:
+                            pytrends = create_pytrends_instance(proxy=new_proxy)
+                            logger.info(f"Created new PyTrends instance with validated proxy: {new_proxy}")
+                        else:
+                            pytrends = create_pytrends_instance(use_proxy=False)
+                            logger.info("Created new PyTrends instance with direct connection")
+                            
                         continue
                     else:
+                        # Last retry attempt failed, use fallback data
+                        logger.warning("All retries failed with unexpected errors, using fallback data")
                         return generate_fallback_trends_data(keywords, timeframe)
             
-            if interest_over_time_df.empty:
-                logger.warning(f"No time trends data available for {keywords} in {geo} with timeframe {timeframe}")
+            # Check if we got valid data
+            if interest_over_time_df is None or interest_over_time_df.empty:
+                logger.warning("No data returned (empty dataframe)")
                 
-                # Try a different approach with a shorter timeframe
                 if attempt < max_retries - 1:
-                    # Significantly modify timeframe to try to get any data
-                    shorter_timeframes = ['today 1-m', 'today 3-m', 'now 7-d', 'now 1-d']
-                    modified_timeframe = random.choice(shorter_timeframes)
+                    # Try again with a different approach
+                    logger.info(f"Retry attempt {attempt+1}/{max_retries}")
                     
-                    logger.info(f"Retry attempt {attempt+1}: trying with shorter timeframe: {modified_timeframe}")
-                    add_random_delay(1.5, 3)
+                    # Add longer delay with backoff for empty results
+                    delay = backoff_with_jitter(attempt, base_delay=10, max_delay=45)
+                    logger.info(f"Waiting {delay:.2f} seconds before retry")
+                    time.sleep(delay)
                     
-                    # Try with a different hl parameter
-                    try:
-                        # Try with different language settings
-                        if attempt % 2 == 0:
-                            pytrends.hl = 'en-US'
-                        else:
-                            # Try with the country's language code if available
-                            if geo in ['IN', 'US', 'GB', 'AU', 'CA']:
-                                pytrends.hl = 'en-' + geo
-                            elif geo == 'DE':
-                                pytrends.hl = 'de-DE'
-                            elif geo == 'FR':
-                                pytrends.hl = 'fr-FR'
-                            elif geo == 'JP':
-                                pytrends.hl = 'ja-JP'
-                            else:
-                                pytrends.hl = 'en-US'
-                        
-                        logger.info(f"Trying with language: {pytrends.hl}")
-                    except Exception as lang_err:
-                        logger.warning(f"Error setting language: {str(lang_err)}")
-                    
-                    # Try the new timeframe
-                    pytrends.build_payload(keywords, timeframe=modified_timeframe, geo=geo)
-                    interest_over_time_df = pytrends.interest_over_time()
-                    
-                    if not interest_over_time_df.empty:
-                        logger.info(f"Successfully retrieved data with shorter timeframe {modified_timeframe}")
-                    else:
-                        logger.warning(f"Still no data with shorter timeframe {modified_timeframe}")
-                        
-                        # If we're on the last attempt before using fallback, try with worldwide data
-                        if attempt == max_retries - 2:
-                            logger.info("Trying with worldwide data as last resort")
-                            try:
-                                # Try with worldwide data (empty geo)
-                                pytrends.build_payload(keywords, timeframe=modified_timeframe, geo="")
-                                interest_over_time_df = pytrends.interest_over_time()
-                                
-                                if not interest_over_time_df.empty:
-                                    logger.info("Successfully retrieved worldwide data")
-                                else:
-                                    logger.warning("No data available even with worldwide scope")
-                            except Exception as geo_err:
-                                logger.warning(f"Error retrieving worldwide data: {str(geo_err)}")
+                    # Continue to next retry
+                    continue
                 else:
-                    # Last attempt - create a fallback dataframe with minimal data
-                    logger.warning("Creating fallback dataset after all retrieval attempts failed")
+                    # Last retry attempt resulted in empty data, use fallback data
+                    logger.warning("All retries resulted in empty data, using fallback data")
                     return generate_fallback_trends_data(keywords, timeframe)
-                
-            # Sometimes simulate user interaction after success
-            if random.random() > 0.8:  # 20% chance
-                try:
-                    # Simulate scrolling or other interactions
-                    add_random_delay(0.8, 2.5)
-                    logger.debug("Simulating post-request user interaction")
-                except Exception:
-                    pass
-                
-            return interest_over_time_df
             
+            # Success! Process the data
+            result = interest_over_time_df
+            logger.info(f"Successfully retrieved and processed trends data with {len(result)} points")
+            return result
+        
         except Exception as e:
-            error_msg = str(e).lower()
+            logger.error(f"Error in get_trends_data: {str(e)}")
             
-            # Handle specific errors
-            if "429" in error_msg or "too many requests" in error_msg:
-                if attempt < max_retries - 1:
-                    delay = backoff_with_jitter(attempt, base_delay=10, max_delay=60)
-                    logger.warning(f"Rate limit hit, retrying in {delay:.2f} seconds (attempt {attempt+1}/{max_retries})")
-                    time.sleep(delay)
-                    
-                    # Switch to direct connection if we hit rate limits with proxy
-                    try:
-                        logger.info("Switching to direct connection after rate limit")
-                        pytrends.requests_session.proxies = {}
-                    except Exception as proxy_err:
-                        logger.warning(f"Failed to switch to direct connection: {str(proxy_err)}")
-                else:
-                    logger.error(f"Rate limit persists after {max_retries} attempts")
+            # Check for connection-related errors
+            if "RemoteDisconnected" in str(e) or "ConnectionError" in str(e) or "ProtocolError" in str(e):
+                logger.warning("Connection error detected in overall try/except block")
+                connection_errors += 1
+                
+                if connection_errors >= max_connection_errors:
+                    logger.error(f"Too many connection errors ({connection_errors}), falling back to cached data")
                     return generate_fallback_trends_data(keywords, timeframe)
+            
+            if attempt < max_retries - 1:
+                # Calculate backoff time
+                delay = backoff_with_jitter(attempt, base_delay=10, max_delay=60)
+                logger.warning(f"Error occurred, retrying in {delay:.2f} seconds ({attempt+1}/{max_retries})")
+                time.sleep(delay)
+                
+                # Try with a completely fresh session and instance for the next attempt
+                try:
+                    logger.info("Creating completely fresh PyTrends instance for next attempt")
+                    pytrends = create_pytrends_instance()
+                except Exception as instance_err:
+                    logger.error(f"Failed to create fresh PyTrends instance: {str(instance_err)}")
             else:
-                logger.error(f"Error fetching trends data: {str(e)}")
-                if attempt < max_retries - 1:
-                    # Add jitter to delay between retries
-                    delay = backoff_with_jitter(attempt, base_delay=5, max_delay=40)
-                    logger.info(f"Retrying after {delay:.2f} seconds (attempt {attempt+1}/{max_retries})")
-                    time.sleep(delay)
-                else:
-                    return generate_fallback_trends_data(keywords, timeframe)
+                # If this was the last attempt, return fallback data
+                logger.warning("All retry attempts failed, generating fallback data")
+                return generate_fallback_trends_data(keywords, timeframe)
     
-    # If we get here without returning data, generate fallback data
-    logger.warning("All attempts to get trends data failed, returning fallback data")
+    # If we exhausted all retries, provide fallback data
+    logger.warning(f"Exhausted all {max_retries} retry attempts, generating fallback data")
     return generate_fallback_trends_data(keywords, timeframe)
 
 # Function to get related queries
@@ -1177,8 +1365,8 @@ def get_related_queries(pytrends, keywords, timeframe, geo, max_retries=MAX_RETR
                         proxy_list = [new_proxy] if new_proxy else []
                         try:
                             new_pytrends = TrendReq(
-                                hl='en-US',
-                                tz=330,
+                                hl='en',
+                                tz=420,
                                 timeout=REQUEST_TIMEOUT,
                                 proxies=proxy_list,
                                 retries=0
@@ -1240,8 +1428,8 @@ def get_related_queries(pytrends, keywords, timeframe, geo, max_retries=MAX_RETR
                             # Try to create a new pytrends instance with the new proxy
                             try:
                                 new_pytrends = TrendReq(
-                                    hl='en-US',
-                                    tz=330,
+                                    hl='en',
+                                    tz=420,
                                     timeout=REQUEST_TIMEOUT,
                                     proxies=proxy_list,
                                     retries=0
@@ -1278,7 +1466,36 @@ def dataframe_to_json(df, date_format='%Y-%m-%d %H:%M:%S'):
     """
     Convert pandas DataFrame to JSON format
     """
+    import pandas as pd
+    
+    # Handle the case where df is already a list
+    if isinstance(df, list):
+        logger.info("Data is already in list format, returning as is")
+        return df
+        
+    # Check if we have a DataFrame
+    if df is None:
+        logger.warning("Received None instead of DataFrame in dataframe_to_json")
+        return []
+        
+    # Handle the empty DataFrame case
+    if not hasattr(df, 'empty'):
+        logger.warning(f"Input is not a DataFrame: {type(df)}")
+        # Try to convert to a DataFrame if possible
+        try:
+            if isinstance(df, dict):
+                df = pd.DataFrame.from_dict(df)
+            else:
+                # Return as is if we can't convert
+                logger.error("Cannot convert input to DataFrame")
+                return [] if df is None else df
+        except Exception as convert_err:
+            logger.error(f"Error converting to DataFrame: {str(convert_err)}")
+            return [] if df is None else df
+            
+    # Now we should have a DataFrame
     if df.empty:
+        logger.warning("DataFrame is empty")
         return []
     
     # Handle different DatetimeIndex formats
@@ -1321,29 +1538,40 @@ def dataframe_to_json(df, date_format='%Y-%m-%d %H:%M:%S'):
     
     # For non-datetime indices
     result = []
-    for idx, row in df.iterrows():
-        data_point = {"index": str(idx)}
-        
-        # Add values for each column
-        for column in df.columns:
-            try:
-                value = row[column]
-                # Handle NaN/None values
-                if pd.isna(value):
+    try:
+        for idx, row in df.iterrows():
+            data_point = {"index": str(idx)}
+            
+            # Add values for each column
+            for column in df.columns:
+                try:
+                    value = row[column]
+                    # Handle NaN/None values
+                    if pd.isna(value):
+                        data_point[column] = 0
+                    else:
+                        # Try to convert numpy values to Python native types
+                        try:
+                            if hasattr(value, 'item'):
+                                value = value.item()
+                            data_point[column] = value
+                        except Exception:
+                            data_point[column] = float(value) if isinstance(value, (int, float)) else str(value)
+                except Exception as e:
+                    logger.warning(f"Error processing column {column}: {str(e)}")
                     data_point[column] = 0
-                else:
-                    # Try to convert numpy values to Python native types
-                    try:
-                        if hasattr(value, 'item'):
-                            value = value.item()
-                        data_point[column] = value
-                    except Exception:
-                        data_point[column] = float(value) if isinstance(value, (int, float)) else str(value)
-            except Exception as e:
-                logger.warning(f"Error processing column {column}: {str(e)}")
-                data_point[column] = 0
-        
-        result.append(data_point)
+            
+            result.append(data_point)
+    except Exception as e:
+        logger.error(f"Error processing DataFrame: {str(e)}")
+        # Try a simple conversion as last resort
+        try:
+            import json
+            result = json.loads(df.to_json(orient='records', date_format='iso'))
+            logger.info("Used simplified DataFrame conversion as fallback")
+        except Exception as json_err:
+            logger.error(f"Error in simplified conversion: {str(json_err)}")
+            return []
     
     return result
 
@@ -1445,8 +1673,8 @@ def get_interest_by_region(pytrends, keywords, timeframe, geo, resolution='REGIO
                         try:
                             # Create a new pytrends instance with our helper function
                             new_pytrends = create_pytrends_instance(
-                                hl='en-US',
-                                tz=330,
+                                hl='en',
+                                tz=420,
                                 timeout=REQUEST_TIMEOUT,
                                 proxy=new_proxy
                             )
@@ -1640,7 +1868,7 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
         cookies = get_google_cookies()
         
         # Create a session with enhanced anti-bot protection
-        session = create_retry_session(use_cache=False)
+        session = create_retry_session(use_cache=False, use_proxy=True)
         
         # Simulate human browsing behavior with one of the keywords
         sample_keyword = keywords[0] if keywords else "trends"
@@ -1649,44 +1877,54 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
         # Add a realistic delay as if user is looking at the page
         add_random_delay(2, 6)
         
-        # Multiple attempts to initialize pytrends with different settings
+        # Multiple attempts to initialize pytrends with different proxies
         for attempt in range(3):
             try:
-                # Create a custom session
-                custom_session = create_retry_session(use_cache=False)
+                # Create a custom session that always uses a proxy
+                custom_session = create_retry_session(use_cache=False, use_proxy=True)
                 
                 # Add cookies
                 if cookies:
                     for key, value in cookies.items():
                         custom_session.cookies.set(key, value)
                 
-                # Start with no proxy on first attempt, then try with proxies
-                if attempt == 0:
-                    proxy = PROXIES[attempt % len(PROXIES)] if PROXIES else None
-                    logger.info("Attempt 1: Creating PyTrends with no proxy")
+                # Always use a proxy, just use a different one in each attempt
+                if PROXIES and len(PROXIES) > attempt:
+                    proxy = PROXIES[attempt % len(PROXIES)]
                 else:
-                    # Try different proxies in subsequent attempts
-                    proxy = PROXIES[attempt % len(PROXIES)] if PROXIES else None
-                    if proxy:
-                        logger.info(f"Attempt {attempt+1}: Creating PyTrends with proxy: {proxy}")
-                    else:
-                        logger.info(f"Attempt {attempt+1}: Creating PyTrends with no proxy")
+                    # Get a random proxy
+                    proxy = get_random_proxy()
+                
+                if not proxy:
+                    logger.error(f"Attempt {attempt+1}: No valid proxy available")
+                    response_data["status"] = "error"
+                    response_data["errors"] = ["No valid proxies available"]
+                    return response_data
+                    
+                logger.info(f"Attempt {attempt+1}: Creating PyTrends with proxy: {proxy}")
                 
                 # Choose appropriate region-based timezone
                 region_code = geo[:2].upper() if len(geo) >= 2 else 'IN'
                 tz_options = TIMEZONES_BY_REGION.get(region_code, TIMEZONES_BY_REGION['IN'])
                 timezone_offset = random.choice(tz_options)
                 
-                # Create PyTrends instance using our helper function
+                # Create PyTrends instance using our helper function - always with proxy
                 pytrends = create_pytrends_instance(
-                    hl='en-US',
+                    hl='en',
                     tz=timezone_offset,
                     timeout=REQUEST_TIMEOUT,
-                    proxy=proxy
+                    proxy=proxy,
+                    use_proxy=True
                 )
                 
                 # Replace the default session with our custom one
                 pytrends.requests_session = custom_session
+                
+                # Set proxy in the session as well
+                pytrends.requests_session.proxies = {
+                    'http': proxy,
+                    'https': proxy
+                }
                 
                 # Test if it works with a simple request
                 logger.info("Testing PyTrends connection...")
@@ -1705,19 +1943,38 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
                     mark_proxy_as_failed(proxy)
                 
                 if attempt == 2:
-                    # Final fallback with minimal settings
+                    # Final fallback with a fresh proxy
                     logger.info("Using final fallback PyTrends configuration")
                     try:
+                        new_proxy = get_random_proxy()
+                        if not new_proxy:
+                            logger.error("No valid proxies left for final fallback")
+                            response_data["status"] = "error"
+                            response_data["errors"] = ["No valid proxies available for fallback"]
+                            return response_data
+                            
+                        logger.info(f"Final attempt with proxy: {new_proxy}")
+                        
                         pytrends = create_pytrends_instance(
-                            hl='en-US',
-                            tz=330,
-                            timeout=REQUEST_TIMEOUT
+                            hl='en',
+                            tz=420,
+                            timeout=REQUEST_TIMEOUT,
+                            proxy=new_proxy,
+                            use_proxy=True
                         )
-                        # Still replace the session
-                        pytrends.requests_session = create_retry_session(use_cache=False)
+                        
+                        # Always use proxy for the session
+                        session = create_retry_session(use_cache=False, use_proxy=True)
+                        session.proxies = {
+                            'http': new_proxy,
+                            'https': new_proxy
+                        }
+                        pytrends.requests_session = session
                     except Exception as final_err:
                         logger.error(f"Failed to create even the most basic PyTrends: {str(final_err)}")
-                        # Continue anyway - the try block in fetch_google_trends will catch any failures
+                        response_data["status"] = "error"
+                        response_data["errors"] = [f"Failed to initialize Google Trends API: {str(final_err)}"]
+                        return response_data
         
         # Add a small delay before first request to appear more human-like
         add_random_delay(1, 3)
@@ -1764,36 +2021,79 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
                     result = future.result()
                     
                     if name == 'time_trends':
-                        if not result.empty:
+                        if result is not None:
                             # Check if this is fallback data
-                            if hasattr(result, 'warning') and result.warning is True:
+                            if hasattr(result, 'is_fallback') and result.is_fallback is True:
                                 logger.warning("Using fallback time trends data")
                                 response_data['warning'] = "Using fallback data - Google Trends API may be blocked"
                             
-                            response_data['data']['time_trends'] = dataframe_to_json(result)
+                            # Convert to JSON if needed
+                            if hasattr(result, 'empty'):
+                                if not result.empty:
+                                    logger.info(f"Converting DataFrame to JSON with {len(result)} rows")
+                                    response_data['data']['time_trends'] = dataframe_to_json(result)
+                                else:
+                                    logger.warning("Time trends DataFrame is empty")
+                                    response_data['data']['time_trends'] = []
+                            elif isinstance(result, list):
+                                logger.info(f"Using preformatted list result with {len(result)} items")
+                                response_data['data']['time_trends'] = result
+                            else:
+                                logger.warning(f"Unexpected time_trends result type: {type(result)}")
+                                try:
+                                    # Try to convert using dataframe_to_json which has fallbacks
+                                    response_data['data']['time_trends'] = dataframe_to_json(result)
+                                except Exception as convert_err:
+                                    logger.error(f"Failed to convert time_trends result: {str(convert_err)}")
+                                    response_data['data']['time_trends'] = []
                         else:
-                            logger.warning("Interest over time data is empty")
+                            logger.warning("Time trends result is None")
                             response_data['data']['time_trends'] = []
                             
                     elif name == 'region_data':
-                        if not result.empty:
-                            logger.info(f"Processing region data with {len(result)} entries")
-                            regions = process_region_data(result)
-                            response_data['data']['region_data'] = regions
-                            logger.info(f"Processed {len(regions)} regions with data")
+                        if result is not None:
+                            # Handle DataFrame vs list
+                            if hasattr(result, 'empty'):
+                                if not result.empty:
+                                    logger.info(f"Processing region DataFrame with {len(result)} rows")
+                                    regions = process_region_data(result)
+                                    response_data['data']['region_data'] = regions
+                                else:
+                                    logger.warning("Region DataFrame is empty")
+                                    response_data['data']['region_data'] = []
+                            elif isinstance(result, list):
+                                logger.info(f"Using preformatted region list with {len(result)} items")
+                                response_data['data']['region_data'] = result
+                            else:
+                                logger.warning(f"Unexpected region_data result type: {type(result)}")
+                                response_data['data']['region_data'] = []
                         else:
-                            logger.warning("Interest by region data is empty, will try fallback")
+                            logger.warning("Region data result is None")
                             response_data['data']['region_data'] = []
                             
                     elif name == 'city_data':
-                        if not result.empty:
-                            cities = process_region_data(result)
-                            response_data['data']['city_data'] = cities
+                        if result is not None:
+                            # Handle DataFrame vs list
+                            if hasattr(result, 'empty'):
+                                if not result.empty:
+                                    logger.info(f"Processing city DataFrame with {len(result)} rows")
+                                    cities = process_region_data(result)
+                                    response_data['data']['city_data'] = cities
+                                else:
+                                    logger.warning("City DataFrame is empty")
+                                    response_data['data']['city_data'] = []
+                            elif isinstance(result, list):
+                                logger.info(f"Using preformatted city list with {len(result)} items")
+                                response_data['data']['city_data'] = result
+                            else:
+                                logger.warning(f"Unexpected city_data result type: {type(result)}")
+                                response_data['data']['city_data'] = []
                         else:
+                            logger.warning("City data result is None")
                             response_data['data']['city_data'] = []
                             
                     elif name == 'related_queries':
-                        if result and any(result[kw] is not None for kw in result):
+                        if result and isinstance(result, dict) and any(result.get(kw) is not None for kw in result):
                             processed_queries = {}
                             
                             for kw in result:
@@ -1805,6 +2105,7 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
                             
                             response_data['data']['related_queries'] = processed_queries
                         else:
+                            logger.warning("Related queries result is invalid or empty")
                             response_data['data']['related_queries'] = {}
                 
                 except Exception as e:
@@ -1824,78 +2125,94 @@ def fetch_google_trends(keywords, timeframe='today 5-y', geo='IN', analysis_opti
         if not response_data['data'].get('time_trends') and 'time_trends' in futures:
             logger.info("Attempting direct fetch for time series data as fallback")
             try:
-                # Create a new pytrends instance with different settings
-                direct_pytrends = TrendReq(
-                    hl='en-US',
-                    tz=330,
-                    timeout=REQUEST_TIMEOUT * 2  # Double timeout
-                )
-                
-                # Use a shorter timeframe for better chance of success
-                short_tf = 'today 3-m'
-                logger.info(f"Trying with shorter timeframe: {short_tf}")
-                
-                # Add delay to avoid rate limit
-                add_random_delay(3, 6)
-                
-                # Try direct fetch
-                direct_pytrends.build_payload(keywords, timeframe=short_tf, geo=geo)
-                direct_result = direct_pytrends.interest_over_time()
-                
-                if not direct_result.empty:
-                    logger.info("Successfully retrieved time series data with direct approach")
-                    response_data['data']['time_trends'] = dataframe_to_json(direct_result)
-                    response_data['metadata']['timeframe'] = short_tf
+                # Get a fresh proxy for this attempt
+                fallback_proxy = get_random_proxy()
+                if not fallback_proxy:
+                    logger.error("No valid proxies available for time trends fallback")
+                    response_data["warning"] = "Could not fetch time trends data - no valid proxies available"
+                    response_data['data']['time_trends'] = []
                 else:
-                    logger.warning("Direct approach also failed to get time series data")
+                    # Create a new pytrends instance with the proxy
+                    direct_pytrends = create_pytrends_instance(
+                        hl='en',
+                        tz=420,
+                        timeout=REQUEST_TIMEOUT * 2,  # Double timeout
+                        proxy=fallback_proxy,
+                        use_proxy=True
+                    )
+                    
+                    # Use a shorter timeframe for better chance of success
+                    short_tf = 'today 3-m'
+                    logger.info(f"Trying with shorter timeframe: {short_tf} and proxy: {fallback_proxy}")
+                    
+                    # Add delay to avoid rate limit
+                    add_random_delay(3, 6)
+                    
+                    # Try direct fetch with proxy
+                    direct_pytrends.build_payload(keywords, timeframe=short_tf, geo=geo)
+                    direct_result = direct_pytrends.interest_over_time()
+                    
+                    if not direct_result.empty:
+                        logger.info("Successfully retrieved time series data with direct approach")
+                        response_data['data']['time_trends'] = dataframe_to_json(direct_result)
+                        response_data['metadata']['timeframe'] = short_tf
+                    else:
+                        logger.warning("Direct approach also failed to get time series data")
+                        response_data["errors"] = ["Could not fetch time trends data - Google Trends returned empty data"]
+                        response_data['data']['time_trends'] = []
             except Exception as direct_err:
                 logger.error(f"Error with direct fetch approach: {str(direct_err)}")
-        
+                response_data["errors"] = [f"Could not fetch time trends data: {str(direct_err)}"]
+                response_data['data']['time_trends'] = []
+
         # If region_data failed or is empty, try fallback approach
         if (analysis_options.get("include_state_analysis", False) or analysis_options.get("state_only", False)) and \
            (not response_data['data'].get('region_data') or len(response_data['data']['region_data']) == 0):
             logger.info("Attempting direct fetch for region data as fallback")
             try:
-                # Create a new pytrends instance with different settings
-                direct_pytrends = TrendReq(
-                    hl='en-US',
-                    tz=330,
-                    timeout=REQUEST_TIMEOUT * 2  # Double timeout
-                )
-                
-                # Use a shorter timeframe for better chance of success
-                short_tf = 'today 3-m'
-                logger.info(f"Trying region data with shorter timeframe: {short_tf}")
-                
-                # Add delay to avoid rate limit
-                add_random_delay(3, 6)
-                
-                # Try direct fetch
-                direct_pytrends.build_payload(keywords, timeframe=short_tf, geo=geo)
-                
-                # Try with different resolution
-                resolution = 'COUNTRY' if geo == '' else 'REGION'
-                direct_result = direct_pytrends.interest_by_region(resolution=resolution, inc_low_vol=True)
-                
-                if not direct_result.empty:
-                    logger.info(f"Successfully retrieved region data with direct approach: {len(direct_result)} regions")
-                    regions = process_region_data(direct_result)
-                    response_data['data']['region_data'] = regions
-                    logger.info(f"Processed {len(regions)} regions with direct approach")
+                # Get a fresh proxy for this attempt
+                region_fallback_proxy = get_random_proxy()
+                if not region_fallback_proxy:
+                    logger.error("No valid proxies available for region data fallback")
+                    response_data["warning"] = "Could not fetch region data - no valid proxies available"
+                    response_data['data']['region_data'] = []
                 else:
-                    logger.warning("Direct approach failed to get region data, using fallback data")
-                    # Generate fallback data
-                    fallback_df = generate_fallback_region_data(keywords, geo)
-                    regions = process_region_data(fallback_df)
-                    response_data['data']['region_data'] = regions
-                    response_data['warning'] = "Using fallback data for regions - Google Trends API returned no results"
+                    # Create a new pytrends instance with the proxy
+                    direct_pytrends = create_pytrends_instance(
+                        hl='en',
+                        tz=420,
+                        timeout=REQUEST_TIMEOUT * 2,  # Double timeout
+                        proxy=region_fallback_proxy,
+                        use_proxy=True
+                    )
+                    
+                    # Use a shorter timeframe for better chance of success
+                    short_tf = 'today 3-m'
+                    logger.info(f"Trying region data with shorter timeframe: {short_tf} and proxy: {region_fallback_proxy}")
+                    
+                    # Add delay to avoid rate limit
+                    add_random_delay(3, 6)
+                    
+                    # Try direct fetch with proxy
+                    direct_pytrends.build_payload(keywords, timeframe=short_tf, geo=geo)
+                    
+                    # Try with different resolution
+                    resolution = 'COUNTRY' if geo == '' else 'REGION'
+                    direct_result = direct_pytrends.interest_by_region(resolution=resolution, inc_low_vol=True)
+                    
+                    if not direct_result.empty:
+                        logger.info(f"Successfully retrieved region data with direct approach: {len(direct_result)} regions")
+                        regions = process_region_data(direct_result)
+                        response_data['data']['region_data'] = regions
+                        logger.info(f"Processed {len(regions)} regions with direct approach")
+                    else:
+                        logger.warning("Direct approach failed to get region data, cannot proceed")
+                        response_data["errors"] = ["Could not fetch region data - Google Trends returned empty data"]
+                        response_data['data']['region_data'] = []
             except Exception as region_err:
                 logger.error(f"Error with direct region fetch: {str(region_err)}")
-                # Generate fallback data
-                fallback_df = generate_fallback_region_data(keywords, geo)
-                regions = process_region_data(fallback_df)
-                response_data['data']['region_data'] = regions
-                response_data['warning'] = "Using fallback data for regions - Google Trends API error"
+                response_data["errors"] = [f"Could not fetch region data: {str(region_err)}"]
+                response_data['data']['region_data'] = []
     
     except Exception as e:
         logger.error(f"Error in fetch_google_trends: {str(e)}")
@@ -1949,6 +2266,9 @@ def get_trends_json(keywords, timeframe='today 5-y', geo='IN', analysis_options=
     Returns:
     - Dictionary containing the trends data
     """
+    # Store original timeframe for returning in response
+    original_timeframe = timeframe
+    
     try:
         logger.info(f"Fetching trends for keywords={keywords}, timeframe={timeframe}, geo={geo}")
         start_time = time.time()
@@ -1964,81 +2284,276 @@ def get_trends_json(keywords, timeframe='today 5-y', geo='IN', analysis_options=
                 "city_only": False
             }
         
+        # Try first with proxy using the requested timeframe
+        logger.info(f"Attempting to fetch trends with proxy using timeframe: {timeframe}")
         result = fetch_google_trends(keywords, timeframe, geo, analysis_options)
         
-        # Log execution time
-        execution_time = time.time() - start_time
-        logger.info(f"Trends data fetched in {execution_time:.2f} seconds")
         
-        # If it took too long, log a warning
-        if execution_time > 30:
-            logger.warning(f"Trends fetch took {execution_time:.2f} seconds, which exceeds target of 30 seconds")
-        
-        # Ensure we have time_trends data before returning
-        if not result.get('data', {}).get('time_trends', []):
-            logger.warning("No time trends data in result, generating fallback data")
+        # Check if we got valid data
+        if result.get('status') == 'success' and result.get('data', {}).get('time_trends'):
+            logger.info(f"Successfully fetched trends data with timeframe: {timeframe}")
+            # Ensure the original timeframe is preserved
+            result['metadata']['timeframe'] = original_timeframe
             
-            # Normalize keywords to a list
-            if isinstance(keywords, str):
-                keywords = [keywords]
+            # Log execution time
+            execution_time = time.time() - start_time
+            logger.info(f"Trends data fetched in {execution_time:.2f} seconds")
             
-            # Generate fallback data
-            fallback_df = generate_fallback_trends_data(keywords, timeframe)
-            
-            # Convert to JSON format
-            fallback_json = dataframe_to_json(fallback_df)
-            
-            # Update the result
-            result['data']['time_trends'] = fallback_json
-            
-            # Add a warning flag
-            result['warning'] = "Using fallback data - Google Trends API returned no results"
-            
-            logger.info(f"Added fallback data with {len(fallback_json)} points")
+            # Log warning if it took too long
+            if execution_time > 30:
+                logger.warning(f"Trends fetch took {execution_time:.2f} seconds, which exceeds target of 30 seconds")
+                
+            return result
         
-        return result
+        logger.warning(f"Failed to get data with original timeframe: {timeframe}")
         
-    except Exception as e:
-        logger.error(f"Error in get_trends_json: {str(e)}", exc_info=True)
+        # If original attempt failed, try direct connection without proxy but same timeframe
+        logger.info(f"Trying direct connection with original timeframe: {timeframe}")
         
-        # Create a fallback response structure with custom data
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        
-        # Normalize keywords to a list
-        if isinstance(keywords, str):
-            kw_list = [keywords]
-        else:
-            kw_list = keywords
-        
-        # Generate fallback data
+        # Try with the same timeframe but direct connection
+        direct_result = None
         try:
-            fallback_df = generate_fallback_trends_data(kw_list, timeframe)
-            fallback_json = dataframe_to_json(fallback_df)
-        except Exception as fallback_err:
-            logger.error(f"Error generating fallback data: {str(fallback_err)}")
-            fallback_json = []
+            # Create a direct connection request with the original timeframe
+            direct_result = fetch_google_trends_direct(keywords, timeframe, geo, analysis_options)
+            
+            # Check if we got valid data
+            if direct_result.get('status') == 'success' and direct_result.get('data', {}).get('time_trends'):
+                logger.info(f"Successfully fetched trends data with direct connection using timeframe: {timeframe}")
+                
+                # Ensure the original timeframe is preserved
+                direct_result['metadata']['timeframe'] = original_timeframe
+                direct_result['metadata']['connection'] = 'direct'
+                
+                # Log execution time
+                execution_time = time.time() - start_time
+                logger.info(f"Trends data fetched in {execution_time:.2f} seconds")
+                
+                # Log warning if it took too long
+                if execution_time > 30:
+                    logger.warning(f"Trends fetch took {execution_time:.2f} seconds, which exceeds target of 30 seconds")
+                    
+                return direct_result
+        except Exception as direct_err:
+            logger.error(f"Error with direct connection: {str(direct_err)}")
+            # Continue to fallback approach
         
-        # Create a complete response
-        fallback_response = {
-            "status": "warning",
-            "warning": "Using fallback data due to API error",
-            "errors": [str(e)],
+        # If all attempts failed, return error response
+        logger.error("Failed to fetch trends data with both proxy and direct connection")
+        
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        error_response = {
+            "status": "error",
             "metadata": {
-                "keywords": kw_list,
-                "timeframe": timeframe,
+                "keywords": keywords if isinstance(keywords, list) else [keywords],
+                "timeframe": original_timeframe,
                 "region": geo,
-                "timestamp": timestamp,
-                "is_fallback": True
+                "timestamp": timestamp
             },
+            "errors": ["Failed to fetch Google Trends data. All attempts were unsuccessful."],
             "data": {
-                "time_trends": fallback_json,
+                "time_trends": [],
                 "region_data": [],
                 "city_data": [],
                 "related_queries": {}
             }
         }
         
-        return fallback_response
+        # Log execution time
+        execution_time = time.time() - start_time
+        logger.info(f"Trends data fetch attempt failed in {execution_time:.2f} seconds")
+        
+        # Log warning if it took too long
+        if execution_time > 30:
+            logger.warning(f"Trends fetch attempt took {execution_time:.2f} seconds, which exceeds target of 30 seconds")
+        
+        return error_response
+    
+    except Exception as e:
+        logger.error(f"Error in get_trends_json: {str(e)}", exc_info=True)
+        
+        # Create an error response
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # Return error response instead of generating fake data
+        error_response = {
+            "status": "error",
+            "metadata": {
+                "keywords": keywords if isinstance(keywords, list) else [keywords],
+                "timeframe": original_timeframe,
+                "region": geo,
+                "timestamp": timestamp
+            },
+            "errors": [f"Failed to fetch Google Trends data: {str(e)}"],
+            "data": {
+                "time_trends": [],
+                "region_data": [],
+                "city_data": [],
+                "related_queries": {}
+            }
+        }
+        
+        return error_response
+
+# Direct connection version of fetch_google_trends
+def fetch_google_trends_direct(keywords, timeframe='today 5-y', geo='IN', analysis_options=None):
+    """
+    A simplified version of fetch_google_trends that uses direct connection (no proxy)
+    with more conservative parameters to avoid rate limiting
+    """
+    # Normalize keywords to a list
+    if isinstance(keywords, str):
+        keywords = [keywords]
+    
+    # Limit keywords to 5 as per Google Trends limit
+    if len(keywords) > 5:
+        logger.warning(f"Too many keywords ({len(keywords)}), limiting to first 5")
+        keywords = keywords[:5]
+    
+    # Set default analysis options if not provided
+    if analysis_options is None:
+        analysis_options = {
+            "include_time_trends": True,
+            "include_state_analysis": False,  # Simplify request
+            "include_city_analysis": False,
+            "include_related_queries": False,
+            "state_only": False,
+            "city_only": False
+        }
+    
+    # Prepare response structure
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    response_data = {
+        "status": "success",
+        "metadata": {
+            "keywords": keywords,
+            "timeframe": timeframe,
+            "region": geo,
+            "timestamp": timestamp,
+            "connection": "direct"  # Flag that this was a direct connection
+        },
+        "data": {}
+    }
+    
+    try:
+        # Create a simple session without proxy
+        session = requests.Session()
+        
+        # Apply some basic headers to look like a browser
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": "https://trends.google.com/",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1"
+        })
+        
+        # Create a pytrends instance without proxy - use explicit requests_args to avoid timeout conflicts
+        try:
+            pytrends = TrendReq(
+                hl='en',
+                tz=420,
+                retries=3,
+                backoff_factor=2.0,
+                requests_args={
+                    'verify': True,
+                    'timeout': (30, 60)  # Longer timeout for direct connection
+                }
+            )
+            logger.info("Successfully created TrendReq instance")
+        except Exception as init_err:
+            logger.error(f"Error initializing TrendReq: {str(init_err)}")
+            # Try with a more basic construction
+            pytrends = TrendReq(
+                hl='en',
+                tz=420
+            )
+            logger.info("Created TrendReq with minimal parameters")
+        
+        # Replace the default session
+        pytrends.requests_session = session
+        
+        # Add a delay before starting
+        time.sleep(3)
+        
+        # Build payload 
+        logger.info(f"Building payload for direct connection: {keywords}, {timeframe}, {geo}")
+        try:
+            pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
+            logger.info("Successfully built payload")
+        except Exception as payload_err:
+            logger.error(f"Error building payload: {str(payload_err)}")
+            response_data["status"] = "error"
+            response_data["errors"] = [f"Failed to build request payload: {str(payload_err)}"]
+            return response_data
+        
+        # Get time trends data
+        if analysis_options.get("include_time_trends", True):
+            time.sleep(2)  # Add delay between requests
+            logger.info("Fetching time trends data with direct connection")
+            try:
+                time_trends_df = pytrends.interest_over_time()
+                
+                if time_trends_df is not None and not time_trends_df.empty:
+                    json_data = dataframe_to_json(time_trends_df)
+                    response_data['data']['time_trends'] = json_data
+                    logger.info(f"Successfully retrieved time trends data: {len(time_trends_df)} points")
+                else:
+                    logger.warning("Time trends result was empty or None")
+                    response_data['data']['time_trends'] = []
+            except Exception as time_err:
+                logger.error(f"Error retrieving time trends data: {str(time_err)}")
+                response_data['data']['time_trends'] = []
+                response_data["errors"] = [f"Failed to retrieve time trends data: {str(time_err)}"]
+        
+        # Get region data if requested
+        if analysis_options.get("include_state_analysis", False):
+            time.sleep(3)  # Add longer delay for region data
+            logger.info("Fetching region data with direct connection")
+            try:
+                region_df = pytrends.interest_by_region(resolution='REGION', inc_low_vol=True)
+                
+                if region_df is not None and not region_df.empty:
+                    regions = process_region_data(region_df)
+                    response_data['data']['region_data'] = regions
+                    logger.info(f"Successfully retrieved region data: {len(regions)} regions")
+                else:
+                    logger.warning("Region data result was empty or None")
+                    response_data['data']['region_data'] = []
+            except Exception as region_err:
+                logger.error(f"Error retrieving region data: {str(region_err)}")
+                response_data['data']['region_data'] = []
+        else:
+            response_data['data']['region_data'] = []
+        
+        # Set other data fields to empty values
+        response_data['data']['city_data'] = []
+        response_data['data']['related_queries'] = {}
+        
+        # Check if we got any valid data
+        if not response_data['data'].get('time_trends'):
+            logger.warning("No time trends data retrieved with direct connection")
+            # Only mark as error if we were supposed to get time trends data
+            if analysis_options.get("include_time_trends", True):
+                response_data["status"] = "error"
+                if "errors" not in response_data:
+                    response_data["errors"] = ["No time trends data retrieved from Google Trends with direct connection"]
+        
+        return response_data
+        
+    except Exception as e:
+        logger.error(f"Error in fetch_google_trends_direct: {str(e)}")
+        response_data["status"] = "error"
+        response_data["errors"] = [str(e)]
+        
+        # Set default empty values
+        response_data["data"]["time_trends"] = []
+        response_data["data"]["region_data"] = []
+        response_data["data"]["city_data"] = []
+        response_data["data"]["related_queries"] = {}
+        
+        return response_data
 
 # Simple file-based caching implementation
 class SimpleFileCache:
@@ -2070,9 +2585,9 @@ class SimpleFileCache:
 # Create cache instance
 cache = SimpleFileCache(CACHE_DIR)
 
-# Helper function to fix session's retry configuration
+# Fix the session's retry configuration
 def fix_session_retry(session):
-    """Fix a session's retry configuration based on urllib3 version"""
+    """Fix a session's retry configuration based on urllib3 version and add robust error handling"""
     try:
         # Import urllib3 to check version
         import urllib3
@@ -2094,29 +2609,52 @@ def fix_session_retry(session):
                 backoff_factor=BACKOFF_FACTOR,
                 status_forcelist=[429, 500, 502, 503, 504],
                 allowed_methods=["HEAD", "GET", "OPTIONS"]
+                # Removed other_errors parameter that was causing issues
             )
-            logger.debug("Using 'allowed_methods' parameter for Retry")
+            logger.debug("Using 'allowed_methods' parameter for Retry with urllib3 >= 2.0")
         else:
             # For urllib3 < 2.0, use method_whitelist
             retry_strategy = Retry(
                 total=MAX_RETRIES,
                 backoff_factor=BACKOFF_FACTOR,
                 status_forcelist=[429, 500, 502, 503, 504],
-                method_whitelist=["HEAD", "GET", "OPTIONS"]
+                method_whitelist=["HEAD", "GET", "OPTIONS"],
+                raise_on_status=False,
+                raise_on_redirect=False
             )
-            logger.debug("Using 'method_whitelist' parameter for Retry")
+            logger.debug("Using 'method_whitelist' parameter for Retry with urllib3 < 2.0")
         
-        # Create adapter with retry strategy
-        adapter = HTTPAdapter(max_retries=retry_strategy)
+        # Create adapter with retry strategy and improved connection pooling
+        adapter = HTTPAdapter(
+            max_retries=retry_strategy,
+            # Increase connection pooling for better stability
+            pool_connections=10,
+            pool_maxsize=10, 
+            pool_block=False
+        )
+        
+        # Mount the adapter to both http and https
         session.mount("https://", adapter)
         session.mount("http://", adapter)
+        
+        # Set a more robust default timeout for all requests (connect timeout, read timeout)
+        # Store as attribute but don't set as default to avoid conflicts with other code
+        session.request_timeout = (10, 30)  # 10 seconds for connect, 30 seconds for read
+        
+        # Configure keep-alive for better connection stability
+        session.headers.update({'Connection': 'keep-alive'})
+        
         return True
         
     except Exception as retry_error:
         # Fallback to basic adapter without custom retry strategy
         logger.warning(f"Error setting up retry strategy: {str(retry_error)}")
         logger.warning("Using basic adapter without custom retry strategy")
-        adapter = HTTPAdapter(max_retries=1)
+        adapter = HTTPAdapter(
+            max_retries=3,  # Simpler retry mechanism
+            pool_connections=5,
+            pool_maxsize=5
+        )
         session.mount("https://", adapter)
         session.mount("http://", adapter)
         return False
@@ -2147,7 +2685,7 @@ def get_region_interest(keywords, timeframe='today 5-y', geo='IN'):
             keywords = keywords[:5]
         
         # Create a PyTrends instance
-        pytrends = create_pytrends_instance(hl='en-US', tz=330, timeout=REQUEST_TIMEOUT)
+        pytrends = create_pytrends_instance(hl='en', tz=420, timeout=REQUEST_TIMEOUT)
         
         # Build payload
         pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
@@ -2201,4 +2739,467 @@ def get_region_interest(keywords, timeframe='today 5-y', geo='IN'):
             "resolution": "fallback",
             "count": len(regions),
             "error": str(e)
+        }
+
+# Direct connection version of fetch_google_trends that doesn't require modifying the global PROXIES
+def fetch_google_trends_no_proxy(keywords, timeframe='today 5-y', geo='IN', analysis_options=None):
+    """
+    A version of fetch_google_trends that uses direct connection (no proxy)
+    """
+    # Normalize keywords to a list
+    if isinstance(keywords, str):
+        keywords = [keywords]
+    
+    # Limit keywords to 5 as per Google Trends limit
+    if len(keywords) > 5:
+        logger.warning(f"Too many keywords ({len(keywords)}), limiting to first 5")
+        keywords = keywords[:5]
+    
+    # Set default analysis options if not provided
+    if analysis_options is None:
+        analysis_options = {
+            "include_time_trends": True,
+            "include_state_analysis": False,  # Simplify request
+            "include_city_analysis": False,
+            "include_related_queries": False,
+            "state_only": False,
+            "city_only": False
+        }
+    
+    # Prepare response structure
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    response_data = {
+        "status": "success",
+        "metadata": {
+            "keywords": keywords,
+            "timeframe": timeframe,
+            "region": geo,
+            "timestamp": timestamp,
+            "connection": "direct"  # Flag that this was a direct connection
+        },
+        "data": {}
+    }
+    
+    try:
+        # Create a simple session without proxy
+        session = requests.Session()
+        
+        # Apply some basic headers to look like a browser
+        session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": "https://trends.google.com/",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1"
+        })
+        
+        # Create a pytrends instance without proxy - use minimally required parameters
+        try:
+            # Create with only the essential parameters to avoid conflicts
+            pytrends = TrendReq(
+                hl='en',
+                tz=420,
+                retries=3,
+                backoff_factor=2.0
+            )
+            logger.info("Successfully created TrendReq instance with minimal parameters")
+            
+            # Configure the session with proper keep-alive settings
+            session.headers.update({
+                'Connection': 'keep-alive',
+                'Keep-Alive': '300'  # Keep connection alive for 300 seconds
+            })
+            
+            # Then manually set the timeout in the session
+            session.request_timeout = (30, 60)  # (connect, read) timeout
+            
+            # Replace the requests_session with our custom session
+            pytrends.requests_session = session
+            
+        except Exception as init_err:
+            logger.error(f"Error initializing TrendReq: {str(init_err)}")
+            # Try with absolute minimal parameters
+            pytrends = TrendReq(
+                hl='en',
+                tz=420
+            )
+            logger.info("Created TrendReq with absolute minimal parameters")
+            
+            # Replace the requests_session with our custom session
+            pytrends.requests_session = session
+        
+        # Add a delay before starting
+        time.sleep(3)
+        
+        # Build payload 
+        logger.info(f"Building payload for direct connection: {keywords}, {timeframe}, {geo}")
+        try:
+            pytrends.build_payload(keywords, timeframe=timeframe, geo=geo)
+            logger.info("Successfully built payload")
+        except Exception as payload_err:
+            logger.error(f"Error building payload: {str(payload_err)}")
+            response_data["status"] = "error"
+            response_data["errors"] = [f"Failed to build request payload: {str(payload_err)}"]
+            return response_data
+        
+        # Get time trends data
+        if analysis_options.get("include_time_trends", True):
+            time.sleep(2)  # Add delay between requests
+            logger.info("Fetching time trends data with direct connection")
+            try:
+                time_trends_df = pytrends.interest_over_time()
+                
+                if time_trends_df is not None and not time_trends_df.empty:
+                    json_data = dataframe_to_json(time_trends_df)
+                    response_data['data']['time_trends'] = json_data
+                    logger.info(f"Successfully retrieved time trends data: {len(time_trends_df)} points")
+                else:
+                    logger.warning("Time trends result was empty or None")
+                    response_data['data']['time_trends'] = []
+            except Exception as time_err:
+                logger.error(f"Error retrieving time trends data: {str(time_err)}")
+                response_data['data']['time_trends'] = []
+                response_data["errors"] = [f"Failed to retrieve time trends data: {str(time_err)}"]
+        
+        # Get region data if requested
+        if analysis_options.get("include_state_analysis", False):
+            time.sleep(3)  # Add longer delay for region data
+            logger.info("Fetching region data with direct connection")
+            try:
+                region_df = pytrends.interest_by_region(resolution='REGION', inc_low_vol=True)
+                
+                if region_df is not None and not region_df.empty:
+                    regions = process_region_data(region_df)
+                    response_data['data']['region_data'] = regions
+                    logger.info(f"Successfully retrieved region data: {len(regions)} regions")
+                else:
+                    logger.warning("Region data result was empty or None")
+                    response_data['data']['region_data'] = []
+            except Exception as region_err:
+                logger.error(f"Error retrieving region data: {str(region_err)}")
+                response_data['data']['region_data'] = []
+        else:
+            response_data['data']['region_data'] = []
+        
+        # Set other data fields to empty values
+        response_data['data']['city_data'] = []
+        response_data['data']['related_queries'] = {}
+        
+        # Check if we got any valid data
+        if not response_data['data'].get('time_trends'):
+            logger.warning("No time trends data was retrieved")
+            # Only mark as error if we were supposed to get time trends data
+            if analysis_options.get("include_time_trends", True):
+                response_data["status"] = "error"
+                if "errors" not in response_data:
+                    response_data["errors"] = ["No time trends data could be retrieved with direct connection"]
+        
+        return response_data
+        
+    except Exception as e:
+        logger.error(f"Error in fetch_google_trends_no_proxy: {str(e)}")
+        response_data["status"] = "error"
+        response_data["errors"] = [str(e)]
+        
+        # Set default empty values
+        response_data["data"]["time_trends"] = []
+        response_data["data"]["region_data"] = []
+        response_data["data"]["city_data"] = []
+        response_data["data"]["related_queries"] = {}
+        
+        return response_data
+
+# Constants
+REQUEST_TIMEOUT = 30
+SERP_API_KEY = "64e3a48333bbb33f4ce8ded91e5268cd453a80fb244104de63b7ad9af9cc2a58"
+
+def fetch_serp_trends(keyword, timeframe='today 5-y', geo='IN', analysis_options=None):
+    """
+    Fetch trends data from SERP API as a fallback using serpapi package
+    """
+    if not SERP_API_KEY:
+        logger.error("SERP API key not configured")
+        return None
+
+    if analysis_options is None:
+        analysis_options = {
+            "include_time_trends": True,
+            "include_state_analysis": False,
+            "include_city_analysis": False,
+            "include_related_queries": False,
+            "state_only": False,
+            "city_only": False
+        }
+
+    serp_results = {}
+    try:
+        # Map analysis options to SERP API data_type
+        serp_data_types = []
+        if analysis_options.get("include_time_trends", False) and not analysis_options.get("state_only", False) and not analysis_options.get("city_only", False):
+            serp_data_types.append("TIMESERIES")
+        if analysis_options.get("include_state_analysis", False) or analysis_options.get("state_only", False):
+            serp_data_types.append("GEO_MAP_0")
+        if analysis_options.get("include_city_analysis", False) or analysis_options.get("city_only", False):
+            serp_data_types.append("GEO_MAP_1")
+        if analysis_options.get("include_related_queries", False):
+            serp_data_types.append("RELATED_QUERIES")
+
+        # If no data type is set, default to TIMESERIES
+        if not serp_data_types:
+            serp_data_types = ["TIMESERIES"]
+
+        for data_type in serp_data_types:
+            params = {
+                "engine": "google_trends",
+                "q": keyword,
+                "geo": geo,
+                "api_key": SERP_API_KEY,
+                "data_type": data_type
+            }
+            # Always use 5 years data for TIMESERIES
+            if data_type == "TIMESERIES":
+                params["date"] = timeframe
+            search = GoogleSearch(params)
+            results = search.get_dict()
+            serp_results[data_type] = results
+
+        # Parse results into your app's format
+        data = {}
+        # Time trends
+        if (
+            "TIMESERIES" in serp_results and
+            isinstance(serp_results["TIMESERIES"], dict) and
+            "interest_over_time" in serp_results["TIMESERIES"] and
+            "timeline_data" in serp_results["TIMESERIES"]["interest_over_time"] and
+            isinstance(serp_results["TIMESERIES"]["interest_over_time"]["timeline_data"], list)
+        ):
+            # Format with timeline_data array
+            data["time_trends"] = []
+            for point in serp_results["TIMESERIES"]["interest_over_time"]["timeline_data"]:
+                if not isinstance(point, dict):
+                    continue
+                
+                if "values" not in point or not isinstance(point["values"], list) or not point["values"]:
+                    continue
+                    
+                # Extract value from the values array
+                value_obj = point["values"][0]  # Use the first value object
+                extracted_value = value_obj.get("extracted_value", value_obj.get("value", 0))
+                
+                # Create a data point
+                data_point = {
+                    "date": point.get("date", ""),
+                    "value": extracted_value
+                }
+                
+                # Add timestamp if available
+                if "timestamp" in point:
+                    data_point["timestamp"] = point["timestamp"]
+                    
+                data["time_trends"].append(data_point)
+                
+        elif (
+            "TIMESERIES" in serp_results and
+            isinstance(serp_results["TIMESERIES"], dict) and
+            "interest_over_time" in serp_results["TIMESERIES"] and
+            isinstance(serp_results["TIMESERIES"]["interest_over_time"], list)
+        ):
+            # Format without timeline_data array
+            data["time_trends"] = [
+                {"date": point["date"], "value": point["value"]}
+                for point in serp_results["TIMESERIES"]["interest_over_time"]
+                if isinstance(point, dict) and "date" in point and "value" in point
+            ]
+        else:
+            # If we can't parse the data, pass through the raw response
+            logger.warning(f"SERP API data format not recognized, passing through raw data")
+            # Just pass the raw data through to the frontend for client-side processing
+            return {
+                'status': 'success',
+                'metadata': {
+                    'keywords': [keyword],
+                    'timeframe': 'today 5-y',
+                    'region': geo,
+                    'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'source': 'serp_api',
+                    'raw_data': True
+                },
+                # Pass the TIMESERIES response as-is for client-side processing
+                **serp_results.get("TIMESERIES", {})
+            }
+        # Region
+        if (
+            "GEO_MAP_0" in serp_results and
+            isinstance(serp_results["GEO_MAP_0"], dict) and
+            "interest_by_region" in serp_results["GEO_MAP_0"] and
+            isinstance(serp_results["GEO_MAP_0"]["interest_by_region"], list)
+        ):
+            data["region_data"] = [
+                {"geoName": region["name"], "values": {keyword: region["value"]}}
+                for region in serp_results["GEO_MAP_0"]["interest_by_region"]
+                if isinstance(region, dict) and "name" in region and "value" in region
+            ]
+        else:
+            logger.error(f"SERP API GEO_MAP_0 response: {serp_results.get('GEO_MAP_0')}")
+            data["region_data"] = []
+        # City
+        if (
+            "GEO_MAP_1" in serp_results and
+            isinstance(serp_results["GEO_MAP_1"], dict) and
+            "interest_by_city" in serp_results["GEO_MAP_1"] and
+            isinstance(serp_results["GEO_MAP_1"]["interest_by_city"], list)
+        ):
+            data["city_data"] = [
+                {"geoName": city["name"], "values": {keyword: city["value"]}}
+                for city in serp_results["GEO_MAP_1"]["interest_by_city"]
+                if isinstance(city, dict) and "name" in city and "value" in city
+            ]
+        else:
+            logger.error(f"SERP API GEO_MAP_1 response: {serp_results.get('GEO_MAP_1')}")
+            data["city_data"] = []
+        # Related queries
+        if (
+            "RELATED_QUERIES" in serp_results and
+            isinstance(serp_results["RELATED_QUERIES"], dict) and
+            "related_queries" in serp_results["RELATED_QUERIES"] and
+            isinstance(serp_results["RELATED_QUERIES"]["related_queries"], dict)
+        ):
+            rq = serp_results["RELATED_QUERIES"]["related_queries"]
+            data["related_queries"] = {keyword: rq}
+        else:
+            logger.error(f"SERP API RELATED_QUERIES response: {serp_results.get('RELATED_QUERIES')}")
+            data["related_queries"] = {}
+
+        return {
+            'status': 'success',
+            'metadata': {
+                'keywords': [keyword],
+                'timeframe': 'today 5-y',  # Always use 5 years timeframe
+                'region': geo,
+                'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'source': 'serp_api'
+            },
+            'data': data
+        }
+    except Exception as e:
+        logger.error(f"Error fetching data from SERP API: {str(e)}")
+        return None
+def get_trends_json(keywords, timeframe='today 5-y', geo='IN', analysis_options=None):
+    """
+    Fetch Google Trends data and return as JSON
+    
+    This is the main function used by the application to get trends data.
+    Uses optimized fetching and caching to improve performance and avoid rate limiting.
+    
+    Parameters:
+    - keywords: List of keywords or single keyword string
+    - timeframe: Time period for analysis (default: 'today 5-y')
+    - geo: Geographic region code (default: 'IN' for India)
+    - analysis_options: Dictionary of options for different analysis types
+    
+    Returns:
+    - Dictionary containing the trends data
+    """
+    # Store original timeframe for returning in response
+    original_timeframe = timeframe
+    
+    try:
+        logger.info(f"Fetching trends for keywords={keywords}, timeframe={timeframe}, geo={geo}")
+        start_time = time.time()
+        
+        # Set default analysis options if not provided
+        if analysis_options is None:
+            analysis_options = {
+                "include_time_trends": True,
+                "include_state_analysis": True,
+                "include_city_analysis": False,
+                "include_related_queries": False,
+                "state_only": False,
+                "city_only": False
+            }
+        
+        # Try first with proxy using the requested timeframe
+        logger.info(f"Attempting to fetch trends with proxy using timeframe: {timeframe}")
+        result = fetch_google_trends(keywords, timeframe, geo, analysis_options)
+        
+        # Check if we got valid data
+        if result.get('status') == 'success' and result.get('data', {}).get('time_trends'):
+            logger.info(f"Successfully fetched trends data with timeframe: {timeframe}")
+            result['metadata']['timeframe'] = original_timeframe
+            execution_time = time.time() - start_time
+            logger.info(f"Trends data fetched in {execution_time:.2f} seconds")
+            return result
+        
+        logger.warning(f"Failed to get data with original timeframe: {timeframe}")
+        
+        # Try direct connection without proxy
+        logger.info(f"Trying direct connection with original timeframe: {timeframe}")
+        direct_result = None
+        try:
+            direct_result = fetch_google_trends_direct(keywords, timeframe, geo, analysis_options)
+            if direct_result.get('status') == 'success' and direct_result.get('data', {}).get('time_trends'):
+                logger.info(f"Successfully fetched trends data with direct connection")
+                direct_result['metadata']['timeframe'] = original_timeframe
+                direct_result['metadata']['connection'] = 'direct'
+                execution_time = time.time() - start_time
+                logger.info(f"Trends data fetched in {execution_time:.2f} seconds")
+                return direct_result
+        except Exception as direct_err:
+            logger.error(f"Error with direct connection: {str(direct_err)}")
+        
+        # If both Google Trends attempts failed, try SERP API as fallback
+        logger.info("Attempting to fetch data from SERP API as fallback")
+        if isinstance(keywords, list):
+            keyword = keywords[0]  # SERP API only supports single keyword
+        else:
+            keyword = keywords
+            
+        serp_result = fetch_serp_trends(keyword, timeframe, geo)
+        if serp_result:
+            logger.info("Successfully fetched data from SERP API")
+            serp_result['metadata']['timeframe'] = original_timeframe
+            execution_time = time.time() - start_time
+            logger.info(f"Trends data fetched in {execution_time:.2f} seconds")
+            return serp_result
+        
+        # If all attempts failed, return error response
+        logger.error("Failed to fetch trends data with all methods")
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return {
+            "status": "error",
+            "metadata": {
+                "keywords": keywords if isinstance(keywords, list) else [keywords],
+                "timeframe": original_timeframe,
+                "region": geo,
+                "timestamp": timestamp
+            },
+            "errors": ["Failed to fetch trends data - all methods failed"],
+            "data": {
+                "time_trends": [],
+                "region_data": [],
+                "city_data": [],
+                "related_queries": {}
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in get_trends_json: {str(e)}")
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return {
+            "status": "error",
+            "metadata": {
+                "keywords": keywords if isinstance(keywords, list) else [keywords],
+                "timeframe": original_timeframe,
+                "region": geo,
+                "timestamp": timestamp
+            },
+            "errors": [str(e)],
+            "data": {
+                "time_trends": [],
+                "region_data": [],
+                "city_data": [],
+                "related_queries": {}
+            }
         }

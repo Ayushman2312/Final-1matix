@@ -9,4 +9,5 @@ urlpatterns = [
     path('insights/', views.insights_view, name='insights'),
     path('api/', views.trends_api, name='trends_api'),
     path('ai-insights/', views.ai_insights_api, name='ai_insights_api'),
+    path('ai-analysis/', views.ai_analysis_api, name='ai_analysis_api'),
 ]

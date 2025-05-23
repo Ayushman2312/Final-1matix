@@ -1,0 +1,32 @@
+2025-05-16 15:52:16,330 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_155216_manual.log
+2025-05-16 15:52:16,331 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 15:52:16,370 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 15:52:18,389 - ContactScraper - INFO - Starting scrape for keyword: 'IT companies Bhopal'
+2025-05-16 15:52:19,627 - ContactScraper - ERROR - Error parsing HTML for CAPTCHA detection: list index out of range
+2025-05-16 15:52:19,633 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 20.19 seconds
+2025-05-16 15:53:07,910 - ContactScraper - INFO - Saved CAPTCHA check screenshot to captcha_check.png
+2025-05-16 15:53:07,910 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-16 15:56:19,541 - ContactScraper - INFO - Using browser automation for DuckDuckGo search
+2025-05-16 15:56:19,543 - ContactScraper - WARNING - Browser-based DuckDuckGo search failed: 'ContactScraper' object has no attribute '_search_duckduckgo_with_browser', falling back to regular search
+2025-05-16 15:56:19,551 - ContactScraper - INFO - Waiting 1.63 seconds before requesting https://html.duckduckgo.com/html/?q=IT%20companies%20Bhopal
+2025-05-16 15:56:22,533 - ContactScraper - ERROR - Error parsing HTML for CAPTCHA detection: list index out of range
+2025-05-16 15:56:22,536 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 24.40 seconds
+2025-05-16 15:57:05,668 - ContactScraper - INFO - Saved CAPTCHA check screenshot to captcha_check.png
+2025-05-16 15:57:05,668 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-16 15:59:30,610 - ContactScraper - INFO - Saved CAPTCHA check screenshot to captcha_check.png
+2025-05-16 15:59:30,610 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-16 16:02:08,836 - ContactScraper - INFO - Using browser automation for DuckDuckGo search
+2025-05-16 16:02:08,840 - ContactScraper - WARNING - Browser-based DuckDuckGo search failed: 'ContactScraper' object has no attribute '_search_duckduckgo_with_browser', falling back to regular search
+2025-05-16 16:02:08,853 - ContactScraper - INFO - Waiting 1.30 seconds before requesting https://html.duckduckgo.com/html/?q=IT%20companies%20Bhopal
+2025-05-16 16:02:15,033 - ContactScraper - INFO - Reached maximum runtime of 5 minutes
+2025-05-16 16:02:15,033 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones
+2025-05-16 16:02:15,039 - ContactScraper - INFO - Results saved to scraped_data/IT_companies_Bhopal_20250516_160215_contacts.csv
+2025-05-16 16:02:15,041 - ContactScraper - INFO - Closing browser page...
+2025-05-16 16:02:15,044 - ContactScraper - WARNING - Error closing page: Page.close: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:02:15,045 - ContactScraper - INFO - Closing browser context...
+2025-05-16 16:02:15,050 - ContactScraper - WARNING - Error closing browser context: : The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:02:15,050 - ContactScraper - INFO - Closing browser...
+2025-05-16 16:02:15,055 - ContactScraper - WARNING - Error closing browser: Browser.close: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:02:15,056 - ContactScraper - INFO - Stopping playwright...
+2025-05-16 16:02:15,057 - ContactScraper - WARNING - Error stopping playwright: Task <Task pending name='Task-8' coro=<ContactScraper.close_browser() running at C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py:1445> cb=[_run_until_complete_cb() at C:\Users\hp5cd\AppData\Local\Programs\Python\Python310\lib\asyncio\base_events.py:184, <2 more>, ProtocolCallback.__init__.<locals>.cb() at C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py:198]> got Future <Future pending> attached to a different loop
+2025-05-16 16:02:15,059 - ContactScraper - INFO - Browser resources cleanup completed

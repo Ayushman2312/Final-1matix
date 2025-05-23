@@ -10,19 +10,18 @@
     {% comment %} <title>Document</title> {% endcomment %}
 </head>
 <body class="bg-gray-50">
-    <div class="py-8 w-full max-w-9xl mx-auto">
+    <div class="w-full max-w-9xl mx-auto">
         <!-- Table Container -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="sm:flex sm:items-center sm:justify-between p-4">
-                <div class="text-xl font-semibold text-gray-800">Companies</div>
-                <div class="flex space-x-4">
-                    <a href="{% url 'create-company' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-emerald-500 hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out">
+        <div class="bg-white rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] overflow-hidden">
+            <div class="sm:flex sm:items-center sm:justify-end p-4">
+                <div class="flex justify-between space-x-4">
+                    <a href="{% url 'create-company' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-[#7A3DF1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out">
                         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
                         Add Company
                     </a>
-                    <button onclick="showQRModal()" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                    <button onclick="showQRModal()" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-[#7A3DF1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
                         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -225,54 +224,54 @@
                     </div>
                 </table>
             </div>
-            <!-- QR Code Section -->
-            <div class="bg-white rounded-lg shadow overflow-hidden mt-8">
-                <div class="sm:flex sm:items-center sm:justify-between p-4">
-                    <div class="text-xl font-semibold text-gray-800">QR Code Management</div>
-                </div>
+        </div>
+        <!-- QR Code Section -->
+        <div class="bg-white rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] overflow-hidden mt-[20px]">
+            <div class="sm:flex sm:items-center sm:justify-between p-4">
+                <div class="ml-2 text-xl font-semibold text-gray-800">QR Code Management</div>
+            </div>
 
-                <!-- QR Code Grid -->
-                <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {% for qr_code in qr_codes %}
-                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
-                        <div class="flex flex-col items-center">
-                            {% if qr_code.qr_code_image %}
-                            <div class="mb-4 relative">
-                                <img src="{{ qr_code.qr_code_image.url }}" 
-                                     alt="QR Code for {{ qr_code.company.company_name }}" 
-                                     class="w-48 h-48 object-contain">
-                                <a href="{{ qr_code.qr_code_image.url }}" 
-                                   download="qr_code_{{ qr_code.company.company_name }}_{{ qr_code.location_and_coordinates.location_name }}.png"
-                                   class="absolute top-0 right-0 m-2 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                    </svg>
-                                </a>
-                            </div>
-                            {% endif %}
-                            <div class="text-center">
-                                <h3 class="font-semibold text-gray-800">{{ qr_code.company.company_name }}</h3>
-                                <p class="text-sm text-gray-600">{{ qr_code.location_and_coordinates.location_name }}</p>
-                                <p class="text-xs text-gray-500">Created: {{ qr_code.created_at|date:"d M Y" }}</p>
-                            </div>
-                            <div class="mt-4 flex space-x-2">
-                                <button onclick="viewQRCode('{{ qr_code.qr_code_id }}')" 
-                                        class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                                    View Details
-                                </button>
-                                <button onclick="deleteQRCode('{{ qr_code.qr_code_id }}')" 
-                                        class="px-3 py-1 text-sm text-red-600 hover:text-red-800 transition-colors duration-200">
-                                    Delete
-                                </button>
-                            </div>
+            <!-- QR Code Grid -->
+            <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for qr_code in qr_codes %}
+                <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow duration-200">
+                    <div class="flex flex-col items-center">
+                        {% if qr_code.qr_code_image %}
+                        <div class="mb-4 relative">
+                            <img src="{{ qr_code.qr_code_image.url }}" 
+                                 alt="QR Code for {{ qr_code.company.company_name }}" 
+                                 class="w-48 h-48 object-contain">
+                            <a href="{{ qr_code.qr_code_image.url }}" 
+                               download="qr_code_{{ qr_code.company.company_name }}_{{ qr_code.location_and_coordinates.location_name }}.png"
+                               class="absolute top-0 right-0 m-2 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                            </a>
+                        </div>
+                        {% endif %}
+                        <div class="text-center">
+                            <h3 class="font-semibold text-gray-800">{{ qr_code.company.company_name }}</h3>
+                            <p class="text-sm text-gray-600">{{ qr_code.location_and_coordinates.location_name }}</p>
+                            <p class="text-xs text-gray-500">Created: {{ qr_code.created_at|date:"d M Y" }}</p>
+                        </div>
+                        <div class="mt-4 flex space-x-2">
+                            <button onclick="viewQRCode('{{ qr_code.qr_code_id }}')" 
+                                    class="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                                View Details
+                            </button>
+                            <button onclick="deleteQRCode('{{ qr_code.qr_code_id }}')" 
+                                    class="px-3 py-1 text-sm text-red-600 hover:text-red-800 transition-colors duration-200">
+                                Delete
+                            </button>
                         </div>
                     </div>
-                    {% empty %}
-                    <div class="col-span-full text-center py-8 text-gray-500">
-                        No QR codes found
-                    </div>
-                    {% endfor %}
                 </div>
+                {% empty %}
+                <div class="col-span-full text-center py-8 text-gray-500">
+                    No QR codes found
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>

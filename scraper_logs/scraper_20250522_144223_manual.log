@@ -1,0 +1,66 @@
+2025-05-22 14:42:23,803 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250522_144223_manual.log
+2025-05-22 14:42:23,803 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-22 14:42:23,861 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-22 14:42:30,273 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-22 14:42:30,287 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 14:42:41,892 - ContactScraper - INFO - Successfully found 1 Google results for 'Dropper Bottles in Delhi'
+2025-05-22 14:42:41,892 - ContactScraper - ERROR - Error extracting contacts from https://www.manufacturersuppliers.in/delhi/plastic-dropper-bottles.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:42:41,892 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 14:42:41,892 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 12.12 seconds
+2025-05-22 14:43:22,498 - ContactScraper - INFO - Successfully found 10 Google results for 'Dropper Bottles in Delhi'
+2025-05-22 14:43:22,498 - ContactScraper - ERROR - Error extracting contacts from https://www.sunriseagency.co.in/dropper-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,498 - ContactScraper - ERROR - Error extracting contacts from https://www.vtpolypacks.co.in/glass-dropper-bottle-manufacturer-in-india.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,498 - ContactScraper - ERROR - Error extracting contacts from https://www.trendglobalpackaging.in/glass-dropper-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,498 - ContactScraper - ERROR - Error extracting contacts from https://www.bottlemarket.in/glass-droper.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,498 - ContactScraper - ERROR - Error extracting contacts from https://www.shinepolypacks.in/30ml-glass-flat-shoulder-dropper-bottle-8650358.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,504 - ContactScraper - ERROR - Error extracting contacts from https://www.cosmopharmaglass.in/ear-dropper-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,505 - ContactScraper - ERROR - Error extracting contacts from https://www.trendglobal.co.in/amber-square-glass-dropper-bottle.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,505 - ContactScraper - ERROR - Error extracting contacts from https://www.trendglobalpackaging.in/dropper-glass-bottles.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,505 - ContactScraper - ERROR - Error extracting contacts from https://www.gurujifirms.in/amber-glass-dropper-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,505 - ContactScraper - ERROR - Error extracting contacts from https://www.shribalajient.co.in/dropper-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:22,510 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 14:43:45,072 - ContactScraper - INFO - Successfully found 10 Google results for 'Dropper Bottles in Delhi'
+2025-05-22 14:43:45,072 - ContactScraper - ERROR - Error extracting contacts from https://blenditrawapothecary.in/products/50-ml-amber-glass-dropper-bottle?srsltid=AfmBOoohVy6pDisvSh8OFu_gXIGJmHkIDWae4e0azaQlcE0Y4gYEfGpR: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,078 - ContactScraper - ERROR - Error extracting contacts from https://www.copospackaging.in/32-ml-pd-glass-dropper-bottle.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - ERROR - Error extracting contacts from https://www.mahalaxmiindustries.in/: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - ERROR - Error extracting contacts from https://www.crownpacks.in/30ml-black-matt-dropper-bottle-10288099.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - ERROR - Error extracting contacts from https://www.neelpackaging.co.in/pharmaceutical-bottle-and-tube.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - ERROR - Error extracting contacts from https://kvklatur.in/?k=206025715: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - ERROR - Error extracting contacts from https://www.amazon.in/B-H-Industry-WHOLESALE-dropper-bottle-container/dp/B0CLDK2KDX: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - ERROR - Error extracting contacts from https://www.gurujifirms.in/amber-glass-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - ERROR - Error extracting contacts from http://giftbash.in/viewsingleproduct.jsp?s=GLASS%20DROPPER%20BOTTLES: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:43:45,079 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 14:44:03,529 - ContactScraper - INFO - Successfully found 10 Google results for 'Dropper Bottles in Delhi'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from https://www.leafenterprise.co.in/50ml-wooden-cosmetic-dropper-bottle.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from http://www.beegee.in/blow-dropper-bottles/pid-271285734: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from https://www.rykeninternational.in/dropper-assembly.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from https://builtindelhi.in/job/quality-assurance-specialist-ophthalmic-eye-dropper-bottles/4259117: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from http://www.krishna-packaging.in/products.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from https://www.fancybottlestore.in/essential-oil-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from https://bizpressions.in/products/glass-amber-bottle-with-inner-lid-and-cap?srsltid=AfmBOoqYGJfgjx8db1ycKL3SJ93wbAJOB5W7VMmB1e7VL7seV32T1z8I: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from https://www.bhindustry.co.in/products.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - ERROR - Error extracting contacts from https://www.fusionbiotechindia.in/plastic-drop-bottle.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:03,529 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 14:44:03,529 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 2.95 seconds
+2025-05-22 14:44:26,075 - ContactScraper - INFO - Successfully found 10 Google results for 'Dropper Bottles in Delhi'
+2025-05-22 14:44:26,075 - ContactScraper - ERROR - Error extracting contacts from https://rtpackaging.in/product/gradient-color-coating-glass-bottle/: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,075 - ContactScraper - ERROR - Error extracting contacts from https://www.seair.co.in/dropper-bottle-export-data.aspx: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,075 - ContactScraper - ERROR - Error extracting contacts from https://kvklatur.in/?k=206019215: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,075 - ContactScraper - ERROR - Error extracting contacts from http://www.beegee.in/ibm-dropper-bottles/pid-271285735: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,075 - ContactScraper - ERROR - Error extracting contacts from https://www.casemantra.co.in/liquior-glass-bottle.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,075 - ContactScraper - ERROR - Error extracting contacts from https://www.amazon.in/Container-Essential-Perfumes-Reuseable-refillable/dp/B0F2TD6BNV: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,075 - ContactScraper - ERROR - Error extracting contacts from http://www.tracksuitmanufacturer.in/ibmdropperbottles/pid-271285735: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,083 - ContactScraper - ERROR - Error extracting contacts from https://www.glassdoor.co.in/job-listing/quality-assurance-specialist-ophthalmic-eye-dropper-bottles-gerresheimer-JV_IC2918675_KO0,59_KE60,72.htm?jl=1009647877912: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,084 - ContactScraper - ERROR - Error extracting contacts from https://www.desertcart.in/products/324956242-extend-lab-10-pcs-30-ml-plastic-dropper-bottle-squeezable-eye-dropper-bottles-refillable-mini-dropper-bottles-with-srew-cap-ideal-for-essence-oil: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:26,084 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 14:44:26,084 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 4.44 seconds
+2025-05-22 14:44:55,782 - ContactScraper - INFO - Successfully found 6 Google results for 'Dropper Bottles in Delhi'
+2025-05-22 14:44:55,782 - ContactScraper - ERROR - Error extracting contacts from https://www.4allbiz.in/jobato-products-new-delhi-UKE9HXTG.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:55,782 - ContactScraper - ERROR - Error extracting contacts from https://www.seair.co.in/optical-bench-import-data/indian-port-delhi-air-cargo.aspx: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:55,782 - ContactScraper - ERROR - Error extracting contacts from https://www.glassdoor.co.in/Job/ophthalmic-specialist-jobs-SRCH_KO0,21.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:55,791 - ContactScraper - ERROR - Error extracting contacts from https://builtindelhi.in/job/quality-assurance-specialist-2/3830790: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:55,791 - ContactScraper - ERROR - Error extracting contacts from https://www.blinkit.in/categories: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:55,792 - ContactScraper - ERROR - Error extracting contacts from https://foxtale.in/products/hyperpigmentation-serum-with-tranexamic-acid?srsltid=AfmBOoqwUG1UrN2w-NdUvpS7c2AZUQisldvFe1anPvUvmYHJ26A9vWv0: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-22 14:44:55,792 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 14:45:28,753 - ContactScraper - WARNING - No results from browser search for 'Dropper Bottles in Delhi'. Retry 1/3 after 18.50s
+2025-05-22 14:46:20,051 - ContactScraper - WARNING - No results from browser search for 'Dropper Bottles in Delhi'. Retry 2/3 after 21.69s

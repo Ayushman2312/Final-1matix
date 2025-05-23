@@ -35,7 +35,6 @@ class CompaniesView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Companies'
         context['companies'] = Company.objects.all()
         return context
 
@@ -44,7 +43,6 @@ class CreateCompanyView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Create Company'
         logger.debug("Rendering create company form")
         return context
 
@@ -106,7 +104,6 @@ class EditCompanyView(View):
             company = Company.objects.get(company_id=company_id)
             context = {
                 'company': company,
-                'app_name': 'Edit Company'
             }
             return render(request, 'invoicing/edit_company.html', context)
         except Company.DoesNotExist:
@@ -185,7 +182,6 @@ class CreateInvoiceView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Create Invoice'
         context['companies'] = Company.objects.all()
         context['products'] = Product.objects.all()
         logger.debug("Rendering create invoice form")
@@ -901,7 +897,6 @@ class ReportsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Reports'
         context['companies'] = Company.objects.all()
         context['invoices'] = Invoice.objects.all()
         context['billings'] = Billing.objects.all()
@@ -968,7 +963,6 @@ class AddBillingView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['companies'] = Company.objects.all()
         context['STATE_CHOICES'] = STATE_CHOICES
-        context['app_name'] = 'Add Billing'
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1028,7 +1022,6 @@ class RecipientAuthView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Recipient Authentication'
         return context
 
     def post(self, request, *args, **kwargs):

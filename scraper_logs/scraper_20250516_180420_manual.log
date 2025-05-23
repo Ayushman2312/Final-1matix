@@ -1,0 +1,21 @@
+2025-05-16 18:04:20,937 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_180420_manual.log
+2025-05-16 18:04:20,937 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 18:04:21,027 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 18:04:25,599 - ContactScraper - INFO - Starting scrape for keyword: 'test query'
+2025-05-16 18:04:25,599 - ContactScraper - INFO - Searching Google for 'test query' using specialized browser automation
+2025-05-16 18:05:10,060 - ContactScraper - INFO - Successfully found 10 Google results for 'test query'
+2025-05-16 18:05:10,062 - ContactScraper - ERROR - Error extracting contacts from https://www.screener.in/screens/326526/test-query/?order=asc&page=3: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,062 - ContactScraper - ERROR - Error extracting contacts from https://www.screener.in/screens/1037195/test-query/: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,062 - ContactScraper - ERROR - Error extracting contacts from https://cer.iitk.ac.in/assets/ga-dev-tools-master/test/query-explorer/: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,065 - ContactScraper - ERROR - Error extracting contacts from https://dsl.cds.iisc.ac.in/~course/TIDS/papers/qagen.pdf: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,065 - ContactScraper - ERROR - Error extracting contacts from https://www.tripadvisor.in/ShowTopic-g293974-i368-k13758796-Blood_test_query_Urgent-Istanbul.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,065 - ContactScraper - ERROR - Error extracting contacts from https://actrec.gov.in/website/sites/default/files/2019-08/T457.pdf: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,065 - ContactScraper - ERROR - Error extracting contacts from https://article.deepakpatidar.in/building-a-graphql-api-with-fastapi-and-strawberry-an-exciting-adventure-with-test-driven-aa7ed509f218: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,068 - ContactScraper - ERROR - Error extracting contacts from https://www.ritrkl.ac.in/news_files/news_1745369553.php?file=/opt/alt/python37/lib64/python3.7/idlelib/idle_test/test_query.py: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,068 - ContactScraper - ERROR - Error extracting contacts from https://www.tripadvisor.in/ShowTopic-g312741-i979-k14202610-Covid_PCR_test_query-Buenos_Aires_Capital_Federal_District.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,068 - ContactScraper - ERROR - Error extracting contacts from https://www.cse.iitb.ac.in/infolab/Data/Courses/CS632/2010/Talks/RQP.odp: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:05:10,068 - ContactScraper - INFO - Searching Google for 'test query' using specialized browser automation
+2025-05-16 18:06:36,254 - ContactScraper - INFO - Successfully found 10 Google results for 'test query'
+2025-05-16 18:06:36,255 - ContactScraper - INFO - Reached maximum runtime of 1 minutes
+2025-05-16 18:06:36,255 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones
+2025-05-16 18:06:36,260 - ContactScraper - INFO - Browser resources cleanup completed

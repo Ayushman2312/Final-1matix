@@ -1,3 +1,4 @@
+from ast import arg
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 import logging
@@ -8,7 +9,7 @@ from datetime import datetime
 import re
 import requests
 from .models import TrendSearch
-from .trends import get_trends_json
+from .trends import get_trends_json, process_region_data, generate_fallback_region_data
 import os
 from google.generativeai import GenerativeModel
 import google.generativeai as genai
@@ -20,7 +21,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-# from .trends_handler import analyze_trends
+from trends.serp import fetch_serp_trends
 
 logger = logging.getLogger(__name__)
 
@@ -726,7 +727,7 @@ def analyze_with_genai(processed_data, keyword):
     """
     Use Google's Generative AI to analyze trends data and generate insights
     """
-    api_key = get_google_api_key()
+    api_key = "AIzaSyDsXH-_ftI5xn4aWfkwpw__4ixUMs7a7fM"
     if not api_key:
         logger.warning("Google Generative AI API key not found. Using fallback analysis.")
         return None
@@ -814,7 +815,7 @@ def analyze_with_genai(processed_data, keyword):
         """
         
         # Call Google's Generative AI
-        model = GenerativeModel('gemini-pro')
+        model = GenerativeModel('models/gemini-2.0-flash')
         response = model.generate_content(prompt)
         
         # Process the response
@@ -1185,6 +1186,7 @@ def trends_api(request):
             timeframe = data.get('timeframe', 'today 5-y')  # Default: 5 years
             geo = data.get('geo', 'IN')  # Default: India
             analysis_type = data.get('analysis_type', '1')  # Default: basic time trends
+            use_serp_api = data.get('use_serp_api', False)  # Special flag to force SERP API usage
 
             if not keyword:
                 logger.warning("Missing keyword in trends API request")
@@ -1193,20 +1195,82 @@ def trends_api(request):
                     'message': 'Keyword is required'
                 }, status=400)
 
-            logger.info(f"Processing trends API request for keyword: {keyword}, analysis_type: {analysis_type}")
+            logger.info(f"Processing trends API request for keyword: {keyword}, analysis_type: {analysis_type}, use_serp_api: {use_serp_api}")
             
             # Convert analysis_type to analysis_options dictionary
-            analysis_options = {
-                "include_time_trends": analysis_type in ["1", "2", "3", "4"],
-                "include_state_analysis": analysis_type in ["2", "4", "5"],
-                "include_city_analysis": analysis_type in ["3", "4", "6"],
-                "include_related_queries": analysis_type == "4",
-                "state_only": analysis_type == "5",
-                "city_only": analysis_type == "6"
-            }
+            if analysis_type == '2':  # Regional Analysis
+                analysis_options = {
+                    "include_time_trends": False,
+                    "include_state_analysis": True,
+                    "include_city_analysis": False,
+                    "include_related_queries": False,
+                    "state_only": True,
+                    "city_only": False,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using Regional Analysis options: include_time_trends=False, state_only=True")
+            elif analysis_type == '6':  # City Analysis
+                analysis_options = {
+                    "include_time_trends": False,
+                    "include_state_analysis": False,
+                    "include_city_analysis": True,
+                    "include_related_queries": False, 
+                    "state_only": False,
+                    "city_only": True,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using City Analysis options: include_time_trends=False, city_only=True")
+            elif analysis_type == '7':  # Complete Analysis
+                analysis_options = {
+                    "include_time_trends": True,
+                    "include_state_analysis": True,
+                    "include_city_analysis": True,
+                    "include_related_queries": True,
+                    "state_only": False,
+                    "city_only": False,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using Complete Analysis options: include_time_trends=True, include_state_analysis=True")
+            else:  # Default Time Trends Analysis
+                analysis_options = {
+                    "include_time_trends": True,
+                    "include_state_analysis": False,
+                    "include_city_analysis": False,
+                    "include_related_queries": False,
+                    "state_only": False,
+                    "city_only": False,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using Time Trends Analysis options: include_time_trends=True")
+            
+            # Add use_serp_api flag to analysis_options if specified
+            if use_serp_api:
+                analysis_options["use_serp_api"] = True
+                logger.info("Force using SERP API for this request")
             
             # Get trends data
             try:
+                if use_serp_api and analysis_type == '2':
+                    # Direct SERP API call for regional data
+                    logger.info(f"Making direct SERP API call for regional data for keyword: {keyword}")
+                    serp_result = fetch_serp_trends(
+                        keyword=keyword,
+                        timeframe=timeframe,
+                        geo=geo,
+                        analysis_options=analysis_options
+                    )
+                    
+                    if serp_result:
+                        logger.info(f"Successfully retrieved SERP API regional data for {keyword}")
+                        return JsonResponse(serp_result)
+                    else:
+                        logger.error(f"Failed to retrieve SERP API regional data for {keyword}")
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': 'Failed to retrieve regional data from SERP API. Please try again later.'
+                        }, status=500)
+                
+                # Normal flow using get_trends_json
                 trends_data = get_trends_json(
                     keywords=keyword,
                     timeframe=timeframe,
@@ -1250,14 +1314,50 @@ def trends_api(request):
             logger.info(f"Processing trends API GET request for keyword: {keyword}")
             
             # Convert analysis_type to analysis_options dictionary
-            analysis_options = {
-                "include_time_trends": analysis_type in ["1", "2", "3", "4"],
-                "include_state_analysis": analysis_type in ["2", "4", "5"],
-                "include_city_analysis": analysis_type in ["3", "4", "6"],
-                "include_related_queries": analysis_type == "4",
-                "state_only": analysis_type == "5",
-                "city_only": analysis_type == "6"
-            }
+            if analysis_type == '2':  # Regional Analysis
+                analysis_options = {
+                    "include_time_trends": False,
+                    "include_state_analysis": True,
+                    "include_city_analysis": False,
+                    "include_related_queries": False,
+                    "state_only": True,
+                    "city_only": False,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using Regional Analysis options: include_time_trends=False, state_only=True")
+            elif analysis_type == '6':  # City Analysis
+                analysis_options = {
+                    "include_time_trends": False,
+                    "include_state_analysis": False,
+                    "include_city_analysis": True,
+                    "include_related_queries": False, 
+                    "state_only": False,
+                    "city_only": True,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using City Analysis options: include_time_trends=False, city_only=True")
+            elif analysis_type == '7':  # Complete Analysis
+                analysis_options = {
+                    "include_time_trends": True,
+                    "include_state_analysis": True,
+                    "include_city_analysis": True,
+                    "include_related_queries": True,
+                    "state_only": False,
+                    "city_only": False,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using Complete Analysis options: include_time_trends=True, include_state_analysis=True")
+            else:  # Default Time Trends Analysis
+                analysis_options = {
+                    "include_time_trends": True,
+                    "include_state_analysis": False,
+                    "include_city_analysis": False,
+                    "include_related_queries": False,
+                    "state_only": False,
+                    "city_only": False,
+                    "analysis_type": analysis_type
+                }
+                logger.info(f"Using Time Trends Analysis options: include_time_trends=True")
                 
             # Get trends data
             try:
@@ -1334,4 +1434,616 @@ def ai_insights_api(request):
         return JsonResponse({
             'status': 'error',
             'message': str(e)
-        }, status=500) 
+        }, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def ai_analysis_api(request):
+    """
+    API endpoint for generating AI analysis and recommendations for trends data.
+    Takes a keyword and trend data as input and returns analysis and recommendations.
+    """
+    try:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            logger.error("Invalid JSON data in AI analysis API request")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data'
+            }, status=400)
+            
+        keyword = data.get('keyword')
+        trend_data = data.get('data')
+        business_intent = data.get('business_intent', '')  # Get the business_intent value
+        
+        logger.info(f"Received AI analysis request for keyword: {keyword} with business_intent: {business_intent}")
+
+        if not keyword:
+            logger.warning("Missing keyword in AI analysis API request")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Keyword is required'
+            }, status=400)
+
+        if not trend_data:
+            logger.warning("Missing trend data in AI analysis API request")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Trend data is required'
+            }, status=400)
+
+        logger.info(f"Generating AI analysis for keyword: {keyword}")
+        
+        # Process the trend data to extract insights
+        try:
+            # Extract key metrics for analysis
+            metrics = extract_trend_metrics(trend_data, keyword)
+            
+            # Use Google Generative AI for analysis when API key is available
+            if GOOGLE_API_KEY:
+                try:
+                    # Generate analysis using AI, including business_intent
+                    analysis, recommendations = analyze_with_generative_ai(keyword, metrics, trend_data, business_intent)
+                    
+                    return JsonResponse({
+                        'status': 'success',
+                        'analysis': analysis,
+                        'recommendations': recommendations,
+                        'isAi': True
+                    })
+                except Exception as gen_err:
+                    logger.error(f"Error using generative AI for trend analysis: {str(gen_err)}", exc_info=True)
+                    logger.info("Falling back to algorithmic analysis")
+                    
+                    # Fall back to algorithmic analysis if AI fails
+                    analysis = generate_trend_analysis(keyword, metrics)
+                    recommendations = generate_trend_recommendations(keyword, metrics)
+                    
+                    return JsonResponse({
+                        'status': 'success',
+                        'analysis': analysis,
+                        'recommendations': recommendations
+                    })
+            else:
+                # If no API key, use algorithmic analysis
+                logger.info("No Google API key configured, using algorithmic analysis")
+                analysis = generate_trend_analysis(keyword, metrics)
+                recommendations = generate_trend_recommendations(keyword, metrics)
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'analysis': analysis,
+                    'recommendations': recommendations
+                })
+                
+        except Exception as e:
+            logger.error(f"Error generating AI analysis: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Error generating analysis: {str(e)}'
+            }, status=500)
+
+    except Exception as e:
+        logger.error(f"Error in ai_analysis_api: {str(e)}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent=''):
+    """
+    Use Google's Generative AI model to analyze trends data and provide recommendations.
+    
+    Args:
+        keyword: The search keyword
+        metrics: Dictionary of metrics extracted from trend data
+        trend_data: The original trend data
+        business_intent: Optional string indicating if user wants to start a business ('yes', 'no', 'not_sure')
+        
+    Returns:
+        Tuple of (analysis, recommendations) strings
+    """
+    try:
+        # Initialize the generative model with explicit version configuration
+        safety_settings = [
+            {
+                "category": "HARM_CATEGORY_HARASSMENT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_HATE_SPEECH",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+                "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                "threshold": "BLOCK_MEDIUM_AND_ABOVE"
+            }
+        ]
+        
+        generation_config = {
+            "temperature": 0.7,
+            "top_p": 0.95,
+            "top_k": 40,
+            "max_output_tokens": 1024,
+        }
+        
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config=generation_config,
+            safety_settings=safety_settings
+        )
+        
+        # Format the data for analysis
+        formatted_metrics = {
+            "keyword": keyword,
+            "overall_trend": metrics["overall_trend"],
+            "growth_rate": metrics["growth_rate"],
+            "volatility": metrics["volatility"],
+            "volatility_value": metrics["volatility_value"],
+            "peak_periods": [{"date": p["date"], "value": p["value"]} for p in metrics["peak_periods"]],
+            "trough_periods": [{"date": p["date"], "value": p["value"]} for p in metrics["trough_periods"]],
+            "seasonal": metrics["seasonal"],
+            "recent_direction": metrics["recent_direction"],
+            "business_intent": business_intent  # Add business intent to metrics
+        }
+        
+        # Create a concise data summary to send to the API
+        data_summary = safe_json_dumps(formatted_metrics)
+        
+        # Create the analysis prompt
+        analysis_prompt = f"""
+            You are a search trend analyst working for TrendIQ. You are analyzing market demand data for the keyword: "{keyword}"
+
+            Here is the raw data and pattern summary:
+            {data_summary}
+
+            Your task is to give a clean, factual, easy-to-understand analysis of the search pattern for this keyword.
+
+            Use this structure for your analysis:
+            1. Explain clearly if the trend is growing, falling, or staying flat over the last 5 years.
+            2. Tell how many strong spikes (peaks) are there, and when did the last big peak happen.
+            3. Mention if these spikes are random or repeat in specific months (seasonality).
+            4. Point out if there are months with very low or zero interest (dead periods).
+            5. Tell if the graph looks stable or unpredictable (volatility).
+            6. Talk briefly about the last 3 months: Is the interest going up, down, or stable?
+
+            Rules to follow:
+            - Use **simple and clean English** that a 5th grade Indian student can understand.
+            - Use bullet points for 60–70% of your output.
+            - **Do not suggest anything.** No tips, no advice, no opinions. Just tell what the graph is showing.
+            - Keep it honest, to the point, and specific to this keyword. Don't talk like a research report.
+
+            Do not use fancy words. Focus on what the trend is doing — not what people should do.
+
+            Your tone should be clear and helpful, like you're explaining the graph to a normal Indian shopkeeper or new-age seller who wants straight answers."""
+        
+        # Generate the analysis
+        analysis_response = model.generate_content(analysis_prompt)
+        analysis = analysis_response.text
+
+        # Create recommendations prompt based on business intent
+        business_context = ""
+        if business_intent == 'yes':
+            business_context = "The user wants to START a new business related to this keyword."
+            recommendations_section = """
+            # Since the user wants to START a new business:
+            
+            - Give a **simple plan** to enter this market step by step.
+            - Mention if it's a good idea to enter now or wait.
+            - Help them avoid big mistakes (if the trend looks risky).
+            - Tell them what content or campaign will help them start visibility.
+            - Suggest **3–5 keywords** that are low-competition but related.
+            - Suggest **5 blog/video ideas** to get early attention and trust.
+            - Use bullet points. Write like a friend giving a plan. Be honest and sharp.
+            """
+        elif business_intent == 'no':
+            business_context = "The user is ALREADY IN BUSINESS related to this keyword."
+            recommendations_section = """
+            # Since the user is ALREADY IN BUSINESS:
+            
+            - Give 4–6 solid action steps to grow their business using this trend.
+            - Mention the best months to focus ads and promotions (if any peak time exists).
+            - If the trend is flat, suggest stable growth strategies.
+            - Suggest **3–5 keywords** that are easier to rank based on current search pattern.
+            - Suggest **5 blog/video topics** that can help them go viral or get attention on Google or social media.
+            - Make sure every point is useful, not bookish.
+            - Do not use any fancy English or deep theory.
+            """
+        else:
+            # Default or 'not_sure' case
+            business_context = "The user is interested in business opportunities related to this keyword."
+            recommendations_section = """
+            # General business recommendations:
+            
+            - Explain if there is a business opportunity for this keyword based on the trend data.
+            - Give 3-4 ways to monetize or build business around this keyword.
+            - Mention the best months to focus efforts (if any peak time exists).
+            - If the trend is flat, suggest stable growth strategies.
+            - Suggest **3–5 related keywords** that might be worthwhile.
+            - Suggest **5 content ideas** that can help build authority in this space.
+            - Keep it practical and actionable for someone new to this area.
+            """
+        
+        # Create the recommendations prompt
+        recommendations_prompt = f"""
+            You are a search trend analyst working for TrendIQ. You are analyzing Trends data for the keyword: "{keyword}"
+
+            Here is the raw data and pattern summary:
+            {data_summary}
+
+            {business_context}
+
+            generate a **Recommendation** section based on this information:
+
+            {recommendations_section}
+
+            Rules:
+            - Use simple, clean English — no big words.
+            - Use bullet points for most of your response.
+            - No decorator. No emotions. Just clean and useful actions.
+        """
+        
+        # Generate recommendations
+        recommendations_response = model.generate_content(recommendations_prompt)
+        recommendations = recommendations_response.text
+        
+        logger.info(f"Successfully generated AI analysis for {keyword} with business_intent: {business_intent}")
+        return analysis, recommendations
+        
+    except (ResourceExhausted, InvalidArgument, ServiceUnavailable) as api_err:
+        logger.error(f"Google GenerativeAI API error: {str(api_err)}")
+        raise
+    except Exception as e:
+        logger.error(f"Error in analyze_with_generative_ai: {str(e)}", exc_info=True)
+        raise
+
+def extract_trend_metrics(trend_data, keyword):
+    """
+    Extract key metrics from trend data for analysis.
+    
+    Args:
+        trend_data: The trends data object
+        keyword: The search keyword
+        
+    Returns:
+        Dictionary of metrics
+    """
+    metrics = {
+        'keyword': keyword,
+        'overall_trend': 'stable',  # Default values
+        'growth_rate': 0,
+        'volatility': 'low',
+        'volatility_value': 0,
+        'peak_periods': [],
+        'trough_periods': [],
+        'seasonal': False,
+        'seasonal_pattern': None,
+        'recent_direction': 'stable'
+    }
+    
+    try:
+        # Process time series data if available
+        time_series = None
+        
+        # Try to extract time series data from different possible formats
+        if isinstance(trend_data, list) and len(trend_data) > 0:
+            # Direct array of time points
+            time_series = trend_data
+        elif isinstance(trend_data, dict):
+            # Look for timeSeriesData in the object
+            if 'timeSeriesData' in trend_data:
+                time_series = trend_data['timeSeriesData']
+            elif 'trends' in trend_data and 'timeSeriesData' in trend_data['trends']:
+                time_series = trend_data['trends']['timeSeriesData']
+        
+        if not time_series:
+            logger.warning(f"Could not extract time series data for {keyword}")
+            return metrics
+            
+        # Extract values and dates from time series
+        values = []
+        dates = []
+        
+        for point in time_series:
+            date_val = None
+            value_val = None
+            
+            # Extract date based on available properties
+            if 'date' in point:
+                date_val = point['date']
+            elif 'time' in point:
+                date_val = point['time']
+            elif 'formattedTime' in point:
+                date_val = point['formattedTime']
+            
+            # Extract value based on available properties
+            if keyword in point:
+                value_val = point[keyword]
+            elif 'value' in point:
+                if isinstance(point['value'], list):
+                    value_val = point['value'][0]
+                else:
+                    value_val = point['value']
+            
+            if date_val and value_val is not None:
+                try:
+                    # Convert to numeric value if needed
+                    if not isinstance(value_val, (int, float)):
+                        value_val = float(value_val)
+                    
+                    values.append(value_val)
+                    dates.append(date_val)
+                except (ValueError, TypeError):
+                    pass
+        
+        if len(values) < 2:
+            logger.warning(f"Insufficient data points for analysis for {keyword}")
+            return metrics
+            
+        # Calculate overall growth rate
+        first_val = values[0]
+        last_val = values[-1]
+        if first_val > 0:
+            growth_rate = ((last_val - first_val) / first_val) * 100
+            metrics['growth_rate'] = round(growth_rate, 2)
+            
+            if growth_rate > 10:
+                metrics['overall_trend'] = 'strongly increasing'
+            elif growth_rate > 5:
+                metrics['overall_trend'] = 'increasing'
+            elif growth_rate > -5:
+                metrics['overall_trend'] = 'stable'
+            elif growth_rate > -10:
+                metrics['overall_trend'] = 'decreasing'
+            else:
+                metrics['overall_trend'] = 'strongly decreasing'
+        
+        # Calculate volatility (standard deviation / mean)
+        if len(values) > 0:
+            mean = sum(values) / len(values)
+            if mean > 0:
+                variance = sum((x - mean) ** 2 for x in values) / len(values)
+                std_dev = variance ** 0.5
+                volatility = (std_dev / mean) * 100
+                metrics['volatility_value'] = round(volatility, 2)
+                
+                if volatility < 15:
+                    metrics['volatility'] = 'very low'
+                elif volatility < 30:
+                    metrics['volatility'] = 'low'
+                elif volatility < 50:
+                    metrics['volatility'] = 'moderate'
+                elif volatility < 75:
+                    metrics['volatility'] = 'high'
+                else:
+                    metrics['volatility'] = 'very high'
+        
+        # Identify peaks and troughs
+        if len(values) > 2:
+            peak_indices = []
+            trough_indices = []
+            
+            for i in range(1, len(values) - 1):
+                if values[i] > values[i-1] and values[i] > values[i+1]:
+                    peak_indices.append(i)
+                if values[i] < values[i-1] and values[i] < values[i+1]:
+                    trough_indices.append(i)
+            
+            # Get top 3 peaks and troughs
+            peak_indices.sort(key=lambda i: values[i], reverse=True)
+            trough_indices.sort(key=lambda i: values[i])
+            
+            # Format peak periods
+            for idx in peak_indices[:3]:
+                if isinstance(dates[idx], str):
+                    metrics['peak_periods'].append({
+                        'date': dates[idx],
+                        'value': values[idx]
+                    })
+            
+            # Format trough periods
+            for idx in trough_indices[:3]:
+                if isinstance(dates[idx], str):
+                    metrics['trough_periods'].append({
+                        'date': dates[idx],
+                        'value': values[idx]
+                    })
+        
+        # Check for seasonality (simplified approach)
+        if len(values) >= 12:
+            # Simple check for repeating patterns using autocorrelation
+            metrics['seasonal'] = check_seasonality(values)
+            
+        # Recent trend direction (last 20% of the data)
+        if len(values) > 5:
+            last_segment = values[int(-len(values) * 0.2):]
+            if last_segment[-1] > last_segment[0] * 1.05:
+                metrics['recent_direction'] = 'upward'
+            elif last_segment[-1] < last_segment[0] * 0.95:
+                metrics['recent_direction'] = 'downward'
+            else:
+                metrics['recent_direction'] = 'stable'
+        
+        return metrics
+    
+    except Exception as e:
+        logger.error(f"Error extracting metrics from trend data: {str(e)}", exc_info=True)
+        return metrics
+
+def check_seasonality(values, threshold=0.5):
+    """
+    Simple method to check for seasonality in time series data.
+    
+    Args:
+        values: List of numeric values
+        threshold: Correlation threshold to determine seasonality
+        
+    Returns:
+        Boolean indicating if the data shows seasonal patterns
+    """
+    # Needs at least 24 data points for meaningful seasonality check
+    if len(values) < 24:
+        return False
+    
+    try:
+        # Try quarterly seasonality (period = 4)
+        if len(values) >= 12:
+            quarterly_corr = autocorrelation(values, 4)
+            if quarterly_corr > threshold:
+                return True
+        
+        # Try annual seasonality (period = 12)
+        if len(values) >= 24:
+            yearly_corr = autocorrelation(values, 12)
+            if yearly_corr > threshold:
+                return True
+        
+        return False
+    except:
+        return False
+
+def autocorrelation(values, lag):
+    """Calculate autocorrelation of a time series with specified lag."""
+    n = len(values)
+    if lag >= n:
+        return 0
+    
+    mean = sum(values) / n
+    variance = sum((x - mean) ** 2 for x in values) / n
+    
+    if variance == 0:
+        return 0
+    
+    correlation = 0
+    for i in range(n - lag):
+        correlation += (values[i] - mean) * (values[i + lag] - mean)
+    
+    return correlation / (n * variance)
+
+def generate_trend_analysis(keyword, metrics):
+    """
+    Generate a human-readable analysis of trends data.
+    
+    Args:
+        keyword: The search keyword
+        metrics: Dictionary of metrics extracted from trend data
+        
+    Returns:
+        String containing the analysis
+    """
+    analysis = f"Analysis of search interest for \"{keyword}\":\n\n"
+    
+    # Overall trend
+    analysis += f"The overall trend for \"{keyword}\" is {metrics['overall_trend']}"
+    if metrics.get('growth_rate') is not None:
+        if metrics['growth_rate'] > 0:
+            analysis += f" with a {abs(metrics['growth_rate']):.1f}% increase over the analyzed period."
+        elif metrics['growth_rate'] < 0:
+            analysis += f" with a {abs(metrics['growth_rate']):.1f}% decrease over the analyzed period."
+        else:
+            analysis += " with no significant change over the analyzed period."
+    else:
+        analysis += "."
+    analysis += "\n\n"
+    
+    # Volatility
+    analysis += f"The search interest shows {metrics['volatility']} volatility"
+    if metrics.get('volatility_value') is not None:
+        analysis += f" ({metrics['volatility_value']:.1f}%)"
+    analysis += ", indicating "
+    
+    if metrics['volatility'] == 'very low':
+        analysis += "an extremely consistent and stable interest pattern."
+    elif metrics['volatility'] == 'low':
+        analysis += "a consistent interest pattern with minimal fluctuations."
+    elif metrics['volatility'] == 'moderate':
+        analysis += "some noticeable fluctuations in interest over time."
+    elif metrics['volatility'] == 'high':
+        analysis += "significant fluctuations in interest, suggesting a topic sensitive to external factors."
+    else:  # very high
+        analysis += "extreme fluctuations, likely driven by specific events or strong seasonality."
+    analysis += "\n\n"
+    
+    # Peak periods
+    if metrics['peak_periods']:
+        analysis += "Notable peak(s) in interest occurred during: "
+        peak_descriptions = []
+        for peak in metrics['peak_periods']:
+            peak_descriptions.append(f"{peak['date']} (value: {peak['value']:.1f})")
+        analysis += ", ".join(peak_descriptions) + "."
+        analysis += "\n\n"
+    
+    # Seasonality
+    if metrics['seasonal']:
+        analysis += "The data shows evidence of seasonal patterns, suggesting recurring interest at regular intervals."
+    else:
+        if metrics['volatility'] in ['high', 'very high']:
+            analysis += "Despite the high volatility, no clear seasonal pattern was detected, suggesting that interest spikes are driven by specific events rather than predictable cycles."
+        else:
+            analysis += "No significant seasonal pattern was detected in the data."
+    analysis += "\n\n"
+    
+    # Recent direction
+    analysis += f"The most recent trend is {metrics['recent_direction']}, "
+    if metrics['recent_direction'] == 'upward':
+        analysis += "indicating growing interest that may continue in the near future."
+    elif metrics['recent_direction'] == 'downward':
+        analysis += "suggesting declining interest that may continue in the near future."
+    else:
+        analysis += "showing a relatively stable interest level in the most recent period."
+    
+    return analysis
+
+def generate_trend_recommendations(keyword, metrics):
+    """
+    Generate recommendations based on trends data.
+    
+    Args:
+        keyword: The search keyword
+        metrics: Dictionary of metrics extracted from trend data
+        
+    Returns:
+        String containing recommendations
+    """
+    recommendations = f"Recommendations for \"{keyword}\":\n\n"
+    
+    # Based on overall trend
+    if metrics['overall_trend'] in ['strongly increasing', 'increasing']:
+        recommendations += "1. Growth Strategy: With increasing interest, consider expanding content, products, or services related to this topic. This is an opportunity to capitalize on growing market interest.\n\n"
+        recommendations += "2. Investment Prioritization: Allocate more resources to this area due to its positive growth trajectory. Consider increasing marketing budgets or development resources.\n\n"
+    elif metrics['overall_trend'] == 'stable':
+        recommendations += "1. Maintenance Strategy: With stable interest, focus on maintaining quality and optimizing existing offerings rather than major expansions.\n\n"
+        recommendations += "2. Differentiation: In a stable market, focus on differentiating your offerings from competitors to gain market share without relying on overall market growth.\n\n"
+    else:  # decreasing or strongly decreasing
+        recommendations += "1. Pivot Consideration: With decreasing interest, consider diversifying or pivoting to related areas with more growth potential.\n\n"
+        recommendations += "2. Efficiency Focus: Optimize costs and operations to maintain profitability despite declining interest. Look for ways to serve the core audience more efficiently.\n\n"
+    
+    # Based on volatility
+    if metrics['volatility'] in ['high', 'very high']:
+        recommendations += "3. Agile Planning: High volatility requires flexible planning and quick response capabilities. Develop contingency plans for both surges and drops in interest.\n\n"
+        recommendations += "4. Event Monitoring: Set up monitoring systems for events or factors that might trigger interest spikes, allowing you to react quickly to opportunities.\n\n"
+    else:
+        recommendations += "3. Consistent Engagement: The relatively stable interest pattern allows for more predictable planning. Develop a consistent content or product release schedule.\n\n"
+        recommendations += "4. Long-term Investment: Lower volatility supports longer-term investments, as the risk of sudden market changes is reduced.\n\n"
+    
+    # Based on seasonality
+    if metrics['seasonal']:
+        recommendations += "5. Seasonal Planning: Prepare campaigns, content, or inventory according to the identified seasonal patterns. Increase efforts before anticipated peaks.\n\n"
+        recommendations += "6. Off-Season Strategy: Develop strategies to maintain engagement during predicted low periods, such as diversifying topics or offering special promotions.\n\n"
+    else:
+        recommendations += "5. Consistent Distribution: Without clear seasonality, distribute your efforts evenly throughout the year rather than concentrating on specific periods.\n\n"
+    
+    # Based on recent direction
+    if metrics['recent_direction'] == 'upward':
+        recommendations += "7. Momentum Capitalization: The recent upward trend presents an immediate opportunity. Increase short-term marketing efforts to capitalize on growing interest.\n\n"
+    elif metrics['recent_direction'] == 'downward':
+        recommendations += "7. Trend Reversal Tactics: Consider fresh approaches or repositioning to address the recent downward trend. Explore what might be causing the decline.\n\n"
+    else:
+        recommendations += "7. Incremental Improvement: With stable recent performance, focus on incremental improvements to gradually enhance engagement and interest.\n\n"
+    
+    return recommendations 

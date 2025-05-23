@@ -1,0 +1,5 @@
+2025-05-16 17:46:42,752 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_174642_manual.log
+2025-05-16 17:46:42,752 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 17:46:42,816 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 17:46:47,371 - ContactScraper - INFO - Searching Google for 'digital marketing companies in bangalore' using specialized browser automation
+2025-05-16 17:47:24,872 - ContactScraper - INFO - Successfully found 3 Google results for 'digital marketing companies in bangalore'

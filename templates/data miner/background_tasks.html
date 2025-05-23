@@ -1,0 +1,389 @@
+{% extends 'user_dashboard/base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container py-2 max-w-7xl">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Background Tasks</h2>
+            <p class="text-gray-600 mt-1">Manage your data mining tasks running in the background</p>
+        </div>
+        <a href="{% url 'data_miner' %}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Back to Mining
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <div class="mb-6">
+        <form method="get" action="{% url 'background_tasks' %}" class="flex">
+            <div class="relative flex-grow">
+                <input type="text" name="search" placeholder="Search by keyword..." value="{{ search_keyword|default:'' }}"
+                    class="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <button type="submit" class="ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+                Search
+            </button>
+            {% if search_keyword %}
+            <a href="{% url 'background_tasks' %}" class="ml-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Running Tasks Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+        <div class="border-b border-gray-200 px-6 py-4">
+            <h3 class="text-lg font-medium text-gray-800">
+                Running Tasks
+                <span class="ml-2 text-sm font-normal text-gray-500">({{ running_tasks.count }})</span>
+            </h3>
+        </div>
+        
+        <div class="divide-y divide-gray-100">
+            {% if running_tasks %}
+                {% for task in running_tasks %}
+                <div class="px-6 py-4 task-item" data-task-id="{{ task.task_id }}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">{{ task.task_name }}</h4>
+                            <div class="flex items-center text-sm text-gray-500 mt-1">
+                                <span class="mr-4">Started: {{ task.created_at|timesince }} ago</span>
+                                <span class="task-status flex items-center">
+                                    <!-- Status Badge -->
+                                    {% if task.status == 'pending' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mr-2">
+                                        Pending
+                                    </span>
+                                    {% elif task.status == 'processing' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                                        Processing
+                                    </span>
+                                    {% endif %}
+                                    Progress: <span class="task-progress ml-1">{{ task.progress }}%</span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-4 flex items-center space-x-3">
+                            <!-- Progress Circle -->
+                            <div class="relative w-10 h-10 flex items-center justify-center">
+                                <svg class="w-full h-full" viewBox="0 0 36 36">
+                                    <!-- Background Circle -->
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" stroke-width="2"></circle>
+                                    
+                                    <!-- Progress Circle (stroke-dasharray calculation: 2πr * progress percentage) -->
+                                    <circle class="task-progress-circle" cx="18" cy="18" r="16" fill="none" stroke="#4f46e5" 
+                                           stroke-width="2" stroke-dasharray="{{ task.progress|default:0 }} 100" 
+                                           stroke-dashoffset="0" transform="rotate(-90 18 18)"></circle>
+                                    
+                                    <!-- Progress Text -->
+                                    <text x="18" y="18" fill="#4f46e5" font-size="8" text-anchor="middle" alignment-baseline="middle" class="task-progress-text">
+                                        {{ task.progress }}%
+                                    </text>
+                                </svg>
+                            </div>
+                            
+                            <!-- Cancel Button -->
+                            <form method="post" class="cancel-task-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="cancel">
+                                <input type="hidden" name="task_id" value="{{ task.task_id }}">
+                                <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-red-300 text-sm text-red-600 font-medium rounded-md hover:bg-red-50 focus:outline-none">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Stop
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Task Parameters -->
+                    {% if task.parameters %}
+                    <div class="mt-3 grid grid-cols-3 text-sm text-gray-600 gap-x-4 gap-y-2">
+                        <div>
+                            <span class="font-medium text-gray-500">Keyword:</span> 
+                            {{ task.parameters.keyword }}
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Data Type:</span> 
+                            {{ task.parameters.data_type|title }}s
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Country:</span> 
+                            {{ task.parameters.country }}
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Max Results:</span> 
+                            {{ task.parameters.max_results }}
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Max Runtime:</span> 
+                            {{ task.parameters.max_runtime_minutes }} minutes
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="px-6 py-8 text-center text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="mt-2 font-medium">No running tasks</p>
+                    <p class="mt-1 text-sm">Start a new task from the mining page</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Completed Tasks Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="border-b border-gray-200 px-6 py-4">
+            <h3 class="text-lg font-medium text-gray-800">
+                Completed Tasks
+                <span class="ml-2 text-sm font-normal text-gray-500">({{ completed_tasks.count }})</span>
+            </h3>
+        </div>
+        
+        <div class="divide-y divide-gray-100">
+            {% if completed_tasks %}
+                {% for task in completed_tasks %}
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800">{{ task.task_name }}</h4>
+                            <div class="flex items-center text-sm text-gray-500 mt-1">
+                                <span class="mr-4">Completed: {{ task.completed_at|default:task.updated_at|timesince }} ago</span>
+                                <span class="flex items-center">
+                                    <!-- Status Badge -->
+                                    {% if task.status == 'completed' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Completed
+                                    </span>
+                                    {% elif task.status == 'failed' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Failed
+                                    </span>
+                                    {% elif task.status == 'cancelled' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Cancelled
+                                    </span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="ml-4 flex items-center space-x-3">
+                            {% if task.mining_history %}
+                            <a href="{% url 'download_excel' task.mining_history.id %}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-indigo-300 text-sm text-indigo-600 font-medium rounded-md hover:bg-indigo-50 focus:outline-none">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Download
+                            </a>
+                            {% endif %}
+                            
+                            <!-- Delete Button -->
+                            <form method="post" class="delete-task-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="task_id" value="{{ task.task_id }}">
+                                <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm text-gray-600 font-medium rounded-md hover:bg-gray-50 focus:outline-none">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Task Parameters -->
+                    {% if task.parameters %}
+                    <div class="mt-3 grid grid-cols-3 text-sm text-gray-600 gap-x-4 gap-y-2">
+                        <div>
+                            <span class="font-medium text-gray-500">Keyword:</span> 
+                            {{ task.parameters.keyword }}
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Data Type:</span> 
+                            {{ task.parameters.data_type|title }}s
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Country:</span> 
+                            {{ task.parameters.country }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Error message for failed tasks -->
+                    {% if task.status == 'failed' and task.error_message %}
+                    <div class="mt-3 p-3 bg-red-50 rounded-md text-sm text-red-700">
+                        <p class="font-medium">Error:</p>
+                        <p class="mt-1">{{ task.error_message }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="px-6 py-8 text-center text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="mt-2 font-medium">No completed tasks</p>
+                    <p class="mt-1 text-sm">Tasks will appear here after they finish</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Make sure task tracking is initialized
+        if (window.DataMinerTasks) {
+            // Ensure all visible tasks are tracked
+            document.querySelectorAll('.task-item').forEach(taskItem => {
+                const taskId = taskItem.dataset.taskId;
+                if (taskId) {
+                    console.log(`Ensuring task ${taskId} is tracked`);
+                    window.DataMinerTasks.storeTask(taskId);
+                }
+            });
+            
+            // Start checking for task updates if there are any running tasks
+            if (document.querySelectorAll('.task-item').length > 0) {
+                console.log("Starting task tracking for visible tasks");
+                window.DataMinerTasks.startPolling();
+            } else {
+                // Still check stored tasks even if none are visible on page
+                console.log("No visible tasks, checking stored tasks");
+                window.DataMinerTasks.checkStoredTasks();
+            }
+            
+            // Set up automatic page refresh for connection issues
+            if (document.querySelector('.task-item')) {
+                let connectionFailCount = 0;
+                
+                // Function to check Redis connection via task status
+                function checkConnection() {
+                    const taskItems = document.querySelectorAll('.task-item');
+                    if (taskItems.length > 0) {
+                        const taskId = taskItems[0].dataset.taskId;
+                        
+                        fetch(`/data_miner/api/task-status/${taskId}/`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // Reset counter if successful
+                                connectionFailCount = 0;
+                                console.log("Connection check succeeded");
+                            })
+                            .catch(error => {
+                                connectionFailCount++;
+                                console.error(`Connection check failed (${connectionFailCount}): ${error}`);
+                                
+                                if (connectionFailCount >= 3) {
+                                    // After 3 consecutive failures, refresh the page
+                                    console.log("Multiple connection failures detected, refreshing page...");
+                                    window.location.reload();
+                                }
+                            });
+                    }
+                }
+                
+                // Check connection every 30 seconds
+                setInterval(checkConnection, 30000);
+            }
+        }
+        
+        // Handle cancel task form submission
+        document.querySelectorAll('.cancel-task-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!confirm('Are you sure you want to stop this task?')) {
+                    return;
+                }
+                
+                const formData = new FormData(form);
+                const taskId = formData.get('task_id');
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to reflect changes
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Could not cancel the task'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while trying to cancel the task');
+                });
+            });
+        });
+        
+        // Handle delete task form submission
+        document.querySelectorAll('.delete-task-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!confirm('Are you sure you want to delete this task?')) {
+                    return;
+                }
+                
+                const formData = new FormData(form);
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to reflect changes
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Could not delete the task'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while trying to delete the task');
+                });
+            });
+        });
+    });
+</script>
+
+<!-- Load our shared JavaScript module -->
+<script src="{% static 'js/data_miner.js' %}"></script>
+{% endblock %} 

@@ -20,22 +20,22 @@
     <div>
         <!-- Top buttons -->
         <div class="flex gap-4 mb-6">
-            <select class="border px-4 py-2" id="company" name="company" required>
+            <select class="border rounded-md px-4 py-2" id="company" name="company" required>
                 <option value="">Select Company</option>
                 {% for company in companies %}
                 <option value="{{ company.company_id }}">{{ company.company_name }}</option>
                 {% endfor %}
             </select>
-            <select class="border px-4 py-2" id="billType" name="billType" required>
+            <select class="border rounded-md px-4 py-2" id="billType" name="billType" required>
                 <option value="">Select Bill Type</option>
                 <option value="Proforma Invoice">Proforma Invoice</option>
                 <option value="Invoice">Invoice</option>
             </select>
-            <button class="bg-gray-800 text-white px-6 py-2" onclick="showInvoiceForm()">Create</button>
+            <button class="bg-[#7B3DF3] text-white px-6 py-2 rounded-md" onclick="showInvoiceForm()">Create</button>
         </div>
 
         <!-- Invoice Form -->
-        <div id="invoiceForm" class="bg-white rounded-lg p-8 shadow-lg hidden">
+        <div id="invoiceForm" class="bg-white rounded-2xl shadow-[0_0_7px_0_rgba(0,0,0,0.1)] p-8 hidden">
             {% csrf_token %}
             
             <!-- First Row -->
@@ -171,7 +171,7 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <button class="bg-blue-600 text-white px-4 py-2" onclick="addProduct()">Add Product</button>
+                    <button class="text-[#7B3DF3] border-2 border-[#7B3DF3] px-4 py-1 rounded-md" onclick="addProduct()">Add Product</button>
                 </div>
 
                 <div class="mt-4">
@@ -196,7 +196,7 @@
 
                 <!-- Replace the Generate PDF and Download PDF buttons with a single button -->
                 <div class="flex justify-end mt-6">
-                    <button class="bg-green-600 text-white px-6 py-2" onclick="generateAndDownloadPDF()">Generate and Download PDF</button>
+                    <button class="bg-[#7B3DF3] text-white px-6 py-2 rounded-md" onclick="generateAndDownloadPDF()">Generate and Download PDF</button>
                 </div>
             </div>
         </div>

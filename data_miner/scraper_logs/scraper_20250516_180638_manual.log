@@ -1,0 +1,9 @@
+2025-05-16 18:06:38,183 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_180638_manual.log
+2025-05-16 18:06:38,183 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 18:06:38,258 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 18:06:44,176 - ContactScraper - INFO - Starting scrape for keyword: 'test query'
+2025-05-16 18:06:44,177 - ContactScraper - INFO - Searching Google for 'test query' using specialized browser automation
+2025-05-16 18:07:57,590 - ContactScraper - INFO - Successfully found 10 Google results for 'test query'
+2025-05-16 18:07:57,593 - ContactScraper - INFO - Reached maximum runtime of 1 minutes
+2025-05-16 18:07:57,593 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones
+2025-05-16 18:07:57,597 - ContactScraper - INFO - Browser resources cleanup completed

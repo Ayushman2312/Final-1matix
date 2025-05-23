@@ -1,0 +1,96 @@
+2025-05-16 16:06:55,616 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_160655_manual.log
+2025-05-16 16:06:55,616 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 16:06:55,655 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 16:06:57,645 - ContactScraper - INFO - Starting scrape for keyword: 'IT companies Bhopal'
+2025-05-16 16:06:58,317 - ContactScraper - ERROR - Error parsing HTML for CAPTCHA detection: list index out of range
+2025-05-16 16:06:58,320 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 20.48 seconds
+2025-05-16 16:07:44,918 - ContactScraper - INFO - Saved CAPTCHA check screenshot to captcha_check.png
+2025-05-16 16:07:44,919 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-16 16:11:08,371 - ContactScraper - INFO - Using browser automation for DuckDuckGo search
+2025-05-16 16:11:08,408 - ContactScraper - ERROR - Error in browser-based DuckDuckGo search: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:11:08,412 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 4054, in _search_duckduckgo_with_browser
+    page = await self.browser.new_page()
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\async_api\_generated.py", line 14162, in new_page
+    await self._impl_obj.new_page(
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_browser.py", line 184, in new_page
+    return await self._connection.wrap_api_call(inner)
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+ValueError: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+
+2025-05-16 16:11:12,179 - ContactScraper - ERROR - Error in browser-based DuckDuckGo search: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:11:12,183 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 4054, in _search_duckduckgo_with_browser
+    page = await self.browser.new_page()
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\async_api\_generated.py", line 14162, in new_page
+    await self._impl_obj.new_page(
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_browser.py", line 184, in new_page
+    return await self._connection.wrap_api_call(inner)
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+ValueError: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+
+2025-05-16 16:11:15,975 - ContactScraper - ERROR - Error in browser-based DuckDuckGo search: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:11:15,977 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 4054, in _search_duckduckgo_with_browser
+    page = await self.browser.new_page()
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\async_api\_generated.py", line 14162, in new_page
+    await self._impl_obj.new_page(
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_browser.py", line 184, in new_page
+    return await self._connection.wrap_api_call(inner)
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+ValueError: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+
+2025-05-16 16:11:52,406 - ContactScraper - ERROR - Error parsing HTML for CAPTCHA detection: list index out of range
+2025-05-16 16:11:53,103 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 22.65 seconds
+2025-05-16 16:13:28,109 - ContactScraper - INFO - Using browser automation for DuckDuckGo search
+2025-05-16 16:13:28,125 - ContactScraper - ERROR - Error in browser-based DuckDuckGo search: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:13:28,127 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 4054, in _search_duckduckgo_with_browser
+    page = await self.browser.new_page()
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\async_api\_generated.py", line 14162, in new_page
+    await self._impl_obj.new_page(
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_browser.py", line 184, in new_page
+    return await self._connection.wrap_api_call(inner)
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+ValueError: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+
+2025-05-16 16:13:34,022 - ContactScraper - ERROR - Error in browser-based DuckDuckGo search: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:13:34,022 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 4054, in _search_duckduckgo_with_browser
+    page = await self.browser.new_page()
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\async_api\_generated.py", line 14162, in new_page
+    await self._impl_obj.new_page(
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_browser.py", line 184, in new_page
+    return await self._connection.wrap_api_call(inner)
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+ValueError: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+
+2025-05-16 16:13:39,179 - ContactScraper - ERROR - Error in browser-based DuckDuckGo search: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:13:39,179 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 4054, in _search_duckduckgo_with_browser
+    page = await self.browser.new_page()
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\async_api\_generated.py", line 14162, in new_page
+    await self._impl_obj.new_page(
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_browser.py", line 184, in new_page
+    return await self._connection.wrap_api_call(inner)
+  File "C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py", line 528, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+ValueError: Browser.new_page: The future belongs to a different loop than the one specified as the loop argument
+
+2025-05-16 16:13:43,545 - ContactScraper - INFO - Reached maximum runtime of 5 minutes
+2025-05-16 16:13:43,546 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones
+2025-05-16 16:13:45,609 - ContactScraper - INFO - Results saved to scraped_data/IT_companies_Bhopal_20250516_161345_contacts.csv
+2025-05-16 16:13:45,611 - ContactScraper - INFO - Closing browser page...
+2025-05-16 16:13:45,625 - ContactScraper - WARNING - Error closing page: Page.close: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:13:45,625 - ContactScraper - INFO - Closing browser context...
+2025-05-16 16:13:45,636 - ContactScraper - WARNING - Error closing browser context: : The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:13:45,636 - ContactScraper - INFO - Closing browser...
+2025-05-16 16:13:45,646 - ContactScraper - WARNING - Error closing browser: Browser.close: The future belongs to a different loop than the one specified as the loop argument
+2025-05-16 16:13:45,646 - ContactScraper - INFO - Stopping playwright...
+2025-05-16 16:13:45,648 - ContactScraper - WARNING - Error stopping playwright: Task <Task pending name='Task-10' coro=<ContactScraper.close_browser() running at C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py:1445> cb=[_run_until_complete_cb() at C:\Users\hp5cd\AppData\Local\Programs\Python\Python310\lib\asyncio\base_events.py:184, <2 more>, ProtocolCallback.__init__.<locals>.cb() at C:\Users\hp5cd\Envs\one\lib\site-packages\playwright\_impl\_connection.py:198]> got Future <Future pending> attached to a different loop
+2025-05-16 16:13:45,648 - ContactScraper - INFO - Browser resources cleanup completed

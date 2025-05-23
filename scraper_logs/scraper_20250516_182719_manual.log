@@ -1,0 +1,97 @@
+2025-05-16 18:27:19,176 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_182719_manual.log
+2025-05-16 18:27:19,176 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 18:27:19,221 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 18:27:21,376 - ContactScraper - INFO - Starting scrape for keyword: 'haldi wholesellers in india'
+2025-05-16 18:27:21,377 - ContactScraper - INFO - Searching Google for 'haldi wholesellers in india' using specialized browser automation
+2025-05-16 18:27:34,954 - ContactScraper - INFO - Successfully found 10 Google results for 'haldi wholesellers in india'
+2025-05-16 18:27:34,955 - ContactScraper - ERROR - Error extracting contacts from https://www.naf.in/turmeric-products-manufacturer-supplier-exporter: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,955 - ContactScraper - ERROR - Error extracting contacts from https://www.yuvarajuagroimpex.in/product/75-turmeric-powder-suppliers/exporters-in-india-/-usfda-international-certification.php: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,956 - ContactScraper - ERROR - Error extracting contacts from http://www.namoudyog.co.in/turmeric-powders.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,956 - ContactScraper - ERROR - Error extracting contacts from https://www.shubhgum.co.in/turmeric-powder.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,956 - ContactScraper - ERROR - Error extracting contacts from https://www.pravanshbiosciences.in/turmeric-finger.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,956 - ContactScraper - ERROR - Error extracting contacts from https://www.kasturikrishifarm.in/organic-turmeric.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,957 - ContactScraper - ERROR - Error extracting contacts from https://pramoda.co.in/product/turmeric/: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,957 - ContactScraper - ERROR - Error extracting contacts from https://www.calciumsulphate.in/amba-haldi-powder-10304309.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,957 - ContactScraper - ERROR - Error extracting contacts from https://natural-foods.co.in/best-worldsindia-all-product-turmeric.php: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,958 - ContactScraper - ERROR - Error extracting contacts from http://www.agriccosalesandexports.co.in/raw-turmeric.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:27:34,958 - ContactScraper - INFO - Searching Google for 'haldi wholesellers in india' using specialized browser automation
+2025-05-16 18:27:34,958 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 10.05 seconds
+2025-05-16 18:28:06,752 - ContactScraper - INFO - Successfully found 10 Google results for 'haldi wholesellers in india'
+2025-05-16 18:28:06,753 - ContactScraper - ERROR - Error extracting contacts from https://www.jayambespices.co.in/haldi-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,753 - ContactScraper - ERROR - Error extracting contacts from https://spicenest.in/blogs/information/turmeric-finger-exporters?srsltid=AfmBOorhgA5GxGjDro-K8er7QDWoeRm_fmDMu0UBbH0gicZp9Xle8iMe: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,754 - ContactScraper - ERROR - Error extracting contacts from https://jsdl.in/Pune/Turmeric-Wholesalers-%3Cnear%3E-Market-Yard/ct-99293: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,754 - ContactScraper - ERROR - Error extracting contacts from https://www.samridhiherbs.co.in/indian-spices.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,754 - ContactScraper - ERROR - Error extracting contacts from https://www.ambicaspicesindustries.in/agmark-turmeric-powder-haldi-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,755 - ContactScraper - ERROR - Error extracting contacts from https://www.bhagirathitrading.co.in/turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,755 - ContactScraper - ERROR - Error extracting contacts from https://www.globalswadsangam.co.in/turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,755 - ContactScraper - ERROR - Error extracting contacts from https://www.dhruviexportinternational.in/fresh-turmeric.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,756 - ContactScraper - ERROR - Error extracting contacts from https://www.rkglobaltrade.co.in/turmeric-finger.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,756 - ContactScraper - ERROR - Error extracting contacts from https://www.indiantradeexim.co.in/turmeric-finger.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:06,757 - ContactScraper - INFO - Searching Google for 'haldi wholesellers in india' using specialized browser automation
+2025-05-16 18:28:24,556 - ContactScraper - INFO - Successfully found 10 Google results for 'haldi wholesellers in india'
+2025-05-16 18:28:24,556 - ContactScraper - ERROR - Error extracting contacts from https://www.yuvarajuagroimpex.in/product/730-superior-aroma--dried-curcumin-/-haldi-powder-exporters-/-suppliers-in-india.php: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,557 - ContactScraper - ERROR - Error extracting contacts from https://www.dimiinternational.in/indian-spices.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,557 - ContactScraper - ERROR - Error extracting contacts from https://natural-foods.co.in/turmeric-powder.php: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,558 - ContactScraper - ERROR - Error extracting contacts from https://www.redpepperindia.co.in/turmeric-finger.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,558 - ContactScraper - ERROR - Error extracting contacts from https://www.manglaagroind.co.in/turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,558 - ContactScraper - ERROR - Error extracting contacts from https://www.meghamountainorganics.in/turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,559 - ContactScraper - ERROR - Error extracting contacts from https://www.elagranceglobal.co.in/turmeric.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,559 - ContactScraper - ERROR - Error extracting contacts from https://seasonsinternational.in/turmeric-finger-exporters-in-bulk/: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,559 - ContactScraper - ERROR - Error extracting contacts from https://www.anufoods.in/turmeric-powder/?srsltid=AfmBOooWkSuRlakcPBNyub0GIZkVDoj8yAzNPnNgu2Mn4-QOOAj4OfSh: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,560 - ContactScraper - ERROR - Error extracting contacts from http://www.purvimasalaudyog.co.in/turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:24,560 - ContactScraper - INFO - Searching Google for 'haldi wholesellers in india' using specialized browser automation
+2025-05-16 18:28:24,560 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 6.37 seconds
+2025-05-16 18:28:51,624 - ContactScraper - INFO - Successfully found 10 Google results for 'haldi wholesellers in india'
+2025-05-16 18:28:51,624 - ContactScraper - ERROR - Error extracting contacts from https://www.anufoods.in/turmeric-powder/?srsltid=AfmBOooqLrxNpHsbauvxFGeH71lyC2r-M0-rIfpyav5XcwLzAComCN0T: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,625 - ContactScraper - ERROR - Error extracting contacts from https://www.agrilifefarmersproducer.in/dry-turmeric-root.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,625 - ContactScraper - ERROR - Error extracting contacts from https://www.shrisvb.in/rajapuri-turmeric-ground-amp-whole.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,625 - ContactScraper - ERROR - Error extracting contacts from https://www.capglobalexim.co.in/pure-turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,627 - ContactScraper - ERROR - Error extracting contacts from https://www.jsdl.in/Mumbai/Turmeric-Distributors/ct-43914: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,627 - ContactScraper - ERROR - Error extracting contacts from https://www.preethiglobal.co.in/turmeric-finger.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,627 - ContactScraper - ERROR - Error extracting contacts from https://www.fancycorp.co.in/daru-haldi-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,628 - ContactScraper - ERROR - Error extracting contacts from https://www.krishnaenterprisesindia.co.in/turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,629 - ContactScraper - ERROR - Error extracting contacts from https://www.jayambespices.co.in/indian-turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,629 - ContactScraper - ERROR - Error extracting contacts from https://www.aadhiraimasala.co.in/turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:28:51,630 - ContactScraper - INFO - Searching Google for 'haldi wholesellers in india' using specialized browser automation
+2025-05-16 18:29:11,892 - ContactScraper - INFO - Successfully found 10 Google results for 'haldi wholesellers in india'
+2025-05-16 18:29:11,892 - ContactScraper - ERROR - Error extracting contacts from https://www.namoudyog.co.in/turmeric-powders.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:11,892 - ContactScraper - ERROR - Error extracting contacts from https://www.anufoods.in/turmeric-powder/?srsltid=AfmBOoqsdeiq7-Ux7qdurbGPD9T4ib3Sd8PzfA5nVfFUvBaTUgyEGmrq: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:11,893 - ContactScraper - INFO - Searching Google for 'haldi wholesellers in india' using specialized browser automation
+2025-05-16 18:29:30,842 - ContactScraper - INFO - Successfully found 10 Google results for 'haldi wholesellers in india'
+2025-05-16 18:29:30,842 - ContactScraper - ERROR - Error extracting contacts from https://www.farmfirst.in/products/all/Turmeric.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,843 - ContactScraper - ERROR - Error extracting contacts from http://www.pavitradersindia.in/haldi-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,843 - ContactScraper - ERROR - Error extracting contacts from http://www.kasturikrishifarm.in/organic-turmeric.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,843 - ContactScraper - ERROR - Error extracting contacts from https://www.bhagyashriassociates.co.in/salem-turmeric-powder.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,844 - ContactScraper - ERROR - Error extracting contacts from https://www.matrixsolutionindia.in/raw-haldi.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,844 - ContactScraper - ERROR - Error extracting contacts from https://www.gandhispices.in/turmeric-powder.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,844 - ContactScraper - ERROR - Error extracting contacts from https://www.ecoexport.in/indian-turmeric-powder-supplier/: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,845 - ContactScraper - ERROR - Error extracting contacts from https://www.emkaypackaging.in/haldi-powder-pouch-7527437.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,845 - ContactScraper - ERROR - Error extracting contacts from https://www.ashokaspices.in/black-turmeric.htm: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,845 - ContactScraper - ERROR - Error extracting contacts from https://www.calciumsulphate.in/amba-haldi-10321263.html: 'ContactScraper' object has no attribute 'extract_contacts_from_url'
+2025-05-16 18:29:30,846 - ContactScraper - INFO - Searching Google for 'haldi wholesellers in india' using specialized browser automation
+2025-05-16 18:29:30,846 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 4.91 seconds
+2025-05-16 18:30:12,408 - ContactScraper - WARNING - No results from browser search for 'haldi wholesellers in india'. Retry 1/3 after 13.95s
+2025-05-16 18:30:59,578 - ContactScraper - WARNING - No results from browser search for 'haldi wholesellers in india'. Retry 2/3 after 32.32s
+2025-05-16 18:32:08,733 - ContactScraper - WARNING - No results from browser search for 'haldi wholesellers in india'. Retry 3/3 after 68.47s
+2025-05-16 18:33:17,221 - ContactScraper - WARNING - All specialized browser search attempts failed for 'haldi wholesellers in india'
+2025-05-16 18:33:17,270 - ContactScraper - INFO - Initializing browser for web scraping...
+2025-05-16 18:33:17,665 - ContactScraper - INFO - Playwright initialized successfully
+2025-05-16 18:33:17,665 - ContactScraper - INFO - Using proxy: geo.iproyal.com:11200
+2025-05-16 18:33:17,665 - ContactScraper - INFO - Launching browser...
+2025-05-16 18:33:17,741 - ContactScraper - INFO - Chromium browser launched successfully
+2025-05-16 18:33:17,742 - ContactScraper - INFO - Creating browser context...
+2025-05-16 18:33:17,763 - ContactScraper - INFO - Browser context created successfully
+2025-05-16 18:33:17,763 - ContactScraper - INFO - Creating browser page...
+2025-05-16 18:33:18,925 - ContactScraper - INFO - Browser page created successfully
+2025-05-16 18:33:18,926 - ContactScraper - INFO - Testing browser with navigation...
+2025-05-16 18:33:19,213 - ContactScraper - ERROR - Browser test failed: Page.goto: net::ERR_EMPTY_RESPONSE at https://example.com/
+Call log:
+  - navigating to "https://example.com/", waiting until "load"
+
+2025-05-16 18:33:19,214 - ContactScraper - INFO - Closing browser page...
+2025-05-16 18:33:19,222 - ContactScraper - INFO - Closing browser context...
+2025-05-16 18:33:19,236 - ContactScraper - INFO - Closing browser...
+2025-05-16 18:33:19,269 - ContactScraper - INFO - Stopping playwright...
+2025-05-16 18:33:19,279 - ContactScraper - INFO - Browser resources cleanup completed
+2025-05-16 18:33:19,737 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones
+2025-05-16 18:33:19,740 - ContactScraper - INFO - Browser resources cleanup completed

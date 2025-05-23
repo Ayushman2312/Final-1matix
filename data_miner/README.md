@@ -1,202 +1,135 @@
-# Advanced AI-Powered Web Scraper
+# Web Scraper Improvements
 
-A powerful web scraper that can extract valid mobile numbers and email addresses from websites based on keywords, with advanced anti-detection capabilities and proxy rotation.
+This document details the comprehensive improvements made to the web scraper to address the issues with irrelevant URLs and Playwright functionality.
 
-## Features
+## Key Issues Fixed
 
-- **Multiple Scraping Methods**: Uses both requests and Selenium for maximum coverage
-- **Proxy Rotation**: Supports authenticated proxies with automatic rotation
-- **Anti-Bot Detection**:
-  - Browser fingerprint spoofing
-  - User agent randomization
-  - Human-like behavior simulation
-  - CDP spoofing via Selenium
-  - Stealth mode capabilities
-- **CAPTCHA Handling**: Detection and solving capabilities (API integration)
-- **Contact Extraction**:
-  - Robust regex patterns for different country formats
-  - Email and phone validation
-  - Filtering against disposable domains and spam TLDs
-- **Intelligent Crawling**:
-  - URL relevance scoring
-  - Contact page prioritization
-  - Domain filtering
-  - Concurrent processing
-- **Multiple Interfaces**:
-  - Command-line interface
-  - HTTP REST API
-  - Python library integration
-- **Deployment Ready**:
-  - Docker and docker-compose support
-  - Configurable logging
-  - Result caching
+1. **Playwright Browser Initialization**
+   - Completely rewrote the `initialize_browser()` method with more robust error handling
+   - Added country-specific proxy configuration focusing on Indian IPs
+   - Implemented geolocation spoofing to simulate Indian locations
+   - Extended timeout values for better handling of slow connections
+   - Added pre-navigation to a safe page to ensure browser is fully initialized
 
-## Installation
+2. **Anti-Detection Improvements**
+   - Rewritten `_apply_stealth_settings()` with comprehensive anti-bot measures
+   - Added hardware fingerprint randomization
+   - Implemented browser identity obfuscation
+   - Added permissions API spoofing
+   - Improved canvas fingerprinting prevention
+   - Added Chrome-specific detection prevention
+   - Added timing attack prevention
 
-### Prerequisites
+3. **Google Search Result Extraction**
+   - Completely rewrote `_search_google_with_browser()` to extract more relevant URLs
+   - Added better selectors to extract genuine search results
+   - Improved URL extraction from Google search pages
+   - Enhanced filtering of irrelevant search results
+   - Added quotation marks and site:.in parameter to search queries
+   - Fixed pagination to properly navigate through search result pages
 
-- Python 3.8+
-- Chrome/Chromium browser
-- Selenium WebDriver
+4. **URL Relevance Filtering**
+   - Enhanced `_filter_urls_by_relevance()` to better identify relevant URLs
+   - Added prioritization for Indian domains (.in TLD)
+   - Added extra scores for business and contact-related URLs
+   - Penalized URLs with irrelevant patterns (forums, blogs, etc.)
+   - Improved scoring system for more accurate relevance assessment
 
-### Basic Installation
+5. **Human Behavior Simulation**
+   - Improved `_simulate_human_browsing()` to better mimic human behavior
+   - Added natural scrolling patterns
+   - Implemented random mouse movements
+   - Added pauses between actions to appear more human-like
 
-```bash
-# Clone the repository
-git clone [repository-url]
-cd [repository-directory]
+6. **CAPTCHA Detection**
+   - Enhanced both request-based and browser-based CAPTCHA detection
+   - Added comprehensive checks for CAPTCHA indicators
+   - Improved handling of detected CAPTCHAs with automatic recovery
 
-# Install dependencies
-pip install -r requirements-scraper.txt
-```
+7. **Main Search Function**
+   - Updated `search_google()` to better handle both browser and HTTP-based approaches
+   - Added improved fallback mechanisms when one approach fails
+   - Enhanced error handling throughout the search process
 
-### Docker Installation
+8. **Scrape Function**
+   - Enhanced the main `scrape()` function to better extract URLs across search pages
+   - Improved post-processing of search results for better relevance
+   - Added better error handling and reporting
 
-```bash
-# Generate Docker files
-python -m data_miner.scrapper --create-docker
+## Background Tasks Support
 
-# Build and run with Docker Compose
-docker-compose up -d
-```
+The Data Miner now supports running tasks in the background, allowing you to:
 
-## Usage
+1. Start multiple data mining tasks that continue to run when you navigate away from the page
+2. Monitor all your running tasks in a dedicated dashboard
+3. Stop tasks that may be taking too long or are no longer needed
+4. View detailed information about task progress, parameters, and results
 
-### Command Line Interface
+### Running a Task in Background
 
-```bash
-# Scrape contacts based on a keyword
-python -m data_miner.scrapper --keyword "furniture manufacturers" --max-results 10 --max-depth 2
+On the main Data Miner page:
 
-# Scrape contacts from a specific domain
-python -m data_miner.scrapper --domain example.com --max-depth 3
+1. Enter your search keyword, select the data type and country
+2. Make sure the "Run in background" checkbox is checked (enabled by default)
+3. Click "Get" to start the task
+4. The task will be added to your background tasks list
 
-# Using proxies
-python -m data_miner.scrapper --keyword "software development" --proxies proxies.json
+### Managing Background Tasks
 
-# Run in debug mode
-python -m data_miner.scrapper --keyword "custom packaging" --debug
-```
+Access the task management page by:
+- Clicking "View All Tasks" on the main Data Miner page, or
+- Going directly to `/data_miner/background-tasks/`
 
-### API Server
+The task management page provides:
 
-```bash
-# Start the API server
-python -m data_miner.scrapper --api --api-port 5000
-```
+- A list of running tasks with real-time progress updates
+- A list of completed tasks with their results
+- Options to stop running tasks
+- Options to delete task records
+- Quick access to download results from completed tasks
 
-#### API Endpoints
+### Task Lifecycle
 
-- `GET /health`: Health check endpoint
-- `POST /scrape`: Scrape contacts
-  ```json
-  // Example request
-  {
-    "keyword": "electronics suppliers",
-    "max_depth": 2,
-    "max_results": 5
-  }
-  
-  // OR
-  
-  {
-    "domain": "example.com",
-    "max_depth": 3
-  }
-  ```
+Each background task goes through the following stages:
 
-### Python Library
+1. **Pending**: The task has been created but hasn't started execution yet
+2. **Processing**: The task is actively running and collecting data
+3. **Completed**: The task has successfully finished and results are available
+4. **Failed**: The task encountered an error during execution
+5. **Cancelled**: The task was manually stopped by the user
+
+### Stopping a Task
+
+To stop a running task:
+
+1. Find the task in the running tasks section
+2. Click the "Stop" button
+3. Confirm the cancellation
+4. The task will be moved to the completed tasks section with "Cancelled" status
+
+## How to Use
+
+The contact scraper can be used as follows:
 
 ```python
-from data_miner.scrapper import AdvancedWebScraper
+from web_scrapper import ContactScraper
 
 # Initialize the scraper
-scraper = AdvancedWebScraper(
-    headless=True,
-    max_concurrent_threads=5,
-    timeout=30,
-    max_retries=3
-)
+scraper = ContactScraper(debug_mode=True)
 
-# Scrape by keyword
-results = scraper.search_and_scrape("air purifier manufacturers", max_results=5, max_depth=2)
+# Extract contacts from a search keyword
+emails, phones = scraper.scrape("hotels in mumbai", num_results=50, max_runtime_minutes=15)
 
-# Scrape by domain
-contacts = scraper.scrape_by_domain("example.com", max_depth=2)
-
-# Save results
-output_path = scraper.save_results(results, "contacts.json")
+# Print results
+print(f"Found {len(emails)} emails and {len(phones)} phone numbers")
 ```
 
-## Configuration
+## Testing
 
-### Proxy Configuration
+A test script (`test_scraper.py`) has been created to verify the improvements. Run it with:
 
-Create a JSON file with proxy settings:
-
-```json
-[
-  {
-    "http": "http://username:password@proxy1.example.com:8080",
-    "https": "http://username:password@proxy1.example.com:8080"
-  },
-  {
-    "http": "http://username:password@proxy2.example.com:8080",
-    "https": "http://username:password@proxy2.example.com:8080"
-  }
-]
+```
+python test_scraper.py
 ```
 
-### Command Line Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--keyword` | Keyword to search for websites | - |
-| `--domain` | Specific domain to scrape | - |
-| `--output` | Output file path (JSON) | Auto-generated |
-| `--proxies` | Path to JSON file with proxy list | None |
-| `--captcha-api` | API key for CAPTCHA solving service | None |
-| `--headless` | Run in headless mode | False |
-| `--max-depth` | Maximum crawl depth | 2 |
-| `--max-results` | Maximum number of domains to scrape | 5 |
-| `--timeout` | Request timeout in seconds | 30 |
-| `--max-retries` | Maximum number of retries | 3 |
-| `--threads` | Maximum number of concurrent threads | 5 |
-| `--debug` | Enable debug mode | False |
-| `--cache-dir` | Directory to cache results | None |
-| `--api` | Run as API server | False |
-| `--api-host` | API server host | 0.0.0.0 |
-| `--api-port` | API server port | 5000 |
-| `--create-docker` | Create Docker files for deployment | False |
-
-## Output Format
-
-The scraper produces JSON files with the following structure:
-
-```json
-{
-  "query": "furniture manufacturers",
-  "domains": ["domain1.com", "domain2.com", "domain3.com"],
-  "domain_results": {
-    "domain1.com": {
-      "emails": ["contact@domain1.com", "sales@domain1.com"],
-      "phones": ["+1234567890", "+0987654321"]
-    },
-    "domain2.com": {
-      "emails": ["info@domain2.com"],
-      "phones": ["+1122334455"]
-    }
-  },
-  "all_emails": ["contact@domain1.com", "sales@domain1.com", "info@domain2.com"],
-  "all_phones": ["+1234567890", "+0987654321", "+1122334455"],
-  "timestamp": "2023-04-15T14:32:22.123456"
-}
-```
-
-## License
-
-[MIT License](LICENSE)
-
-## Disclaimer
-
-This tool is intended for legitimate business purposes such as lead generation and market research. Please use responsibly and adhere to websites' terms of service and applicable laws regarding data scraping. 
+This will test various components of the scraper to ensure they're working correctly. 

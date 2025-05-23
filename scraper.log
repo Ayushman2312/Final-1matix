@@ -1702,3 +1702,49 @@ Stacktrace:
 2025-05-11 02:09:58,745 - urllib3.connectionpool - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000025AF25DD6C0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/c47b3e2693f2b43934904edc5e76b45d
 2025-05-11 02:10:02,754 - urllib3.connectionpool - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000025AF25DF400>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/c47b3e2693f2b43934904edc5e76b45d
 2025-05-11 02:10:06,876 - AdvancedScraper - INFO - Closing browser instances
+2025-05-13 15:55:48,265 - AdvancedScraper - INFO - Starting optimized search for 'IT companies in bhopal India contact information', country: IN
+2025-05-13 15:55:48,265 - AdvancedScraper - INFO - Searching for term: IT companies in bhopal India contact information
+2025-05-13 15:55:48,265 - AdvancedScraper - INFO - Trying search engine: Google
+2025-05-13 15:55:48,454 - WDM - INFO - ====== WebDriver manager ======
+2025-05-13 15:55:50,777 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:55:51,463 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:55:52,049 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:55:53,732 - WDM - INFO - WebDriver version 136.0.7103.92 selected
+2025-05-13 15:55:53,743 - WDM - INFO - Modern chrome version https://storage.googleapis.com/chrome-for-testing-public/136.0.7103.92/win32/chromedriver-win32.zip
+2025-05-13 15:55:53,743 - WDM - INFO - About to download new driver from https://storage.googleapis.com/chrome-for-testing-public/136.0.7103.92/win32/chromedriver-win32.zip
+2025-05-13 15:55:53,981 - WDM - INFO - Driver downloading response is 200
+2025-05-13 15:56:02,089 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:56:02,466 - WDM - INFO - Driver has been saved in cache [C:\Users\hp5cd\.wdm\drivers\chromedriver\win64\136.0.7103.92]
+2025-05-13 15:56:02,470 - AdvancedScraper - INFO - Using ChromeDriverManager to initialize driver
+2025-05-13 15:56:22,695 - AdvancedScraper - WARNING - Timeout waiting for search results on Google
+2025-05-13 15:56:31,040 - urllib3.connectionpool - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000120A3A17AC0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/b1834eec119d50d3ce87ae578ba9ab19
+2025-05-13 15:56:35,147 - urllib3.connectionpool - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000120A3A17070>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/b1834eec119d50d3ce87ae578ba9ab19
+2025-05-13 15:56:39,180 - urllib3.connectionpool - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000120A3B403A0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/b1834eec119d50d3ce87ae578ba9ab19
+2025-05-13 15:56:43,271 - AdvancedScraper - INFO - Trying search engine: Bing
+2025-05-13 15:56:43,282 - WDM - INFO - ====== WebDriver manager ======
+2025-05-13 15:56:45,231 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:56:45,861 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:56:46,535 - WDM - INFO - Driver [C:\Users\hp5cd\.wdm\drivers\chromedriver\win64\136.0.7103.92\chromedriver-win32/chromedriver.exe] found in cache
+2025-05-13 15:56:46,537 - AdvancedScraper - INFO - Using ChromeDriverManager to initialize driver
+2025-05-13 15:56:54,698 - AdvancedScraper - INFO - Attempting to handle CAPTCHA without external services
+2025-05-13 15:56:54,986 - AdvancedScraper - INFO - Attempting to bypass CAPTCHA by refreshing the page
+2025-05-13 15:56:59,220 - AdvancedScraper - INFO - Waiting to see if CAPTCHA expires
+2025-05-13 15:57:04,471 - AdvancedScraper - INFO - Attempting to submit form despite CAPTCHA
+2025-05-13 15:57:06,892 - AdvancedScraper - WARNING - Could not bypass CAPTCHA without API key
+2025-05-13 15:57:06,900 - AdvancedScraper - WARNING - Failed to bypass CAPTCHA on Bing
+2025-05-13 15:57:14,326 - urllib3.connectionpool - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000120A3B40730>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/08655ffef888a57e66e1f0cb6ccca027
+2025-05-13 15:57:18,377 - urllib3.connectionpool - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000120A3B40AF0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/08655ffef888a57e66e1f0cb6ccca027
+2025-05-13 15:57:22,452 - urllib3.connectionpool - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000120A3B40820>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/08655ffef888a57e66e1f0cb6ccca027
+2025-05-13 15:57:26,513 - AdvancedScraper - INFO - Trying search engine: DuckDuckGo
+2025-05-13 15:57:26,563 - WDM - INFO - ====== WebDriver manager ======
+2025-05-13 15:57:28,281 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:57:28,618 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-05-13 15:57:29,041 - WDM - INFO - Driver [C:\Users\hp5cd\.wdm\drivers\chromedriver\win64\136.0.7103.92\chromedriver-win32/chromedriver.exe] found in cache
+2025-05-13 15:57:29,042 - AdvancedScraper - INFO - Using ChromeDriverManager to initialize driver
+2025-05-13 15:57:36,829 - AdvancedScraper - INFO - Attempting to handle CAPTCHA without external services
+2025-05-13 15:57:36,896 - AdvancedScraper - INFO - Attempting to bypass CAPTCHA by refreshing the page
+2025-05-13 15:57:40,344 - AdvancedScraper - INFO - Waiting to see if CAPTCHA expires
+2025-05-13 15:57:45,558 - AdvancedScraper - INFO - Attempting to submit form despite CAPTCHA
+2025-05-13 15:57:47,979 - AdvancedScraper - WARNING - Could not bypass CAPTCHA without API key
+2025-05-13 15:57:47,981 - AdvancedScraper - WARNING - Failed to bypass CAPTCHA on DuckDuckGo
+2025-05-21 14:53:34,327 - ERROR - API keys not found. Please set SERP_API_KEY and GOOGLE_AI_API_KEY environment variables.

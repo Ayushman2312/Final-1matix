@@ -1,0 +1,6 @@
+2025-05-13 18:45:38,149 - WARNING - Rejected: Sequential digit pattern in '+91 9876543210' from test_sample
+2025-05-13 18:45:38,149 - INFO - Valid: '8765432109' normalized to +918765432109 from test_sample
+2025-05-13 18:45:38,150 - INFO - Valid: '07654321098' normalized to +917654321098 from test_sample
+2025-05-13 18:45:38,150 - WARNING - Rejected: Sequential digit pattern in '+91 9876543210' from test_sample
+2025-05-13 18:45:38,151 - INFO - Valid: '8765432109' normalized to +918765432109 from test_sample
+2025-05-13 18:45:38,151 - INFO - Valid: '07654321098' normalized to +917654321098 from test_sample

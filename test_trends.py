@@ -1,71 +1,61 @@
-from trends.trends import get_trends_json
-import time
+"""
+Test script for trends module
+"""
+import sys
+import logging
 import json
+from trends.trends import get_trends_json, fetch_google_trends_no_proxy
 
-def test_trends_performance():
-    print("Testing get_trends_json performance...")
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+logger = logging.getLogger("test_trends")
+
+def test_direct_connection():
+    """Test the direct connection approach with original timeframe"""
+    logger.info("Testing direct connection with 5-year timeframe")
     
-    # Test parameters
-    keyword = "Cricket"
-    timeframe = "today 5-y"
-    geo = "IN"
+    # Test with a simple keyword and 5-year timeframe
+    result = fetch_google_trends_no_proxy(
+        keywords="narendra modi",
+        timeframe="today 5-y",  # Use 5-year timeframe
+        geo="IN",
+        analysis_options={
+            "include_time_trends": True,
+            "include_state_analysis": False,  # Simplify test
+            "include_city_analysis": False,
+            "include_related_queries": False
+        }
+    )
     
-    # Regular time trends
-    print(f"\nTest 1: Regular Time Trends - {keyword}")
-    start_time = time.time()
-    result = get_trends_json(keyword, timeframe, geo)
-    end_time = time.time()
+    # Print result summary
+    logger.info(f"Status: {result['status']}")
+    logger.info(f"Timeframe: {result['metadata']['timeframe']}")
     
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time:.2f} seconds")
-    print(f"Status: {result['status']}")
-    print(f"Data keys: {list(result['data'].keys())}")
-    print(f"Time trends: {len(result['data']['time_trends'])} data points")
-    
-    # From cache (should be much faster)
-    print(f"\nTest 2: Cached Time Trends - {keyword}")
-    start_time = time.time()
-    result = get_trends_json(keyword, timeframe, geo)
-    end_time = time.time()
-    
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time:.2f} seconds")
-    print(f"Status: {result['status']}")
-    print(f"Time trends: {len(result['data']['time_trends'])} data points")
-    
-    # Test with different parameters
-    new_keyword = "Bollywood"
-    print(f"\nTest 3: New Keyword - {new_keyword}")
-    start_time = time.time()
-    result = get_trends_json(new_keyword, timeframe, geo)
-    end_time = time.time()
-    
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time:.2f} seconds")
-    print(f"Status: {result['status']}")
-    print(f"Time trends: {len(result['data']['time_trends'])} data points")
-    
-    # Test with comprehensive analysis
-    print(f"\nTest 4: Comprehensive Analysis - {keyword}")
-    analysis_options = {
-        "include_time_trends": True,
-        "include_state_analysis": True,
-        "include_city_analysis": True,
-        "include_related_queries": True
-    }
-    
-    start_time = time.time()
-    result = get_trends_json(keyword, timeframe, geo, analysis_options)
-    end_time = time.time()
-    
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time:.2f} seconds")
-    print(f"Status: {result['status']}")
-    print(f"Data keys: {list(result['data'].keys())}")
-    print(f"Time trends: {len(result['data']['time_trends'])} data points")
-    print(f"Region data: {len(result['data']['region_data'])} regions")
-    print(f"City data: {len(result['data']['city_data'])} cities")
-    print(f"Related queries available: {'Yes' if result['data']['related_queries'] else 'No'}")
+    if result['status'] == 'success':
+        time_trends = result.get('data', {}).get('time_trends', [])
+        logger.info(f"Time trends data points: {len(time_trends)}")
+        
+        # Print a sample of the data
+        if time_trends:
+            logger.info(f"Sample data point: {time_trends[0]}")
+            logger.info(f"First date: {time_trends[0].get('date', 'unknown')}")
+            logger.info(f"Last date: {time_trends[-1].get('date', 'unknown')}")
+        
+        return True
+    else:
+        logger.error(f"Error: {result.get('errors', ['Unknown error'])}")
+        return False
 
 if __name__ == "__main__":
-    test_trends_performance() 
+    success = test_direct_connection()
+    if success:
+        logger.info("Test completed successfully!")
+    else:
+        logger.error("Test failed!")
+    
+    sys.exit(0 if success else 1) 

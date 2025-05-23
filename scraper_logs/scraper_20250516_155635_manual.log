@@ -1,0 +1,18 @@
+2025-05-16 15:56:35,199 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_155635_manual.log
+2025-05-16 15:56:35,200 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 15:56:35,239 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 15:56:37,442 - ContactScraper - INFO - Starting scrape for keyword: 'IT companies Bhopal contact'
+2025-05-16 15:56:38,615 - ContactScraper - ERROR - Error parsing HTML for CAPTCHA detection: list index out of range
+2025-05-16 15:56:38,622 - ContactScraper - INFO - Rate limiting domain google.com. Waiting 22.97 seconds
+2025-05-16 15:57:37,680 - ContactScraper - INFO - Saved CAPTCHA check screenshot to captcha_check.png
+2025-05-16 15:57:37,680 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-16 16:00:01,783 - ContactScraper - INFO - Saved CAPTCHA check screenshot to captcha_check.png
+2025-05-16 16:00:01,784 - ContactScraper - WARNING - CAPTCHA/anti-bot likely - URL contains 'sorry/index'
+2025-05-16 16:02:46,854 - ContactScraper - INFO - Reached maximum runtime of 5 minutes
+2025-05-16 16:02:46,854 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones
+2025-05-16 16:02:46,856 - ContactScraper - INFO - Results saved to scraped_data/IT_companies_Bhopal_contact_20250516_160246_contacts.csv
+2025-05-16 16:02:46,913 - ContactScraper - INFO - Closing browser page...
+2025-05-16 16:02:46,919 - ContactScraper - INFO - Closing browser context...
+2025-05-16 16:02:46,929 - ContactScraper - INFO - Closing browser...
+2025-05-16 16:02:47,138 - ContactScraper - INFO - Stopping playwright...
+2025-05-16 16:02:47,148 - ContactScraper - INFO - Browser resources cleanup completed

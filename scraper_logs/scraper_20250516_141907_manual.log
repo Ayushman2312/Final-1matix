@@ -1,0 +1,7 @@
+2025-05-16 14:19:07,312 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250516_141907_manual.log
+2025-05-16 14:19:07,312 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-16 14:19:07,352 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-16 14:19:09,488 - ContactScraper - INFO - Starting scrape for keyword: 'IT companies Bhopal'
+2025-05-16 14:25:38,240 - ContactScraper - INFO - Reached maximum runtime of 5 minutes
+2025-05-16 14:25:38,249 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones
+2025-05-16 14:25:38,267 - ContactScraper - INFO - Results saved to scraped_data/IT_companies_Bhopal_20250516_142538_contacts.csv

@@ -6,220 +6,753 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1Matrix - Amazon Fee Calculator</title>
+    <title>1Matrix - Listing Creator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        @media (max-width: 640px) {
-            input[type="number"],
-            input[type="text"],
-            select {
-                font-size: 16px; /* Prevents iOS zoom on focus */
-            }
-            
-            .input-group span.currency {
-                font-size: 14px;
-            }
-            
-            label {
-                font-size: 0.875rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .main-container {
-                flex-direction: column;
-            }
-
-            .left-section, .right-section {
-                width: 100% !important;
-                margin: 0 !important;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        'primary': '#4f46e5',
+                        'primary-hover': '#4338ca',
+                        'light-blue': '#6699FF'
+                    }
+                }
             }
         }
-    </style>
+    </script>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="viewport" content="width=device-width, user-scalable=no">
-    <script>
-        // Prevent view source shortcuts
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 's')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 </head>
-<body class="font-['Inter'] bg-gradient-to-br from-sky-50 to-blue-50 m-0 min-h-screen">
-        <!-- Main container with flex layout -->
-        <div class="flex main-container gap-7 mx-auto max-w-[100%]">
-            <!-- Left Section -->
-            <div class="left-section w-[50%]">
-                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] p-6 space-y-1 border border-gray-100 sticky top-4">
-                    <!-- Input form content remains the same -->
-                    <div class="grid gap-[1rem] md:gap-[1rem]">
-                        <!-- All existing input elements remain unchanged -->
-                        <!-- Platform, Brand Name, and Keyword Screenshot -->
-                        <div class="flex flex-row gap-4">
+<body class="quicksand bg-slate-50 min-w-[320px]">
+    <div class="w-full max-w-full  box-border">
+        <div class="flex flex-wrap gap-8 w-full justify-between">
+            <!-- Left Section - Input Form -->
+            <div class="flex-1 min-w-[300px] bg-white shadow-[0_0px_7px_rgba(0,0,0,0.1)] rounded-2xl p-6 mb-4">
+                <div class="h-full w-full flex flex-col">
+                    <!-- Platform, Brand Name, Keywords Screenshot -->
+                    <div class="flex flex-col gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                             <!-- Platform Selection -->
-                            <div class="w-1/3 transform transition-all duration-300 hover:scale-[1.01]">
-                                <label for="platform" class="block text-sm font-semibold text-gray-700 mb-3">Platform</label>
-                                <div class="relative">
-                                    <select id="platform" required class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%] appearance-none">
-                                        <option value="Amazon">Amazon</option>
-                                        <option value="eBay">eBay</option>
-                                        <option value="Etsy">Etsy</option>
-                                        <option value="Shopify">Shopify</option>
-                                        <option value="Meesho">Meesho</option>
-                                        <option value="Flipkart">Flipkart</option>
-                                    </select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                                        </svg>
-                                    </div>
-                                </div>
+                            <div class="mb-1">
+                                <label for="platform" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Platform</label>
+                                <input type="text" id="platform" value="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
                             </div>
-
+                            
                             <!-- Brand Name -->
-                            <div class="w-1/3 transform transition-all duration-300 hover:scale-[1.01]">
-                                <label for="brand" class="block text-sm font-semibold text-gray-700 mb-3">Brand</label>
-                                <input type="text" id="brand" required placeholder="Brand name" class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%]">
+                            <div class="mb-1">
+                                <label for="brand" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Brand Name</label>
+                                <input type="text" id="brand" placeholder="Brand Name" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border">
                             </div>
-
-                            <!-- Keyword Screenshots -->
-                            <div class="w-1/2 transform transition-all duration-300 hover:scale-[1.01]">
-                                <div class="flex items-center gap-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Keyword Screenshots</label>
-                                    <div class="relative">
-                                        <div class="w-4 h-4 rounded-full border border-black flex items-center justify-center cursor-pointer" onclick="showImagePopup()">
-                                            <span class="text-xs">?</span>
-                                        </div>
-                                        <!-- Popup overlay -->
-                                        <div id="imagePopup" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                                            <div class="relative bg-white p-4 rounded-lg max-w-[90vw] w-[1600px]">
-                                                <button onclick="closeImagePopup()" class="absolute -top-4 -right-4 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-red-600 focus:outline-none shadow-lg text-2xl">
-                                                    ×
-                                                </button>
-                                                <img src="/media/keyword_screenshot.jpg" alt="Keyword Screenshot Example" class="max-w-full max-h-[80vh] object-contain rounded-lg">
-                                            </div>
-                                        </div>
+                            
+                            <!-- Keywords Screenshot -->
+                            <div class="mb-1">
+                                <label for="keyword-screenshot1" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Keywords Screenshot</label>
+                                <div class="relative border border-gray-200 rounded-lg overflow-hidden h-[34px]" id="paste-zone1" ondblclick="document.getElementById('keyword-screenshot1').click()">
+                                    <div class="text-center text-xs text-gray-400 absolute bottom-0 left-0 right-0">Double click to upload or Ctrl+V to paste</div>
+                                    <input type="file" id="keyword-screenshot1" class="hidden" accept="image/*" onchange="handleFileSelect(this, 'preview1', 'preview-container1', 'upload-text1')">
+                                    <div id="preview-container1" class="hidden absolute top-0 left-0 w-full h-full">
+                                        <img id="preview1" src="" class="w-full h-full object-contain">
+                                        <button type="button" id="remove-image1" class="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm" onclick="removeImage('preview1', 'preview-container1', 'keyword-screenshot1')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
-                                <div class="relative mt-3">
-                                    <div class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%] text-center cursor-pointer flex items-center justify-between" tabindex="0" onpaste="handlePaste(event, document.getElementById('keyword-screenshot1'))" ondblclick="document.getElementById('keyword-screenshot1').click()">
-                                        <span id="upload-text1">Select and paste image</span>
-                                        <input type="file" accept="image/*" id="keyword-screenshot1" class="hidden" onchange="handleFileSelect(this, 'preview1', 'preview-container1', 'upload-text1')">
-                                        <div id="preview-container1" class="hidden">
-                                            <div class="relative">
-                                                <img id="preview1" src="" class="w-20 h-20 object-cover rounded-lg shadow-md">
-                                                <button onclick="removeImage('keyword-screenshot1', 'preview-container1', 'upload-text1')" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center hover:bg-red-600 focus:outline-none shadow-lg text-xs">
-                                                    ×
-                                                </button>
-                                            </div>
-                                        </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Size, Material, Color -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <!-- Size -->
+                            <div class="mb-1">
+                                <label for="size" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Size</label>
+                                <input type="text" id="size" placeholder="Size" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border">
+                            </div>
+                            
+                            <!-- Material -->
+                            <div class="mb-1">
+                                <label for="material" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Material</label>
+                                <input type="text" id="material" placeholder="Material" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border">
+                            </div>
+                            
+                            <!-- Color -->
+                            <div class="mb-1">
+                                <label for="color" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Colour</label>
+                                <input type="text" id="color" placeholder="Colour Name" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border">
+                            </div>
+                        </div>
+                        
+                        <!-- Other Specifications -->
+                        <div class="mb-3">
+                            <label for="other-specs" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Any other specification?</label>
+                            <textarea id="other-specs" placeholder="Other Specifications" rows="3" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border"></textarea>
+                        </div>
+                        
+                        <!-- Competitor URLs -->
+                        <div class="mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Competitors URLs -->
+                                <div>
+                                    <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Competitors URLs</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="url" id="url1" placeholder="https://amazon.in/Xo" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border flex-grow">
+                                        <button type="button" onclick="addUrlField()" class="px-2 py-1 text-xs text-white rounded-lg bg-[#7B3DF3] quicksand hover:bg-blue-600 transition-colors" id="add-url-btn">Add</button>
                                     </div>
-                                    <p class="text-[0.7rem] text-gray-500 mt-1 text-start pl-3">Double click to upload</p>
+                                    <div id="url-indicators" class="flex flex-wrap gap-2 mt-1">
+                                        <!-- URL indicators will be added here dynamically -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Upload Products Photo -->
+                                <div>
+                                    <label class="block font-semibold text-sm mb-1 quicksand text-gray-700 flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        Upload Products Photo
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-grow">
+                                            <input type="" id="photo-text1" placeholder="Attach Upload (Min. 2)" class="quicksand w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly onclick="document.getElementById('product-photo1').click()">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                            </svg>
+                                        </div>
+                                        <button type="button" onclick="addPhotoField()" class="px-2 py-1 text-xs text-white rounded-lg bg-[#7B3DF3] quicksand hover:bg-blue-600 transition-colors" id="add-photo-btn">Add</button>
+                                        <input type="file" id="product-photo1" class="hidden" accept="image/*" onchange="updatePhotoName('product-photo1', 'photo-text1')">
+                                    </div>
+                                    <div id="photo-indicators" class="flex flex-wrap gap-2 mt-1">
+                                        <!-- Photo indicators will be added here dynamically -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- URLs -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Competitors URLs</label>
-                            <div class="flex flex-row gap-4">
-                                <div class="w-1/4 transform transition-all duration-300 hover:scale-[1.01]">
-                                    <input type="url" id="url1" placeholder="First URL" required class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%]">
-                                </div>
-                                <div class="w-1/4 transform transition-all duration-300 hover:scale-[1.01]">
-                                    <input type="url" id="url2" placeholder="Second URL" required class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%]">
-                                </div>
-                                <div class="w-1/4 transform transition-all duration-300 hover:scale-[1.01]">
-                                    <input type="url" id="url3" placeholder="Third URL (optional)" class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%]">
-                                </div>
-                                <div class="w-1/4 transform transition-all duration-300 hover:scale-[1.01]">
-                                    <input type="url" id="url4" placeholder="Fourth URL (optional)" class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%]">
-                                </div>
-                            </div>
+                        
+                        <!-- Analyse & Generate Button -->
+                        <div class="flex justify-end">
+                            <button onclick="generateListing()" class="bg-[#7B3DF3] quicksand hover:bg-blue-600 text-white font-medium py-2 px-5 rounded-lg transition-colors text-sm">
+                                Analyse & Generate
+                            </button>
                         </div>
-
-                        <!-- Product Description -->
-                        <div class="transform transition-all duration-300 hover:scale-[1.01]">
-                            <label class="block text-sm font-semibold text-gray-700 mb-3">Product Description</label>
-                            <textarea id="additional-specs" rows="4" placeholder="Enter product description" class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%] resize-none"></textarea>
+                        <div class="text-right text-xs quicksand text-gray-500 mt-3">
+                            Powered by <span class="font-semibold">1matrix.io</span>
                         </div>
-
-                        <!-- Product Photo Upload -->
-                        <div class="transform transition-all duration-300 hover:scale-[1.01]">
-                            <label class="block text-sm font-semibold text-gray-700 mb-3">Upload Your product's photos (Max 2)</label>
-                            <div class="flex gap-4">
-                                <div class="relative mt-3 w-1/2">
-                                    <input type="file" accept="image/*" id="product-photo1" class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%]">
-                                </div>
-                                <div class="relative mt-3 w-1/2">
-                                    <input type="file" accept="image/*" id="product-photo2" class="w-full px-[0.75rem] py-[0.5rem] rounded-[0.5rem] border border-gray-200 focus:border-blue-400 focus:ring focus:ring-blue-100 outline-none transition duration-200 bg-gray-50/50 hover:bg-white text-[90%]">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Generate Button -->
-                        <button onclick="generateListing()" class="w-[100%] bg-[#313A46] text-white text-base py-3 px-6 rounded-[2rem] transition-all duration-300 transform hover:bg-white hover:text-black hover:border hover:border-black hover:shadow-lg active:translate-y-[1px] focus:ring-4 focus:ring-blue-200">
-                            Analyze and Generate
-                        </button>
                     </div>
                 </div>
             </div>
-
-            <!-- Right Section -->
-            <div class="right-section w-[50%]">
-                <!-- Results Section -->
-                <div class="space-y-2 sticky top-4" id="results-section">
-                    <!-- Error Field -->
-                    <div id="error-field" class="bg-red-50 rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] p-6 hidden border border-red-100">
-                        <h2 class="text-xl font-semibold text-red-700 mb-2">Error</h2>
-                        <div id="error-message" class="text-red-600"></div>
+            
+            <!-- Right Section - Results -->
+            <div class="flex-1 min-w-[300px] bg-white rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] p-6 mb-4">
+                <div class="h-full w-full flex flex-col relative">
+                    <button style="color:#000000;" onclick="showResultsPopup()" class="absolute right-0 top-0 text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                    
+                    <!-- Title As Per Platform -->
+                    <div class="mb-3">
+                        <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Title As Per Platform</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="amazon-title" placeholder="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
+                            <button onclick="copyToClipboard('amazon-title', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
+                                <svg class="copy-icon h-5 w-5" fill="#3C4043" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+                                </svg>
+                                <svg class="check-icon h-5 w-5 text-green-500 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-
-                    <!-- Results Grid -->
-                    <div class="grid grid-cols-1 gap-0">
-                        <!-- Amazon Title -->
-                        <div class="bg-transparent backdrop-blur-sm rounded-lg p-2">
-                            <h2 class="text-[0.875rem] font-semibold text-black-900 mb-1">Title As Per Amazon</h2>
-                            <div id="amazon-title" class="text-gray-700 min-h-[40px] border-[2px] border-black-400 rounded-lg p-2 whitespace-pre-wrap text-[0.875rem]"></div>
+                    
+                    <!-- Title As Per Expert -->
+                    <div class="mb-3">
+                        <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Title As Per Expert</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="expert-title" placeholder="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
+                            <button onclick="copyToClipboard('expert-title', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
+                                <svg class="copy-icon h-5 w-5" fill="#3C4043" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+                                </svg>
+                                <svg class="check-icon h-5 w-5 text-green-500 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
                         </div>
-
-                        <!-- Expert Title -->
-                        <div class="bg-transparent backdrop-blur-sm rounded-lg p-2">
-                            <h2 class="text-[0.875rem] font-semibold text-black-900 mb-1">Title As Per Expert</h2>
-                            <div id="expert-title" class="text-gray-700 min-h-[40px] border-[2px] border-black-400 rounded-lg p-2 whitespace-pre-wrap text-[0.875rem]"></div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Description</label>
+                        <div class="flex items-start gap-2">
+                            <textarea id="description" placeholder="Amazon" rows="3" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border resize-none" readonly></textarea>
+                            <button onclick="copyToClipboard('description', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
+                                <svg class="copy-icon h-5 w-5" fill="#3C4043" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+                                </svg>
+                                <svg class="check-icon h-5 w-5 text-green-500 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
                         </div>
-
-                        <!-- Bullet Points -->
-                        <div class="bg-transparent backdrop-blur-sm rounded-lg p-2">
-                            <h2 class="text-[0.875rem] font-semibold text-black-900 mb-1">Key Features</h2>
-                            <div id="bullet-points" class="text-gray-700 min-h-[150px] border-[2px] border-black-400 rounded-lg p-2 whitespace-pre-wrap text-[0.875rem] overflow-y-auto"></div>
+                    </div>
+                    
+                    <!-- Bullet Points -->
+                    <div class="mb-3">
+                        <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Bullet Points</label>
+                        <div class="flex items-start gap-2">
+                            <textarea id="bullet-points" placeholder="Amazon" rows="5" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border resize-none" readonly></textarea>
+                            <button onclick="copyToClipboard('bullet-points', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
+                                <svg class="copy-icon h-5 w-5" fill="#3C4043" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+                                </svg>
+                                <svg class="check-icon h-5 w-5 text-green-500 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
                         </div>
-
-                        <!-- Description -->
-                        <div class="bg-transparent backdrop-blur-sm rounded-lg p-2">
-                            <h2 class="text-[0.875rem] font-semibold text-black-900 mb-1">Product Description</h2>
-                            <div id="description" class="text-gray-700 min-h-[80px] border-[2px] border-black-400 rounded-lg p-2 whitespace-pre-wrap text-[0.875rem]"></div>
+                    </div>
+                    
+                    <!-- Search Term -->
+                    <div class="mb-3">
+                        <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Search Term</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="search-terms" placeholder="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
+                            <button onclick="copyToClipboard('search-terms', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
+                                <svg class="copy-icon h-5 w-5" fill="#3C4043" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
+                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path>
+                                </svg>
+                                <svg class="check-icon h-5 w-5 text-green-500 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </button>
                         </div>
+                    </div>
+                    
+                    <!-- Error field (hidden by default) -->
+                    <div id="error-field" class="hidden bg-red-50 p-3 rounded-lg text-red-600 mb-3 border border-red-100 text-sm">
+                        <div id="error-message"></div>
+                    </div>
+                </div>
 
-                        <!-- Search Terms -->
-                        <div class="bg-transparent backdrop-blur-sm rounded-lg p-2">
-                            <h2 class="text-[0.875rem] font-semibold text-black-900 mb-1">Search Terms</h2>
-                            <div id="search-terms" class="text-gray-700 min-h-[40px] border-[2px] border-black-400 rounded-lg p-2 whitespace-pre-wrap text-[0.875rem]"></div>
+                <!-- JavaScript for copy functionality -->
+                <script>
+                    function showCopyButtons() {
+                        const copyButtons = document.querySelectorAll('.copy-button');
+                        copyButtons.forEach(button => {
+                            button.classList.remove('hidden');
+                        });
+                    }
+
+                    function copyToClipboard(elementId, buttonElement) {
+                        const element = document.getElementById(elementId);
+                        const copyIcon = buttonElement.querySelector('.copy-icon');
+                        const checkIcon = buttonElement.querySelector('.check-icon');
+                        
+                        // Create a temporary textarea element to copy from
+                        const textarea = document.createElement('textarea');
+                        textarea.value = element.value;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        
+                        // Show check icon
+                        copyIcon.classList.add('hidden');
+                        checkIcon.classList.remove('hidden');
+                        
+                        // Reset to copy icon after 2 seconds
+                        setTimeout(() => {
+                            copyIcon.classList.remove('hidden');
+                            checkIcon.classList.add('hidden');
+                        }, 2000);
+                    }
+
+                    // Call this function when results are fetched successfully
+                    function handleSuccessfulResults(response) {
+                        showCopyButtons();
+                        
+                        // Update input fields with response data
+                        document.getElementById('amazon-title').value = response.amazon_title || '';
+                        document.getElementById('expert-title').value = response.expert_title || '';
+                        document.getElementById('description').value = response.description || '';
+                        document.getElementById('bullet-points').value = response.bullet_points || '';
+                        document.getElementById('search-terms').value = response.search_terms || '';
+
+                        // Update popup content
+                        document.getElementById('popup-amazon-title').textContent = response.amazon_title || '';
+                        document.getElementById('popup-expert-title').textContent = response.expert_title || '';
+                        document.getElementById('popup-description').textContent = response.description || '';
+                        
+                        // Handle bullet points in popup
+                        const bulletPointsContainer = document.getElementById('popup-bullet-points');
+                        bulletPointsContainer.innerHTML = ''; // Clear existing content
+                        if (response.bullet_points) {
+                            const points = response.bullet_points.split('\n');
+                            points.forEach(point => {
+                                if (point.trim()) {
+                                    const p = document.createElement('p');
+                                    p.textContent = point;
+                                    bulletPointsContainer.appendChild(p);
+                                }
+                            });
+                        }
+                        
+                        document.getElementById('popup-search-terms').textContent = response.search_terms || '';
+
+                        // Show results popup
+                        document.getElementById('resultsPopup').classList.remove('hidden');
+                        document.getElementById('resultsPopup').classList.add('flex');
+
+                        // Hide loading spinner if present
+                        const spinner = document.getElementById('loading-spinner');
+                        if (spinner) {
+                            spinner.classList.add('hidden');
+                        }
+
+                        // Hide error field if visible
+                        const errorField = document.getElementById('error-field');
+                        if (errorField) {
+                            errorField.classList.add('hidden');
+                        }
+                    }
+                </script>
+            </div>
+
+            <!-- Results Popup -->
+            <div id="resultsPopup" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold quicksand">Generated Results</h3>
+                        <button onclick="closeResultsPopup()" class="text-gray-500 hover:text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-semibold mb-2 quicksand">Title As Per Platform</h4>
+                            <p id="popup-amazon-title" class="text-gray-700"></p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 quicksand">Title As Per Expert</h4>
+                            <p id="popup-expert-title" class="text-gray-700"></p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 quicksand">Description</h4>
+                            <p id="popup-description" class="text-gray-700"></p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 quicksand">Bullet Points</h4>
+                            <div id="popup-bullet-points" class="text-gray-700"></div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 quicksand">Search Term</h4>
+                            <p id="popup-search-terms" class="text-gray-700"></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Image Popup -->
+    <div id="imagePopup" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="relative bg-white p-4 rounded-lg max-w-[90vw] w-[1600px]">
+            <button onclick="closeImagePopup()" class="absolute -top-4 -right-4 bg-red-500 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-red-600 focus:outline-none shadow-lg text-2xl">
+                ×
+            </button>
+            <img src="/media/keyword_screenshot.jpg" alt="Keyword Screenshot Example" class="max-w-full max-h-[80vh] object-contain rounded-lg">
+        </div>
+    </div>
+    
+    <!-- Add hidden input fields to maintain compatibility with existing JS -->
+    <div class="hidden">
+        <input type="url" id="url2">
+        <input type="url" id="url3">
+        <input type="url" id="url4">
+        <textarea id="additional-specs"></textarea>
+        <div id="results-section"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('paste', function(event) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('preview1').src = e.target.result;
+                        document.getElementById('preview-container1').classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(blob);
+                    
+                    // Create a file input event to trigger the existing handler
+                    const fileInput = document.getElementById('keyword-screenshot1');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(blob);
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Trigger the change event
+                    const event = new Event('change', { bubbles: true });
+                    fileInput.dispatchEvent(event);
+                    break;
+                }
+            }
+        });
+        
+        function removeImage(previewId, containerId, inputId) {
+            document.getElementById(previewId).src = '';
+            document.getElementById(containerId).classList.add('hidden');
+            document.getElementById(inputId).value = '';
+            
+            // Reset the file input
+            const fileInput = document.getElementById(inputId);
+            fileInput.value = '';
+            if (fileInput.files) {
+                const dataTransfer = new DataTransfer();
+                fileInput.files = dataTransfer.files;
+            }
+        }
+        
+        // Function to handle file selection for preview
+        function handleFileSelect(input, previewId, containerId, uploadTextId) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(previewId).src = e.target.result;
+                    document.getElementById(containerId).classList.remove('hidden');
+                    if (uploadTextId) {
+                        document.getElementById(uploadTextId).textContent = input.files[0].name;
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Function to show the results popup
+        function showResultsPopup() {
+            const popup = document.getElementById('resultsPopup');
+            popup.classList.remove('hidden');
+            popup.classList.add('flex');
+
+            // Copy the content from the main form to the popup
+            document.getElementById('popup-amazon-title').textContent = document.getElementById('amazon-title').value;
+            document.getElementById('popup-expert-title').textContent = document.getElementById('expert-title').value;
+            document.getElementById('popup-description').textContent = document.getElementById('description').value;
+            document.getElementById('popup-search-terms').textContent = document.getElementById('search-terms').value;
+
+            // Handle bullet points - split by newlines and create list items
+            const bulletPoints = document.getElementById('bullet-points').value.split('\n').filter(point => point.trim());
+            const bulletPointsContainer = document.getElementById('popup-bullet-points');
+            bulletPointsContainer.innerHTML = '';
+            bulletPoints.forEach(point => {
+                const p = document.createElement('p');
+                p.textContent = point;
+                bulletPointsContainer.appendChild(p);
+            });
+        }
+
+        // Function to close the results popup
+        function closeResultsPopup() {
+            const popup = document.getElementById('resultsPopup');
+            popup.classList.add('hidden');
+            popup.classList.remove('flex');
+        }
+
+        // Function to collect all form data
+        function collectFormData() {
+            const formData = {
+                platform: document.getElementById('platform').value,
+                brand: document.getElementById('brand').value,
+                size: document.getElementById('size').value,
+                material: document.getElementById('material').value,
+                color: document.getElementById('color').value,
+                otherSpecs: document.getElementById('other-specs').value,
+                competitorUrls: [],
+                productPhotos: []
+            };
+
+            // Collect competitor URLs
+            const urlInputs = document.querySelectorAll('input[id^="url"]');
+            urlInputs.forEach(input => {
+                if (input.value.trim()) {
+                    formData.competitorUrls.push(input.value.trim());
+                }
+            });
+
+            // Collect product photos
+            const photoInputs = document.querySelectorAll('input[id^="product-photo"]');
+            photoInputs.forEach(input => {
+                if (input.files && input.files[0]) {
+                    formData.productPhotos.push(input.files[0]);
+                }
+            });
+
+            return formData;
+        }
+
+        // Function to validate form data
+        function validateFormData(formData) {
+            const errors = [];
+
+            if (!formData.brand) {
+                errors.push('Brand name is required');
+            }
+
+            if (!formData.size) {
+                errors.push('Size is required');
+            }
+
+            if (!formData.material) {
+                errors.push('Material is required');
+            }
+
+            if (!formData.color) {
+                errors.push('Color is required');
+            }
+
+            if (formData.competitorUrls.length === 0) {
+                errors.push('At least one competitor URL is required');
+            }
+
+            if (formData.productPhotos.length < 2) {
+                errors.push('At least 2 product photos are required');
+            }
+
+            return errors;
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(elementId, button) {
+            const element = document.getElementById(elementId);
+            const text = element.value || element.textContent;
+            
+            // Create a temporary textarea element
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            
+            // Select and copy the text
+            textarea.select();
+            document.execCommand('copy');
+            
+            // Remove the temporary textarea
+            document.body.removeChild(textarea);
+            
+            // Show success animation
+            const copyIcon = button.querySelector('.copy-icon');
+            const checkIcon = button.querySelector('.check-icon');
+            
+            copyIcon.classList.add('hidden');
+            checkIcon.classList.remove('hidden');
+            
+            // Reset the icon after 2 seconds
+            setTimeout(() => {
+                copyIcon.classList.remove('hidden');
+                checkIcon.classList.add('hidden');
+            }, 2000);
+        }
+
+        // Function to handle form submission with validation
+        function generateListing() {
+            const formData = collectFormData();
+            const errors = validateFormData(formData);
+
+            if (errors.length > 0) {
+                // Show errors in the error field
+                const errorField = document.getElementById('error-field');
+                const errorMessage = document.getElementById('error-message');
+                errorField.classList.remove('hidden');
+                errorMessage.innerHTML = errors.join('<br>');
+                return;
+            }
+
+            // Hide error field if it was shown
+            document.getElementById('error-field').classList.add('hidden');
+
+            // Show loading state
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we generate your listing',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Prepare the data for API
+            const apiData = {
+                platform_type: formData.platform,
+                brand: formData.brand,
+                urls: formData.competitorUrls,
+                description: formData.otherSpecs,
+                product_specs: {
+                    size: formData.size,
+                    material: formData.material,
+                    color: formData.color
+                },
+                keyword_screenshots: [], // Will be populated from the image preview
+                product_images: [] // Will be populated from the product photos
+            };
+
+            // Get keyword screenshot data
+            const keywordScreenshot = document.getElementById('preview1');
+            if (keywordScreenshot && keywordScreenshot.src) {
+                apiData.keyword_screenshots.push(keywordScreenshot.src);
+            }
+
+            // Get product photos data
+            const photoInputs = document.querySelectorAll('input[id^="product-photo"]');
+            photoInputs.forEach(input => {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        apiData.product_images.push(e.target.result);
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            });
+
+            // Make API call to backend
+            fetch('/api/generate-listing/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(apiData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Update the form with the generated content
+                const response = data.response;
+                document.getElementById('amazon-title').value = response.amazon_title || '';
+                document.getElementById('expert-title').value = response.expert_title || '';
+                document.getElementById('description').value = response.description || '';
+                document.getElementById('bullet-points').value = response.bullet_points.join('\n') || '';
+                document.getElementById('search-terms').value = response.search_terms || '';
+                
+                Swal.close();
+                showResultsPopup();
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message || 'An error occurred while generating the listing',
+                    icon: 'error'
+                });
+            });
+        }
+
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Function to add URL field
+        function addUrlField() {
+            const urlIndicators = document.getElementById('url-indicators');
+            const urlCount = urlIndicators.children.length + 1;
+            
+            if (urlCount > 4) {
+                Swal.fire({
+                    title: 'Maximum URLs Reached',
+                    text: 'You can only add up to 4 competitor URLs',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            const urlInput = document.createElement('div');
+            urlInput.className = 'flex items-center gap-2 mt-2';
+            urlInput.innerHTML = `
+                <input type="url" id="url${urlCount}" placeholder="https://amazon.in/Xo" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border flex-grow">
+                <button type="button" onclick="removeUrlField(this)" class="px-2 py-1 text-xs text-white rounded-lg bg-red-500 quicksand hover:bg-red-600 transition-colors">Remove</button>
+            `;
+            urlIndicators.appendChild(urlInput);
+        }
+
+        // Function to remove URL field
+        function removeUrlField(button) {
+            button.parentElement.remove();
+        }
+
+        // Function to add photo field
+        function addPhotoField() {
+            const photoIndicators = document.getElementById('photo-indicators');
+            const photoCount = photoIndicators.children.length + 1;
+            
+            if (photoCount > 8) {
+                Swal.fire({
+                    title: 'Maximum Photos Reached',
+                    text: 'You can only add up to 8 product photos',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            const photoInput = document.createElement('div');
+            photoInput.className = 'flex items-center gap-2 mt-2';
+            photoInput.innerHTML = `
+                <input type="text" id="photo-text${photoCount}" placeholder="Attach Upload" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border flex-grow" readonly onclick="document.getElementById('product-photo${photoCount}').click()">
+                <button type="button" onclick="removePhotoField(this)" class="px-2 py-1 text-xs text-white rounded-lg bg-red-500 quicksand hover:bg-red-600 transition-colors">Remove</button>
+                <input type="file" id="product-photo${photoCount}" class="hidden" accept="image/*" onchange="updatePhotoName('product-photo${photoCount}', 'photo-text${photoCount}')">
+            `;
+            photoIndicators.appendChild(photoInput);
+        }
+
+        // Function to remove photo field
+        function removePhotoField(button) {
+            button.parentElement.remove();
+        }
+
+        // Function to update photo name in text input
+        function updatePhotoName(inputId, textId) {
+            const input = document.getElementById(inputId);
+            const textInput = document.getElementById(textId);
+            if (input.files && input.files[0]) {
+                textInput.value = input.files[0].name;
+            }
+        }
+    </script>
+    
     <script src="{% static 'js/listing_creator/creater.js' %}"></script>
 </body>
 </html>

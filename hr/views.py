@@ -29,7 +29,6 @@ class CompanyView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Company'
         context['companies'] = Company.objects.all()
         context['qr_codes'] = QRCode.objects.all()
         return context
@@ -39,7 +38,6 @@ class CreationView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Templates'
         context['departments'] = Department.objects.all()
         context['designations'] = Designation.objects.all()
         context['tandcs'] = TandC.objects.all()
@@ -91,7 +89,6 @@ class OnboardingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Onboarding'
         context['companies'] = Company.objects.all()
         context['employees'] = Employee.objects.all()
         context['offer_letters'] = OfferLetter.objects.all()
@@ -105,7 +102,6 @@ class AttendanceView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Attendance'
         context['employees'] = Employee.objects.all()
         context['qr_codes'] = QRCode.objects.all()
         context['companies'] = Company.objects.all()
@@ -116,7 +112,6 @@ class CreateCompanyView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Create Company'
         logger.debug("Rendering create company form")
         return context
 
@@ -273,7 +268,6 @@ class EmployeeAttendanceView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Mark Attendance'
         return context
 
     def post(self, request, *args, **kwargs):

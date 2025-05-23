@@ -1,0 +1,6 @@
+2025-05-22 16:11:04,274 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250522_161104_manual.log
+2025-05-22 16:11:04,275 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-22 16:11:04,302 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-22 16:11:09,339 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-22 16:11:09,339 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' using specialized browser automation
+2025-05-22 16:11:48,638 - ContactScraper - WARNING - No results from browser search for 'Dropper Bottles in Delhi'. Retry 1/3 after 18.69s
