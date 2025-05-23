@@ -259,7 +259,7 @@ class CustomDomainMiddleware:
             '.devtunnels.ms',
             '1matrix.io',
             'www.1matrix.io',
-            '89.116.20.128',
+            '195.35.20.151',
             # '1matrix.io'  # Removed from local domains to treat it as a custom domain
         ]
         
@@ -270,7 +270,7 @@ class CustomDomainMiddleware:
         return False
 
     def _is_main_domain(self, host):
-        main_domains = ['1matrix.io', 'www.1matrix.io', '89.116.20.128']
+        main_domains = ['1matrix.io', 'www.1matrix.io', '195.35.20.151']
         return host in main_domains or host.startswith('localhost') or host.startswith('127.0.0.1')
         
     def _prepare_seo_data(self, website, page=None):
