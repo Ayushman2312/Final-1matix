@@ -23,6 +23,10 @@ import platform
 import traceback
 from collections import defaultdict, deque
 
+# Add Gemini API for query optimization
+import google.generativeai as genai
+from google.api_core.exceptions import InvalidArgument
+
 # Import specialized Google browser search module
 try:
     # Try absolute import first (when used as a package)
@@ -513,6 +517,40 @@ class ContactScraper:
         self.proxy_list = [None]  # Start with direct connection
         self.current_proxy_index = 0
         
+        # Initialize Gemini API for query optimization
+        # Try to get Gemini API key from .env file
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()  # Load environment variables from .env file
+            self.gemini_api_key = os.environ.get('GEMINI_API_KEY')
+        except ImportError:
+            self.logger.warning("python-dotenv package not installed. Run 'pip install python-dotenv'")
+            self.gemini_api_key = os.environ.get('GEMINI_API_KEY')  # Fallback to direct environment variable
+        self.gemini_model = None
+        
+        if self.gemini_api_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=self.gemini_api_key)
+                self.gemini_model = genai.GenerativeModel('gemini-pro')
+                self.logger.info("Successfully configured Gemini API")
+            except ImportError:
+                self.logger.warning("Google GenerativeAI package not installed. Run 'pip install google-generativeai'")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize Gemini API: {e}")
+        else:
+            self.logger.warning("No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.")
+            
+        # Add excluded websites for search optimization
+        self.search_excluded_sites = [
+            'facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com',
+            'youtube.com', 'pinterest.com', 'indiamart.com', 'amazon.com',
+            'flipkart.com', 'quora.com', 'reddit.com', 'wikipedia.org',
+            'justdial.com', 'sulekha.com', 'yelp.com', 'glassdoor.com',
+            'indeed.com', 'naukri.com', 'monster.com', 'timesjobs.com',
+            'whatsapp.com', 'telegram.org', 'reddit.com', 'tumblr.com'
+        ]
+        
         # Expanded list of domains that should not be scraped (for ethical considerations)
         self.excluded_domains = [
             # Marketplaces and B2B platforms
@@ -770,6 +808,16 @@ class ContactScraper:
         self.found_emails = set()
         self.found_phones = set()
         
+        # Add excluded websites for search optimization
+        self.search_excluded_sites = [
+            'facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com',
+            'youtube.com', 'pinterest.com', 'indiamart.com', 'amazon.com',
+            'flipkart.com', 'quora.com', 'reddit.com', 'wikipedia.org',
+            'justdial.com', 'sulekha.com', 'yelp.com', 'glassdoor.com',
+            'indeed.com', 'naukri.com', 'monster.com', 'timesjobs.com',
+            'whatsapp.com', 'telegram.org', 'reddit.com', 'tumblr.com'
+        ]
+            
     def _ensure_dependencies(self):
         """Ensure all required dependencies are installed."""
         try:
@@ -1165,28 +1213,86 @@ class ContactScraper:
             page = self.page
             
         try:
-            # Set viewport to a common resolution
-            await page.set_viewport_size({"width": 1920, "height": 1080})
+            # Set viewport to a common resolution with randomization
+            common_resolutions = [
+                {"width": 1920, "height": 1080},
+                {"width": 1366, "height": 768},
+                {"width": 1536, "height": 864},
+                {"width": 1440, "height": 900},
+                {"width": 1280, "height": 720}
+            ]
+            await page.set_viewport_size(random.choice(common_resolutions))
             
-            # Override navigator properties
+            # Override navigator properties with more sophisticated approach
             await page.add_init_script("""
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined
-                });
-                Object.defineProperty(navigator, 'plugins', {
-                    get: () => [1, 2, 3, 4, 5]
-                });
-                Object.defineProperty(navigator, 'languages', {
-                    get: () => ['en-US', 'en']
-                });
+                // Advanced fingerprint protection
+                (() => {
+                    // Override webdriver property
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    });
+                    
+                    // Create fake plugins array
+                    const makePluginsArray = () => {
+                        const plugins = [
+                            { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+                            { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: 'Portable Document Format' },
+                            { name: 'Native Client', filename: 'internal-nacl-plugin', description: 'Native Client Executable' }
+                        ];
+                        
+                        // Create a plugins-like object
+                        const pluginsArray = Object.create(Object.getPrototypeOf(navigator.plugins));
+                        plugins.forEach((plugin, i) => {
+                            const pluginObj = {
+                                name: plugin.name,
+                                description: plugin.description,
+                                filename: plugin.filename,
+                                length: 1
+                            };
+                            Object.setPrototypeOf(pluginObj, Plugin.prototype);
+                            pluginsArray[i] = pluginObj;
+                            pluginsArray[plugin.name] = pluginObj;
+                        });
+                        
+                        pluginsArray.length = plugins.length;
+                        return pluginsArray;
+                    };
+                    
+                    // Replace navigator plugins and mimeTypes
+                    const pluginsArray = makePluginsArray();
+                    Object.defineProperty(navigator, 'plugins', {
+                        get: () => pluginsArray
+                    });
+                    
+                    // Randomize hardware concurrency
+                    const originalHardwareConcurrency = navigator.hardwareConcurrency;
+                    Object.defineProperty(navigator, 'hardwareConcurrency', {
+                        get: () => Math.min(originalHardwareConcurrency || 4, 8)
+                    });
+                    
+                    // Fix inconsistencies in WebGL reporting
+                    const getParameter = WebGLRenderingContext.prototype.getParameter;
+                    WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                        // UNMASKED_VENDOR_WEBGL and UNMASKED_RENDERER_WEBGL
+                        if (parameter === 37445) {
+                            return 'Intel Inc.';
+                        }
+                        if (parameter === 37446) {
+                            return 'Intel Iris OpenGL Engine';
+                        }
+                        return getParameter.apply(this, arguments);
+                    };
+                })();
             """)
             
-            # Set user agent
+            # Set user agent with improved consistency
             user_agent = self.get_random_user_agent()
+            
+            # Set headers that better mimic real browsers
             await page.set_extra_http_headers({
                 'User-Agent': user_agent,
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-IN,en-US;q=0.9,en;q=0.8,hi;q=0.7',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
                 'Accept-Encoding': 'gzip, deflate, br',
                 'Connection': 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
@@ -1194,17 +1300,141 @@ class ContactScraper:
                 'Sec-Fetch-Mode': 'navigate',
                 'Sec-Fetch-Site': 'none',
                 'Sec-Fetch-User': '?1',
-                'DNT': '1'
+                'DNT': '1',
+                'Sec-CH-UA': '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
+                'Sec-CH-UA-Mobile': '?0',
+                'Sec-CH-UA-Platform': '"Windows"'
             })
             
-            # Add random mouse movements
-            await self._simulate_human_browsing()
+            # Improved human-like behavior simulation
+            await self._simulate_human_browsing(page)
             
             return True
         except Exception as e:
             self.logger.error(f"Error applying stealth settings: {e}")
             return False
             
+    async def _simulate_human_browsing(self, page=None):
+        """Simulate realistic human browsing behavior with improved randomization."""
+        if page is None:
+            page = self.page
+            
+        if not page:
+            return
+            
+        try:
+            # Get viewport dimensions
+            viewport = await page.evaluate("""
+                () => ({
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                })
+            """)
+            
+            width = viewport.get('width', 1366)
+            height = viewport.get('height', 768)
+            
+            # More realistic mouse movements: curved paths instead of straight lines
+            points = []
+            num_points = random.randint(5, 10)
+            
+            # Generate random curve points
+            start_x, start_y = random.randint(0, width), random.randint(0, height)
+            points.append((start_x, start_y))
+            
+            for _ in range(num_points):
+                next_x = max(0, min(width, points[-1][0] + random.randint(-300, 300)))
+                next_y = max(0, min(height, points[-1][1] + random.randint(-300, 300)))
+                points.append((next_x, next_y))
+            
+            # Move mouse along the curved path
+            await page.mouse.move(points[0][0], points[0][1])
+            for x, y in points[1:]:
+                # Randomize speed for more human-like movement
+                delay = random.uniform(0.05, 0.2)
+                await page.mouse.move(x, y, steps=random.randint(2, 5))
+                await asyncio.sleep(delay)
+                
+            # Random scrolling behavior
+            scroll_count = random.randint(2, 5)
+            for _ in range(scroll_count):
+                # Random scroll amount
+                scroll_amount = random.randint(100, 800)
+                
+                # Random scroll speed (slower = more human)
+                scroll_steps = random.randint(3, 8)
+                for step in range(1, scroll_steps + 1):
+                    step_amount = scroll_amount * step / scroll_steps
+                    await page.evaluate(f"window.scrollTo(0, {step_amount})")
+                    await asyncio.sleep(random.uniform(0.05, 0.15))
+                
+                # Random pause between scrolls
+                await asyncio.sleep(random.uniform(0.5, 2.0))
+                
+            # Sometimes scroll back up (partial)
+            if random.random() < 0.4:  # 40% chance
+                up_scroll = random.randint(100, 400)
+                await page.evaluate(f"window.scrollBy(0, -{up_scroll})")
+                await asyncio.sleep(random.uniform(0.3, 1.0))
+                
+            # Random clicks on non-interactive elements (avoiding links)
+            if random.random() < 0.3:  # 30% chance to click
+                # Find a safe area to click (avoid links and inputs)
+                safe_element = await page.evaluate("""
+                    () => {
+                        const elements = document.querySelectorAll('div, p, span, section, article');
+                        const safeElements = Array.from(elements).filter(el => {
+                            // Check if this element or its parents are clickable
+                            let node = el;
+                            while (node) {
+                                if (node.tagName === 'A' || node.tagName === 'BUTTON' || 
+                                    node.tagName === 'INPUT' || node.tagName === 'FORM' ||
+                                    node.onclick) {
+                                    return false;
+                                }
+                                node = node.parentElement;
+                            }
+                            
+                            // Check if element is visible and has size
+                            const rect = el.getBoundingClientRect();
+                            return rect.width > 10 && rect.height > 10 && 
+                                   rect.top >= 0 && rect.left >= 0 && 
+                                   rect.bottom <= window.innerHeight && 
+                                   rect.right <= window.innerWidth;
+                        });
+                        
+                        if (safeElements.length === 0) return null;
+                        
+                        const randomElement = safeElements[Math.floor(Math.random() * safeElements.length)];
+                        const rect = randomElement.getBoundingClientRect();
+                        
+                        return {
+                            x: rect.left + rect.width * Math.random(),
+                            y: rect.top + rect.height * Math.random()
+                        };
+                    }
+                """)
+                
+                if safe_element:
+                    # Move to the element with natural motion
+                    await page.mouse.move(
+                        safe_element['x'], 
+                        safe_element['y'],
+                        steps=random.randint(3, 7)
+                    )
+                    await asyncio.sleep(random.uniform(0.1, 0.3))
+                    
+                    # Click with a slight delay as humans would
+                    await page.mouse.down()
+                    await asyncio.sleep(random.uniform(0.05, 0.15))
+                    await page.mouse.up()
+                    
+                    # Pause after clicking
+                    await asyncio.sleep(random.uniform(0.5, 1.5))
+                
+        except Exception as e:
+            self.logger.error(f"Error simulating human browsing: {e}")
+
     async def _detect_captcha_in_browser(self, page=None):
         """Enhanced CAPTCHA detection in browser context."""
         if page is None:
@@ -1268,76 +1498,6 @@ class ContactScraper:
             self.logger.error(f"Error detecting CAPTCHA: {e}")
             return False
             
-    async def _simulate_human_browsing(self):
-        """Simulate realistic human browsing behavior."""
-        if not self.page:
-            return
-            
-        try:
-            # Random mouse movements
-            for _ in range(random.randint(3, 7)):
-                x = random.randint(0, 1920)
-                y = random.randint(0, 1080)
-                await self.page.mouse.move(x, y)
-                await asyncio.sleep(random.uniform(0.1, 0.3))
-                
-            # Random scrolling
-            scroll_amount = random.randint(100, 500)
-            await self.page.evaluate(f"window.scrollBy(0, {scroll_amount})")
-            await asyncio.sleep(random.uniform(0.5, 1.5))
-            
-            # Random scroll back up
-            if random.random() < 0.3:  # 30% chance to scroll back up
-                await self.page.evaluate(f"window.scrollBy(0, -{scroll_amount})")
-                await asyncio.sleep(random.uniform(0.3, 0.8))
-                
-            # Random mouse clicks on non-interactive elements
-            if random.random() < 0.2:  # 20% chance to click
-                x = random.randint(0, 1920)
-                y = random.randint(0, 1080)
-                await self.page.mouse.click(x, y)
-                await asyncio.sleep(random.uniform(0.2, 0.5))
-                
-        except Exception as e:
-            self.logger.error(f"Error simulating human browsing: {e}")
-            
-    def get_random_user_agent(self) -> str:
-        """Get a random user agent string that looks realistic."""
-        # Common browsers and their versions
-        browsers = {
-            'chrome': [
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36',
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36'
-            ],
-            'firefox': [
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:{version}) Gecko/20100101 Firefox/{version}',
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:{version}) Gecko/20100101 Firefox/{version}'
-            ],
-            'safari': [
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{version} Safari/605.1.15'
-            ]
-        }
-        
-        # Browser version ranges
-        versions = {
-            'chrome': ['90.0.4430.212', '91.0.4472.124', '92.0.4515.159', '93.0.4577.82', '94.0.4606.81'],
-            'firefox': ['89.0', '90.0', '91.0', '92.0', '93.0'],
-            'safari': ['14.1.2', '15.0', '15.1', '15.2', '15.3']
-        }
-        
-        # Select random browser and version
-        browser = random.choice(list(browsers.keys()))
-        template = random.choice(browsers[browser])
-        version = random.choice(versions[browser])
-        
-        return template.format(version=version)
-    
-    async def close_browser(self):
-        """Close Playwright browser if it's open."""
-        async with self.browser_lock:
-            await self._cleanup_browser_resources()
-            self.browser_initialized = False
-                
     async def browser_get_page(self, url, max_retries=2):
         """Use Playwright browser automation to get a page with improved reliability."""
         # Ensure browser is initialized
@@ -2820,6 +2980,96 @@ class ContactScraper:
         self.logger.info(f"Results saved to {filename}")
         return filename
 
+    # Add Gemini API query optimization methods
+    def optimize_search_query_with_gemini(self, keyword: str) -> str:
+        """
+        Use Google's Gemini API to optimize the search query for finding emails and phone numbers.
+        
+        Args:
+            keyword (str): The original search keyword
+            
+        Returns:
+            str: Optimized search query for Google
+        """
+        if not self.gemini_model:
+            self.logger.warning("Gemini API not available. Using manual query optimization.")
+            return self._fallback_optimize_query(keyword)
+            
+        try:
+            # Create exclusion string for sites we want to exclude
+            exclusion_string = ' '.join([f'-site:{site}' for site in self.search_excluded_sites[:10]])
+            
+            # Create prompt for Gemini
+            prompt = f"""
+            I need to find business contact information (emails and phone numbers) for "{keyword}".
+            Please create an optimized Google search query that will help me find this information.
+            
+            The query should:
+            1. Focus on finding contact pages, email addresses, and phone numbers
+            2. Target business websites related to "{keyword}"
+            3. Exclude social media and marketplace sites
+            4. Use Google search operators effectively
+            5. Be optimized to find Indian businesses if possible
+            
+            Return ONLY the optimized search query without any explanations.
+            """
+            
+            # Get response from Gemini
+            try:
+                response = self.gemini_model.generate_content(prompt)
+                
+                if response and hasattr(response, 'text'):
+                    optimized_query = response.text.strip()
+                    
+                    # Ensure the query isn't too long
+                    if len(optimized_query) > 250:
+                        optimized_query = optimized_query[:250]
+                        
+                    # Add exclusions if not already present
+                    if '-site:' not in optimized_query:
+                        optimized_query += f" {exclusion_string}"
+                        
+                    self.logger.info(f"Gemini optimized query: {optimized_query}")
+                    return optimized_query
+                else:
+                    self.logger.warning("Empty response from Gemini API")
+                    return self._fallback_optimize_query(keyword)
+            except Exception as e:
+                self.logger.error(f"Error generating content with Gemini API: {e}")
+                return self._fallback_optimize_query(keyword)
+                
+        except Exception as e:
+            self.logger.error(f"Error using Gemini API: {e}")
+            return self._fallback_optimize_query(keyword)
+    
+    def _fallback_optimize_query(self, keyword: str) -> str:
+        """
+        Fallback method to manually optimize the search query if Gemini API is unavailable.
+        
+        Args:
+            keyword (str): The original search keyword
+            
+        Returns:
+            str: Manually optimized search query
+        """
+        # Create exclusion string for sites we want to exclude
+        exclusion_string = ' '.join([f'-site:{site}' for site in self.search_excluded_sites])
+        
+        # Check if keyword appears to be a company or business name
+        if ' ' in keyword or keyword[0].isupper():
+            # Likely a business name
+            optimized_query = f'"{keyword}" (contact OR "contact us" OR "email us" OR "phone" OR "mobile") (email OR "contact information" OR "get in touch") {exclusion_string}'
+        else:
+            # More generic keyword
+            optimized_query = f'"{keyword}" business (contact OR "contact us" OR "email" OR "phone" OR "mobile") {exclusion_string}'
+            
+        # Add India-specific terms if appropriate
+        if self.is_indian_domain(keyword) or 'india' in keyword.lower():
+            optimized_query += ' india'
+            
+        self.logger.info(f"Fallback optimized query: {optimized_query}")
+        return optimized_query
+
     def scrape(self, keyword: str, num_results: int = 50, max_runtime_minutes: int = 15, task_id=None, task_record=None):
         """
         Main method to scrape contact information based on a keyword.
@@ -2885,12 +3135,17 @@ class ContactScraper:
         self.logger.info(f"Starting scrape for keyword: '{keyword}'")
         print(f"🔍 Starting search for '{keyword}', targeting {num_results} contacts within {max_runtime_minutes} minutes")
         
+        # Optimize the search query using Gemini API
+        optimized_query = self.optimize_search_query_with_gemini(keyword)
+        self.logger.info(f"Original keyword: '{keyword}' | Optimized query: '{optimized_query}'")
+        print(f"🧠 Optimized search query: {optimized_query}")
+        
         # Initialize task status if tracking is enabled
         if task_id:
             status_data = {
                 "status": "processing",
                 "progress": 5,
-                "message": f"Starting search for '{keyword}'",
+                "message": f"Starting search with optimized query: '{optimized_query}'",
                 "keyword": keyword,
                 "task_id": task_id,
                 "results_count": 0,
@@ -2937,14 +3192,20 @@ class ContactScraper:
                 # SEARCH FOR URLS
                 print(f"🔍 Searching Google for {keyword} (page {search_page})...")
                 
-                # Use our search function to get URLs
-                search_results = self.search_google(keyword, num_results=10, page=search_page-1)
+                # First optimize the search query if we haven't done so yet
+                if not 'optimized_query' in locals():
+                    optimized_query = self.optimize_search_query_with_gemini(keyword)
+                    self.logger.info(f"Original keyword: '{keyword}' | Optimized query: '{optimized_query}'")
+                    print(f"🧠 Optimized search query: {optimized_query}")
+                
+                # Use our search function to get URLs with the optimized query instead of the original keyword
+                search_results = self.search_google(optimized_query, num_results=10, page=search_page-1)
                 search_page += 1  # Increment page counter for next iteration
                 
                 if not search_results:
                     print("❌ No search results found. Trying alternative method...")
                     # Try DuckDuckGo as a fallback
-                    search_results = self.search_duckduckgo(keyword, num_results=num_results)
+                    search_results = self.search_duckduckgo(optimized_query, num_results=num_results)
                     
                 if search_results:
                     print(f"✅ Found {len(search_results)} URLs to check")
@@ -3043,6 +3304,7 @@ class ContactScraper:
                 "task_info": {
                     "task_id": task_id,
                     "keyword": keyword,
+                    "optimized_query": optimized_query,
                     "completion_time": datetime.now().isoformat(),
                     "elapsed_time_minutes": (time.time() - start_time) / 60.0,
                     "urls_processed": urls_processed,
@@ -3089,6 +3351,7 @@ class ContactScraper:
                 "task_info": {
                     "task_id": task_id,
                     "keyword": keyword,
+                    "optimized_query": optimized_query if 'optimized_query' in locals() else None,
                     "status": "error",
                     "error_message": str(e),
                     "elapsed_time_minutes": (time.time() - start_time) / 60.0
@@ -3371,8 +3634,479 @@ class ContactScraper:
         unique_results = list(dict.fromkeys(results))
         return unique_results[:num_results]
 
+    def extract_contacts_from_url(self, url):
+        """
+        Extract contact information from a given URL with enhanced scraping techniques.
+        
+        Args:
+            url: URL to scrape
+            
+        Returns:
+            tuple: (set of emails, set of phones)
+        """
+        # Extract domain for logging
+        domain = urlparse(url).netloc
+        self.logger.info(f"Extracting contacts from: {url}")
+        
+        # Check if domain is in excluded list
+        if domain in self.excluded_domains:
+            self.logger.info(f"Skipping excluded domain: {domain}")
+            return set(), set()
+        
+        emails = set()
+        phones = set()
+        
+        # Apply advanced anti-bot detection techniques
+        self.rate_limiter.adaptive_delay(domain, 0.8)  # Lower importance means we're willing to wait longer
+        
+        # First, try to use the browser (more reliable for modern sites)
+        if self.use_browser:
+            try:
+                # Use our async function with proper event loop management
+                loop = get_or_create_event_loop()
+                html_content = loop.run_until_complete(self.browser_get_page(url, max_retries=2))
+                
+                if html_content:
+                    self.logger.info(f"Successfully retrieved content for {url} using browser")
+                    
+                    # Parse with BeautifulSoup for easier extraction
+                    soup = BeautifulSoup(html_content, 'html.parser')
+                    
+                    # Extract both visible and hidden content
+                    visible_text = soup.get_text()
+                    
+                    # Look for emails in visible text
+                    emails_found = self._extract_emails_from_text(visible_text)
+                    emails.update(emails_found)
+                    
+                    # Look for phones in visible text with enhanced extraction
+                    phones_found = self._extract_phones_from_text(visible_text, source=f"{domain}_visible")
+                    phones.update(phones_found)
+                    
+                    # Extract from HTML attributes (like href="mailto:" or href="tel:")
+                    attr_emails, attr_phones = self._extract_from_attributes(soup, domain)
+                    emails.update(attr_emails)
+                    phones.update(attr_phones)
+                    
+                    # Extract from meta tags and JSON-LD structured data
+                    struct_emails, struct_phones = self._extract_from_structured_data(html_content, domain)
+                    emails.update(struct_emails)
+                    phones.update(struct_phones)
+                    
+                    # Extract from common obfuscation patterns
+                    obfs_emails = self._extract_obfuscated_emails(html_content)
+                    emails.update(obfs_emails)
+                    
+                    # Look for contact pages and follow them for more information
+                    if not emails and not phones:
+                        contact_urls = self._find_contact_urls(html_content, url, domain)
+                        
+                        for contact_url in contact_urls[:2]:  # Limit to 2 contact pages
+                            self.logger.info(f"Following contact URL: {contact_url}")
+                            
+                            # Add a short delay before requesting contact page
+                            time.sleep(random.uniform(1, 3))
+                            
+                            # Get the contact page content
+                            contact_html = loop.run_until_complete(self.browser_get_page(contact_url, max_retries=1))
+                            
+                            if contact_html:
+                                contact_soup = BeautifulSoup(contact_html, 'html.parser')
+                                contact_text = contact_soup.get_text()
+                                
+                                # Extract from contact page
+                                contact_emails = self._extract_emails_from_text(contact_text)
+                                emails.update(contact_emails)
+                                
+                                contact_phones = self._extract_phones_from_text(
+                                    contact_text, source=f"{domain}_contact_page"
+                                )
+                                phones.update(contact_phones)
+                                
+                                # Extract from HTML attributes on contact page
+                                attr_emails, attr_phones = self._extract_from_attributes(
+                                    contact_soup, f"{domain}_contact_page"
+                                )
+                                emails.update(attr_emails)
+                                phones.update(attr_phones)
+                else:
+                    self.logger.warning(f"Failed to get content from {url} using browser")
+            
+            except Exception as e:
+                self.logger.error(f"Error using browser for {url}: {e}")
+                traceback.print_exc()
+        
+        # If browser fails or is disabled, try with requests
+        if not emails and not phones:
+            try:
+                # Make the HTTP request with retry logic
+                response = self.make_request(url)
+                
+                if response and response.status_code == 200:
+                    # Parse with BeautifulSoup
+                    soup = BeautifulSoup(response.text, 'html.parser')
+                    
+                    # Extract visible text
+                    visible_text = soup.get_text()
+                    
+                    # Extract emails and phones from visible text
+                    emails_found = self._extract_emails_from_text(visible_text)
+                    emails.update(emails_found)
+                    
+                    phones_found = self._extract_phones_from_text(visible_text, source=f"{domain}_requests")
+                    phones.update(phones_found)
+                    
+                    # Extract from HTML attributes
+                    attr_emails, attr_phones = self._extract_from_attributes(soup, domain)
+                    emails.update(attr_emails)
+                    phones.update(attr_phones)
+                    
+                    # Extract from structured data
+                    struct_emails, struct_phones = self._extract_from_structured_data(response.text, domain)
+                    emails.update(struct_emails)
+                    phones.update(struct_phones)
+                    
+                    # Extract obfuscated emails
+                    obfs_emails = self._extract_obfuscated_emails(response.text)
+                    emails.update(obfs_emails)
+                    
+                    # If no contacts found, try contact pages
+                    if not emails and not phones:
+                        contact_urls = self._find_contact_urls(response.text, url, domain)
+                        
+                        for contact_url in contact_urls[:2]:
+                            self.logger.info(f"Following contact URL: {contact_url}")
+                            
+                            # Add a delay before requesting contact page
+                            time.sleep(random.uniform(1, 3))
+                            
+                            # Get the contact page
+                            contact_response = self.make_request(contact_url)
+                            
+                            if contact_response and contact_response.status_code == 200:
+                                contact_soup = BeautifulSoup(contact_response.text, 'html.parser')
+                                contact_text = contact_soup.get_text()
+                                
+                                # Extract from contact page
+                                contact_emails = self._extract_emails_from_text(contact_text)
+                                emails.update(contact_emails)
+                                
+                                contact_phones = self._extract_phones_from_text(
+                                    contact_text, source=f"{domain}_contact_page"
+                                )
+                                phones.update(contact_phones)
+                                
+                                # Extract from HTML attributes on contact page
+                                attr_emails, attr_phones = self._extract_from_attributes(
+                                    contact_soup, f"{domain}_contact_page"
+                                )
+                                emails.update(attr_emails)
+                                phones.update(attr_phones)
+                else:
+                    self.logger.warning(f"Failed to get content from {url} using requests")
+                    
+            except Exception as e:
+                self.logger.error(f"Error using requests for {url}: {e}")
+        
+        # Validate all emails before returning
+        validated_emails = set()
+        for email in emails:
+            if self._validate_email(email):
+                validated_emails.add(email)
+        
+        self.logger.info(f"Extraction from {url} complete. Found {len(validated_emails)} emails and {len(phones)} phones")
+        return validated_emails, phones
+
+    def _extract_from_attributes(self, soup, domain_source):
+        """
+        Extract contact information from HTML attributes like href="mailto:" or href="tel:".
+        
+        Args:
+            soup: BeautifulSoup object
+            domain_source: Source domain for attribution
+            
+        Returns:
+            tuple: (set of emails, set of phones)
+        """
+        emails = set()
+        phones = set()
+        
+        # Extract from mailto links
+        mailto_links = soup.select('a[href^="mailto:"]')
+        for link in mailto_links:
+            href = link.get('href', '')
+            if href.startswith('mailto:'):
+                email = href[7:].split('?')[0].strip()  # Remove mailto: prefix and any parameters
+                if self._validate_email(email):
+                    emails.add(email)
+        
+        # Extract from tel links
+        tel_links = soup.select('a[href^="tel:"], a[href^="phone:"]')
+        for link in tel_links:
+            href = link.get('href', '')
+            if href.startswith('tel:') or href.startswith('phone:'):
+                phone = href.split(':')[1].strip()
+                validated_phone = self.validate_indian_phone(phone, f"{domain_source}_tel_link")
+                if validated_phone:
+                    phones.add(validated_phone)
+        
+        # Extract from data attributes that might contain contact info
+        data_elements = soup.select('[data-email], [data-contact], [data-phone]')
+        for element in data_elements:
+            # Check for email data attributes
+            email_attr = element.get('data-email', '')
+            if email_attr and '@' in email_attr:
+                if self._validate_email(email_attr):
+                    emails.add(email_attr)
+            
+            # Check for phone data attributes
+            phone_attr = element.get('data-phone', '') or element.get('data-contact', '')
+            if phone_attr:
+                validated_phone = self.validate_indian_phone(phone_attr, f"{domain_source}_data_attr")
+                if validated_phone:
+                    phones.add(validated_phone)
+        
+        return emails, phones
+
+    def _extract_from_structured_data(self, html_content, domain_source):
+        """
+        Extract contact information from structured data like JSON-LD, microdata, etc.
+        
+        Args:
+            html_content: HTML content to parse
+            domain_source: Source domain for attribution
+            
+        Returns:
+            tuple: (set of emails, set of phones)
+        """
+        emails = set()
+        phones = set()
+        
+        # Extract JSON-LD data
+        json_ld_data = extract_json_ld(html_content)
+        
+        for data in json_ld_data:
+            # Extract emails from JSON-LD
+            if isinstance(data, dict):
+                # Check for email in standard properties
+                email_properties = ['email', 'emailAddress', 'contactEmail', 'contactPoint.email']
+                for prop in email_properties:
+                    if '.' in prop:
+                        # Handle nested properties
+                        parts = prop.split('.')
+                        value = data
+                        for part in parts:
+                            if isinstance(value, dict) and part in value:
+                                value = value[part]
+                            else:
+                                value = None
+                                break
+                        
+                        if value and isinstance(value, str) and '@' in value:
+                            if self._validate_email(value):
+                                emails.add(value)
+                    elif prop in data and isinstance(data[prop], str) and '@' in data[prop]:
+                        if self._validate_email(data[prop]):
+                            emails.add(data[prop])
+                
+                # Check for phone in standard properties
+                phone_properties = ['telephone', 'phone', 'contactPhone', 'contactPoint.telephone']
+                for prop in phone_properties:
+                    if '.' in prop:
+                        # Handle nested properties
+                        parts = prop.split('.')
+                        value = data
+                        for part in parts:
+                            if isinstance(value, dict) and part in value:
+                                value = value[part]
+                            else:
+                                value = None
+                                break
+                        
+                        if value:
+                            validated_phone = self.validate_indian_phone(str(value), f"{domain_source}_jsonld")
+                            if validated_phone:
+                                phones.add(validated_phone)
+                    elif prop in data:
+                        validated_phone = self.validate_indian_phone(str(data[prop]), f"{domain_source}_jsonld")
+                        if validated_phone:
+                            phones.add(validated_phone)
+                
+                # Check in contactPoint array
+                if 'contactPoint' in data and isinstance(data['contactPoint'], list):
+                    for contact_point in data['contactPoint']:
+                        if isinstance(contact_point, dict):
+                            if 'telephone' in contact_point:
+                                validated_phone = self.validate_indian_phone(
+                                    str(contact_point['telephone']), f"{domain_source}_contactPoint"
+                                )
+                                if validated_phone:
+                                    phones.add(validated_phone)
+                            
+                            if 'email' in contact_point and '@' in contact_point['email']:
+                                if self._validate_email(contact_point['email']):
+                                    emails.add(contact_point['email'])
+        
+        # Extract from meta tags that might contain contact info
+        soup = BeautifulSoup(html_content, 'html.parser')
+        meta_tags = soup.select('meta[name*="email"], meta[name*="contact"], meta[property*="email"], meta[property*="contact"]')
+        
+        for tag in meta_tags:
+            content = tag.get('content', '')
+            
+            # Check for email
+            if '@' in content:
+                email_match = self.email_pattern.search(content)
+                if email_match:
+                    email = email_match.group(0)
+                    if self._validate_email(email):
+                        emails.add(email)
+            
+            # Check for phone
+            phone_matches = self.phone_pattern.findall(content)
+            for match in phone_matches:
+                if isinstance(match, tuple):
+                    # Handle tuple results from regex groups
+                    for group in match:
+                        if group:
+                            validated_phone = self.validate_indian_phone(group, f"{domain_source}_meta_tag")
+                            if validated_phone:
+                                phones.add(validated_phone)
+                else:
+                    validated_phone = self.validate_indian_phone(match, f"{domain_source}_meta_tag")
+                    if validated_phone:
+                        phones.add(validated_phone)
+        
+        return emails, phones
+
+    def _extract_obfuscated_emails(self, html_content):
+        """
+        Extract emails that are obfuscated to avoid scraping.
+        
+        Args:
+            html_content: HTML content to parse
+            
+        Returns:
+            set: Set of extracted emails
+        """
+        emails = set()
+        
+        # Look for common JavaScript obfuscation patterns
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Pattern 1: Split emails with multiple spans
+        try:
+            # Find elements with email parts
+            email_spans = soup.select('span[data-email-part], span[class*="email"], span[id*="email"]')
+            
+            if email_spans:
+                # Group by parent to reconstruct emails split across multiple spans
+                email_parents = {}
+                for span in email_spans:
+                    parent = span.parent
+                    if parent not in email_parents:
+                        email_parents[parent] = []
+                    email_parents[parent].append(span.get_text())
+                
+                # Reconstruct emails
+                for parts in email_parents.values():
+                    reconstructed = ''.join(parts)
+                    if '@' in reconstructed:
+                        if self._validate_email(reconstructed):
+                            emails.add(reconstructed)
+        except Exception as e:
+            self.logger.warning(f"Error extracting obfuscated emails (pattern 1): {e}")
+        
+        # Pattern 2: document.write with concatenation
+        js_patterns = [
+            r'document\.write\s*\(\s*[\'"][^\'"]+'  # document.write with string
+            r'[a-zA-Z0-9._%+-]+\s*(?:[\[\(]?\s*at\s*[\]\)]?|\[@\]|&#64;|@)\s*[a-zA-Z0-9.-]+'  # username @ domain pattern
+            r'[^\'"]+[\'"]\s*\)',  # rest of the string
+            
+            # Unicode encoding
+            r'(?:&#[0-9]{2,4};){5,}',  # Unicode chars that might be an email
+            
+            # Reversed email with JavaScript reversal
+            r'var\s+[a-z]\s*=\s*[\'"][a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}[\'"]\s*;.*\.split\s*\(\s*[\'"][\'"]'
+        ]
+        
+        for pattern in js_patterns:
+            try:
+                matches = re.findall(pattern, html_content, re.IGNORECASE)
+                for match in matches:
+                    # Look for email patterns in the match
+                    email_matches = self.email_pattern.findall(match)
+                    for email in email_matches:
+                        if self._validate_email(email):
+                            emails.add(email)
+                    
+                    # For unicode encoding, try to decode
+                    if '&#' in match:
+                        try:
+                            decoded = self._decode_html_entities(match)
+                            email_matches = self.email_pattern.findall(decoded)
+                            for email in email_matches:
+                                if self._validate_email(email):
+                                    emails.add(email)
+                        except Exception:
+                            pass
+            except Exception as e:
+                self.logger.warning(f"Error extracting obfuscated emails (JS patterns): {e}")
+        
+        # Check for emails in HTML comments
+        try:
+            comments = soup.find_all(string=lambda text: isinstance(text, Comment))
+            for comment in comments:
+                email_matches = self.email_pattern.findall(comment)
+                for email in email_matches:
+                    if self._validate_email(email):
+                        emails.add(email)
+        except Exception as e:
+            self.logger.warning(f"Error extracting emails from comments: {e}")
+        
+        # Check for CSS obfuscation (display:none, visibility:hidden)
+        try:
+            hidden_elements = soup.select('[style*="display:none"], [style*="visibility:hidden"], .hidden, [hidden]')
+            for element in hidden_elements:
+                text = element.get_text()
+                email_matches = self.email_pattern.findall(text)
+                for email in email_matches:
+                    if self._validate_email(email):
+                        emails.add(email)
+        except Exception as e:
+            self.logger.warning(f"Error extracting emails from hidden elements: {e}")
+        
+        return emails
+
+    def _decode_html_entities(self, text):
+        """
+        Decode HTML entities in text.
+        
+        Args:
+            text: Text with HTML entities
+            
+        Returns:
+            str: Decoded text
+        """
+        # Replace common HTML entities
+        text = text.replace('&amp;', '&')
+        text = text.replace('&lt;', '<')
+        text = text.replace('&gt;', '>')
+        text = text.replace('&quot;', '"')
+        text = text.replace('&#39;', "'")
+        
+        # Replace numeric entities (&#xx;)
+        def replace_entity(match):
+            entity = match.group(1)
+            if entity.startswith('x'):
+                return chr(int(entity[1:], 16))
+            else:
+                return chr(int(entity))
+                
+        return re.sub(r'&#([0-9a-fA-F]+);', replace_entity, text)
+
 # Function for Celery to call
-def run_web_scraper_task(keyword, num_results=50, max_runtime_minutes=15, task_id=None, task_record=None, use_browser=True):
+def run_web_scraper_task(keyword, num_results=50, max_runtime_minutes=15, task_id=None, task_record=None, use_browser=True, *args, **kwargs):
     """
     Function to be called by Celery for running the scraper as a background task.
     
@@ -3388,200 +4122,7 @@ def run_web_scraper_task(keyword, num_results=50, max_runtime_minutes=15, task_i
         Dict with scraping results and task information
     """
     # Set up logging to file
-    task_log_dir = "scraper_logs"
-    os.makedirs(task_log_dir, exist_ok=True)
-    
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_filename = f"task_{task_id or 'manual'}_{timestamp}.log"
-    log_file_path = os.path.join(task_log_dir, log_filename)
-    
-    # Create a file handler for the task
-    file_handler = logging.FileHandler(log_file_path)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    file_handler.setLevel(logging.INFO)
-    
-    # Get the root logger and add our handler
-    root_logger = logging.getLogger()
-    root_logger.addHandler(file_handler)
-    
-    logging.info(f"Starting web scraper task for '{keyword}', task_id: {task_id}")
-    logging.info(f"Logging to file: {log_file_path}")
-    
-    # Initialize the scraper with the task ID
-    scraper = ContactScraper(use_browser=use_browser, debug_mode=True, task_id=task_id)
-    
-    try:
-        # Run the scraping process
-        results = scraper.scrape(
-            keyword=keyword,
-            num_results=num_results,
-            max_runtime_minutes=max_runtime_minutes,
-            task_id=task_id,
-            task_record=task_record
-        )
-        
-        # Log completion
-        logging.info(f"Web scraper task completed for '{keyword}', task_id: {task_id}")
-        logging.info(f"Found {len(results.get('emails', []))} emails and {len(results.get('phones', []))} phones")
-        
-        # Add log file path to results
-        if 'task_info' not in results:
-            results['task_info'] = {}
-        results['task_info']['log_file'] = log_file_path
-        
-        # Return the results
-        return results
-        
-    except Exception as e:
-        logging.error(f"Web scraper task failed for '{keyword}', task_id: {task_id}")
-        logging.error(f"Error: {str(e)}")
-        import traceback
-        logging.error(traceback.format_exc())
-        
-        # Return error information
-        return {
-            "emails": set(),
-            "phones": set(),
-            "task_info": {
-                "status": "error",
-                "error_message": str(e),
-                "task_id": task_id,
-                "keyword": keyword,
-                "log_file": log_file_path
-            }
-        }
-    finally:
-        # Always ensure browser is closed
-        try:
-            run_async(scraper.close_browser())
-            logging.info("Browser closed successfully")
-        except Exception as e:
-            logging.error(f"Error closing browser: {e}")
-            
-        # Remove the file handler to avoid duplication in subsequent tasks
-        root_logger.removeHandler(file_handler)
-        file_handler.close()
-
-if __name__ == "__main__":
-    # Define the arguments parser function
-    def parse_arguments():
-        import argparse
-        parser = argparse.ArgumentParser(description='Web scraper for contact information')
-        parser.add_argument('--keyword', type=str, help='Search keyword for finding contacts', required=True)
-        parser.add_argument('--results', type=int, default=50, help='Number of contacts to find')
-        parser.add_argument('--time', type=int, default=15, help='Maximum runtime in minutes')
-        parser.add_argument('--no-browser', action='store_true', help='Disable browser automation')
-        parser.add_argument('--api-mode', action='store_true', help='Run in API mode (reduced output)')
-        return parser.parse_args()
-    
-    # Parse command line arguments
-    args = parse_arguments()
-
-    # Initialize status tracking
-    task_id = None
-    task_record = None
-    status = {
-        "status": "pending",
-        "progress": 0,
-        "message": "Initializing...",
-        "keyword": args.keyword,
-        "task_id": task_id,
-        "results_count": 0,
-        "elapsed_time": 0
-    }
-
-    # Create scraper and start time tracking
-    start_time = time.time()
-    scraper = ContactScraper(use_browser=not args.no_browser, debug_mode=True, task_id=task_id)
-    
-    try:
-        # Update status before scraping, only if tracking is enabled
-        if task_id:
-            status["progress"] = 5
-            status["message"] = "Searching for websites..."
-            # Fix: Call as function, not as method
-            scraper.update_task_status(task_id, status, task_record)
-        
-        # Run the scraping process
-        results = scraper.scrape(
-            args.keyword, 
-            num_results=args.results, 
-            max_runtime_minutes=args.time,
-            task_id=task_id,
-            task_record=task_record
-        )
-        
-        # Calculate elapsed time
-        elapsed_time = (time.time() - start_time) / 60.0  # in minutes
-        
-        # Update final results if tracking is enabled
-        if task_id:
-            status["status"] = "completed"
-            status["progress"] = 100
-            status["message"] = f"Found {len(results['emails'])} emails and {len(results['phones'])} phone numbers"
-            status["results_count"] = len(results['emails']) + len(results['phones'])
-            status["elapsed_time"] = elapsed_time
-            # Fix: Call as function, not as method
-            scraper.update_task_status(task_id, status, task_record)
-        
-        if not args.api_mode:
-            print(f"\n✅ Found {len(results['emails'])} emails and {len(results['phones'])} phone numbers")
-        
-        # Save results to CSV
-        csv_file = scraper.save_results_to_csv(args.keyword, results['emails'], results['phones'])
-        if not args.api_mode:
-            print(f"Results saved to: {csv_file}")
-        
-    except Exception as e:
-        # Update status with error if tracking is enabled
-        elapsed_time = (time.time() - start_time) / 60.0
-        if task_id:
-            status["status"] = "error"
-            status["message"] = f"Error: {str(e)}"
-            status["elapsed_time"] = elapsed_time
-            # Fix: Call as function, not as method
-            scraper.update_task_status(task_id, status, task_record)
-        
-        if not args.api_mode:
-            print(f"\n❌ Error during scraping: {e}")
-            import traceback
-            traceback.print_exc()
-    finally:
-        # Clean up browser resources
-        if not args.no_browser:
-            if not args.api_mode:
-                print("Cleaning up browser resources...")
-            try:
-                import asyncio
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    loop.run_until_complete(scraper.close_browser())
-                finally:
-                    loop.close()
-                if not args.api_mode:
-                    print("✅ Browser cleanup completed")
-            except Exception as e:
-                if not args.api_mode:
-                    print(f"⚠️ Error during browser cleanup: {e}")
-        
-        # Update the task record if it was created (final status update)
-        if task_record:
-            try:
-                from django.utils import timezone
-                if status["status"] == "completed":
-                    task_record.status = 'completed'
-                    task_record.progress = 100
-                    task_record.completed_at = timezone.now()
-                elif status["status"] == "error":
-                    task_record.status = 'failed'
-                    task_record.error_message = status["message"]
-                    task_record.completed_at = timezone.now()
-                task_record.save()
-                if not args.api_mode:
-                    print(f"✅ Updated BackgroundTask record: status={task_record.status}")
-            except Exception as e:
-                if not args.api_mode:
-                    print(f"⚠️ Could not update BackgroundTask record: {e}")
+    if not args.api_mode:
+        print(f"⚠️ Could not update BackgroundTask record: {e}")
 
 

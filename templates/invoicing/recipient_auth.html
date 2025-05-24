@@ -1,0 +1,110 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    {% comment %} <title>Recipient Authentication</title> {% endcomment %}
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="max-w-md w-full mx-auto p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Recipient Authentication</h2>
+            
+            <div id="auth-form" class="space-y-4">
+                <div class="text-sm text-gray-600 mb-4">
+                    Please enter your registered mobile number and security code to access invoice reports.
+                </div>
+                
+                <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4"></div>
+                
+                <form id="recipient-auth-form" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label for="mobile" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                        <input type="tel" id="mobile" name="mobile" required 
+                            pattern="[0-9]{10}" maxlength="10"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="Enter 10-digit mobile number">
+                    </div>
+                    
+                    <div>
+                        <label for="security_code" class="block text-sm font-medium text-gray-700 mb-1">Security Code</label>
+                        <input type="password" id="security_code" name="security_code" required 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="Enter your security code">
+                    </div>
+                    
+                    <div id="passcode-container" class="hidden">
+                        <label for="passcode" class="block text-sm font-medium text-gray-700 mb-1">Passcode</label>
+                        <input type="password" id="passcode" name="passcode" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                            placeholder="Enter your passcode">
+                    </div>
+                    
+                    <div>
+                        <button type="submit" id="auth-button"
+                            class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                            Authenticate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('recipient-auth-form');
+            const errorMessage = document.getElementById('error-message');
+            const passcodeContainer = document.getElementById('passcode-container');
+            const authButton = document.getElementById('auth-button');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Clear previous errors
+                errorMessage.classList.add('hidden');
+                errorMessage.textContent = '';
+                
+                // Prepare form data
+                const formData = new FormData(form);
+                const hasPasscode = !passcodeContainer.classList.contains('hidden');
+                
+                // Send auth request
+                fetch('/invoicing/recipient-auth/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        // Show error
+                        errorMessage.textContent = data.error;
+                        errorMessage.classList.remove('hidden');
+                    } else if (data.show_passcode && !hasPasscode) {
+                        // Show passcode field
+                        passcodeContainer.classList.remove('hidden');
+                        authButton.textContent = 'Verify Passcode';
+                    } else if (data.success && data.redirect_url) {
+                        // Redirect to reports page
+                        window.location.href = data.redirect_url;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMessage.textContent = 'An unexpected error occurred. Please try again.';
+                    errorMessage.classList.remove('hidden');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %} 

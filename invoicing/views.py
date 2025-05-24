@@ -184,6 +184,7 @@ class CreateInvoiceView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['companies'] = Company.objects.all()
         context['products'] = Product.objects.all()
+        context['STATE_CHOICES'] = STATE_CHOICES  # Add STATE_CHOICES to the context
         logger.debug("Rendering create invoice form")
         return context
     
@@ -360,7 +361,8 @@ class CreateInvoiceView(TemplateView):
                     pdf.drawString(90, y_pos, address_line.strip())
                 
                 pdf.drawString(90, 630, company.company_state)  # 650 -> 630
-                pdf.drawString(90, 610, company.company_pincode)  # Added pincode value
+                # Safely handle company_pincode which might be None
+                pdf.drawString(90, 610, company.company_pincode or "")  # Added pincode value
                 
                 # Right side billing details with border - also moved down
                 pdf.roundRect(270, 600, 280, 150, 8, stroke=1, fill=0)  # 640 -> 620
@@ -405,7 +407,8 @@ class CreateInvoiceView(TemplateView):
                 pdf.drawString(330, 650, billing_details['email'])  # 670 -> 650
                 pdf.drawString(330, 630, billing_details['state'])  # 650 -> 630
                 pdf.drawString(280, 610, f"Pincode:")  # 630 -> 610
-                pdf.drawString(330, 610, billing_details['pincode'])  # 630 -> 610
+                # Get pincode safely with fallback to empty string
+                pdf.drawString(330, 610, billing_details.get('pincode', ''))  # 630 -> 610
                 
                 # After getting company and billing details, add state comparison
                 company_state = company.company_state
@@ -523,9 +526,12 @@ class CreateInvoiceView(TemplateView):
                 pdf.setFillColor(colors.gray)
                 pdf.setFont("Helvetica", 9)
                 if is_same_state:
-                    tax_note = f"Note: GST is split equally as CGST ({gst_percentage/2}%) and SGST ({gst_percentage/2}%) as billing state matches company state."
+                    # Ensure gst_percentage is defined and valid for the second instance
+                    gst_percent_display = gst_percentage/2 if 'gst_percentage' in locals() else 0
+                    tax_note = f"Note: GST is split equally as CGST ({gst_percent_display}%) and SGST ({gst_percent_display}%) as billing state matches company state."
                 else:
-                    tax_note = f"Note: Full GST ({gst_percentage}%) is charged as IGST for inter-state transaction."
+                    gst_percent_display = gst_percentage if 'gst_percentage' in locals() else 0
+                    tax_note = f"Note: Full GST ({gst_percent_display}%) is charged as IGST for inter-state transaction."
                 pdf.drawString(60, 200, tax_note)
                 
                 # Total due with shadow effect
@@ -600,7 +606,7 @@ class CreateInvoiceView(TemplateView):
                 )
 
                 # Add shipping address to PDF if different from billing
-                if not shipping_details['use_billing_address']:
+                if not shipping_details.get('use_billing_address', True):
                     # Ship To section (third column)
                     pdf.rect(390, 70, col_width, 100, stroke=1)
                     pdf.setFillColor(colors.black)
@@ -608,8 +614,9 @@ class CreateInvoiceView(TemplateView):
                     pdf.drawString(400, y_pos, "Ship To:")
                     pdf.setFont("Helvetica", 9)
                     pdf.setFillColor(colors.gray)
-                    pdf.drawString(400, y_pos-15, shipping_details['address'])
-                    pdf.drawString(400, y_pos-30, f"Pincode: {shipping_details['pincode']}")
+                    # Safely access shipping address and pincode
+                    pdf.drawString(400, y_pos-15, shipping_details.get('address', ''))
+                    pdf.drawString(400, y_pos-30, f"Pincode: {shipping_details.get('pincode', '')}")
                 
                 # Thank you message with blue color
                 pdf.setFont("Helvetica-Bold", 11)
@@ -641,6 +648,7 @@ class CreateInvoiceView(TemplateView):
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}", exc_info=True)
             return JsonResponse({'error': str(e)}, status=500)
+
     def post(self, request, *args, **kwargs):
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and request.headers.get('X-Generate-PDF'):
             return self.generate_pdf(request)
@@ -739,7 +747,7 @@ class CreateInvoiceView(TemplateView):
         except Exception as e:
             logger.error(f"Error creating invoice: {str(e)}", exc_info=True)
             return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
-        
+
 class UpiPaymentView(TemplateView):
     template_name = 'invoicing/upi_payment.html'
 
@@ -891,132 +899,6 @@ class UpiPaymentView(TemplateView):
         logger.debug("Returning normal template response")
         return super().render_to_response(context, **response_kwargs)
 
-
-class ReportsView(TemplateView):
-    template_name = 'invoicing/reports.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['companies'] = Company.objects.all()
-        context['invoices'] = Invoice.objects.all()
-        context['billings'] = Billing.objects.all()
-        return context
-
-    def mark_as_paid(self, request, invoice_id):
-        invoice = get_object_or_404(Invoice, invoice_id=invoice_id)
-        invoice.payment_status = True
-        invoice.save()
-        return redirect('/invoicing/reports/')
-    
-    def mark_as_unpaid(self, request, invoice_id):
-        invoice = get_object_or_404(Invoice, invoice_id=invoice_id)
-        invoice.payment_status = False
-        invoice.save()
-        return redirect('/invoicing/reports/')
-    
-STATE_CHOICES = [
-    # States
-    ('Andhra Pradesh', 'Andhra Pradesh'),
-    ('Arunachal Pradesh', 'Arunachal Pradesh'),
-    ('Assam', 'Assam'), 
-    ('Bihar', 'Bihar'),
-    ('Chhattisgarh', 'Chhattisgarh'),
-    ('Goa', 'Goa'),
-    ('Gujarat', 'Gujarat'),
-    ('Haryana', 'Haryana'),
-    ('Himachal Pradesh', 'Himachal Pradesh'),
-    ('Jharkhand', 'Jharkhand'),
-    ('Karnataka', 'Karnataka'),
-    ('Kerala', 'Kerala'),
-    ('Madhya Pradesh', 'Madhya Pradesh'),
-    ('Maharashtra', 'Maharashtra'),
-    ('Manipur', 'Manipur'),
-    ('Meghalaya', 'Meghalaya'),
-    ('Mizoram', 'Mizoram'),
-    ('Nagaland', 'Nagaland'),
-    ('Odisha', 'Odisha'),
-    ('Punjab', 'Punjab'),
-    ('Rajasthan', 'Rajasthan'),
-    ('Sikkim', 'Sikkim'),
-    ('Tamil Nadu', 'Tamil Nadu'),
-    ('Telangana', 'Telangana'),
-    ('Tripura', 'Tripura'),
-    ('Uttar Pradesh', 'Uttar Pradesh'),
-    ('Uttarakhand', 'Uttarakhand'),
-    ('West Bengal', 'West Bengal'),
-    
-    # Union Territories
-    ('Andaman and Nicobar Islands', 'Andaman and Nicobar Islands'),
-    ('Chandigarh', 'Chandigarh'),
-    ('Dadra and Nagar Haveli and Daman and Diu', 'Dadra and Nagar Haveli and Daman and Diu'),
-    ('Delhi', 'Delhi'),
-    ('Jammu and Kashmir', 'Jammu and Kashmir'),
-    ('Ladakh', 'Ladakh'),
-    ('Lakshadweep', 'Lakshadweep'),
-    ('Puducherry', 'Puducherry')
-]
-
-class AddBillingView(TemplateView):
-    template_name = 'invoicing/add_billing.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['companies'] = Company.objects.all()
-        context['STATE_CHOICES'] = STATE_CHOICES
-        return context
-
-    def post(self, request, *args, **kwargs):
-        try:
-            # Get form data
-            company_id = request.POST.get('company')
-            billing_name = request.POST.get('billing_name')
-            billing_phone = request.POST.get('billing_phone')
-            billing_email = request.POST.get('billing_email')
-            billing_address = request.POST.get('billing_address')
-            billing_state = request.POST.get('billing_state')
-
-            # Validate required fields
-            if not all([company_id, billing_name, billing_phone, billing_email, billing_address, billing_state]):
-                raise ValueError("All fields are required")
-
-            # Validate phone number format
-            if not billing_phone.isdigit() or len(billing_phone) != 10:
-                raise ValueError("Invalid phone number format")
-
-            # Get company instance
-            try:
-                company = Company.objects.get(company_id=company_id)
-            except Company.DoesNotExist:
-                raise ValueError("Selected company not found")
-
-            # Create billing
-            billing = Billing.objects.create(
-                company=company,
-                billing_name=billing_name,
-                billing_phone=billing_phone,
-                billing_email=billing_email,
-                billing_address=billing_address,
-                billing_state=billing_state
-            )
-
-            logger.info(f"Billing '{billing_name}' created successfully")
-            return JsonResponse({
-                'success': True,
-                'message': 'Billing details added successfully',
-                'redirect_url': '/invoicing/companies/'
-            })
-
-        except ValueError as e:
-            logger.error(f"Validation error: {str(e)}")
-            return JsonResponse({'error': str(e)}, status=400)
-        except Exception as e:
-            logger.error(f"Error creating billing: {str(e)}", exc_info=True)
-            return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
-    
-    
-
-
-
 class RecipientAuthView(TemplateView):
     template_name = 'invoicing/recipient_auth.html'
 
@@ -1146,5 +1028,126 @@ class CreateRecipientView(View):
             return JsonResponse({'error': str(e)}, status=400)
         except Exception as e:
             logger.error(f"Error creating recipient: {str(e)}", exc_info=True)
+            return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
+
+class ReportsView(TemplateView):
+    template_name = 'invoicing/reports.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['companies'] = Company.objects.all()
+        context['invoices'] = Invoice.objects.all()
+        context['billings'] = Billing.objects.all()
+        return context
+
+    def mark_as_paid(self, request, invoice_id):
+        invoice = get_object_or_404(Invoice, invoice_id=invoice_id)
+        invoice.payment_status = True
+        invoice.save()
+        return redirect('/invoicing/reports/')
+    
+    def mark_as_unpaid(self, request, invoice_id):
+        invoice = get_object_or_404(Invoice, invoice_id=invoice_id)
+        invoice.payment_status = False
+        invoice.save()
+        return redirect('/invoicing/reports/')
+    
+STATE_CHOICES = [
+    # States
+    ('Andhra Pradesh', 'Andhra Pradesh'),
+    ('Arunachal Pradesh', 'Arunachal Pradesh'),
+    ('Assam', 'Assam'), 
+    ('Bihar', 'Bihar'),
+    ('Chhattisgarh', 'Chhattisgarh'),
+    ('Goa', 'Goa'),
+    ('Gujarat', 'Gujarat'),
+    ('Haryana', 'Haryana'),
+    ('Himachal Pradesh', 'Himachal Pradesh'),
+    ('Jharkhand', 'Jharkhand'),
+    ('Karnataka', 'Karnataka'),
+    ('Kerala', 'Kerala'),
+    ('Madhya Pradesh', 'Madhya Pradesh'),
+    ('Maharashtra', 'Maharashtra'),
+    ('Manipur', 'Manipur'),
+    ('Meghalaya', 'Meghalaya'),
+    ('Mizoram', 'Mizoram'),
+    ('Nagaland', 'Nagaland'),
+    ('Odisha', 'Odisha'),
+    ('Punjab', 'Punjab'),
+    ('Rajasthan', 'Rajasthan'),
+    ('Sikkim', 'Sikkim'),
+    ('Tamil Nadu', 'Tamil Nadu'),
+    ('Telangana', 'Telangana'),
+    ('Tripura', 'Tripura'),
+    ('Uttar Pradesh', 'Uttar Pradesh'),
+    ('Uttarakhand', 'Uttarakhand'),
+    ('West Bengal', 'West Bengal'),
+    
+    # Union Territories
+    ('Andaman and Nicobar Islands', 'Andaman and Nicobar Islands'),
+    ('Chandigarh', 'Chandigarh'),
+    ('Dadra and Nagar Haveli and Daman and Diu', 'Dadra and Nagar Haveli and Daman and Diu'),
+    ('Delhi', 'Delhi'),
+    ('Jammu and Kashmir', 'Jammu and Kashmir'),
+    ('Ladakh', 'Ladakh'),
+    ('Lakshadweep', 'Lakshadweep'),
+    ('Puducherry', 'Puducherry')
+]
+
+class AddBillingView(TemplateView):
+    template_name = 'invoicing/add_billing.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['companies'] = Company.objects.all()
+        context['STATE_CHOICES'] = STATE_CHOICES
+        return context
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # Get form data
+            company_id = request.POST.get('company')
+            billing_name = request.POST.get('billing_name')
+            billing_phone = request.POST.get('billing_phone')
+            billing_email = request.POST.get('billing_email')
+            billing_address = request.POST.get('billing_address')
+            billing_state = request.POST.get('billing_state')
+
+            # Validate required fields
+            if not all([company_id, billing_name, billing_phone, billing_email, billing_address, billing_state]):
+                raise ValueError("All fields are required")
+
+            # Validate phone number format
+            if not billing_phone.isdigit() or len(billing_phone) != 10:
+                raise ValueError("Invalid phone number format")
+
+            # Get company instance
+            try:
+                company = Company.objects.get(company_id=company_id)
+            except Company.DoesNotExist:
+                raise ValueError("Selected company not found")
+
+            # Create billing
+            billing = Billing.objects.create(
+                company=company,
+                billing_name=billing_name,
+                billing_phone=billing_phone,
+                billing_email=billing_email,
+                billing_address=billing_address,
+                billing_state=billing_state
+            )
+
+            logger.info(f"Billing '{billing_name}' created successfully")
+            return JsonResponse({
+                'success': True,
+                'message': 'Billing details added successfully',
+                'redirect_url': '/invoicing/companies/'
+            })
+
+        except ValueError as e:
+            logger.error(f"Validation error: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=400)
+        except Exception as e:
+            logger.error(f"Error creating billing: {str(e)}", exc_info=True)
             return JsonResponse({'error': 'An unexpected error occurred'}, status=500)
 
