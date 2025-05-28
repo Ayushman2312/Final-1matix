@@ -1,0 +1,19 @@
+2025-05-25 18:39:54,712 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_183954_task_28.log
+2025-05-25 18:39:54,716 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 18:39:54,718 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 18:39:54,784 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 18:39:58,869 - ContactScraper - INFO - Starting scrape for keyword: 'hyaluronic acid whole sellers in Delhi' with strict 10-minute limit
+2025-05-25 18:39:58,885 - ContactScraper - WARNING - Gemini API client not configured, using fallback optimization
+2025-05-25 18:39:58,885 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 18:39:58,885 - ContactScraper - INFO - Original keyword: 'hyaluronic acid whole sellers in Delhi' | Optimized query: '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 18:39:58,885 - ContactScraper - INFO - Performing Google search for: "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com (page 0)
+2025-05-25 18:39:58,890 - ContactScraper - INFO - Using direct request for Google search
+2025-05-25 18:40:03,673 - ContactScraper - WARNING - Google search request failed with status code: 429
+2025-05-25 18:40:03,676 - ContactScraper - INFO - Performing Google search for: "hyaluronic acid whole sellers in Delhi" contact site:.in (page 0)
+2025-05-25 18:40:03,676 - ContactScraper - INFO - Using direct request for Google search
+2025-05-25 18:40:10,371 - ContactScraper - INFO - Using alternative extraction method for Google results
+2025-05-25 18:40:10,371 - ContactScraper - INFO - Found 0 results via direct Google search
+2025-05-25 18:40:10,371 - ContactScraper - INFO - Performing direct search for: "hyaluronic acid whole sellers in Delhi" contact site:.in
+2025-05-25 18:40:10,371 - ContactScraper - INFO - Direct search generated 56 potential URLs
+2025-05-25 18:40:10,371 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacid.com
+2025-05-25 18:40:10,371 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacid.com

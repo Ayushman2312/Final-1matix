@@ -1,0 +1,24 @@
+2025-05-25 01:24:53,627 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_012453_manual.log
+2025-05-25 01:24:53,633 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 01:24:53,640 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 01:24:53,673 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 01:24:57,211 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 01:24:57,216 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 01:24:57,216 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 01:24:57,216 - ContactScraper - INFO - Original keyword: 'Dropper Bottles in Delhi' | Optimized query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 01:24:57,216 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 01:24:57,216 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 01:24:57,216 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 01:25:23,169 - ContactScraper - INFO - No results from Google search, likely due to security checks. Trying DuckDuckGo as fallback.
+2025-05-25 01:25:23,171 - ContactScraper - ERROR - Error searching Google: 'ContactScraper' object has no attribute 'search_duckduckgo'
+2025-05-25 01:25:23,171 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 3457, in search_google
+    ddg_results = self.search_duckduckgo(simplified_keyword, num_results=num_results)
+AttributeError: 'ContactScraper' object has no attribute 'search_duckduckgo'
+
+2025-05-25 01:25:23,174 - ContactScraper - ERROR - Error during scraping: 'ContactScraper' object has no attribute 'search_duckduckgo'
+2025-05-25 01:25:23,174 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2223, in scrape
+    search_results = self.search_duckduckgo(simple_query, num_results=10)
+AttributeError: 'ContactScraper' object has no attribute 'search_duckduckgo'
+

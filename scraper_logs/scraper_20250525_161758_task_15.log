@@ -1,0 +1,108 @@
+2025-05-25 16:17:58,128 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_161758_task_15.log
+2025-05-25 16:17:58,130 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 16:17:58,130 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 16:17:58,158 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 16:17:59,906 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 16:17:59,912 - ContactScraper - INFO - Updating task status for 15: processing
+2025-05-25 16:17:59,915 - ContactScraper - INFO - Updated task record 15 status to processing
+2025-05-25 16:17:59,915 - ContactScraper - INFO - Using original keyword as query: 'Dropper Bottles in Delhi'
+2025-05-25 16:17:59,915 - ContactScraper - INFO - Updating task status for 15: processing
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Updated task record 15 status to processing
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' (page 0)
+2025-05-25 16:17:59,920 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:17:59,920 - ContactScraper - WARNING - Google search found no results for 'Dropper Bottles in Delhi'
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Performing direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Direct search found 9 URLs
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Found 9 total URLs using multiple strategies
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Extracting contacts from: https://www.dropper.co.in/contact
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Detected contact page: https://www.dropper.co.in/contact
+2025-05-25 16:17:59,920 - ContactScraper - ERROR - Error fetching https://www.dropper.co.in/contact with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Trying browser fallback for https://www.dropper.co.in/contact
+2025-05-25 16:17:59,920 - ContactScraper - INFO - Initializing browser for web scraping...
+2025-05-25 16:18:00,751 - ContactScraper - INFO - Playwright initialized successfully
+2025-05-25 16:18:00,751 - ContactScraper - WARNING - Proxy setup failed, continuing without proxy: 'ContactScraper' object has no attribute 'get_random_proxy'
+2025-05-25 16:18:00,751 - ContactScraper - INFO - Launching browser...
+2025-05-25 16:18:00,827 - ContactScraper - INFO - Chromium browser launched successfully
+2025-05-25 16:18:00,829 - ContactScraper - INFO - Creating browser context...
+2025-05-25 16:18:00,829 - ContactScraper - ERROR - Failed to create browser context: 'ContactScraper' object has no attribute 'get_random_user_agent'
+2025-05-25 16:18:00,829 - ContactScraper - INFO - Closing browser...
+2025-05-25 16:18:00,908 - ContactScraper - INFO - Stopping playwright...
+2025-05-25 16:18:00,914 - ContactScraper - INFO - Browser resources cleanup completed
+2025-05-25 16:18:00,914 - ContactScraper - ERROR - Browser initialization failed
+2025-05-25 16:18:00,914 - ContactScraper - INFO - Found 0 emails and 0 phones on www.dropper.co.in
+2025-05-25 16:18:00,914 - ContactScraper - INFO - Extracting contacts from: https://www.dropper.com/contact
+2025-05-25 16:18:00,914 - ContactScraper - INFO - Detected contact page: https://www.dropper.com/contact
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://www.dropper.com/contact with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on www.dropper.com
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Extracting contacts from: https://dir.indiamart.com/search.mp?ss=Dropper+Bottles+in+Delhi
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://dir.indiamart.com/search.mp?ss=Dropper+Bottles+in+Delhi with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on dir.indiamart.com
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Extracting contacts from: https://www.dropper.in/contact
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Detected contact page: https://www.dropper.in/contact
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://www.dropper.in/contact with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on www.dropper.in
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Extracting contacts from: https://www.indiamart.com/search.html?ss=Dropper+Bottles+in+Delhi&prdsrc=1
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://www.indiamart.com/search.html?ss=Dropper+Bottles+in+Delhi&prdsrc=1 with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on www.indiamart.com
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Extracting contacts from: https://www.sulekha.com/search.aspx?category=business&keyword=Dropper+Bottles+in+Delhi
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://www.sulekha.com/search.aspx?category=business&keyword=Dropper+Bottles+in+Delhi with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on www.sulekha.com
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Extracting contacts from: https://www.google.com/search?q=Dropper+Bottles+in+Delhi+contact+phone+india
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Detected contact page: https://www.google.com/search?q=Dropper+Bottles+in+Delhi+contact+phone+india
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://www.google.com/search?q=Dropper+Bottles+in+Delhi+contact+phone+india with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on www.google.com
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Extracting contacts from: https://www.justdial.com/Delhi/search?q=Dropper+Bottles+in+Delhi
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://www.justdial.com/Delhi/search?q=Dropper+Bottles+in+Delhi with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on www.justdial.com
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Extracting contacts from: https://www.justdial.com/search?q=Dropper+Bottles+in+Delhi
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error fetching https://www.justdial.com/search?q=Dropper+Bottles+in+Delhi with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 0 emails and 0 phones on www.justdial.com
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Updating task status for 15: processing
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Updated task record 15 status to processing
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' (page 0)
+2025-05-25 16:18:00,920 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,920 - ContactScraper - WARNING - Google search found no results for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Performing direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Direct search found 9 URLs
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Found 9 total URLs using multiple strategies
+2025-05-25 16:18:00,920 - ContactScraper - INFO - Updating task status for 15: processing
+2025-05-25 16:18:00,936 - ContactScraper - INFO - Updated task record 15 status to processing
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' (page 0)
+2025-05-25 16:18:00,938 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,938 - ContactScraper - WARNING - Google search found no results for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Performing direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Direct search found 9 URLs
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Found 9 total URLs using multiple strategies
+2025-05-25 16:18:00,938 - ContactScraper - INFO - Updating task status for 15: processing
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Updated task record 15 status to processing
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' (page 0)
+2025-05-25 16:18:00,945 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,945 - ContactScraper - WARNING - Google search found no results for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Performing direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Direct search found 9 URLs
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Found 9 total URLs using multiple strategies
+2025-05-25 16:18:00,945 - ContactScraper - INFO - Updating task status for 15: processing
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Updated task record 15 status to processing
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' (page 0)
+2025-05-25 16:18:00,948 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:18:00,948 - ContactScraper - WARNING - Google search found no results for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Performing direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Direct search found 9 URLs
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Found 9 total URLs using multiple strategies
+2025-05-25 16:18:00,948 - ContactScraper - INFO - Updating task status for 15: completed
+2025-05-25 16:18:00,955 - ContactScraper - INFO - Updated task record 15 status to completed

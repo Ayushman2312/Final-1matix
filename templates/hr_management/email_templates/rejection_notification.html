@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Update - {{ company_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .message-box {
+            background-color: #f9f9f9;
+            border-left: 4px solid #777;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if company_logo %}
+        <img src="{{ company_logo }}" alt="{{ company_name }} Logo" class="logo">
+        {% endif %}
+        <h1>Application Update</h1>
+    </div>
+    
+    <p>Dear {{ name }},</p>
+    
+    <p>Thank you for your interest in joining {{ company_name }} and for taking the time to apply.</p>
+    
+    <div class="message-box">
+        <p>After careful consideration of your application, we regret to inform you that we will not be moving forward with your candidacy at this time.</p>
+    </div>
+    
+    <p>While we were impressed with your qualifications, we have decided to pursue candidates whose experience more closely aligns with our current needs.</p>
+    
+    <p>We appreciate your interest in {{ company_name }} and encourage you to apply for future positions that match your skills and experience.</p>
+    
+    <p>We wish you the best in your job search and future career endeavors.</p>
+    
+    <p>Best regards,<br>
+    HR Department<br>
+    {{ company_name }}</p>
+    
+    <div class="footer">
+        <p>&copy; {{ current_year }} {{ company_name }}. All rights reserved.</p>
+    </div>
+</body>
+</html> 

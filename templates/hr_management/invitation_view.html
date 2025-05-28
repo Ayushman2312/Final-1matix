@@ -1,0 +1,426 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <title>Onboarding Invitation | {{ invitation.company.company_name }}</title>
+    <style>
+        :root {
+            --primary-color: #6366F1;
+            --primary-light: #818CF8;
+            --primary-dark: #4F46E5;
+            --secondary-color: #0F172A;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --light-bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border-color: #E2E8F0;
+        }
+        body {
+            font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light-bg);
+            scroll-behavior: smooth;
+        }
+        .card {
+            @apply bg-white rounded-xl border border-slate-100/80 transition-all duration-300;
+            background: linear-gradient(145deg, #FFFFFF, #F8FAFC);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .action-button {
+            @apply py-2.5 px-4 rounded-lg text-white text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center shadow-sm;
+        }
+        .action-button-primary {
+            @apply bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500;
+        }
+        .action-button-success {
+            @apply bg-emerald-500 hover:bg-emerald-600 focus:ring-emerald-500;
+        }
+        .action-button-danger {
+            @apply bg-red-500 hover:bg-red-600 focus:ring-red-500;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+    <!-- Header -->
+    <div class="bg-indigo-600 text-white py-4 sticky top-0 z-50 backdrop-blur-lg shadow-md">
+        <div class="container mx-auto px-4 md:px-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-md bg-white/20 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <span class="text-lg font-semibold ml-2">{{ invitation.company.company_name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 md:px-6 py-6 max-w-3xl flex-grow">
+        <!-- Invitation Card -->
+        <div class="card p-6 md:p-8 mb-6 fade-in">
+            <div class="flex items-center justify-center mb-6">
+                {% if invitation.company.company_logo %}
+                    <img src="{{ invitation.company.company_logo.url }}" alt="{{ invitation.company.company_name }}" class="h-16 md:h-20 object-contain">
+                {% else %}
+                    <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-2xl font-bold">
+                        {{ invitation.company.company_name|slice:":1" }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <h1 class="text-2xl md:text-3xl font-bold text-center text-slate-800 mb-2">Onboarding Invitation</h1>
+            <p class="text-center text-slate-600 mb-6">You've been invited to join {{ invitation.company.company_name }}</p>
+            
+            <div class="border-t border-slate-100 pt-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">Name</p>
+                        <p class="text-base font-medium text-slate-800">{{ invitation.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">Email</p>
+                        <p class="text-base font-medium text-slate-800">{{ invitation.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">Department</p>
+                        <p class="text-base font-medium text-slate-800">{{ invitation.department.name|default:"Not specified" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">Designation</p>
+                        <p class="text-base font-medium text-slate-800">{{ invitation.designation.name|default:"Not specified" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">Role</p>
+                        <p class="text-base font-medium text-slate-800">{{ invitation.role.name|default:"Not specified" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 mb-1">Invitation Date</p>
+                        <p class="text-base font-medium text-slate-800">{{ invitation.created_at|date:"F j, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if invitation.message %}
+                <div class="bg-slate-50 p-4 rounded-lg mb-6">
+                    <p class="text-sm text-slate-500 mb-2">Message from {{ invitation.company.company_name }}</p>
+                    <p class="text-base text-slate-700">{{ invitation.message }}</p>
+                </div>
+            {% endif %}
+            
+            {% if invitation.status == 'pending' or invitation.status == 'sent' %}
+                <div class="flex flex-col md:flex-row gap-4 justify-center">
+                    <button id="acceptInvitationBtn" class="action-button action-button-success">
+                        <i class="fas fa-check mr-2"></i>
+                        Accept Invitation
+                    </button>
+                    <button id="rejectInvitationBtn" class="action-button action-button-danger">
+                        <i class="fas fa-times mr-2"></i>
+                        Decline Invitation
+                    </button>
+                </div>
+            {% elif invitation.status == 'accepted' %}
+                <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg text-center">
+                    <i class="fas fa-check-circle text-2xl mb-2"></i>
+                    <p class="font-medium">You have accepted this invitation</p>
+                    <p class="text-sm mt-1">Please check your email for login credentials</p>
+                </div>
+            {% elif invitation.status == 'rejected' %}
+                <div class="bg-red-50 text-red-700 p-4 rounded-lg text-center">
+                    <i class="fas fa-times-circle text-2xl mb-2"></i>
+                    <p class="font-medium">You have declined this invitation</p>
+                </div>
+            {% elif invitation.status == 'completed' %}
+                <div class="bg-blue-50 text-blue-700 p-4 rounded-lg text-center">
+                    <i class="fas fa-info-circle text-2xl mb-2"></i>
+                    <p class="font-medium">Your application is being reviewed</p>
+                    <p class="text-sm mt-1">You'll receive further instructions by email</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-6 mt-auto">
+        <div class="container mx-auto px-4 md:px-6 text-center text-slate-500 text-sm">
+            <p>&copy; {{ current_year }} {{ invitation.company.company_name }}. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- Rejection Modal -->
+    <div id="rejectionModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 hidden animate__animated animate__fadeIn">
+        <div class="bg-white rounded-2xl shadow-lg max-w-md w-full p-6 mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-slate-800">
+                    Decline Invitation
+                </h3>
+                <button id="closeRejectionModalBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <p class="text-slate-600 mb-4">
+                Please provide a reason for declining this invitation. This will help the company understand your decision.
+            </p>
+            
+            <textarea id="rejectionReason" class="w-full border border-slate-200 rounded-lg p-3 mb-4 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" rows="4" placeholder="I'm declining because..."></textarea>
+            
+            <div class="flex justify-end space-x-3">
+                <button id="cancelRejectionBtn" class="py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmRejectionBtn" class="action-button action-button-danger">
+                    <i class="fas fa-times mr-2"></i>
+                    Confirm Decline
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Accept invitation button
+            const acceptInvitationBtn = document.getElementById('acceptInvitationBtn');
+            if (acceptInvitationBtn) {
+                acceptInvitationBtn.addEventListener('click', function() {
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: 'Accept Invitation?',
+                        text: 'Are you sure you want to accept this invitation? This will create your employee account.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10B981',
+                        cancelButtonColor: '#64748B',
+                        confirmButtonText: 'Yes, accept it',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Processing',
+                                text: 'Accepting invitation...',
+                                allowOutsideClick: false,
+                                showConfirmButton: false,
+                                willOpen: () => {
+                                    Swal.showLoading()
+                                },
+                                customClass: {
+                                    popup: 'rounded-xl shadow-xl'
+                                }
+                            });
+                            
+                            // Call the API to accept the invitation
+                            fetch('{% url "invitation-accept" invitation.invitation_id %}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                body: JSON.stringify({})
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Show success message
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Invitation Accepted!',
+                                        text: 'Your employee account has been created. Check your email for login credentials.',
+                                        confirmButtonColor: '#10B981',
+                                        customClass: {
+                                            popup: 'rounded-xl shadow-xl'
+                                        }
+                                    }).then(() => {
+                                        // Reload page to reflect changes
+                                        window.location.reload();
+                                    });
+                                } else {
+                                    // Show error message
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: data.message || 'Failed to accept invitation',
+                                        confirmButtonColor: '#6366F1',
+                                        customClass: {
+                                            popup: 'rounded-xl shadow-xl'
+                                        }
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Show error message
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An unexpected error occurred. Please try again.',
+                                    confirmButtonColor: '#6366F1',
+                                    customClass: {
+                                        popup: 'rounded-xl shadow-xl'
+                                    }
+                                });
+                            });
+                        }
+                    });
+                });
+            }
+            
+            // Reject invitation button and modal
+            const rejectInvitationBtn = document.getElementById('rejectInvitationBtn');
+            const rejectionModal = document.getElementById('rejectionModal');
+            const closeRejectionModalBtn = document.getElementById('closeRejectionModalBtn');
+            const cancelRejectionBtn = document.getElementById('cancelRejectionBtn');
+            const confirmRejectionBtn = document.getElementById('confirmRejectionBtn');
+            const rejectionReason = document.getElementById('rejectionReason');
+            
+            // Show rejection modal
+            if (rejectInvitationBtn && rejectionModal) {
+                rejectInvitationBtn.addEventListener('click', function() {
+                    rejectionModal.classList.remove('hidden');
+                });
+            }
+            
+            // Close rejection modal
+            if (closeRejectionModalBtn && rejectionModal) {
+                closeRejectionModalBtn.addEventListener('click', function() {
+                    rejectionModal.classList.add('hidden');
+                });
+            }
+            
+            // Cancel rejection
+            if (cancelRejectionBtn && rejectionModal) {
+                cancelRejectionBtn.addEventListener('click', function() {
+                    rejectionModal.classList.add('hidden');
+                });
+            }
+            
+            // Confirm rejection
+            if (confirmRejectionBtn && rejectionModal && rejectionReason) {
+                confirmRejectionBtn.addEventListener('click', function() {
+                    const reason = rejectionReason.value.trim();
+                    
+                    if (!reason) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Reason Required',
+                            text: 'Please provide a reason for declining the invitation',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                        return;
+                    }
+                    
+                    // Hide modal
+                    rejectionModal.classList.add('hidden');
+                    
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Processing',
+                        text: 'Declining invitation...',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading()
+                        },
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    });
+                    
+                    // Call the API to reject the invitation
+                    fetch('{% url "invitation-reject" invitation.invitation_id %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            rejection_reason: reason
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Invitation Declined',
+                                text: 'You have successfully declined this invitation.',
+                                confirmButtonColor: '#6366F1',
+                                customClass: {
+                                    popup: 'rounded-xl shadow-xl'
+                                }
+                            }).then(() => {
+                                // Reload page to reflect changes
+                                window.location.reload();
+                            });
+                        } else {
+                            // Show error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Failed to decline invitation',
+                                confirmButtonColor: '#6366F1',
+                                customClass: {
+                                    popup: 'rounded-xl shadow-xl'
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred. Please try again.',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

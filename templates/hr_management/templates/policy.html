@@ -1,0 +1,94 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<div class="py-8 px-4 md:px-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold text-gray-800">Policies</h1>
+        <p class="text-gray-600">Create and manage company policies</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Create Policy Form -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Create Policy</h2>
+            <form id="policyForm" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="policyName" class="block text-sm font-medium text-gray-700 mb-1">Policy Name</label>
+                    <input type="text" id="policyName" name="policy_name" required 
+                        class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Enter policy name">
+                </div>
+                
+                <div>
+                    <label for="policyDescription" class="block text-sm font-medium text-gray-700 mb-1">Policy Description</label>
+                    <textarea id="policyDescription" name="policy_description" rows="6" required
+                        class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Enter policy description and details"></textarea>
+                </div>
+                
+                <div class="pt-2">
+                    <button type="submit" 
+                        class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-300">
+                        Create Policy
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Policy List -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Existing Policies</h2>
+            {% if policies %}
+                <div class="space-y-4">
+                    {% for policy in policies %}
+                    <div class="border border-gray-200 rounded-md p-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-1">{{ policy.name }}</h3>
+                        <p class="text-sm text-gray-500 mb-2">Created on {{ policy.created_at|date:"M d, Y" }}</p>
+                        <div class="text-sm text-gray-700 whitespace-pre-line">{{ policy.description }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-gray-500 text-center py-4">
+                    <p>No policies created yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('policyForm');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('{% url "policy_template" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Policy created successfully!');
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || 'Could not create policy'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %} 

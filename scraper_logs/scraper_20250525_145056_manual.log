@@ -1,0 +1,39 @@
+2025-05-25 14:50:56,823 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_145056_manual.log
+2025-05-25 14:50:56,825 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 14:50:56,825 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 14:50:56,891 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 14:51:01,491 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 14:51:01,491 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 14:51:01,494 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 14:51:01,494 - ContactScraper - INFO - Original keyword: 'Dropper Bottles in Delhi' | Optimized query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 14:51:01,494 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 14:51:01,494 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 14:51:01,501 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 14:51:01,504 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 14:51:17,417 - ContactScraper - INFO - Imported browser search found 1 results
+2025-05-25 14:51:17,417 - ContactScraper - INFO - Extracting contacts from: https://www.manufacturersuppliers.in/delhi/plastic-dropper-bottles.html
+2025-05-25 14:51:18,194 - ContactScraper - ERROR - Error in comprehensive contact extraction: 'formatted'
+2025-05-25 14:51:18,198 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 14:51:18,834 - ContactScraper - ERROR - Error in comprehensive contact extraction: 'ContactScraper' object has no attribute '_extract_from_attributes'
+2025-05-25 14:51:18,834 - ContactScraper - INFO - Contact page https://www.manufacturersuppliers.in/contact found 0 emails and 0 phones
+2025-05-25 14:51:19,131 - ContactScraper - ERROR - Error in comprehensive contact extraction: 'ContactScraper' object has no attribute '_extract_from_attributes'
+2025-05-25 14:51:19,135 - ContactScraper - INFO - Contact page https://www.manufacturersuppliers.in/contact-us found 0 emails and 0 phones
+2025-05-25 14:51:19,135 - ContactScraper - INFO - Found 0 emails and 0 phones on www.manufacturersuppliers.in
+2025-05-25 14:51:19,137 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 1)
+2025-05-25 14:51:19,137 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 14:51:19,141 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 14:51:19,141 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 14:52:01,923 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 14:52:01,927 - ContactScraper - INFO - Extracting contacts from: https://www.cosmopharmaglass.in/dropper.html
+2025-05-25 14:52:03,689 - ContactScraper - ERROR - Error in comprehensive contact extraction: 'formatted'
+2025-05-25 14:52:03,703 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 14:52:07,537 - ContactScraper - INFO - Found 0 emails and 0 phones on www.cosmopharmaglass.in
+2025-05-25 14:52:07,539 - ContactScraper - INFO - Extracting contacts from: https://www.trendglobal.co.in/
+2025-05-25 14:52:08,644 - ContactScraper - WARNING - Connection error requesting https://www.trendglobal.co.in/
+2025-05-25 14:52:08,850 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 14:52:09,151 - ContactScraper - WARNING - Error fetching contact page https://www.trendglobal.co.in/contact: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: /contact (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 14:52:09,564 - ContactScraper - WARNING - Error fetching contact page https://www.trendglobal.co.in/contact-us: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: /contact-us (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 14:52:09,564 - ContactScraper - INFO - Found 0 emails and 0 phones on www.trendglobal.co.in
+2025-05-25 14:52:09,564 - ContactScraper - INFO - Extracting contacts from: https://www.trendglobalpackaging.in/glass-dropper-bottle.html
+2025-05-25 14:52:21,285 - ContactScraper - ERROR - Error in comprehensive contact extraction: 'formatted'
+2025-05-25 14:52:21,305 - ContactScraper - INFO - Direct request found 0 emails and 0 phones

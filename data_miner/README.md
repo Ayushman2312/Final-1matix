@@ -1,135 +1,77 @@
-# Web Scraper Improvements
+# Data Miner - SerpAPI Integration
 
-This document details the comprehensive improvements made to the web scraper to address the issues with irrelevant URLs and Playwright functionality.
+This module integrates SerpAPI with the data miner module to scrape email addresses and phone numbers from search results.
 
-## Key Issues Fixed
+## Features
 
-1. **Playwright Browser Initialization**
-   - Completely rewrote the `initialize_browser()` method with more robust error handling
-   - Added country-specific proxy configuration focusing on Indian IPs
-   - Implemented geolocation spoofing to simulate Indian locations
-   - Extended timeout values for better handling of slow connections
-   - Added pre-navigation to a safe page to ensure browser is fully initialized
+- Uses SerpAPI to perform Google searches and extract emails and phone numbers
+- Optimizes search queries using Google Gemini API
+- Supports various countries and search parameters
+- Handles rate limiting and retries for robust scraping
+- Validates data to filter out false positives
+- Integrates with the existing data miner interface
 
-2. **Anti-Detection Improvements**
-   - Rewritten `_apply_stealth_settings()` with comprehensive anti-bot measures
-   - Added hardware fingerprint randomization
-   - Implemented browser identity obfuscation
-   - Added permissions API spoofing
-   - Improved canvas fingerprinting prevention
-   - Added Chrome-specific detection prevention
-   - Added timing attack prevention
+## Usage
 
-3. **Google Search Result Extraction**
-   - Completely rewrote `_search_google_with_browser()` to extract more relevant URLs
-   - Added better selectors to extract genuine search results
-   - Improved URL extraction from Google search pages
-   - Enhanced filtering of irrelevant search results
-   - Added quotation marks and site:.in parameter to search queries
-   - Fixed pagination to properly navigate through search result pages
+### Frontend Usage
 
-4. **URL Relevance Filtering**
-   - Enhanced `_filter_urls_by_relevance()` to better identify relevant URLs
-   - Added prioritization for Indian domains (.in TLD)
-   - Added extra scores for business and contact-related URLs
-   - Penalized URLs with irrelevant patterns (forums, blogs, etc.)
-   - Improved scoring system for more accurate relevance assessment
+1. Navigate to the Data Miner page
+2. Enter a keyword related to the businesses you want to find contact information for
+3. Select the country for targeting search results
+4. Choose data type: "Phone Numbers" or "Email Addresses"
+5. Click "Get" to start the scraping process
+6. The system will automatically use SerpAPI to search for the information and extract the data
 
-5. **Human Behavior Simulation**
-   - Improved `_simulate_human_browsing()` to better mimic human behavior
-   - Added natural scrolling patterns
-   - Implemented random mouse movements
-   - Added pauses between actions to appear more human-like
+### API Integration
 
-6. **CAPTCHA Detection**
-   - Enhanced both request-based and browser-based CAPTCHA detection
-   - Added comprehensive checks for CAPTCHA indicators
-   - Improved handling of detected CAPTCHAs with automatic recovery
-
-7. **Main Search Function**
-   - Updated `search_google()` to better handle both browser and HTTP-based approaches
-   - Added improved fallback mechanisms when one approach fails
-   - Enhanced error handling throughout the search process
-
-8. **Scrape Function**
-   - Enhanced the main `scrape()` function to better extract URLs across search pages
-   - Improved post-processing of search results for better relevance
-   - Added better error handling and reporting
-
-## Background Tasks Support
-
-The Data Miner now supports running tasks in the background, allowing you to:
-
-1. Start multiple data mining tasks that continue to run when you navigate away from the page
-2. Monitor all your running tasks in a dedicated dashboard
-3. Stop tasks that may be taking too long or are no longer needed
-4. View detailed information about task progress, parameters, and results
-
-### Running a Task in Background
-
-On the main Data Miner page:
-
-1. Enter your search keyword, select the data type and country
-2. Make sure the "Run in background" checkbox is checked (enabled by default)
-3. Click "Get" to start the task
-4. The task will be added to your background tasks list
-
-### Managing Background Tasks
-
-Access the task management page by:
-- Clicking "View All Tasks" on the main Data Miner page, or
-- Going directly to `/data_miner/background-tasks/`
-
-The task management page provides:
-
-- A list of running tasks with real-time progress updates
-- A list of completed tasks with their results
-- Options to stop running tasks
-- Options to delete task records
-- Quick access to download results from completed tasks
-
-### Task Lifecycle
-
-Each background task goes through the following stages:
-
-1. **Pending**: The task has been created but hasn't started execution yet
-2. **Processing**: The task is actively running and collecting data
-3. **Completed**: The task has successfully finished and results are available
-4. **Failed**: The task encountered an error during execution
-5. **Cancelled**: The task was manually stopped by the user
-
-### Stopping a Task
-
-To stop a running task:
-
-1. Find the task in the running tasks section
-2. Click the "Stop" button
-3. Confirm the cancellation
-4. The task will be moved to the completed tasks section with "Cancelled" status
-
-## How to Use
-
-The contact scraper can be used as follows:
+You can also use the SerpAPI scraper programmatically:
 
 ```python
-from web_scrapper import ContactScraper
+from data_miner.scrap import scrape_with_serpapi
 
-# Initialize the scraper
-scraper = ContactScraper(debug_mode=True)
+# Scrape emails for digital marketing companies in India
+results = scrape_with_serpapi(
+    keyword="digital marketing company",
+    data_type="email",
+    country="IN",
+    max_results=50
+)
 
-# Extract contacts from a search keyword
-emails, phones = scraper.scrape("hotels in mumbai", num_results=50, max_runtime_minutes=15)
-
-# Print results
-print(f"Found {len(emails)} emails and {len(phones)} phone numbers")
+# Print the results
+for email in results['results']:
+    print(email)
 ```
 
-## Testing
+## Configuration
 
-A test script (`test_scraper.py`) has been created to verify the improvements. Run it with:
+To configure the SerpAPI integration, edit the settings in `data_miner/settings.py`:
 
+- `SERPAPI_KEY`: Your SerpAPI key
+- `GEMINI_API_KEY`: Your Google Gemini API key for query optimization
+- `DEFAULT_MAX_RESULTS`: Default maximum number of results to return
+- `DEFAULT_MAX_PAGES`: Default maximum number of search result pages to process
+- `DEFAULT_TIMEOUT`: Timeout for HTTP requests in seconds
+- `SCRAPING_DELAY`: Delay between requests to avoid rate limiting
+- `MAX_RETRIES`: Maximum number of retries for failed requests
+- `MIN_PHONE_LENGTH`: Minimum length for a valid phone number
+- `MAX_DOMAIN_LENGTH`: Maximum length for a valid email domain
+
+## Google Gemini Integration
+
+The scraper uses Google Gemini to optimize search queries for better results. To enable this feature:
+
+1. Get a Google Gemini API key from [Google AI Studio](https://ai.google.dev/)
+2. Add your key to `data_miner/settings.py`:
+
+```python
+GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
 ```
-python test_scraper.py
-```
 
-This will test various components of the scraper to ensure they're working correctly. 
+If no API key is provided, the system will use a simple rule-based query optimizer instead.
+
+## Dependencies
+
+- SerpAPI: For Google search results
+- Beautiful Soup: For HTML parsing
+- Google Generative AI: For query optimization (optional)
+- Requests: For HTTP requests 

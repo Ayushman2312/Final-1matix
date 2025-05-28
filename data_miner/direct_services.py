@@ -248,13 +248,31 @@ class DirectServiceManager:
         
     def is_port_in_use(self, port):
         """Check if a port is in use"""
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            return s.connect_ex(('localhost', port)) == 0
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(1)  # Set a short timeout
+                result = s.connect_ex(('localhost', port)) == 0
+                return result
+        except Exception as e:
+            logger.error(f"Error checking if port {port} is in use: {e}")
+            return False
             
     def is_redis_running(self):
-        """Check if Redis is running based on port availability"""
-        return self.is_port_in_use(6379)
+        """Check if Redis is running based on port availability and ping"""
+        # First check if the port is in use
+        if not self.is_port_in_use(6379):
+            return False
         
+        # Then try to ping Redis
+        try:
+            import redis
+            client = redis.Redis(host='localhost', port=6379, socket_timeout=2)
+            return client.ping()
+        except Exception as e:
+            logger.debug(f"Redis ping failed: {e}")
+            # If ping fails, rely only on port check
+            return True  # Port is in use, assume Redis is running
+    
     def is_celery_running(self):
         """Check if Celery is running based on process list"""
         # Celery is disabled, always report as running
@@ -283,7 +301,7 @@ def ensure_services():
     # Check if services are already running
     redis_running = manager.is_redis_running()
     # Celery is disabled
-    celery_running = True
+    celery_running = manager.is_celery_running()
     
     logger.info(f"Current service status - Redis: {redis_running}, Celery: {celery_running}")
     
@@ -307,6 +325,52 @@ def ensure_services():
         result = result and celery_result
     """    
     return result
+    
+# Function to check service status
+def check_services():
+    """
+    Check if Redis and Celery services are running
+    
+    Returns:
+        dict: Dictionary with service status
+    """
+    manager = service_starter
+    
+    redis_running = manager.is_redis_running()
+    celery_running = manager.is_celery_running()
+    
+    return {
+        'redis': redis_running,
+        'celery': celery_running
+    }
+
+# Function to start services
+def start_services():
+    """
+    Start Redis and Celery services if they're not running
+    
+    Returns:
+        dict: Result of the operation
+    """
+    try:
+        result = service_starter.start_all()
+        
+        if result:
+            return {
+                'success': True,
+                'message': 'Services started successfully'
+            }
+        else:
+            return {
+                'success': False,
+                'message': 'Failed to start one or more services'
+            }
+    except Exception as e:
+        logger.error(f"Error starting services: {str(e)}")
+        return {
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }
     
 if __name__ == "__main__":
     # This allows the script to be run directly for testing

@@ -1,0 +1,1322 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Complete Your Onboarding | {{ invitation.company.company_name }}</title>
+    {% comment %} <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon"> {% endcomment %}
+    <style>
+        :root {
+            --primary-color: #2563EB;
+            --primary-hover: #1D4ED8;
+            --bg-color: #F3F4F6;
+            --success-color: #059669;
+        }
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+        }
+        .welcome-banner {
+            background: rgb(33, 34, 36);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .form-step.active {
+            display: block;
+        }
+        .step-indicator {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            padding-left: 2.5rem;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+        }
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #E5E7EB;
+            transition: all 0.4s ease;
+        }
+        .step-indicator.active::before {
+            background-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+        }
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(10px);
+        }
+        /* Enhanced input styling */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="date"],
+        textarea,
+        select {
+            @apply block w-full px-4 py-3 rounded-lg border border-gray-300 
+            shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+            transition duration-150 ease-in-out;
+            background-color: #FAFBFC;
+        }
+        input[type="text"]:hover,
+        input[type="email"]:hover,
+        input[type="password"]:hover,
+        input[type="tel"]:hover,
+        input[type="date"]:hover,
+        textarea:hover,
+        select:hover {
+            @apply border-gray-400 shadow-md;
+            background-color: #FFFFFF;
+        }
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus,
+        input[type="date"]:focus,
+        textarea:focus,
+        select:focus {
+            @apply outline-none border-blue-500 ring-2 ring-blue-200;
+            background-color: #FFFFFF;
+        }
+        /* Label enhancements */
+        label {
+            @apply block text-sm font-medium text-gray-700 mb-1;
+            letter-spacing: 0.01em;
+        }
+        /* Input group styling */
+        .input-group {
+            @apply relative rounded-md shadow-sm;
+        }
+        .input-group input {
+            @apply pl-10;
+        }
+        /* Error state */
+        input.error {
+            @apply border-red-500 focus:ring-red-200 focus:border-red-500;
+        }
+        /* Success state */
+        input.success {
+            @apply border-green-500 focus:ring-green-200 focus:border-green-500;
+        }
+        /* Readonly state */
+        input[readonly] {
+            @apply bg-gray-50 cursor-not-allowed;
+        }
+        .btn-primary {
+            @apply px-6 py-3 bg-blue-600 text-white rounded-lg font-medium shadow-lg hover:bg-blue-700 transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+        }
+        .btn-secondary {
+            @apply px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium shadow hover:bg-gray-200 transform transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Welcome Modal -->
+        <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="welcome-banner max-w-3xl mx-4 relative">
+                <h1 class="text-3xl font-bold mb-4">Welcome to {{ invitation.company.company_name }} Onboarding!</h1>
+                <p class="text-[16px] opacity-90 mb-4">Please ensure you have the following information ready before completing your onboarding:</p>
+                <div class="bg-white/10 rounded-lg p-4 space-y-3">
+                    <div class="text-sm font-light flex items-start gap-3">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span class="leading-relaxed">Personal Information - Full Name, Contact Details, and Address</span>
+                    </div>
+                    <div class="text-sm font-light flex items-start gap-3">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span class="leading-relaxed">Education and Professional Information - Qualifications and Previous Work Experience</span>
+                    </div>
+                    <div class="text-sm font-light flex items-start gap-3">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span class="leading-relaxed">Emergency Contact Details - Name, Relationship, and Contact Information</span>
+                    </div>
+                    <div class="text-sm font-light flex items-start gap-3">
+                        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span class="leading-relaxed">Digital Copy of Resume/CV and ID Documents for Upload</span>
+                    </div>
+                </div>
+                <button onclick="closeWelcomeModal()" class="mt-6 w-full bg-white text-black font-semibold py-3 px-6 rounded-lg hover:bg-opacity-90 transition duration-200">
+                    I'm ready to proceed
+                </button>
+                <button id="rejectButton" class="mt-3 w-full bg-transparent border border-white/30 text-white font-semibold py-3 px-6 rounded-lg hover:bg-white/10 transition duration-200">
+                    I Decline the Offer
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main content card (hidden initially) -->
+        <div id="onboardingFormContainer" class="form-card flex flex-col md:flex-row overflow-hidden hidden">
+            <!-- Progress Sidebar -->
+            <div class="w-full md:w-72 bg-gray-50 p-8 border-r border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800 mb-8">Your Progress</h2>
+                <div class="space-y-6">
+                    <div class="step-indicator active text-gray-900 font-medium" data-step="1">
+                        Personal Information
+                    </div>
+                    <div class="step-indicator text-gray-600" data-step="2">
+                        Employment Details
+                    </div>
+                    <div class="step-indicator text-gray-600" data-step="3">
+                        Education & Experience
+                    </div>
+                    <div class="step-indicator text-gray-600" data-step="4">
+                        Emergency Contacts
+                    </div>
+                    <div class="step-indicator text-gray-600" data-step="5">
+                        Document Upload
+                    </div>
+                    <div class="step-indicator text-gray-600" data-step="6">
+                        Review & Submit
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="flex-1 p-8 md:p-12">
+                <div class="max-w-3xl mx-auto">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Complete Your Onboarding</h1>
+                    <p class="text-gray-600 mb-8">Please fill out all the required information accurately</p>
+
+                    <form id="onboardingForm" class="space-y-8 bg-mint-50 rounded-lg">
+                        <!-- Step 1: Personal Information -->
+                        <div class="form-step active bg-white rounded-lg shadow-sm" id="step1">
+                            <div class="space-y-4">
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Full Name</label>
+                                    <input type="text" id="name" name="name" value="{{ invitation.name }}" class="mt-1 block w-full" required>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Email Address</label>
+                                    <input type="email" id="email" name="email" value="{{ invitation.email }}" class="mt-1 block w-full" readonly>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Date of Birth</label>
+                                        <input type="date" id="dob" name="dob" class="mt-1 block w-full" required>
+                                        <p class="mt-1 text-sm text-gray-500 hidden text-red-600" id="dob-error">You must be at least 18 years old</p>
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Gender</label>
+                                        <select id="gender" name="gender" class="mt-1 block w-full" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Phone Number</label>
+                                    <div class="flex">
+                                        <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm">
+                                            +91
+                                        </span>
+                                        <input type="tel" id="phone" name="phone" class="flex-1 rounded-l-none" pattern="[0-9]{10}" maxlength="10" required>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-500">Enter 10 digit mobile number</p>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Alternate Phone (Optional)</label>
+                                    <div class="flex">
+                                        <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm">
+                                            +91
+                                        </span>
+                                        <input type="tel" id="altPhone" name="alt_phone" class="flex-1 rounded-l-none" pattern="[0-9]{10}" maxlength="10">
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Current Address</label>
+                                    <textarea id="address" name="address" rows="3" class="mt-1 block w-full" required></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">City</label>
+                                        <input type="text" id="city" name="city" class="mt-1 block w-full" required>
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">State</label>
+                                        <input type="text" id="state" name="state" class="mt-1 block w-full" required>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Pincode</label>
+                                        <input type="text" id="pincode" name="pincode" pattern="[0-9]{6}" maxlength="6" class="mt-1 block w-full" required>
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Country</label>
+                                        <input type="text" id="country" name="country" value="India" class="mt-1 block w-full" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Employment Details -->
+                        <div class="form-step bg-white rounded-lg shadow-sm" id="step2">
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Department</label>
+                                        <input type="text" id="department" name="department" value="{{ invitation.department }}" class="mt-1 block w-full" readonly>
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Designation</label>
+                                        <input type="text" id="designation" name="designation" value="{{ invitation.designation }}" class="mt-1 block w-full" readonly>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Role</label>
+                                        <input type="text" id="role" name="role" value="{{ invitation.role }}" class="mt-1 block w-full" readonly>
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Expected Start Date</label>
+                                        <input type="date" id="startDate" name="start_date" class="mt-1 block w-full" required>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Current CTC (Annual, if applicable)</label>
+                                    <div class="flex">
+                                        <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm">
+                                            ₹
+                                        </span>
+                                        <input type="text" id="currentCtc" name="current_ctc" class="flex-1 rounded-l-none" placeholder="e.g. 500000">
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Expected CTC (Annual)</label>
+                                    <div class="flex">
+                                        <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 text-gray-500 text-sm">
+                                            ₹
+                                        </span>
+                                        <input type="text" id="expectedCtc" name="expected_ctc" class="flex-1 rounded-l-none" placeholder="e.g. 600000">
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Skills & Expertise</label>
+                                    <textarea id="skills" name="skills" rows="3" class="mt-1 block w-full" placeholder="List your key skills and areas of expertise"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Education & Experience -->
+                        <div class="form-step bg-white rounded-lg shadow-sm" id="step3">
+                            <div class="space-y-4">
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Highest Qualification</label>
+                                    <select id="qualification" name="qualification" class="mt-1 block w-full" required>
+                                        <option value="">Select Qualification</option>
+                                        <option value="high_school">High School</option>
+                                        <option value="diploma">Diploma</option>
+                                        <option value="bachelors">Bachelor's Degree</option>
+                                        <option value="masters">Master's Degree</option>
+                                        <option value="phd">PhD</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Institution/University</label>
+                                    <input type="text" id="institution" name="institution" class="mt-1 block w-full">
+                                </div>
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Year of Passing</label>
+                                        <input type="number" id="passingYear" name="passing_year" min="1980" max="2030" class="mt-1 block w-full">
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Percentage/CGPA</label>
+                                        <input type="text" id="percentage" name="percentage" class="mt-1 block w-full">
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Experience Level</label>
+                                    <select id="experienceType" name="experience_type" class="mt-1 block w-full" required>
+                                        <option value="fresher">Fresher</option>
+                                        <option value="experienced">Experienced</option>
+                                    </select>
+                                </div>
+                                <div id="experienceDetails" class="space-y-4 hidden">
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Years of Experience</label>
+                                        <input type="number" id="yearsOfExperience" name="years_of_experience" min="1" max="50" class="mt-1 block w-full">
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Previous Company</label>
+                                        <input type="text" id="previousCompany" name="previous_company" class="mt-1 block w-full">
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Previous Role</label>
+                                        <input type="text" id="previousRole" name="previous_role" class="mt-1 block w-full">
+                                    </div>
+                                    <div class="relative">
+                                        <label class="block text-sm font-medium text-gray-500">Reason for Leaving</label>
+                                        <textarea id="reasonForLeaving" name="reason_for_leaving" rows="2" class="mt-1 block w-full"></textarea>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <label class="block text-sm font-medium text-gray-500">Skills & Competencies</label>
+                                    <textarea id="competencies" name="competencies" rows="3" class="mt-1 block w-full" placeholder="List your technical skills, certifications, and other relevant competencies"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Emergency Contacts -->
+                        <div class="form-step bg-white rounded-lg shadow-sm" id="step4">
+                            <div class="space-y-6">
+                                <h3 class="text-lg font-medium text-gray-900">Emergency Contacts</h3>
+                                <p class="text-sm text-gray-600">Please provide contact details of people we should contact in case of an emergency.</p>
+                                
+                                <!-- Emergency Contact 1 -->
+                                <div class="border p-4 rounded-md">
+                                    <h4 class="font-medium mb-2">Primary Emergency Contact</h4>
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Full Name</label>
+                                            <input type="text" name="emergency_contact1_name" class="mt-1 block w-full" required>
+                                        </div>
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Relationship</label>
+                                            <input type="text" name="emergency_contact1_relationship" class="mt-1 block w-full" required>
+                                        </div>
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Phone Number</label>
+                                            <input type="tel" name="emergency_contact1_phone" pattern="[0-9]{10}" maxlength="10" class="mt-1 block w-full" required>
+                                            <p class="mt-1 text-sm text-gray-500">10-digit mobile number</p>
+                                        </div>
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Email Address</label>
+                                            <input type="email" name="emergency_contact1_email" class="mt-1 block w-full">
+                                        </div>
+                                        <div class="relative sm:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-500">Address</label>
+                                            <textarea name="emergency_contact1_address" rows="2" class="mt-1 block w-full"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Emergency Contact 2 -->
+                                <div class="border p-4 rounded-md">
+                                    <h4 class="font-medium mb-2">Secondary Emergency Contact</h4>
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Full Name</label>
+                                            <input type="text" name="emergency_contact2_name" class="mt-1 block w-full">
+                                        </div>
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Relationship</label>
+                                            <input type="text" name="emergency_contact2_relationship" class="mt-1 block w-full">
+                                        </div>
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Phone Number</label>
+                                            <input type="tel" name="emergency_contact2_phone" pattern="[0-9]{10}" maxlength="10" class="mt-1 block w-full">
+                                            <p class="mt-1 text-sm text-gray-500">10-digit mobile number</p>
+                                        </div>
+                                        <div class="relative">
+                                            <label class="block text-sm font-medium text-gray-500">Email Address</label>
+                                            <input type="email" name="emergency_contact2_email" class="mt-1 block w-full">
+                                        </div>
+                                        <div class="relative sm:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-500">Address</label>
+                                            <textarea name="emergency_contact2_address" rows="2" class="mt-1 block w-full"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 5: Document Upload -->
+                        <div class="form-step bg-white rounded-lg shadow-sm" id="step5">
+                            <div class="space-y-6">
+                                <h3 class="text-lg font-medium text-gray-900">Required Documents</h3>
+                                <p class="text-sm text-gray-600 mb-4">Please upload clear, readable scans or photos of the following documents:</p>
+                                
+                                <!-- Profile Photo -->
+                                <div class="border p-4 rounded-md">
+                                    <div class="space-y-4">
+                                        <label class="block text-sm font-medium text-gray-700">Professional Photo</label>
+                                        <input type="file" name="profile_photo" accept="image/*" class="mt-1 block w-full" required>
+                                        <p class="text-xs text-gray-500">Upload a recent professional photo with clear face visibility and plain background</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Resume/CV -->
+                                <div class="border p-4 rounded-md">
+                                    <div class="space-y-4">
+                                        <label class="block text-sm font-medium text-gray-700">Resume/CV</label>
+                                        <input type="file" name="resume" accept=".pdf,.doc,.docx" class="mt-1 block w-full" required>
+                                        <p class="text-xs text-gray-500">Upload your latest resume (PDF or Word format preferred)</p>
+                                    </div>
+                                </div>
+
+                                <!-- ID Proof -->
+                                <div class="border p-4 rounded-md">
+                                    <div class="space-y-4">
+                                        <label class="block text-sm font-medium text-gray-700">ID Proof</label>
+                                        <input type="file" name="id_proof" accept="image/*,.pdf" class="mt-1 block w-full" required>
+                                        <p class="text-xs text-gray-500">Upload any government-issued ID (Aadhar, PAN, Passport, Driver's License)</p>
+                                    </div>
+                                </div>
+
+                                <!-- Address Proof -->
+                                <div class="border p-4 rounded-md">
+                                    <div class="space-y-4">
+                                        <label class="block text-sm font-medium text-gray-700">Address Proof</label>
+                                        <input type="file" name="address_proof" accept="image/*,.pdf" class="mt-1 block w-full">
+                                        <p class="text-xs text-gray-500">Upload a document proving your current address (utility bill, bank statement, etc.)</p>
+                                    </div>
+                                </div>
+
+                                <!-- Education Certificate -->
+                                <div class="border p-4 rounded-md">
+                                    <div class="space-y-4">
+                                        <label class="block text-sm font-medium text-gray-700">Education Certificate</label>
+                                        <input type="file" name="education_certificate" accept="image/*,.pdf" class="mt-1 block w-full" required>
+                                        <p class="text-xs text-gray-500">Upload your highest qualification certificate</p>
+                                    </div>
+                                </div>
+
+                                <!-- Experience Documents (conditional) -->
+                                <div id="experienceDocuments" class="border p-4 rounded-md hidden">
+                                    <div class="space-y-4">
+                                        <label class="block text-sm font-medium text-gray-700">Experience Certificate</label>
+                                        <input type="file" name="experience_certificate" accept="image/*,.pdf" class="mt-1 block w-full" multiple>
+                                        <p class="text-xs text-gray-500">Upload experience or relieving letters from previous employers</p>
+                                    </div>
+                                    
+                                    <div class="space-y-4 mt-4">
+                                        <label class="block text-sm font-medium text-gray-700">Last 3 Pay Slips</label>
+                                        <input type="file" name="pay_slips" accept="image/*,.pdf" class="mt-1 block w-full" multiple>
+                                        <p class="text-xs text-gray-500">Upload pay slips from your most recent employment</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 6: Review & Submit -->
+                        <div class="form-step bg-white rounded-lg shadow-sm" id="step6">
+                            <div class="space-y-6">
+                                <h3 class="text-lg font-medium text-gray-900">Review Your Information</h3>
+                                <p class="text-sm text-gray-600 mb-4">Please review all the information you've provided before final submission:</p>
+                                
+                                <div id="reviewContent" class="bg-gray-50 p-6 rounded-lg space-y-6">
+                                    <!-- This will be populated by JavaScript -->
+                                </div>
+                                
+                                <div class="border-t pt-6">
+                                    <div class="flex items-start">
+                                        <div class="flex items-center h-5">
+                                            <input id="acceptTerms" name="accept_terms" type="checkbox" class="focus:ring-blue-500 h-4 w-4 text-blue-500 border-gray-300 rounded" required>
+                                        </div>
+                                        <div class="ml-3 text-sm">
+                                            <label for="acceptTerms" class="font-medium text-gray-700">I confirm that all information provided is accurate and complete</label>
+                                            <p class="text-gray-500">By submitting this form, I acknowledge that providing false information may result in termination of employment.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Success message (hidden initially) -->
+                        <div id="successMessage" class="hidden text-center py-10">
+                            <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Thank You!</h3>
+                            <p class="text-gray-600 mb-6">Your onboarding form has been submitted successfully.</p>
+                            <p class="text-gray-600">Our HR team will contact you shortly with next steps.</p>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="flex justify-between mt-8">
+                            <button type="button" id="prevBtn" class="btn-secondary" style="display: none;">
+                                <span class="mr-2">←</span> Previous
+                            </button>
+                            <button type="button" id="nextBtn" class="btn-primary ml-auto">
+                                Next <span class="ml-2">→</span>
+                            </button>
+                            <button type="button" id="submitBtn" class="btn-primary ml-auto" style="display: none;">
+                                Submit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rejection message (hidden initially) -->
+        <div id="rejectionMessage" class="bg-white shadow-md rounded-lg overflow-hidden hidden p-8 text-center">
+            <svg class="w-16 h-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Invitation Declined</h3>
+            <p class="text-gray-600 mb-6">You have declined the invitation from {{ invitation.company.company_name }}.</p>
+            <p class="text-gray-600">If this was a mistake, please contact the HR team to receive a new invitation.</p>
+            <div class="mt-6">
+                <button onclick="location.reload()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-md transition duration-200">
+                    Return to Invitation
+                </button>
+            </div>
+        </div>
+        
+        <!-- Success message modal -->
+        <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg p-8 max-w-md mx-4 w-full">
+                <div class="text-center">
+                    <!-- Success Icon -->
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                        <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Onboarding Successful!</h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500">
+                            Thank you for completing your onboarding with {{ invitation.company.company_name }}. Your information has been submitted successfully. Our HR team will contact you shortly with next steps.
+                        </p>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <button onclick="closeSuccessModal()" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer note -->
+        <div class="mt-6 text-center text-gray-500 text-sm">
+            <p>If you have any questions, please contact our HR department at <a href="mailto:hr@{{ invitation.company.company_email }}" class="text-blue-600 hover:underline">hr@{{ invitation.company.company_email }}</a></p>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables for step management
+        let currentStep = 1;
+        const totalSteps = 6;
+        
+        // Show welcome modal on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Show welcome modal
+            document.getElementById('welcomeModal').classList.remove('hidden');
+        });
+
+        // Close welcome modal and show the form
+        function closeWelcomeModal() {
+            document.getElementById('welcomeModal').classList.add('hidden');
+            document.getElementById('onboardingFormContainer').classList.remove('hidden');
+            updateStepIndicators(1);
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            window.location.href = '/'; // Redirect to home page
+        }
+
+        // Reject button event handler
+        document.getElementById('rejectButton').addEventListener('click', function() {
+            document.getElementById('welcomeModal').classList.add('hidden');
+            document.getElementById('rejectionMessage').classList.remove('hidden');
+            
+            // Update invitation status to 'rejected' via API call
+            const invitationId = "{{ invitation.invitation_id }}";
+            fetch(`/hr_management/onboarding/reject/${invitationId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+        });
+
+        function setupEventListeners() {
+            // Experience type change handler
+            const experienceTypeSelect = document.getElementById('experienceType');
+            if (experienceTypeSelect) {
+                experienceTypeSelect.addEventListener('change', function() {
+                    const experienceDetails = document.getElementById('experienceDetails');
+                    const experienceDocuments = document.getElementById('experienceDocuments');
+                    
+                    if (this.value === 'experienced') {
+                        experienceDetails.classList.remove('hidden');
+                        if (experienceDocuments) {
+                            experienceDocuments.classList.remove('hidden');
+                        }
+                    } else {
+                        experienceDetails.classList.add('hidden');
+                        if (experienceDocuments) {
+                            experienceDocuments.classList.add('hidden');
+                        }
+                    }
+                });
+            }
+            
+            // Date of birth validation
+            const dobInput = document.getElementById('dob');
+            if (dobInput) {
+                dobInput.addEventListener('change', function() {
+                    validateAge(this);
+                });
+            }
+            
+            // Terms acceptance checkbox
+            const termsCheckbox = document.getElementById('acceptTerms');
+            const submitBtn = document.getElementById('submitBtn');
+            if (termsCheckbox && submitBtn) {
+                termsCheckbox.addEventListener('change', function() {
+                    submitBtn.disabled = !this.checked;
+                    
+                    if (this.checked) {
+                        submitBtn.classList.remove('bg-gray-400');
+                        submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    } else {
+                        submitBtn.classList.add('bg-gray-400');
+                        submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    }
+                });
+            }
+            
+            // Next button handler
+            const nextBtn = document.getElementById('nextBtn');
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    goToNextStep();
+                });
+            }
+            
+            // Previous button handler
+            const prevBtn = document.getElementById('prevBtn');
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    goToPrevStep();
+                });
+            }
+            
+            // Submit button handler
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function() {
+                    submitForm();
+                });
+            }
+            
+            // Step indicator clicks
+            const stepIndicators = document.querySelectorAll('.step-indicator');
+            stepIndicators.forEach(indicator => {
+                indicator.addEventListener('click', function() {
+                    const step = parseInt(this.getAttribute('data-step'));
+                    if (validateAllPreviousSteps(step)) {
+                        goToStep(step);
+                    }
+                });
+            });
+        }
+
+        function validateAge(dobInput) {
+            const dob = new Date(dobInput.value);
+            const today = new Date();
+            const age = today.getFullYear() - dob.getFullYear();
+            const errorElement = document.getElementById('dob-error');
+            
+            // Check if at least 18 years old
+            if (age < 18) {
+                errorElement.classList.remove('hidden');
+                dobInput.classList.add('border-red-500');
+                return false;
+            } else {
+                errorElement.classList.add('hidden');
+                dobInput.classList.remove('border-red-500');
+                return true;
+            }
+        }
+
+        function validateStep(step) {
+            const currentStepElement = document.getElementById(`step${step}`);
+            if (!currentStepElement) return true;
+            
+            // Get all required inputs in current step
+            const requiredInputs = currentStepElement.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+            
+            // Clear any previous error messages
+            const errorMessages = currentStepElement.querySelectorAll('.validation-error');
+            errorMessages.forEach(msg => msg.remove());
+            
+            // Validate each required field
+            requiredInputs.forEach(input => {
+                // Check if field is empty
+                if (!input.value.trim()) {
+                    input.classList.add('border-red-500');
+                    addErrorMessage(input, 'This field is required');
+                    isValid = false;
+                } else {
+                    input.classList.remove('border-red-500');
+                    
+                    // Additional validation based on input type
+                    if (input.type === 'email') {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(input.value.trim())) {
+                            input.classList.add('border-red-500');
+                            addErrorMessage(input, 'Please enter a valid email address');
+                            isValid = false;
+                        }
+                    } 
+                    else if (input.type === 'tel') {
+                        const phoneRegex = /^[0-9]{10}$/;
+                        if (!phoneRegex.test(input.value.trim())) {
+                            input.classList.add('border-red-500');
+                            addErrorMessage(input, 'Please enter a valid 10-digit phone number');
+                            isValid = false;
+                        }
+                    }
+                    else if (input.type === 'date') {
+                        // Special validation for date of birth
+                        if (input.id === 'dob' && !validateAge(input)) {
+                            isValid = false;
+                        }
+                    }
+                    else if (input.id === 'pincode') {
+                        const pincodeRegex = /^[0-9]{6}$/;
+                        if (!pincodeRegex.test(input.value.trim())) {
+                            input.classList.add('border-red-500');
+                            addErrorMessage(input, 'Please enter a valid 6-digit pincode');
+                            isValid = false;
+                        }
+                    }
+                }
+            });
+            
+            // Step-specific validations
+            if (step === 1) {
+                // Personal Information validation
+                // Additional validation can be added here
+            } 
+            else if (step === 2) {
+                // Employment Details validation
+                const startDate = document.getElementById('startDate');
+                if (startDate && startDate.value) {
+                    const today = new Date();
+                    const selectedDate = new Date(startDate.value);
+                    if (selectedDate < today) {
+                        startDate.classList.add('border-red-500');
+                        addErrorMessage(startDate, 'Start date should be today or in the future');
+                        isValid = false;
+                    }
+                }
+            }
+            else if (step === 4) {
+                // Emergency Contacts validation
+                const primaryPhone = document.querySelector('input[name="emergency_contact1_phone"]');
+                if (primaryPhone && primaryPhone.value) {
+                    const phoneRegex = /^[0-9]{10}$/;
+                    if (!phoneRegex.test(primaryPhone.value.trim())) {
+                        primaryPhone.classList.add('border-red-500');
+                        addErrorMessage(primaryPhone, 'Please enter a valid 10-digit phone number');
+                        isValid = false;
+                    }
+                }
+                
+                const secondaryPhone = document.querySelector('input[name="emergency_contact2_phone"]');
+                if (secondaryPhone && secondaryPhone.value) {
+                    const phoneRegex = /^[0-9]{10}$/;
+                    if (!phoneRegex.test(secondaryPhone.value.trim())) {
+                        secondaryPhone.classList.add('border-red-500');
+                        addErrorMessage(secondaryPhone, 'Please enter a valid 10-digit phone number');
+                        isValid = false;
+                    }
+                }
+            }
+            else if (step === 5) {
+                // Document Upload validation
+                const requiredUploads = currentStepElement.querySelectorAll('input[type="file"][required]');
+                requiredUploads.forEach(upload => {
+                    if (upload.files.length === 0) {
+                        upload.classList.add('border-red-500');
+                        addErrorMessage(upload, 'Please upload the required document');
+                        isValid = false;
+                    }
+                });
+            }
+            
+            if (!isValid) {
+                // Show error message at the top of the form
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 validation-error';
+                errorDiv.innerHTML = '<p>Please fix the errors before proceeding.</p>';
+                currentStepElement.prepend(errorDiv);
+            }
+            
+            return isValid;
+        }
+        
+        // Helper function to add error messages below inputs
+        function addErrorMessage(input, message) {
+            const errorSpan = document.createElement('span');
+            errorSpan.className = 'text-red-500 text-xs mt-1 validation-error';
+            errorSpan.textContent = message;
+            
+            // Find the parent element (usually a div that contains the label and input)
+            const parentElement = input.closest('.relative') || input.parentElement;
+            parentElement.appendChild(errorSpan);
+        }
+
+        function validateAllPreviousSteps(targetStep) {
+            for (let i = 1; i < targetStep; i++) {
+                if (!validateStep(i)) {
+                    goToStep(i);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            const allSteps = document.querySelectorAll('.form-step');
+            allSteps.forEach(stepElement => {
+                stepElement.classList.add('hidden');
+                stepElement.classList.remove('active');
+            });
+            
+            // Show target step
+            const targetStep = document.getElementById(`step${step}`);
+            if (targetStep) {
+                targetStep.classList.remove('hidden');
+                targetStep.classList.add('active');
+                currentStep = step;
+                updateStepIndicators(step);
+                updateNavigationButtons();
+                
+                // If it's the review step, populate review content
+                if (step === 6) {
+                    populateReviewContent();
+                }
+                
+                // Scroll to top of form
+                targetStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function goToNextStep() {
+            if (validateStep(currentStep)) {
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                }
+            }
+        }
+
+        function goToPrevStep() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        }
+
+        function updateStepIndicators(step) {
+            const indicators = document.querySelectorAll('.step-indicator');
+            
+            indicators.forEach(indicator => {
+                const indicatorStep = parseInt(indicator.getAttribute('data-step'));
+                
+                // Reset all indicators to default state
+                indicator.classList.remove('active', 'completed', 'text-gray-900', 'text-gray-600', 'text-green-600');
+                
+                // Update the indicator based on the current step
+                if (indicatorStep === step) {
+                    // Current step
+                    indicator.classList.add('active', 'text-gray-900');
+                    
+                    // Update the indicator with a circle
+                    updateIndicatorIcon(indicator, 'current');
+                } else if (indicatorStep < step) {
+                    // Completed step
+                    indicator.classList.add('completed', 'text-green-600');
+                    
+                    // Update the indicator with a checkmark
+                    updateIndicatorIcon(indicator, 'completed');
+                } else {
+                    // Upcoming step
+                    indicator.classList.add('text-gray-600');
+                    
+                    // Update the indicator with a circle
+                    updateIndicatorIcon(indicator, 'upcoming');
+                }
+            });
+        }
+        
+        // Helper function to update step indicator icons
+        function updateIndicatorIcon(indicator, state) {
+            // If the indicator already has a pseudo-element, we'll just modify the styles through CSS classes
+            // This function can be expanded to add actual icons if needed
+            
+            // Get the step number
+            const stepNumber = indicator.getAttribute('data-step');
+            
+            // Remove existing icon if any
+            const existingIcon = indicator.querySelector('.step-icon');
+            if (existingIcon) {
+                existingIcon.remove();
+            }
+            
+            // Create a new icon
+            const icon = document.createElement('span');
+            icon.className = 'step-icon absolute left-0 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center';
+            
+            switch (state) {
+                case 'completed':
+                    icon.classList.add('bg-green-500', 'text-white');
+                    icon.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                    break;
+                case 'current':
+                    icon.classList.add('bg-blue-600', 'text-white');
+                    icon.innerHTML = stepNumber;
+                    break;
+                case 'upcoming':
+                    icon.classList.add('bg-gray-300', 'text-gray-600');
+                    icon.innerHTML = stepNumber;
+                    break;
+            }
+            
+            // Add the icon to the indicator
+            indicator.prepend(icon);
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Show/hide previous button
+            if (currentStep > 1) {
+                prevBtn.style.display = 'block';
+            } else {
+                prevBtn.style.display = 'none';
+            }
+            
+            // Show/hide next and submit buttons
+            if (currentStep === totalSteps) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+                
+                // Only enable submit button if terms are accepted
+                const termsCheckbox = document.getElementById('acceptTerms');
+                if (termsCheckbox) {
+                    submitBtn.disabled = !termsCheckbox.checked;
+                    
+                    if (termsCheckbox.checked) {
+                        submitBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                        submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    } else {
+                        submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    }
+                }
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+                
+                // Enable next button only if current step is valid
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                nextBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            }
+            
+            // Update step indicators
+            updateStepIndicators(currentStep);
+        }
+
+        function populateReviewContent() {
+            const reviewContent = document.getElementById('reviewContent');
+            if (!reviewContent) return;
+            
+            // Personal information
+            const personalInfo = `
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Personal Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div><span class="font-medium">Name:</span> ${getValue('name')}</div>
+                        <div><span class="font-medium">Email:</span> ${getValue('email')}</div>
+                        <div><span class="font-medium">Phone:</span> ${getValue('phone')}</div>
+                        <div><span class="font-medium">Date of Birth:</span> ${formatDate(getValue('dob'))}</div>
+                        <div><span class="font-medium">Gender:</span> ${getValue('gender')}</div>
+                        <div class="md:col-span-2"><span class="font-medium">Address:</span> ${getValue('address')}, ${getValue('city')}, ${getValue('state')}, ${getValue('pincode')}, ${getValue('country')}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Employment details
+            const employmentInfo = `
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Employment Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div><span class="font-medium">Department:</span> ${getValue('department')}</div>
+                        <div><span class="font-medium">Designation:</span> ${getValue('designation')}</div>
+                        <div><span class="font-medium">Role:</span> ${getValue('role')}</div>
+                        <div><span class="font-medium">Expected Start Date:</span> ${formatDate(getValue('start_date'))}</div>
+                        <div><span class="font-medium">Current CTC:</span> ₹${getValue('current_ctc') || 'Not specified'}</div>
+                        <div><span class="font-medium">Expected CTC:</span> ₹${getValue('expected_ctc') || 'Not specified'}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Education and experience
+            const educationInfo = `
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Education & Experience</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div><span class="font-medium">Qualification:</span> ${getValue('qualification')}</div>
+                        <div><span class="font-medium">Institution:</span> ${getValue('institution')}</div>
+                        <div><span class="font-medium">Year of Passing:</span> ${getValue('passing_year')}</div>
+                        <div><span class="font-medium">Percentage/CGPA:</span> ${getValue('percentage')}</div>
+                        <div><span class="font-medium">Experience Type:</span> ${getValue('experience_type')}</div>
+                    </div>
+                    ${getValue('experience_type') === 'experienced' ? `
+                        <div class="mt-2 text-sm">
+                            <div><span class="font-medium">Years of Experience:</span> ${getValue('years_of_experience')}</div>
+                            <div><span class="font-medium">Previous Company:</span> ${getValue('previous_company')}</div>
+                            <div><span class="font-medium">Previous Role:</span> ${getValue('previous_role')}</div>
+                            <div><span class="font-medium">Reason for Leaving:</span> ${getValue('reason_for_leaving')}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Emergency contacts
+            const emergencyInfo = `
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Emergency Contacts</h4>
+                    <div class="mb-3">
+                        <h5 class="font-medium text-sm">Primary Contact</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm ml-3">
+                            <div><span class="font-medium">Name:</span> ${getValue('emergency_contact1_name')}</div>
+                            <div><span class="font-medium">Relationship:</span> ${getValue('emergency_contact1_relationship')}</div>
+                            <div><span class="font-medium">Phone:</span> ${getValue('emergency_contact1_phone')}</div>
+                            <div><span class="font-medium">Email:</span> ${getValue('emergency_contact1_email') || 'Not specified'}</div>
+                        </div>
+                    </div>
+                    ${getValue('emergency_contact2_name') ? `
+                        <div>
+                            <h5 class="font-medium text-sm">Secondary Contact</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm ml-3">
+                                <div><span class="font-medium">Name:</span> ${getValue('emergency_contact2_name')}</div>
+                                <div><span class="font-medium">Relationship:</span> ${getValue('emergency_contact2_relationship')}</div>
+                                <div><span class="font-medium">Phone:</span> ${getValue('emergency_contact2_phone')}</div>
+                                <div><span class="font-medium">Email:</span> ${getValue('emergency_contact2_email') || 'Not specified'}</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Document uploads
+            const documentInfo = `
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Uploaded Documents</h4>
+                    <ul class="list-disc ml-5 text-sm">
+                        <li>Professional Photo</li>
+                        <li>Resume/CV</li>
+                        <li>ID Proof</li>
+                        ${document.querySelector('input[name="address_proof"]').files.length ? '<li>Address Proof</li>' : ''}
+                        <li>Education Certificate</li>
+                        ${getValue('experience_type') === 'experienced' ? `
+                            <li>Experience Certificate(s)</li>
+                            <li>Pay Slips</li>
+                        ` : ''}
+                    </ul>
+                </div>
+            `;
+            
+            // Combine all sections
+            reviewContent.innerHTML = `
+                ${personalInfo}
+                <hr class="my-4 border-gray-200">
+                ${employmentInfo}
+                <hr class="my-4 border-gray-200">
+                ${educationInfo}
+                <hr class="my-4 border-gray-200">
+                ${emergencyInfo}
+                <hr class="my-4 border-gray-200">
+                ${documentInfo}
+            `;
+        }
+
+        // Helper function to get form field values
+        function getValue(id) {
+            const element = document.getElementById(id) || document.querySelector(`[name="${id}"]`);
+            if (!element) return '';
+            
+            if (element.tagName === 'SELECT') {
+                const selectedOption = element.options[element.selectedIndex];
+                return selectedOption ? selectedOption.text : '';
+            }
+            
+            return element.value || '';
+        }
+
+        // Helper function to format dates
+        function formatDate(dateString) {
+            if (!dateString) return 'Not specified';
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            return date.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        // Submit form function
+        function submitForm() {
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            
+            // Prepare form data
+            const form = document.getElementById('onboardingForm');
+            const formData = new FormData(form);
+            
+            // Call API to complete onboarding
+            const invitationId = "{{ invitation.invitation_id }}";
+            
+            // First upload form data (this would be implemented by backend)
+            // This is a simulated submission - in actual implementation,
+            // you would submit the form data to your server
+            setTimeout(() => {
+                // Mark invitation as completed via API call
+                fetch(`/hr_management/onboarding/complete/${invitationId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Hide the form
+                        document.getElementById('onboardingFormContainer').classList.add('hidden');
+                        
+                        // Show success message
+                        document.getElementById('successModal').classList.remove('hidden');
+                    } else {
+                        throw new Error('Failed to complete onboarding');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while submitting the form. Please try again.');
+                    
+                    // Reset button state
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+            }, 1500); // Simulating form submission delay
+        }
+
+        // Add this code to submit the form and create credentials
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('onboardingForm');
+            
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    // Get form data
+                    const formData = new FormData(form);
+                    
+                    // Submit form data to backend
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': getCsrfToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message and credential info
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Form Submitted Successfully',
+                                text: data.message,
+                                confirmButtonColor: '#7B3DF3'
+                            }).then(() => {
+                                // Redirect to login page or home page
+                                window.location.href = '/hr_management/employee/login/';
+                            });
+                        } else {
+                            // Show error message
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'An error occurred while submitting the form.',
+                                confirmButtonColor: '#7B3DF3'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred. Please try again later.',
+                            confirmButtonColor: '#7B3DF3'
+                        });
+                    });
+                });
+            }
+        });
+        
+        // Helper function to get CSRF token
+        function getCsrfToken() {
+            const csrfCookie = document.cookie.split(';')
+                .find(cookie => cookie.trim().startsWith('csrftoken='));
+            
+            if (csrfCookie) {
+                return csrfCookie.split('=')[1];
+            }
+            
+            // If no cookie, try to get from form
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return csrfInput ? csrfInput.value : '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+2025-05-25 19:01:14,214 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_190114_task_33.log
+2025-05-25 19:01:14,219 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 19:01:14,220 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 19:01:14,285 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 19:01:14,285 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_190114_task_34.log
+2025-05-25 19:01:14,299 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 19:01:14,299 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 19:01:14,363 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 19:01:18,691 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 19:01:18,709 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 19:01:18,711 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 19:01:18,711 - ContactScraper - INFO - Original keyword: 'Dropper Bottles in Delhi' | Optimized query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:18,713 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 19:01:18,713 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 19:01:18,715 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 19:01:18,715 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 19:01:19,793 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 19:01:19,827 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 19:01:19,827 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 19:01:19,827 - ContactScraper - INFO - Original keyword: 'Dropper Bottles in Delhi' | Optimized query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:19,827 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 19:01:19,834 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 19:01:19,834 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 19:01:19,834 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 19:01:52,843 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 19:01:52,843 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-25 19:01:52,843 - ContactScraper - INFO - Trying direct search as last resort for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:52,847 - ContactScraper - INFO - Performing direct search for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:52,847 - ContactScraper - INFO - Direct search found 25 URLs for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:52,847 - ContactScraper - INFO - Direct search found 10 results
+2025-05-25 19:01:52,849 - ContactScraper - INFO - Extracting contacts from: https://www.packagingconnections.com/suppliers/dropper-bottle-delhi
+2025-05-25 19:01:52,859 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 19:01:52,863 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-25 19:01:52,863 - ContactScraper - INFO - Trying direct search as last resort for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:52,864 - ContactScraper - INFO - Performing direct search for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:52,864 - ContactScraper - INFO - Direct search found 25 URLs for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 19:01:52,866 - ContactScraper - INFO - Direct search found 10 results
+2025-05-25 19:01:52,866 - ContactScraper - INFO - Extracting contacts from: https://www.packagingconnections.com/suppliers/dropper-bottle-delhi
+2025-05-25 19:01:57,095 - ContactScraper - WARNING - Failed to fetch https://www.packagingconnections.com/suppliers/dropper-bottle-delhi: Status 404
+2025-05-25 19:01:57,098 - ContactScraper - INFO - Searching for contact pages on www.packagingconnections.com
+2025-05-25 19:01:57,703 - ContactScraper - WARNING - Failed to fetch https://www.packagingconnections.com/suppliers/dropper-bottle-delhi: Status 404
+2025-05-25 19:01:57,711 - ContactScraper - INFO - Searching for contact pages on www.packagingconnections.com
+2025-05-25 19:01:59,301 - ContactScraper - INFO - Checking contact page: https://www.packagingconnections.com/contact
+2025-05-25 19:01:59,922 - ContactScraper - INFO - Checking contact page: https://www.packagingconnections.com/contact
+2025-05-25 19:02:03,112 - ContactScraper - INFO - Contact page https://www.packagingconnections.com/contact found 5 emails and 0 phones
+2025-05-25 19:02:03,113 - ContactScraper - INFO - Found 5 emails and 0 phones on www.packagingconnections.com
+2025-05-25 19:02:03,116 - ContactScraper - INFO - Extracting contacts from: https://www.glassbottleindia.com/contact-us
+2025-05-25 19:02:04,583 - ContactScraper - INFO - Contact page https://www.packagingconnections.com/contact found 5 emails and 0 phones
+2025-05-25 19:02:04,583 - ContactScraper - INFO - Found 5 emails and 0 phones on www.packagingconnections.com
+2025-05-25 19:02:04,589 - ContactScraper - INFO - Extracting contacts from: https://www.glassbottleindia.com/contact-us
+2025-05-25 19:02:06,213 - ContactScraper - WARNING - Failed to fetch https://www.glassbottleindia.com/contact-us: Status 403
+2025-05-25 19:02:06,220 - ContactScraper - INFO - Searching for contact pages on www.glassbottleindia.com
+2025-05-25 19:02:07,351 - ContactScraper - INFO - Checking contact page: https://www.glassbottleindia.com/contact
+2025-05-25 19:02:09,486 - ContactScraper - WARNING - Failed to fetch https://www.glassbottleindia.com/contact-us: Status 403
+2025-05-25 19:02:09,490 - ContactScraper - INFO - Searching for contact pages on www.glassbottleindia.com
+2025-05-25 19:02:10,511 - ContactScraper - INFO - Checking contact page: https://www.glassbottleindia.com/contact-us
+2025-05-25 19:02:10,817 - ContactScraper - INFO - Checking contact page: https://www.glassbottleindia.com/contact
+2025-05-25 19:02:14,712 - ContactScraper - INFO - Checking contact page: https://www.glassbottleindia.com/contactus
+2025-05-25 19:02:14,811 - ContactScraper - INFO - Checking contact page: https://www.glassbottleindia.com/contact-us
+2025-05-25 19:02:17,474 - ContactScraper - INFO - Found 0 emails and 0 phones on www.glassbottleindia.com
+2025-05-25 19:02:17,478 - ContactScraper - INFO - Extracting contacts from: https://www.packagingexpo.in/delhi-exhibitors
+2025-05-25 19:02:19,623 - ContactScraper - WARNING - Connection error requesting https://www.packagingexpo.in/delhi-exhibitors
+2025-05-25 19:02:19,626 - ContactScraper - INFO - Searching for contact pages on www.packagingexpo.in
+2025-05-25 19:02:19,638 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.packagingexpo.in', port=443): Max retries exceeded with url: /delhi-exhibitors (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x000001F836C4EAD0>: Failed to resolve 'www.packagingexpo.in' ([Errno 11001] getaddrinfo failed)"))
+2025-05-25 19:02:19,638 - ContactScraper - INFO - Checking contact page: https://www.packagingexpo.in/contact
+2025-05-25 19:02:20,238 - ContactScraper - INFO - Checking contact page: https://www.glassbottleindia.com/contactus

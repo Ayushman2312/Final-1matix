@@ -69,7 +69,7 @@
                                         Processing
                                     </span>
                                     {% endif %}
-                                    Progress: <span class="task-progress ml-1">{{ task.progress }}%</span>
+                                    Progress: <span class="task-progress ml-1">{{ task.progress|default:0 }}%</span>
                                 </span>
                             </div>
                         </div>
@@ -81,17 +81,30 @@
                                     <!-- Background Circle -->
                                     <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" stroke-width="2"></circle>
                                     
-                                    <!-- Progress Circle (stroke-dasharray calculation: 2πr * progress percentage) -->
+                                    <!-- Progress Circle (2πr calculation for stroke-dasharray) -->
+                                    {% with circumference=100.53 %}
+                                    {% with dash_value=task.progress|default:0|floatformat:2 %}
                                     <circle class="task-progress-circle" cx="18" cy="18" r="16" fill="none" stroke="#4f46e5" 
-                                           stroke-width="2" stroke-dasharray="{{ task.progress|default:0 }} 100" 
+                                           stroke-width="2" stroke-dasharray="{{ dash_value }} {{ circumference }}" 
                                            stroke-dashoffset="0" transform="rotate(-90 18 18)"></circle>
+                                    {% endwith %}
+                                    {% endwith %}
                                     
                                     <!-- Progress Text -->
                                     <text x="18" y="18" fill="#4f46e5" font-size="8" text-anchor="middle" alignment-baseline="middle" class="task-progress-text">
-                                        {{ task.progress }}%
+                                        {{ task.progress|default:0 }}%
                                     </text>
                                 </svg>
                             </div>
+                            
+                            <!-- View Data Button (for running tasks) -->
+                            <a href="#" class="view-data-btn inline-flex items-center px-3 py-1.5 border border-green-300 text-sm text-green-600 font-medium rounded-md hover:bg-green-50 focus:outline-none" data-task-id="{{ task.task_id }}">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                View Data
+                            </a>
                             
                             <!-- Cancel Button -->
                             <form method="post" class="cancel-task-form">
@@ -113,26 +126,41 @@
                     <div class="mt-3 grid grid-cols-3 text-sm text-gray-600 gap-x-4 gap-y-2">
                         <div>
                             <span class="font-medium text-gray-500">Keyword:</span> 
-                            {{ task.parameters.keyword }}
+                            <span class="keyword-value">{{ task.parameters.keyword }}</span>
                         </div>
                         <div>
                             <span class="font-medium text-gray-500">Data Type:</span> 
-                            {{ task.parameters.data_type|title }}s
+                            <span class="data-type-value">{{ task.parameters.data_type|title }}s</span>
                         </div>
                         <div>
                             <span class="font-medium text-gray-500">Country:</span> 
-                            {{ task.parameters.country }}
+                            <span class="country-value">{{ task.parameters.country }}</span>
                         </div>
                         <div>
                             <span class="font-medium text-gray-500">Max Results:</span> 
-                            {{ task.parameters.max_results }}
+                            <span class="max-results-value">{{ task.parameters.max_results }}</span>
                         </div>
                         <div>
                             <span class="font-medium text-gray-500">Max Runtime:</span> 
-                            {{ task.parameters.max_runtime_minutes }} minutes
+                            <span class="max-runtime-value">{{ task.parameters.max_runtime_minutes }} minutes</span>
                         </div>
                     </div>
                     {% endif %}
+                    
+                    <!-- Task Progress Data - Initially Hidden -->
+                    <div id="task-data-{{ task.task_id }}" class="mt-4 hidden bg-gray-50 p-4 rounded-lg task-data-container">
+                        <div class="flex justify-between items-center mb-3">
+                            <h5 class="font-medium text-gray-800">Current Progress Data</h5>
+                            <button type="button" class="close-data-btn text-gray-500 hover:text-gray-700" data-task-id="{{ task.task_id }}">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="task-data-content overflow-auto max-h-60">
+                            <p class="text-gray-500 text-sm">Loading data...</p>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
@@ -215,15 +243,23 @@
                     <div class="mt-3 grid grid-cols-3 text-sm text-gray-600 gap-x-4 gap-y-2">
                         <div>
                             <span class="font-medium text-gray-500">Keyword:</span> 
-                            {{ task.parameters.keyword }}
+                            <span class="keyword-value">{{ task.parameters.keyword }}</span>
                         </div>
                         <div>
                             <span class="font-medium text-gray-500">Data Type:</span> 
-                            {{ task.parameters.data_type|title }}s
+                            <span class="data-type-value">{{ task.parameters.data_type|title }}s</span>
                         </div>
                         <div>
                             <span class="font-medium text-gray-500">Country:</span> 
-                            {{ task.parameters.country }}
+                            <span class="country-value">{{ task.parameters.country }}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Max Results:</span> 
+                            <span class="max-results-value">{{ task.parameters.max_results }}</span>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Max Runtime:</span> 
+                            <span class="max-runtime-value">{{ task.parameters.max_runtime_minutes }} minutes</span>
                         </div>
                     </div>
                     {% endif %}
@@ -252,8 +288,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Make sure task tracking is initialized
+        // Initialize DataMinerTasks if it exists
         if (window.DataMinerTasks) {
+            window.DataMinerTasks.init();
+            
             // Ensure all visible tasks are tracked
             document.querySelectorAll('.task-item').forEach(taskItem => {
                 const taskId = taskItem.dataset.taskId;
@@ -313,6 +351,104 @@
             }
         }
         
+        // Handle View Data button click
+        document.querySelectorAll('.view-data-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const taskId = this.dataset.taskId;
+                const dataContainer = document.getElementById(`task-data-${taskId}`);
+                
+                if (dataContainer) {
+                    // Toggle visibility
+                    if (dataContainer.classList.contains('hidden')) {
+                        // Show data container and fetch latest data
+                        dataContainer.classList.remove('hidden');
+                        fetchTaskData(taskId);
+                    } else {
+                        // Hide data container
+                        dataContainer.classList.add('hidden');
+                    }
+                }
+            });
+        });
+        
+        // Handle Close Data button click
+        document.querySelectorAll('.close-data-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const taskId = this.dataset.taskId;
+                const dataContainer = document.getElementById(`task-data-${taskId}`);
+                if (dataContainer) {
+                    dataContainer.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Function to fetch task data
+        function fetchTaskData(taskId) {
+            const dataContainer = document.getElementById(`task-data-${taskId}`);
+            if (!dataContainer) return;
+            
+            const contentElement = dataContainer.querySelector('.task-data-content');
+            contentElement.innerHTML = '<p class="text-gray-500 text-sm">Loading data...</p>';
+            
+            // Fetch task status to get current data
+            fetch(`/data_miner/api/task-status/${taskId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Display the data
+                    if (data.results) {
+                        let html = '';
+                        const dataType = document.querySelector('.task-item[data-task-id="' + taskId + '"]')
+                            .querySelector('.keyword-value')?.textContent || 'data';
+                        
+                        if (Array.isArray(data.results.emails) && data.results.emails.length > 0) {
+                            html += '<div class="mb-3"><h6 class="font-medium text-gray-700 mb-1">Emails Found:</h6>';
+                            html += '<ul class="list-disc pl-5 text-sm">';
+                            data.results.emails.slice(0, 50).forEach(email => {
+                                html += `<li>${email}</li>`;
+                            });
+                            html += '</ul>';
+                            if (data.results.emails.length > 50) {
+                                html += `<p class="text-xs text-gray-500 mt-1">Showing 50 of ${data.results.emails.length} emails</p>`;
+                            }
+                            html += '</div>';
+                        }
+                        
+                        if (Array.isArray(data.results.phones) && data.results.phones.length > 0) {
+                            html += '<div class="mb-3"><h6 class="font-medium text-gray-700 mb-1">Phone Numbers Found:</h6>';
+                            html += '<ul class="list-disc pl-5 text-sm">';
+                            data.results.phones.slice(0, 50).forEach(phone => {
+                                html += `<li>${typeof phone === 'object' ? phone.phone : phone}</li>`;
+                            });
+                            html += '</ul>';
+                            if (data.results.phones.length > 50) {
+                                html += `<p class="text-xs text-gray-500 mt-1">Showing 50 of ${data.results.phones.length} phone numbers</p>`;
+                            }
+                            html += '</div>';
+                        }
+                        
+                        if (html === '') {
+                            html = '<p class="text-gray-500 text-sm">No data available yet. Task is still collecting data.</p>';
+                        }
+                        
+                        contentElement.innerHTML = html;
+                    } else if (data.status === 'error' || data.status === 'failed') {
+                        contentElement.innerHTML = `<p class="text-red-500 text-sm">Error: ${data.message || 'Task failed'}</p>`;
+                    } else if (data.status === 'pending' || data.status === 'processing') {
+                        contentElement.innerHTML = `
+                            <p class="text-gray-500 text-sm">Task is ${data.status}. Progress: ${data.progress || 0}%</p>
+                            <p class="text-gray-500 text-sm mt-2">No data available yet. Check back later.</p>
+                        `;
+                    } else {
+                        contentElement.innerHTML = '<p class="text-gray-500 text-sm">No data available yet.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching task data:', error);
+                    contentElement.innerHTML = '<p class="text-red-500 text-sm">Error loading data. Please try again.</p>';
+                });
+        }
+        
         // Handle cancel task form submission
         document.querySelectorAll('.cancel-task-form').forEach(form => {
             form.addEventListener('submit', function(e) {
@@ -325,14 +461,26 @@
                 const formData = new FormData(form);
                 const taskId = formData.get('task_id');
                 
-                fetch(form.action, {
+                // Get CSRF token from cookie
+                const csrftoken = getCsrfToken();
+                
+                // Explicitly set the correct URL
+                const url = "{% url 'background_tasks' %}";
+                
+                fetch(url, {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         // Reload the page to reflect changes
@@ -343,7 +491,7 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while trying to cancel the task');
+                    alert('An error occurred while trying to cancel the task: ' + error.message);
                 });
             });
         });
@@ -358,15 +506,25 @@
                 }
                 
                 const formData = new FormData(form);
+                const csrftoken = getCsrfToken();
                 
-                fetch(form.action, {
+                // Explicitly set the correct URL
+                const url = "{% url 'background_tasks' %}";
+                
+                fetch(url, {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         // Reload the page to reflect changes
@@ -377,10 +535,27 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while trying to delete the task');
+                    alert('An error occurred while trying to delete the task: ' + error.message);
                 });
             });
         });
+        
+        // Helper function to get CSRF token from cookies
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
     });
 </script>
 

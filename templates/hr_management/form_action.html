@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Review - {{ invitation.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        body.modal-active {
+            overflow-x: hidden;
+            overflow-y: visible !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-6 sm:p-10">
+                <!-- Header with company logo if available -->
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-8">
+                    <div class="mb-4 sm:mb-0">
+                        {% if invitation.company.company_logo %}
+                        <img src="{{ invitation.company.company_logo.url }}" alt="{{ invitation.company.company_name }}" class="h-16">
+                        {% else %}
+                        <h1 class="text-2xl font-bold text-gray-800">{{ invitation.company.company_name }}</h1>
+                        {% endif %}
+                    </div>
+                    <div class="text-right">
+                        <div class="text-gray-600 text-sm">Application Received</div>
+                        <div class="text-gray-800 font-semibold">{{ invitation.completed_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+
+                <!-- Application Status Banner -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm">Application Status: <span class="font-semibold">Completed</span></p>
+                            <p class="text-xs mt-1">This application requires your review.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Applicant Information -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Applicant Information</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-600 text-sm">Full Name</p>
+                            <p class="text-gray-800 font-medium">{{ invitation.name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm">Email Address</p>
+                            <p class="text-gray-800 font-medium">{{ invitation.email }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm">Department</p>
+                            <p class="text-gray-800 font-medium">{{ invitation.department.name|default:"Not specified" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm">Designation</p>
+                            <p class="text-gray-800 font-medium">{{ invitation.designation.name|default:"Not specified" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm">Role</p>
+                            <p class="text-gray-800 font-medium">{{ invitation.role.name|default:"Not specified" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 text-sm">Application Date</p>
+                            <p class="text-gray-800 font-medium">{{ invitation.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="border-t pt-6 flex flex-col sm:flex-row justify-center gap-4">
+                    <button id="acceptBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-check mr-2"></i> Accept Application
+                    </button>
+                    <button id="rejectBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-times mr-2"></i> Reject Application
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div id="rejectionModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"></div>
+        
+        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+            <div class="modal-content py-4 text-left px-6">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center pb-3">
+                    <p class="text-xl font-bold text-gray-700">Rejection Reason</p>
+                    <button class="modal-close cursor-pointer z-50">
+                        <i class="fas fa-times text-gray-500 hover:text-gray-700"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="my-4">
+                    <p class="text-gray-600 mb-3">Please provide a reason for rejecting this application (optional):</p>
+                    <textarea id="rejectionReason" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" rows="4" placeholder="Enter rejection reason..."></textarea>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end pt-2">
+                    <button class="modal-close px-4 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 mr-2 py-2">Cancel</button>
+                    <button id="confirmReject" class="px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 py-2">Confirm Rejection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"></div>
+        
+        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto">
+            <div class="modal-content py-4 text-left px-6">
+                <div class="flex flex-col items-center pb-3">
+                    <div id="successIcon" class="text-green-500 text-5xl mb-4">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <p id="successMessage" class="text-xl font-bold text-gray-700 text-center">Application Accepted Successfully</p>
+                </div>
+
+                <div class="my-4">
+                    <p id="successDetails" class="text-gray-600 text-center">The applicant will be notified via email.</p>
+                </div>
+
+                <div class="flex justify-center pt-2">
+                    <button id="successOk" class="px-6 bg-blue-500 text-white rounded-lg hover:bg-blue-600 py-2">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('opacity-0');
+            modal.classList.remove('pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0');
+            modal.classList.add('pointer-events-none');
+            document.body.classList.remove('modal-active');
+        }
+
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function() {
+                closeModal('rejectionModal');
+                closeModal('successModal');
+            });
+        });
+
+        // Close modal when clicking close button
+        document.querySelectorAll('.modal-close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', function() {
+                closeModal('rejectionModal');
+            });
+        });
+
+        // Accept button functionality
+        document.getElementById('acceptBtn').addEventListener('click', function() {
+            const invitation_id = '{{ invitation.invitation_id }}';
+            
+            fetch(`/hr/onboarding/form-action/${invitation_id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'accept'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('successIcon').innerHTML = '<i class="fas fa-check-circle"></i>';
+                    document.getElementById('successIcon').className = 'text-green-500 text-5xl mb-4';
+                    document.getElementById('successMessage').textContent = 'Application Accepted Successfully';
+                    document.getElementById('successDetails').textContent = 'The applicant will be notified via email with login credentials.';
+                    openModal('successModal');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+
+        // Open rejection modal
+        document.getElementById('rejectBtn').addEventListener('click', function() {
+            openModal('rejectionModal');
+        });
+
+        // Confirm rejection
+        document.getElementById('confirmReject').addEventListener('click', function() {
+            const invitation_id = '{{ invitation.invitation_id }}';
+            const rejectionReason = document.getElementById('rejectionReason').value;
+            
+            fetch(`/hr/onboarding/form-action/${invitation_id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'reject',
+                    rejection_reason: rejectionReason
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                closeModal('rejectionModal');
+                
+                if (data.success) {
+                    document.getElementById('successIcon').innerHTML = '<i class="fas fa-times-circle"></i>';
+                    document.getElementById('successIcon').className = 'text-red-500 text-5xl mb-4';
+                    document.getElementById('successMessage').textContent = 'Application Rejected';
+                    document.getElementById('successDetails').textContent = 'The applicant will be notified via email.';
+                    openModal('successModal');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+
+        // Success modal OK button
+        document.getElementById('successOk').addEventListener('click', function() {
+            closeModal('successModal');
+            window.location.href = '/hr/onboarding/'; // Redirect to onboarding page
+        });
+
+        // Get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html> 

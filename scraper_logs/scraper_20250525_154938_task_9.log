@@ -1,0 +1,151 @@
+2025-05-25 15:49:38,500 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_154938_task_9.log
+2025-05-25 15:49:38,503 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 15:49:38,503 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 15:49:38,532 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 15:49:40,328 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 15:49:40,335 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 15:49:40,335 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 15:49:40,335 - ContactScraper - INFO - Original keyword: 'Dropper Bottles in Delhi' | Optimized query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 15:49:40,335 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 15:49:40,339 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 15:49:40,339 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 15:49:40,339 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 15:49:48,756 - ContactScraper - INFO - Imported browser search found 1 results
+2025-05-25 15:49:48,756 - ContactScraper - INFO - Extracting contacts from: https://www.manufacturersuppliers.in/delhi/plastic-dropper-bottles.html
+2025-05-25 15:49:49,129 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:49:49,770 - ContactScraper - INFO - Contact page https://www.manufacturersuppliers.in/contact found 0 emails and 0 phones
+2025-05-25 15:49:50,024 - ContactScraper - INFO - Contact page https://www.manufacturersuppliers.in/contact-us found 0 emails and 0 phones
+2025-05-25 15:49:50,024 - ContactScraper - INFO - Found 0 emails and 0 phones on www.manufacturersuppliers.in
+2025-05-25 15:49:50,024 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 1)
+2025-05-25 15:49:50,024 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 15:49:50,024 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 15:49:50,024 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 15:50:11,377 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:50:11,377 - ContactScraper - INFO - Extracting contacts from: https://www.krishna-packaging.in/30ml-glass-bottle.htm
+2025-05-25 15:50:11,857 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:50:13,663 - ContactScraper - INFO - Found 0 emails and 0 phones on www.krishna-packaging.in
+2025-05-25 15:50:13,665 - ContactScraper - INFO - Extracting contacts from: https://www.trendglobal.co.in/
+2025-05-25 15:50:13,885 - ContactScraper - WARNING - Connection error requesting https://www.trendglobal.co.in/
+2025-05-25 15:50:14,062 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:50:14,277 - ContactScraper - WARNING - Error fetching contact page https://www.trendglobal.co.in/contact: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: /contact (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:50:14,468 - ContactScraper - WARNING - Error fetching contact page https://www.trendglobal.co.in/contact-us: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: /contact-us (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:50:14,471 - ContactScraper - INFO - Found 0 emails and 0 phones on www.trendglobal.co.in
+2025-05-25 15:50:14,472 - ContactScraper - INFO - Extracting contacts from: https://www.trendglobalpackaging.in/glass-dropper-bottle.html
+2025-05-25 15:50:16,201 - ContactScraper - INFO - Direct request found 2 emails and 0 phones
+2025-05-25 15:50:16,201 - ContactScraper - INFO - Found 2 emails and 0 phones on www.trendglobalpackaging.in
+2025-05-25 15:50:16,203 - ContactScraper - INFO - Extracting contacts from: https://www.gurujifirms.in/
+2025-05-25 15:50:17,791 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:50:21,724 - ContactScraper - INFO - Found 0 emails and 0 phones on www.gurujifirms.in
+2025-05-25 15:50:21,725 - ContactScraper - INFO - Extracting contacts from: https://www.glassplanet.in/glass-dropper.html
+2025-05-25 15:50:23,351 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 15:50:27,156 - ContactScraper - INFO - Found 1 emails and 0 phones on www.glassplanet.in
+2025-05-25 15:50:27,156 - ContactScraper - INFO - Extracting contacts from: https://www.shinepolypacks.in/30ml-glass-flat-shoulder-dropper-bottle-8650358.html
+2025-05-25 15:50:27,737 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:50:32,245 - ContactScraper - INFO - Found 0 emails and 0 phones on www.shinepolypacks.in
+2025-05-25 15:50:32,245 - ContactScraper - INFO - Extracting contacts from: https://www.copospackaging.in/32-ml-pd-glass-dropper-bottle.htm
+2025-05-25 15:50:32,455 - ContactScraper - WARNING - Connection error requesting https://www.copospackaging.in/32-ml-pd-glass-dropper-bottle.htm
+2025-05-25 15:50:32,771 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.copospackaging.in', port=443): Max retries exceeded with url: /32-ml-pd-glass-dropper-bottle.htm (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:50:33,156 - ContactScraper - WARNING - Error fetching contact page https://www.copospackaging.in/contact: HTTPSConnectionPool(host='www.copospackaging.in', port=443): Max retries exceeded with url: /contact (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:50:33,770 - ContactScraper - WARNING - Error fetching contact page https://www.copospackaging.in/contact-us: HTTPSConnectionPool(host='www.copospackaging.in', port=443): Max retries exceeded with url: /contact-us (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:50:33,770 - ContactScraper - INFO - Found 0 emails and 0 phones on www.copospackaging.in
+2025-05-25 15:50:33,770 - ContactScraper - INFO - Extracting contacts from: https://www.sunriseagency.co.in/glass-bottle-supplier-in-delhi.html
+2025-05-25 15:50:36,877 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 15:50:42,655 - ContactScraper - INFO - Found 1 emails and 0 phones on www.sunriseagency.co.in
+2025-05-25 15:50:42,655 - ContactScraper - INFO - Extracting contacts from: https://www.singh-enterprises.in/product/hydrating-gel-oil/
+2025-05-25 15:50:53,177 - ContactScraper - INFO - Direct request found 4 emails and 0 phones
+2025-05-25 15:50:53,177 - ContactScraper - INFO - Found 4 emails and 0 phones on www.singh-enterprises.in
+2025-05-25 15:50:53,194 - ContactScraper - INFO - Extracting contacts from: https://www.gurujifirms.in/amber-glass-dropper-bottle.html
+2025-05-25 15:50:55,192 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 15:50:59,207 - ContactScraper - INFO - Found 1 emails and 0 phones on www.gurujifirms.in
+2025-05-25 15:50:59,207 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:50:59,207 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:50:59,207 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:51:18,558 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:51:18,560 - ContactScraper - INFO - Extracting contacts from: https://www.bhindustry.co.in/glass-dropper-bottles.htm
+2025-05-25 15:51:19,261 - ContactScraper - WARNING - Connection error requesting https://www.bhindustry.co.in/glass-dropper-bottles.htm
+2025-05-25 15:51:19,428 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.bhindustry.co.in', port=443): Max retries exceeded with url: /glass-dropper-bottles.htm (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:51:19,611 - ContactScraper - WARNING - Error fetching contact page https://www.bhindustry.co.in/contact: HTTPSConnectionPool(host='www.bhindustry.co.in', port=443): Max retries exceeded with url: /contact (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:51:19,780 - ContactScraper - WARNING - Error fetching contact page https://www.bhindustry.co.in/contact-us: HTTPSConnectionPool(host='www.bhindustry.co.in', port=443): Max retries exceeded with url: /contact-us (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:51:19,789 - ContactScraper - INFO - Found 0 emails and 0 phones on www.bhindustry.co.in
+2025-05-25 15:51:19,789 - ContactScraper - INFO - Extracting contacts from: https://www.cosmopharmaglass.in/
+2025-05-25 15:51:21,396 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:51:25,085 - ContactScraper - INFO - Found 0 emails and 0 phones on www.cosmopharmaglass.in
+2025-05-25 15:51:25,087 - ContactScraper - INFO - Extracting contacts from: https://www.essentialoilbottle.in/
+2025-05-25 15:51:26,774 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:51:34,549 - ContactScraper - INFO - Found 0 emails and 0 phones on www.essentialoilbottle.in
+2025-05-25 15:51:34,551 - ContactScraper - INFO - Extracting contacts from: https://www.glassplanet.in/
+2025-05-25 15:51:36,145 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:51:42,737 - ContactScraper - INFO - Found 0 emails and 0 phones on www.glassplanet.in
+2025-05-25 15:51:42,753 - ContactScraper - INFO - Extracting contacts from: https://www.sunriseagency.co.in/dropper-bottle.html
+2025-05-25 15:51:45,718 - ContactScraper - INFO - Direct request found 2 emails and 0 phones
+2025-05-25 15:51:45,718 - ContactScraper - INFO - Found 2 emails and 0 phones on www.sunriseagency.co.in
+2025-05-25 15:51:45,718 - ContactScraper - INFO - Extracting contacts from: https://www.shribalajient.co.in/
+2025-05-25 15:51:47,563 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:51:52,332 - ContactScraper - INFO - Found 0 emails and 0 phones on www.shribalajient.co.in
+2025-05-25 15:51:52,332 - ContactScraper - INFO - Extracting contacts from: https://www.shribalajient.co.in/dropper-bottle.html
+2025-05-25 15:51:54,062 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 15:51:58,648 - ContactScraper - INFO - Found 1 emails and 0 phones on www.shribalajient.co.in
+2025-05-25 15:51:58,648 - ContactScraper - INFO - Extracting contacts from: https://www.glassplanet.in/dropper-bottles.html
+2025-05-25 15:52:00,279 - ContactScraper - INFO - Direct request found 4 emails and 0 phones
+2025-05-25 15:52:00,279 - ContactScraper - INFO - Found 4 emails and 0 phones on www.glassplanet.in
+2025-05-25 15:52:00,281 - ContactScraper - INFO - Extracting contacts from: https://www.essentialoilbottle.in/products-and-services.html
+2025-05-25 15:52:01,895 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:52:05,629 - ContactScraper - INFO - Found 0 emails and 0 phones on www.essentialoilbottle.in
+2025-05-25 15:52:05,629 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:52:05,629 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:52:05,629 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:52:14,660 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:52:14,661 - ContactScraper - INFO - Extracting contacts from: https://www.shribalajient.co.in/glass-bottles.html
+2025-05-25 15:52:16,650 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 15:52:21,887 - ContactScraper - INFO - Found 1 emails and 0 phones on www.shribalajient.co.in
+2025-05-25 15:52:21,887 - ContactScraper - INFO - Extracting contacts from: https://www.glassplanet.in/borosilicate-glass-dropper-bottle.html
+2025-05-25 15:52:23,701 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:52:27,519 - ContactScraper - INFO - Found 0 emails and 0 phones on www.glassplanet.in
+2025-05-25 15:52:27,519 - ContactScraper - INFO - Extracting contacts from: https://www.trendglobal.co.in/glass-dropper-bottles.htm
+2025-05-25 15:52:27,790 - ContactScraper - WARNING - Connection error requesting https://www.trendglobal.co.in/glass-dropper-bottles.htm
+2025-05-25 15:52:28,978 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: /glass-dropper-bottles.htm (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:52:29,173 - ContactScraper - WARNING - Error fetching contact page https://www.trendglobal.co.in/contact: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: /contact (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:52:29,362 - ContactScraper - WARNING - Error fetching contact page https://www.trendglobal.co.in/contact-us: HTTPSConnectionPool(host='www.trendglobal.co.in', port=443): Max retries exceeded with url: /contact-us (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:997)')))
+2025-05-25 15:52:29,364 - ContactScraper - INFO - Found 0 emails and 0 phones on www.trendglobal.co.in
+2025-05-25 15:52:29,365 - ContactScraper - INFO - Extracting contacts from: https://www.essentialoilbottle.in/dropper-bottle.html
+2025-05-25 15:52:31,069 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 15:52:34,968 - ContactScraper - INFO - Found 1 emails and 0 phones on www.essentialoilbottle.in
+2025-05-25 15:52:34,971 - ContactScraper - INFO - Extracting contacts from: https://www.cosmopharmaglass.in/glass-bottles.html
+2025-05-25 15:52:37,070 - ContactScraper - INFO - Direct request found 11 emails and 0 phones
+2025-05-25 15:52:37,070 - ContactScraper - INFO - Found 11 emails and 0 phones on www.cosmopharmaglass.in
+2025-05-25 15:52:37,070 - ContactScraper - INFO - Extracting contacts from: https://www.vtpolypacks.co.in/glass-dropper-bottle-manufacturer-in-india.html
+2025-05-25 15:52:41,834 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:52:45,706 - ContactScraper - INFO - Found 0 emails and 0 phones on www.vtpolypacks.co.in
+2025-05-25 15:52:45,708 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:52:45,708 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:52:45,708 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:52:54,684 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:52:54,686 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:52:54,687 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:52:54,687 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:03,378 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:53:03,378 - ContactScraper - INFO - Extracting contacts from: https://www.essentialoilbottle.in/glass-dropper.html
+2025-05-25 15:53:04,997 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:53:08,878 - ContactScraper - INFO - Found 0 emails and 0 phones on www.essentialoilbottle.in
+2025-05-25 15:53:08,878 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:53:08,878 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:08,878 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:16,143 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:53:16,143 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:53:16,143 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:16,143 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:23,085 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:53:23,088 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:53:23,088 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:23,089 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:42,987 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:53:42,987 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact site:.in' (page 0)
+2025-05-25 15:53:42,987 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact site:.in' -> '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:42,987 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact'
+2025-05-25 15:53:58,001 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 15:53:58,002 - ContactScraper - INFO - Extracting contacts from: https://www.glassplanet.in/products-and-services.html
+2025-05-25 15:54:00,561 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-25 15:54:04,809 - ContactScraper - INFO - Found 0 emails and 0 phones on www.glassplanet.in
+2025-05-25 15:54:04,812 - ContactScraper - INFO - Results saved to scraped_data\contacts_Dropper Bottles in Delhi_20250525_155404.csv
+2025-05-25 15:54:04,812 - ContactScraper - INFO - Detailed results saved to scraped_data\detailed_Dropper Bottles in Delhi_20250525_155404.csv
+2025-05-25 15:54:04,822 - ContactScraper - INFO - Scraping completed: found 22 emails and 0 phones

@@ -1,0 +1,1247 @@
+2025-05-25 15:49:49,025 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 15:49:49,025 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 15:49:49,031 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 15:49:49,031 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 15:49:49,031 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text_mobile
+2025-05-25 15:49:49,031 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text_mobile
+2025-05-25 15:49:49,033 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text_plus91
+2025-05-25 15:49:49,033 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link
+2025-05-25 15:49:49,033 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link
+2025-05-25 15:49:49,033 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link_mobile
+2025-05-25 15:49:49,033 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link_plus91
+2025-05-25 15:50:11,776 - INFO - Valid mobile: '08048772754' normalized to +918048772754 from www.krishna-packaging.in_tel_link
+2025-05-25 15:50:11,777 - INFO - Valid mobile: '08048772754' normalized to +918048772754 from www.krishna-packaging.in_tel_link
+2025-05-25 15:50:11,777 - INFO - Valid mobile: '08048772754' normalized to +918048772754 from www.krishna-packaging.in_tel_link_std_code
+2025-05-25 15:50:16,041 - INFO - Valid landline_short: '28532785' normalized to +91-28532785 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,041 - INFO - Valid landline_short: '28532785' normalized to +91-28532785 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,041 - INFO - Valid landline_short: '28532787' normalized to +91-28532787 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,041 - INFO - Valid landline_short: '28532785' normalized to +91-28532785 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,055 - INFO - Valid landline_short: '28550400' normalized to +91-28550400 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,055 - INFO - Valid landline_short: '28532787' normalized to +91-28532787 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,055 - INFO - Valid landline_short: '28547316' normalized to +91-28547316 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,055 - INFO - Valid landline_short: '28544921' normalized to +91-28544921 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,055 - INFO - Valid landline_short: '28547316' normalized to +91-28547316 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,055 - INFO - Valid landline_short: '28545034' normalized to +91-28545034 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,055 - INFO - Valid landline_short: '28546271' normalized to +91-28546271 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2853278559030' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2853278558773' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2853278720848' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2853278558955' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2855040071697' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2853278721073' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2854731659433' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2854492148812' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2854731631533' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2854503482397' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - WARNING - Rejected: Unrecognized format '2854627106833' from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_text
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_text_std_code
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,056 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,066 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,066 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,066 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,066 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,067 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,069 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,071 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,071 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,071 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,071 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,071 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,072 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,073 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,073 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,073 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,073 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:16,075 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,075 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link
+2025-05-25 15:50:16,075 - INFO - Valid mobile: '07942668440' normalized to +917942668440 from www.trendglobalpackaging.in_tel_link_std_code
+2025-05-25 15:50:17,695 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_text
+2025-05-25 15:50:17,695 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from www.gurujifirms.in_text
+2025-05-25 15:50:17,695 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_text
+2025-05-25 15:50:17,695 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from www.gurujifirms.in_text
+2025-05-25 15:50:17,695 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_text_std_code
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from www.gurujifirms.in_jsonld_direct
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from www.gurujifirms.in_jsonld_direct
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from www.gurujifirms.in_jsonld_direct_mobile
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from www.gurujifirms.in_jsonld_direct_plus91
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from javascript
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from javascript
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from javascript_mobile
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from javascript_plus91
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from javascript
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from javascript
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from javascript_mobile
+2025-05-25 15:50:17,725 - INFO - Valid mobile: '+91-8047676735' normalized to +918047676735 from javascript_plus91
+2025-05-25 15:50:17,725 - INFO - Valid landline_short: '22755873' normalized to +91-22755873 from javascript
+2025-05-25 15:50:17,732 - WARNING - Rejected: Unrecognized format '227558731' from javascript
+2025-05-25 15:50:17,732 - INFO - Valid landline_short: '22755873' normalized to +91-22755873 from javascript
+2025-05-25 15:50:17,732 - WARNING - Rejected: Unrecognized format '227558731' from javascript
+2025-05-25 15:50:17,732 - INFO - Valid landline_short: '23936542' normalized to +91-23936542 from javascript
+2025-05-25 15:50:17,732 - WARNING - Rejected: Unrecognized format '239365424' from javascript
+2025-05-25 15:50:17,732 - INFO - Valid landline_short: '23936542' normalized to +91-23936542 from javascript
+2025-05-25 15:50:17,734 - WARNING - Rejected: Unrecognized format '239365424' from javascript
+2025-05-25 15:50:17,734 - INFO - Valid landline_short: '22687826' normalized to +91-22687826 from javascript
+2025-05-25 15:50:17,734 - WARNING - Rejected: Unrecognized format '226878266' from javascript
+2025-05-25 15:50:17,734 - INFO - Valid landline_short: '22687826' normalized to +91-22687826 from javascript
+2025-05-25 15:50:17,734 - WARNING - Rejected: Unrecognized format '226878266' from javascript
+2025-05-25 15:50:17,734 - WARNING - Rejected: Unrecognized format '88565902' from javascript
+2025-05-25 15:50:17,735 - WARNING - Rejected: Unrecognized format '188565902' from javascript
+2025-05-25 15:50:17,735 - WARNING - Rejected: Unrecognized format '88565902' from javascript
+2025-05-25 15:50:17,735 - WARNING - Rejected: Unrecognized format '188565902' from javascript
+2025-05-25 15:50:17,735 - INFO - Valid landline_short: '25945742' normalized to +91-25945742 from javascript
+2025-05-25 15:50:17,735 - WARNING - Rejected: Unrecognized format '25945742233' from javascript
+2025-05-25 15:50:17,736 - INFO - Valid landline_short: '23356798' normalized to +91-23356798 from javascript
+2025-05-25 15:50:17,736 - WARNING - Rejected: Unrecognized format '233567987' from javascript
+2025-05-25 15:50:17,736 - INFO - Valid landline_short: '23356798' normalized to +91-23356798 from javascript
+2025-05-25 15:50:17,736 - WARNING - Rejected: Unrecognized format '233567987' from javascript
+2025-05-25 15:50:17,736 - INFO - Valid landline_short: '22758242' normalized to +91-22758242 from javascript
+2025-05-25 15:50:17,736 - WARNING - Rejected: Unrecognized format '227582426' from javascript
+2025-05-25 15:50:17,736 - INFO - Valid landline_short: '23356798' normalized to +91-23356798 from javascript
+2025-05-25 15:50:17,736 - WARNING - Rejected: Unrecognized format '233567987' from javascript
+2025-05-25 15:50:17,736 - INFO - Valid landline_short: '22710603' normalized to +91-22710603 from javascript
+2025-05-25 15:50:17,736 - WARNING - Rejected: Unrecognized format '227106031' from javascript
+2025-05-25 15:50:17,736 - INFO - Valid landline_short: '23920496' normalized to +91-23920496 from javascript
+2025-05-25 15:50:17,736 - WARNING - Rejected: Unrecognized format '239204968' from javascript
+2025-05-25 15:50:17,739 - INFO - Valid landline_short: '22789393' normalized to +91-22789393 from javascript
+2025-05-25 15:50:17,739 - WARNING - Rejected: Unrecognized format '227893932' from javascript
+2025-05-25 15:50:17,739 - INFO - Valid landline_short: '22687826' normalized to +91-22687826 from javascript
+2025-05-25 15:50:17,739 - WARNING - Rejected: Unrecognized format '226878266' from javascript
+2025-05-25 15:50:17,739 - INFO - Valid landline_short: '22851274' normalized to +91-22851274 from javascript
+2025-05-25 15:50:17,739 - WARNING - Rejected: Unrecognized format '228512746' from javascript
+2025-05-25 15:50:17,739 - WARNING - Rejected: Unrecognized format '88567923' from javascript
+2025-05-25 15:50:17,739 - WARNING - Rejected: Unrecognized format '188567923' from javascript
+2025-05-25 15:50:17,741 - INFO - Valid landline_short: '25945944' normalized to +91-25945944 from javascript
+2025-05-25 15:50:17,741 - WARNING - Rejected: Unrecognized format '25945944362' from javascript
+2025-05-25 15:50:17,741 - INFO - Valid landline_short: '22758242' normalized to +91-22758242 from javascript
+2025-05-25 15:50:17,744 - WARNING - Rejected: Unrecognized format '227582426' from javascript
+2025-05-25 15:50:17,744 - INFO - Valid landline_short: '23356798' normalized to +91-23356798 from javascript
+2025-05-25 15:50:17,744 - WARNING - Rejected: Unrecognized format '233567987' from javascript
+2025-05-25 15:50:17,744 - INFO - Valid landline_short: '22710603' normalized to +91-22710603 from javascript
+2025-05-25 15:50:17,744 - WARNING - Rejected: Unrecognized format '227106031' from javascript
+2025-05-25 15:50:17,745 - INFO - Valid landline_short: '23920496' normalized to +91-23920496 from javascript
+2025-05-25 15:50:17,745 - WARNING - Rejected: Unrecognized format '239204968' from javascript
+2025-05-25 15:50:17,745 - INFO - Valid landline_short: '22789393' normalized to +91-22789393 from javascript
+2025-05-25 15:50:17,745 - WARNING - Rejected: Unrecognized format '227893932' from javascript
+2025-05-25 15:50:17,745 - INFO - Valid landline_short: '22687826' normalized to +91-22687826 from javascript
+2025-05-25 15:50:17,745 - WARNING - Rejected: Unrecognized format '226878266' from javascript
+2025-05-25 15:50:17,745 - INFO - Valid landline_short: '22822295' normalized to +91-22822295 from javascript
+2025-05-25 15:50:17,745 - WARNING - Rejected: Unrecognized format '228222957' from javascript
+2025-05-25 15:50:17,745 - INFO - Valid landline_short: '22713744' normalized to +91-22713744 from javascript
+2025-05-25 15:50:17,745 - WARNING - Rejected: Unrecognized format '227137449' from javascript
+2025-05-25 15:50:17,748 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from javascript
+2025-05-25 15:50:17,748 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from javascript
+2025-05-25 15:50:17,748 - INFO - Valid mobile: '8047676735' normalized to +918047676735 from javascript_mobile
+2025-05-25 15:50:23,240 - INFO - Valid landline_short: '28498982' normalized to +91-28498982 from www.glassplanet.in_text
+2025-05-25 15:50:23,240 - INFO - Valid landline_short: '28498279' normalized to +91-28498279 from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - INFO - Valid landline_short: '28498982' normalized to +91-28498982 from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - INFO - Valid landline_short: '24390932' normalized to +91-24390932 from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - INFO - Valid landline_short: '24513811' normalized to +91-24513811 from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - WARNING - Rejected: Unrecognized format '2849898224588' from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - WARNING - Rejected: Unrecognized format '2849827915133' from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - WARNING - Rejected: Unrecognized format '2849898271962' from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - WARNING - Rejected: Unrecognized format '24390932273' from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - WARNING - Rejected: Unrecognized format '24513811330' from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:50:23,255 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text_std_code
+2025-05-25 15:50:23,255 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,255 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,255 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,255 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,262 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,262 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,262 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,262 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,262 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,263 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,263 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,263 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,263 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 15:50:23,264 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 15:50:27,644 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,644 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,644 - INFO - Valid landline_short: '50100150' normalized to +91-50100150 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,644 - INFO - Valid landline_short: '20025030' normalized to +91-20025030 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,644 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,655 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,655 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,655 - WARNING - Rejected: Unrecognized format '5010015020025' from www.shinepolypacks.in_text
+2025-05-25 15:50:27,655 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text_std_code
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 15:50:27,657 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '22501121' normalized to +91-22501121 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28508886' normalized to +91-28508886 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28510339' normalized to +91-28510339 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28511546' normalized to +91-28511546 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28513080' normalized to +91-28513080 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28513122' normalized to +91-28513122 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28513918' normalized to +91-28513918 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28513919' normalized to +91-28513919 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28513921' normalized to +91-28513921 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,393 - INFO - Valid landline_short: '28513923' normalized to +91-28513923 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515182' normalized to +91-28515182 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515185' normalized to +91-28515185 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515185' normalized to +91-28515185 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515185' normalized to +91-28515185 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28517218' normalized to +91-28517218 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515185' normalized to +91-28515185 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '20678427' normalized to +91-20678427 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22924085' normalized to +91-22924085 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515184' normalized to +91-28515184 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28542391' normalized to +91-28542391 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28545218' normalized to +91-28545218 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28565633' normalized to +91-28565633 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28507618' normalized to +91-28507618 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28508204' normalized to +91-28508204 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22501116' normalized to +91-22501116 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22924344' normalized to +91-22924344 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22946563' normalized to +91-22946563 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28539040' normalized to +91-28539040 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22497156' normalized to +91-22497156 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22504170' normalized to +91-22504170 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22518095' normalized to +91-22518095 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28557080' normalized to +91-28557080 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '20678431' normalized to +91-20678431 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '22501132' normalized to +91-22501132 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28508310' normalized to +91-28508310 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515184' normalized to +91-28515184 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515184' normalized to +91-28515184 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515185' normalized to +91-28515185 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515185' normalized to +91-28515185 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid landline_short: '28515185' normalized to +91-28515185 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,399 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22501121388' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2850888645773' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851033969033' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851154624330' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851308064362' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851312213655' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851391874130' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851391970073' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851392163773' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851392317491' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518272730' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518512530' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518549073' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518575488' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851721870248' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518569473' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '20678427330' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22924085297' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518483491' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2854239126591' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2854521860188' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2856563300712' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2850761809448' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2850820467362' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22501116255' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22924344248' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22946563897' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2853904095812' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22497156548' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22504170612' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22518095791' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2855708041412' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '20678431873' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '22501132462' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2850831033633' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518491197' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518494548' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518556462' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518587655' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - WARNING - Rejected: Unrecognized format '2851518591591' from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text
+2025-05-25 15:50:36,409 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text_std_code
+2025-05-25 15:50:36,424 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,425 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,439 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,439 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,439 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,440 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,442 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,442 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,442 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,442 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,443 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,443 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,443 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,443 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,443 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,444 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,444 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,444 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,445 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,445 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,445 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,445 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,445 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,446 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,446 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,446 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,446 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,446 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,447 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,447 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,447 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,448 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,448 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,448 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,448 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,449 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,449 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,449 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,449 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,449 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,450 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,450 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,450 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,450 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,451 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,451 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,451 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,451 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,451 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,451 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,452 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,452 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,452 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,452 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,452 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,453 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,453 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,453 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,453 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,454 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,454 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,454 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,454 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,455 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,457 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,458 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,459 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,459 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,459 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,459 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,460 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,460 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,460 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,460 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,461 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,461 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,461 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:36,462 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,462 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:50:36,462 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:50:53,082 - INFO - Valid landline_short: '22035880' normalized to +91-22035880 from www.singh-enterprises.in_text
+2025-05-25 15:50:53,082 - INFO - Valid landline_short: '22065880' normalized to +91-22065880 from www.singh-enterprises.in_text
+2025-05-25 15:50:53,082 - INFO - Valid mobile: '9820070228' normalized to +919820070228 from www.singh-enterprises.in_text
+2025-05-25 15:50:53,082 - INFO - Valid landline_short: '22035880' normalized to +91-22035880 from www.singh-enterprises.in_text
+2025-05-25 15:50:53,082 - INFO - Valid landline_short: '22065880' normalized to +91-22065880 from www.singh-enterprises.in_text
+2025-05-25 15:50:53,082 - INFO - Valid mobile: '9820070228' normalized to +919820070228 from www.singh-enterprises.in_text
+2025-05-25 15:50:53,082 - INFO - Valid mobile: '9820070228' normalized to +919820070228 from www.singh-enterprises.in_text_mobile
+2025-05-25 15:50:53,087 - INFO - Valid landline_short: '22035880' normalized to +91-22035880 from www.singh-enterprises.in_tel_link
+2025-05-25 15:50:53,087 - INFO - Valid landline_short: '22035880' normalized to +91-22035880 from www.singh-enterprises.in_tel_link
+2025-05-25 15:50:53,087 - INFO - Valid landline_short: '22065880' normalized to +91-22065880 from www.singh-enterprises.in_tel_link
+2025-05-25 15:50:53,087 - INFO - Valid landline_short: '22065880' normalized to +91-22065880 from www.singh-enterprises.in_tel_link
+2025-05-25 15:50:53,087 - INFO - Valid mobile: '9820070228' normalized to +919820070228 from www.singh-enterprises.in_tel_link
+2025-05-25 15:50:53,087 - INFO - Valid mobile: '9820070228' normalized to +919820070228 from www.singh-enterprises.in_tel_link
+2025-05-25 15:50:53,087 - INFO - Valid mobile: '9820070228' normalized to +919820070228 from www.singh-enterprises.in_tel_link_mobile
+2025-05-25 15:50:53,113 - INFO - Valid mobile: '8199559919' normalized to +918199559919 from javascript
+2025-05-25 15:50:53,113 - INFO - Valid mobile: '8199559919' normalized to +918199559919 from javascript
+2025-05-25 15:50:53,113 - INFO - Valid mobile: '8199559919' normalized to +918199559919 from javascript_mobile
+2025-05-25 15:50:53,113 - INFO - Valid mobile: '+919820070228' normalized to +919820070228 from javascript
+2025-05-25 15:50:53,113 - INFO - Valid mobile: '+919820070228' normalized to +919820070228 from javascript
+2025-05-25 15:50:53,113 - INFO - Valid mobile: '+919820070228' normalized to +919820070228 from javascript_plus91
+2025-05-25 15:50:53,113 - INFO - Valid landline_short: '21319092' normalized to +91-21319092 from javascript
+2025-05-25 15:50:53,113 - WARNING - Rejected: Unrecognized format '213190920' from javascript
+2025-05-25 15:50:54,938 - INFO - Valid landline_short: '28493913' normalized to +91-28493913 from www.gurujifirms.in_text
+2025-05-25 15:50:54,938 - INFO - Valid landline_short: '28493914' normalized to +91-28493914 from www.gurujifirms.in_text
+2025-05-25 15:50:54,952 - INFO - Valid landline_short: '28491127' normalized to +91-28491127 from www.gurujifirms.in_text
+2025-05-25 15:50:54,952 - INFO - Valid landline_short: '28491159' normalized to +91-28491159 from www.gurujifirms.in_text
+2025-05-25 15:50:54,952 - INFO - Valid landline_short: '28491160' normalized to +91-28491160 from www.gurujifirms.in_text
+2025-05-25 15:50:54,952 - INFO - Valid landline_short: '28491106' normalized to +91-28491106 from www.gurujifirms.in_text
+2025-05-25 15:50:54,952 - INFO - Valid landline_short: '28491160' normalized to +91-28491160 from www.gurujifirms.in_text
+2025-05-25 15:50:54,952 - INFO - Valid landline_short: '28495037' normalized to +91-28495037 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28504544' normalized to +91-28504544 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28493912' normalized to +91-28493912 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28493912' normalized to +91-28493912 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28493907' normalized to +91-28493907 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28493913' normalized to +91-28493913 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28491158' normalized to +91-28491158 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28491158' normalized to +91-28491158 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28491162' normalized to +91-28491162 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28491125' normalized to +91-28491125 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28491129' normalized to +91-28491129 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28491164' normalized to +91-28491164 from www.gurujifirms.in_text
+2025-05-25 15:50:54,955 - INFO - Valid landline_short: '28491130' normalized to +91-28491130 from www.gurujifirms.in_text
+2025-05-25 15:50:54,958 - INFO - Valid landline_short: '28491163' normalized to +91-28491163 from www.gurujifirms.in_text
+2025-05-25 15:50:54,958 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849391374548' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849391417462' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849112708662' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849115915191' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849116047948' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849110697897' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849116009555' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849503783697' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2850454487888' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849391234712' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849391282388' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849390744830' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849391328455' from www.gurujifirms.in_text
+2025-05-25 15:50:54,959 - WARNING - Rejected: Unrecognized format '2849115839155' from www.gurujifirms.in_text
+2025-05-25 15:50:54,965 - WARNING - Rejected: Unrecognized format '2849115891462' from www.gurujifirms.in_text
+2025-05-25 15:50:54,965 - WARNING - Rejected: Unrecognized format '2849116287355' from www.gurujifirms.in_text
+2025-05-25 15:50:54,965 - WARNING - Rejected: Unrecognized format '2849112576548' from www.gurujifirms.in_text
+2025-05-25 15:50:54,965 - WARNING - Rejected: Unrecognized format '2849112985397' from www.gurujifirms.in_text
+2025-05-25 15:50:54,965 - WARNING - Rejected: Unrecognized format '2849116493533' from www.gurujifirms.in_text
+2025-05-25 15:50:54,966 - WARNING - Rejected: Unrecognized format '2849113078833' from www.gurujifirms.in_text
+2025-05-25 15:50:54,966 - WARNING - Rejected: Unrecognized format '2849116353855' from www.gurujifirms.in_text
+2025-05-25 15:50:54,966 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_text
+2025-05-25 15:50:54,967 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_text_std_code
+2025-05-25 15:50:54,970 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,970 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,970 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,970 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,970 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,972 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,974 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,978 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,978 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,978 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,978 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,978 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,978 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,979 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,982 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,984 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,986 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,986 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,986 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,988 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,988 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,988 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,988 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,988 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link
+2025-05-25 15:50:54,989 - INFO - Valid mobile: '08047676735' normalized to +918047676735 from www.gurujifirms.in_tel_link_std_code
+2025-05-25 15:51:21,305 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 15:51:21,305 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 15:51:21,305 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text_std_code
+2025-05-25 15:51:21,311 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,312 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,312 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link_std_code
+2025-05-25 15:51:21,312 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,313 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,313 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link_std_code
+2025-05-25 15:51:21,313 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,314 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,314 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link_std_code
+2025-05-25 15:51:21,314 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,315 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link
+2025-05-25 15:51:21,315 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_tel_link_std_code
+2025-05-25 15:51:21,337 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_jsonld_direct
+2025-05-25 15:51:21,337 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_jsonld_direct
+2025-05-25 15:51:21,338 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_jsonld_direct_mobile
+2025-05-25 15:51:21,338 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_jsonld_direct_plus91
+2025-05-25 15:51:21,338 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from javascript
+2025-05-25 15:51:21,338 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from javascript
+2025-05-25 15:51:21,339 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript_mobile
+2025-05-25 15:51:21,339 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from javascript_plus91
+2025-05-25 15:51:21,339 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from javascript
+2025-05-25 15:51:21,341 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from javascript
+2025-05-25 15:51:21,341 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript_mobile
+2025-05-25 15:51:21,341 - INFO - Valid mobile: '+91-7942538161' normalized to +917942538161 from javascript_plus91
+2025-05-25 15:51:26,674 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text_std_code
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:51:26,690 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:51:26,709 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from www.essentialoilbottle.in_jsonld_direct
+2025-05-25 15:51:26,709 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from www.essentialoilbottle.in_jsonld_direct
+2025-05-25 15:51:26,709 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from www.essentialoilbottle.in_jsonld_direct_mobile
+2025-05-25 15:51:26,709 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from www.essentialoilbottle.in_jsonld_direct_plus91
+2025-05-25 15:51:26,709 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from javascript
+2025-05-25 15:51:26,709 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from javascript
+2025-05-25 15:51:26,722 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript_mobile
+2025-05-25 15:51:26,723 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from javascript_plus91
+2025-05-25 15:51:26,723 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from javascript
+2025-05-25 15:51:26,723 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from javascript
+2025-05-25 15:51:26,723 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript_mobile
+2025-05-25 15:51:26,723 - INFO - Valid mobile: '+91-8048602555' normalized to +918048602555 from javascript_plus91
+2025-05-25 15:51:36,046 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:51:36,046 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:51:36,046 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:51:36,046 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:51:36,046 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text_std_code
+2025-05-25 15:51:36,062 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from www.glassplanet.in_jsonld_direct
+2025-05-25 15:51:36,062 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from www.glassplanet.in_jsonld_direct
+2025-05-25 15:51:36,062 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_jsonld_direct_mobile
+2025-05-25 15:51:36,062 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from www.glassplanet.in_jsonld_direct_plus91
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript_mobile
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from javascript_plus91
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript_mobile
+2025-05-25 15:51:36,077 - INFO - Valid mobile: '+91-7942552337' normalized to +917942552337 from javascript_plus91
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '23228437' normalized to +91-23228437 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '232284373' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '23228437' normalized to +91-23228437 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '232284373' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '23227289' normalized to +91-23227289 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '232272898' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '23227289' normalized to +91-23227289 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '232272898' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '23227180' normalized to +91-23227180 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '232271803' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '23227180' normalized to +91-23227180 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '232271803' from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '73017552' from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '173017552' from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '73017552' from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '173017552' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '24390907' normalized to +91-24390907 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '24390907155' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '28306635' normalized to +91-28306635 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '283066357' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '28306635' normalized to +91-28306635 from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '283066357' from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '73017552' from javascript
+2025-05-25 15:51:36,077 - WARNING - Rejected: Unrecognized format '173017552' from javascript
+2025-05-25 15:51:36,077 - INFO - Valid landline_short: '24390907' normalized to +91-24390907 from javascript
+2025-05-25 15:51:36,088 - WARNING - Rejected: Unrecognized format '24390907155' from javascript
+2025-05-25 15:51:36,088 - INFO - Valid landline_short: '23227180' normalized to +91-23227180 from javascript
+2025-05-25 15:51:36,088 - WARNING - Rejected: Unrecognized format '232271803' from javascript
+2025-05-25 15:51:36,088 - INFO - Valid landline_short: '23228437' normalized to +91-23228437 from javascript
+2025-05-25 15:51:36,088 - WARNING - Rejected: Unrecognized format '232284373' from javascript
+2025-05-25 15:51:36,088 - INFO - Valid landline_short: '22413093' normalized to +91-22413093 from javascript
+2025-05-25 15:51:36,088 - WARNING - Rejected: Unrecognized format '224130935' from javascript
+2025-05-25 15:51:36,088 - INFO - Valid landline_short: '20436685' normalized to +91-20436685 from javascript
+2025-05-25 15:51:36,088 - WARNING - Rejected: Unrecognized format '204366856' from javascript
+2025-05-25 15:51:36,088 - INFO - Valid landline_short: '27525837' normalized to +91-27525837 from javascript
+2025-05-25 15:51:36,088 - WARNING - Rejected: Unrecognized format '27525837688' from javascript
+2025-05-25 15:51:36,088 - INFO - Valid landline_short: '23358124' normalized to +91-23358124 from javascript
+2025-05-25 15:51:36,091 - WARNING - Rejected: Unrecognized format '233581246' from javascript
+2025-05-25 15:51:36,091 - INFO - Valid landline_short: '28306752' normalized to +91-28306752 from javascript
+2025-05-25 15:51:36,091 - WARNING - Rejected: Unrecognized format '283067526' from javascript
+2025-05-25 15:51:36,091 - INFO - Valid landline_short: '23226132' normalized to +91-23226132 from javascript
+2025-05-25 15:51:36,091 - WARNING - Rejected: Unrecognized format '232261327' from javascript
+2025-05-25 15:51:36,091 - WARNING - Rejected: Unrecognized format '73017552' from javascript
+2025-05-25 15:51:36,091 - WARNING - Rejected: Unrecognized format '173017552' from javascript
+2025-05-25 15:51:36,091 - INFO - Valid landline_short: '24390907' normalized to +91-24390907 from javascript
+2025-05-25 15:51:36,094 - WARNING - Rejected: Unrecognized format '24390907155' from javascript
+2025-05-25 15:51:36,094 - INFO - Valid landline_short: '23227180' normalized to +91-23227180 from javascript
+2025-05-25 15:51:36,094 - WARNING - Rejected: Unrecognized format '232271803' from javascript
+2025-05-25 15:51:36,094 - INFO - Valid landline_short: '23228437' normalized to +91-23228437 from javascript
+2025-05-25 15:51:36,094 - WARNING - Rejected: Unrecognized format '232284373' from javascript
+2025-05-25 15:51:36,094 - INFO - Valid landline_short: '28306752' normalized to +91-28306752 from javascript
+2025-05-25 15:51:36,094 - WARNING - Rejected: Unrecognized format '283067526' from javascript
+2025-05-25 15:51:36,094 - INFO - Valid landline_short: '23227913' normalized to +91-23227913 from javascript
+2025-05-25 15:51:36,094 - WARNING - Rejected: Unrecognized format '232279137' from javascript
+2025-05-25 15:51:36,094 - INFO - Valid landline_short: '28306635' normalized to +91-28306635 from javascript
+2025-05-25 15:51:36,094 - WARNING - Rejected: Unrecognized format '283066357' from javascript
+2025-05-25 15:51:36,094 - INFO - Valid landline_short: '28306815' normalized to +91-28306815 from javascript
+2025-05-25 15:51:36,094 - WARNING - Rejected: Unrecognized format '283068154' from javascript
+2025-05-25 15:51:36,094 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:51:36,094 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:51:36,094 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript_mobile
+2025-05-25 15:51:45,565 - INFO - Valid landline_short: '22060683' normalized to +91-22060683 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,566 - INFO - Valid landline_short: '28512860' normalized to +91-28512860 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,567 - INFO - Valid landline_short: '21017859' normalized to +91-21017859 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,567 - INFO - Valid landline_short: '21624151' normalized to +91-21624151 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,567 - INFO - Valid landline_short: '21631324' normalized to +91-21631324 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,567 - INFO - Valid landline_short: '23584938' normalized to +91-23584938 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,569 - INFO - Valid landline_short: '28508700' normalized to +91-28508700 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,569 - INFO - Valid landline_short: '21345913' normalized to +91-21345913 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,569 - INFO - Valid landline_short: '22658985' normalized to +91-22658985 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,570 - INFO - Valid landline_short: '28544422' normalized to +91-28544422 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,570 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,571 - WARNING - Rejected: Unrecognized format '22060683312' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,572 - WARNING - Rejected: Unrecognized format '2851286037997' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,572 - WARNING - Rejected: Unrecognized format '21017859691' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,572 - WARNING - Rejected: Unrecognized format '21624151233' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,572 - WARNING - Rejected: Unrecognized format '21631324662' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,572 - WARNING - Rejected: Unrecognized format '23584938988' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,573 - WARNING - Rejected: Unrecognized format '2850870007897' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,573 - WARNING - Rejected: Unrecognized format '21345913191' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,573 - WARNING - Rejected: Unrecognized format '22658985097' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,573 - WARNING - Rejected: Unrecognized format '2854442250888' from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,574 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text
+2025-05-25 15:51:45,574 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text_std_code
+2025-05-25 15:51:45,577 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,577 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,577 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,577 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,577 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,577 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,579 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,579 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,579 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,579 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,580 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,580 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,580 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,580 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,580 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,581 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,581 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,581 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,581 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,582 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,582 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,582 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,582 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,583 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,583 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,583 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,584 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,586 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,586 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,586 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,586 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,588 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,588 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,588 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,588 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,588 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,589 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,589 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,589 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:45,589 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,589 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link
+2025-05-25 15:51:45,589 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_tel_link_std_code
+2025-05-25 15:51:47,472 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text_std_code
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:47,474 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:47,504 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from www.shribalajient.co.in_jsonld_direct
+2025-05-25 15:51:47,504 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from www.shribalajient.co.in_jsonld_direct
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '7942558865' normalized to +917942558865 from www.shribalajient.co.in_jsonld_direct_mobile
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from www.shribalajient.co.in_jsonld_direct_plus91
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from javascript
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from javascript
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '7942558865' normalized to +917942558865 from javascript_mobile
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from javascript_plus91
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from javascript
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from javascript
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '7942558865' normalized to +917942558865 from javascript_mobile
+2025-05-25 15:51:47,507 - INFO - Valid mobile: '+91-7942558865' normalized to +917942558865 from javascript_plus91
+2025-05-25 15:51:53,831 - INFO - Valid landline_short: '28558149' normalized to +91-28558149 from www.shribalajient.co.in_text
+2025-05-25 15:51:53,831 - INFO - Valid landline_short: '28497622' normalized to +91-28497622 from www.shribalajient.co.in_text
+2025-05-25 15:51:53,831 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text
+2025-05-25 15:51:53,831 - WARNING - Rejected: Unrecognized format '2855814964262' from www.shribalajient.co.in_text
+2025-05-25 15:51:53,831 - WARNING - Rejected: Unrecognized format '2849762210362' from www.shribalajient.co.in_text
+2025-05-25 15:51:53,831 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text
+2025-05-25 15:51:53,831 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text_std_code
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link
+2025-05-25 15:51:53,847 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_tel_link_std_code
+2025-05-25 15:52:00,195 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:00,195 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:00,196 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:00,196 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:00,196 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text_std_code
+2025-05-25 15:52:00,211 - INFO - Valid landline_short: '25388196' normalized to +91-25388196 from javascript
+2025-05-25 15:52:00,211 - WARNING - Rejected: Unrecognized format '253881969' from javascript
+2025-05-25 15:52:00,211 - INFO - Valid landline_short: '25388196' normalized to +91-25388196 from javascript
+2025-05-25 15:52:00,211 - WARNING - Rejected: Unrecognized format '253881969' from javascript
+2025-05-25 15:52:00,211 - INFO - Valid landline_short: '24390907' normalized to +91-24390907 from javascript
+2025-05-25 15:52:00,211 - WARNING - Rejected: Unrecognized format '24390907155' from javascript
+2025-05-25 15:52:00,211 - INFO - Valid landline_short: '27525837' normalized to +91-27525837 from javascript
+2025-05-25 15:52:00,211 - WARNING - Rejected: Unrecognized format '27525837688' from javascript
+2025-05-25 15:52:00,211 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:52:00,211 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:52:00,211 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript_mobile
+2025-05-25 15:52:01,829 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:52:01,829 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:52:01,830 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text_std_code
+2025-05-25 15:52:01,832 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,832 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,833 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:01,833 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,833 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,833 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:01,835 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,835 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,835 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:01,835 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,836 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:01,836 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:16,515 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text
+2025-05-25 15:52:16,516 - WARNING - Rejected: Too short (5 digits) '10000' from www.shribalajient.co.in_text
+2025-05-25 15:52:16,517 - WARNING - Rejected: Too short (5 digits) '10000' from www.shribalajient.co.in_text
+2025-05-25 15:52:16,517 - WARNING - Rejected: Too short (5 digits) '10000' from www.shribalajient.co.in_text
+2025-05-25 15:52:16,519 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text
+2025-05-25 15:52:16,519 - INFO - Valid mobile: '07942558865' normalized to +917942558865 from www.shribalajient.co.in_text_std_code
+2025-05-25 15:52:16,542 - INFO - Valid mobile: '7942558865' normalized to +917942558865 from javascript
+2025-05-25 15:52:16,542 - INFO - Valid mobile: '7942558865' normalized to +917942558865 from javascript
+2025-05-25 15:52:16,542 - INFO - Valid mobile: '7942558865' normalized to +917942558865 from javascript_mobile
+2025-05-25 15:52:16,542 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,542 - WARNING - Rejected: Unrecognized format '232387273' from javascript
+2025-05-25 15:52:16,542 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,542 - WARNING - Rejected: Unrecognized format '232387273' from javascript
+2025-05-25 15:52:16,542 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '232387275' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '232387275' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '28309966' normalized to +91-28309966 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '283099664' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '28309966' normalized to +91-28309966 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '283099664' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '23238695' normalized to +91-23238695 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '232386954' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '23238695' normalized to +91-23238695 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '232386954' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '232387276' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '232387276' from javascript
+2025-05-25 15:52:16,558 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,558 - WARNING - Rejected: Unrecognized format '232387277' from javascript
+2025-05-25 15:52:16,564 - INFO - Valid landline_short: '23238727' normalized to +91-23238727 from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '232387277' from javascript
+2025-05-25 15:52:16,564 - INFO - Valid landline_short: '28036416' normalized to +91-28036416 from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '280364167' from javascript
+2025-05-25 15:52:16,564 - INFO - Valid landline_short: '28036416' normalized to +91-28036416 from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '280364167' from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '72953754' from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '172953754' from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '72953754' from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '172953754' from javascript
+2025-05-25 15:52:16,564 - INFO - Valid landline_short: '24384527' normalized to +91-24384527 from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '24384527333' from javascript
+2025-05-25 15:52:16,564 - INFO - Valid landline_short: '29397402' normalized to +91-29397402 from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '293974029' from javascript
+2025-05-25 15:52:16,564 - INFO - Valid landline_short: '29397402' normalized to +91-29397402 from javascript
+2025-05-25 15:52:16,564 - WARNING - Rejected: Unrecognized format '293974029' from javascript
+2025-05-25 15:52:23,459 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:23,459 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:23,459 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:23,459 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:52:23,462 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text_std_code
+2025-05-25 15:52:23,487 - INFO - Valid landline_short: '23226683' normalized to +91-23226683 from javascript
+2025-05-25 15:52:23,488 - WARNING - Rejected: Unrecognized format '232266836' from javascript
+2025-05-25 15:52:23,488 - INFO - Valid landline_short: '23226683' normalized to +91-23226683 from javascript
+2025-05-25 15:52:23,489 - WARNING - Rejected: Unrecognized format '232266836' from javascript
+2025-05-25 15:52:23,489 - INFO - Valid landline_short: '23226426' normalized to +91-23226426 from javascript
+2025-05-25 15:52:23,489 - WARNING - Rejected: Unrecognized format '232264269' from javascript
+2025-05-25 15:52:23,489 - INFO - Valid landline_short: '23226426' normalized to +91-23226426 from javascript
+2025-05-25 15:52:23,489 - WARNING - Rejected: Unrecognized format '232264269' from javascript
+2025-05-25 15:52:23,489 - INFO - Valid landline_short: '23227159' normalized to +91-23227159 from javascript
+2025-05-25 15:52:23,491 - WARNING - Rejected: Unrecognized format '232271599' from javascript
+2025-05-25 15:52:23,491 - INFO - Valid landline_short: '23227159' normalized to +91-23227159 from javascript
+2025-05-25 15:52:23,491 - WARNING - Rejected: Unrecognized format '232271599' from javascript
+2025-05-25 15:52:23,491 - INFO - Valid landline_short: '24390907' normalized to +91-24390907 from javascript
+2025-05-25 15:52:23,491 - WARNING - Rejected: Unrecognized format '24390907155' from javascript
+2025-05-25 15:52:23,492 - INFO - Valid landline_short: '27525837' normalized to +91-27525837 from javascript
+2025-05-25 15:52:23,492 - WARNING - Rejected: Unrecognized format '27525837688' from javascript
+2025-05-25 15:52:23,492 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:52:23,492 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:52:23,492 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript_mobile
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '26395970' normalized to +91-26395970 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '26357761' normalized to +91-26357761 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '28524138' normalized to +91-28524138 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '28541537' normalized to +91-28541537 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '26357660' normalized to +91-26357660 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '26357738' normalized to +91-26357738 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '26395962' normalized to +91-26395962 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '28505605' normalized to +91-28505605 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid landline_short: '27456238' normalized to +91-27456238 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '26395970733' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '26357761473' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '2852413826548' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '2854153781988' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '26357660548' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '26357738891' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '26395962933' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,939 - WARNING - Rejected: Unrecognized format '2850560565091' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,948 - WARNING - Rejected: Unrecognized format '27456238148' from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text_std_code
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,948 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,953 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,954 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,958 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,958 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,958 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,958 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link
+2025-05-25 15:52:30,959 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_tel_link_std_code
+2025-05-25 15:52:36,868 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 15:52:36,868 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 15:52:36,871 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 15:52:36,871 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 15:52:36,871 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text_std_code
+2025-05-25 15:52:36,918 - INFO - Valid landline_short: '24788049' normalized to +91-24788049 from javascript
+2025-05-25 15:52:36,918 - WARNING - Rejected: Unrecognized format '247880498' from javascript
+2025-05-25 15:52:36,919 - INFO - Valid landline_short: '24788049' normalized to +91-24788049 from javascript
+2025-05-25 15:52:36,919 - WARNING - Rejected: Unrecognized format '247880498' from javascript
+2025-05-25 15:52:36,919 - INFO - Valid landline_short: '26068958' normalized to +91-26068958 from javascript
+2025-05-25 15:52:36,919 - WARNING - Rejected: Unrecognized format '260689581' from javascript
+2025-05-25 15:52:36,919 - INFO - Valid landline_short: '26068958' normalized to +91-26068958 from javascript
+2025-05-25 15:52:36,920 - WARNING - Rejected: Unrecognized format '260689581' from javascript
+2025-05-25 15:52:36,920 - INFO - Valid landline_short: '27381995' normalized to +91-27381995 from javascript
+2025-05-25 15:52:36,920 - WARNING - Rejected: Unrecognized format '273819956' from javascript
+2025-05-25 15:52:36,921 - INFO - Valid landline_short: '27381995' normalized to +91-27381995 from javascript
+2025-05-25 15:52:36,921 - WARNING - Rejected: Unrecognized format '273819956' from javascript
+2025-05-25 15:52:36,921 - INFO - Valid landline_short: '28852807' normalized to +91-28852807 from javascript
+2025-05-25 15:52:36,921 - WARNING - Rejected: Unrecognized format '288528074' from javascript
+2025-05-25 15:52:36,922 - INFO - Valid landline_short: '28852807' normalized to +91-28852807 from javascript
+2025-05-25 15:52:36,922 - WARNING - Rejected: Unrecognized format '288528074' from javascript
+2025-05-25 15:52:36,922 - INFO - Valid landline_short: '27375481' normalized to +91-27375481 from javascript
+2025-05-25 15:52:36,922 - WARNING - Rejected: Unrecognized format '273754815' from javascript
+2025-05-25 15:52:36,923 - INFO - Valid landline_short: '27375481' normalized to +91-27375481 from javascript
+2025-05-25 15:52:36,923 - WARNING - Rejected: Unrecognized format '273754815' from javascript
+2025-05-25 15:52:36,923 - INFO - Valid landline_short: '28852723' normalized to +91-28852723 from javascript
+2025-05-25 15:52:36,923 - WARNING - Rejected: Unrecognized format '288527236' from javascript
+2025-05-25 15:52:36,925 - INFO - Valid landline_short: '28852723' normalized to +91-28852723 from javascript
+2025-05-25 15:52:36,925 - WARNING - Rejected: Unrecognized format '288527236' from javascript
+2025-05-25 15:52:36,925 - INFO - Valid landline_short: '28852721' normalized to +91-28852721 from javascript
+2025-05-25 15:52:36,925 - WARNING - Rejected: Unrecognized format '288527219' from javascript
+2025-05-25 15:52:36,925 - INFO - Valid landline_short: '28852721' normalized to +91-28852721 from javascript
+2025-05-25 15:52:36,926 - WARNING - Rejected: Unrecognized format '288527219' from javascript
+2025-05-25 15:52:36,926 - INFO - Valid landline_short: '28852808' normalized to +91-28852808 from javascript
+2025-05-25 15:52:36,926 - WARNING - Rejected: Unrecognized format '288528080' from javascript
+2025-05-25 15:52:36,926 - INFO - Valid landline_short: '28852808' normalized to +91-28852808 from javascript
+2025-05-25 15:52:36,927 - WARNING - Rejected: Unrecognized format '288528080' from javascript
+2025-05-25 15:52:36,927 - INFO - Valid landline_short: '28852723' normalized to +91-28852723 from javascript
+2025-05-25 15:52:36,927 - WARNING - Rejected: Unrecognized format '288527235' from javascript
+2025-05-25 15:52:36,928 - INFO - Valid landline_short: '28852723' normalized to +91-28852723 from javascript
+2025-05-25 15:52:36,928 - WARNING - Rejected: Unrecognized format '288527235' from javascript
+2025-05-25 15:52:36,928 - INFO - Valid landline_short: '28852809' normalized to +91-28852809 from javascript
+2025-05-25 15:52:36,928 - WARNING - Rejected: Unrecognized format '288528091' from javascript
+2025-05-25 15:52:36,928 - INFO - Valid landline_short: '28852809' normalized to +91-28852809 from javascript
+2025-05-25 15:52:36,929 - WARNING - Rejected: Unrecognized format '288528091' from javascript
+2025-05-25 15:52:36,929 - INFO - Valid landline_short: '28852808' normalized to +91-28852808 from javascript
+2025-05-25 15:52:36,929 - WARNING - Rejected: Unrecognized format '288528081' from javascript
+2025-05-25 15:52:36,929 - INFO - Valid landline_short: '28852808' normalized to +91-28852808 from javascript
+2025-05-25 15:52:36,933 - WARNING - Rejected: Unrecognized format '288528081' from javascript
+2025-05-25 15:52:36,933 - INFO - Valid landline_short: '28852809' normalized to +91-28852809 from javascript
+2025-05-25 15:52:36,934 - WARNING - Rejected: Unrecognized format '288528092' from javascript
+2025-05-25 15:52:36,934 - INFO - Valid landline_short: '28852809' normalized to +91-28852809 from javascript
+2025-05-25 15:52:36,934 - WARNING - Rejected: Unrecognized format '288528092' from javascript
+2025-05-25 15:52:36,934 - INFO - Valid landline_short: '26467630' normalized to +91-26467630 from javascript
+2025-05-25 15:52:36,934 - WARNING - Rejected: Unrecognized format '264676303' from javascript
+2025-05-25 15:52:36,935 - INFO - Valid landline_short: '26467630' normalized to +91-26467630 from javascript
+2025-05-25 15:52:36,935 - WARNING - Rejected: Unrecognized format '264676303' from javascript
+2025-05-25 15:52:36,935 - INFO - Valid landline_short: '28852678' normalized to +91-28852678 from javascript
+2025-05-25 15:52:36,936 - WARNING - Rejected: Unrecognized format '288526789' from javascript
+2025-05-25 15:52:36,936 - INFO - Valid landline_short: '28852678' normalized to +91-28852678 from javascript
+2025-05-25 15:52:36,936 - WARNING - Rejected: Unrecognized format '288526789' from javascript
+2025-05-25 15:52:36,936 - INFO - Valid landline_short: '28852722' normalized to +91-28852722 from javascript
+2025-05-25 15:52:36,936 - WARNING - Rejected: Unrecognized format '288527220' from javascript
+2025-05-25 15:52:36,936 - INFO - Valid landline_short: '28852722' normalized to +91-28852722 from javascript
+2025-05-25 15:52:36,936 - WARNING - Rejected: Unrecognized format '288527220' from javascript
+2025-05-25 15:52:36,936 - INFO - Valid landline_short: '28852682' normalized to +91-28852682 from javascript
+2025-05-25 15:52:36,936 - WARNING - Rejected: Unrecognized format '288526825' from javascript
+2025-05-25 15:52:36,938 - INFO - Valid landline_short: '28852682' normalized to +91-28852682 from javascript
+2025-05-25 15:52:36,938 - WARNING - Rejected: Unrecognized format '288526825' from javascript
+2025-05-25 15:52:36,938 - INFO - Valid landline_short: '25492451' normalized to +91-25492451 from javascript
+2025-05-25 15:52:36,938 - WARNING - Rejected: Unrecognized format '25492451048' from javascript
+2025-05-25 15:52:36,938 - INFO - Valid landline_short: '23136822' normalized to +91-23136822 from javascript
+2025-05-25 15:52:36,938 - WARNING - Rejected: Unrecognized format '23136822291' from javascript
+2025-05-25 15:52:36,938 - INFO - Valid landline_short: '22575772' normalized to +91-22575772 from javascript
+2025-05-25 15:52:36,938 - WARNING - Rejected: Unrecognized format '22575772848' from javascript
+2025-05-25 15:52:36,938 - INFO - Valid landline_short: '23182111' normalized to +91-23182111 from javascript
+2025-05-25 15:52:36,938 - WARNING - Rejected: Unrecognized format '23182111688' from javascript
+2025-05-25 15:52:36,941 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript
+2025-05-25 15:52:36,941 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript
+2025-05-25 15:52:36,941 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript_mobile
+2025-05-25 15:52:41,516 - INFO - Valid mobile: '08046060832' normalized to +918046060832 from www.vtpolypacks.co.in_text
+2025-05-25 15:52:41,516 - INFO - Valid mobile: '08046060832' normalized to +918046060832 from www.vtpolypacks.co.in_text
+2025-05-25 15:52:41,516 - INFO - Valid mobile: '08046060832' normalized to +918046060832 from www.vtpolypacks.co.in_text_std_code
+2025-05-25 15:52:41,706 - INFO - Valid mobile: '8046060832' normalized to +918046060832 from javascript
+2025-05-25 15:52:41,706 - INFO - Valid mobile: '8046060832' normalized to +918046060832 from javascript
+2025-05-25 15:52:41,706 - INFO - Valid mobile: '8046060832' normalized to +918046060832 from javascript_mobile
+2025-05-25 15:52:41,719 - WARNING - Rejected: Unrecognized format '87740448' from javascript
+2025-05-25 15:52:41,719 - WARNING - Rejected: Unrecognized format '187740448' from javascript
+2025-05-25 15:52:41,719 - INFO - Valid landline_short: '25863196' normalized to +91-25863196 from javascript
+2025-05-25 15:52:41,720 - WARNING - Rejected: Unrecognized format '25863196873' from javascript
+2025-05-25 15:52:41,720 - WARNING - Rejected: Unrecognized format '87750224' from javascript
+2025-05-25 15:52:41,720 - WARNING - Rejected: Unrecognized format '187750224' from javascript
+2025-05-25 15:52:41,720 - WARNING - Rejected: Unrecognized format '87750224' from javascript
+2025-05-25 15:52:41,720 - WARNING - Rejected: Unrecognized format '187750224' from javascript
+2025-05-25 15:52:41,720 - INFO - Valid landline_short: '25864174' normalized to +91-25864174 from javascript
+2025-05-25 15:52:41,722 - WARNING - Rejected: Unrecognized format '25864174491' from javascript
+2025-05-25 15:52:41,722 - INFO - Valid landline_short: '27892832' normalized to +91-27892832 from javascript
+2025-05-25 15:52:41,722 - WARNING - Rejected: Unrecognized format '278928327' from javascript
+2025-05-25 15:52:41,723 - INFO - Valid landline_short: '27892832' normalized to +91-27892832 from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '278928327' from javascript
+2025-05-25 15:52:41,723 - INFO - Valid landline_short: '27511333' normalized to +91-27511333 from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '275113338' from javascript
+2025-05-25 15:52:41,723 - INFO - Valid landline_short: '27511333' normalized to +91-27511333 from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '275113338' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '82210915' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '182210915' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '82210915' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '182210915' from javascript
+2025-05-25 15:52:41,723 - INFO - Valid landline_short: '25310243' normalized to +91-25310243 from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '25310243430' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '87740749' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '187740749' from javascript
+2025-05-25 15:52:41,723 - INFO - Valid landline_short: '25863226' normalized to +91-25863226 from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '25863226991' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '87740748' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '187740748' from javascript
+2025-05-25 15:52:41,723 - WARNING - Rejected: Unrecognized format '87740748' from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '187740748' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '25863226' normalized to +91-25863226 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '25863226830' from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '82127005' from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '182127005' from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '82127005' from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '182127005' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '25301852' normalized to +91-25301852 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '25301852462' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '28522471' normalized to +91-28522471 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '285224712' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '28522629' normalized to +91-28522629 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '285226296' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '25301853' normalized to +91-25301853 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '25301853791' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '24324694' normalized to +91-24324694 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '24324694955' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '25451081' normalized to +91-25451081 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '25451081897' from javascript
+2025-05-25 15:52:41,730 - INFO - Valid landline_short: '25863193' normalized to +91-25863193 from javascript
+2025-05-25 15:52:41,730 - WARNING - Rejected: Unrecognized format '25863193412' from javascript
+2025-05-25 15:53:04,883 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:53:04,883 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 15:53:04,883 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text_std_code
+2025-05-25 15:53:04,929 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript
+2025-05-25 15:53:04,930 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript
+2025-05-25 15:53:04,930 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript_mobile
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '20381110' normalized to +91-20381110 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '203811103' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '20381110' normalized to +91-20381110 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '203811103' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '27470262' normalized to +91-27470262 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '27470262397' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '92686198' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '192686198' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '92686198' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '192686198' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '26357771' normalized to +91-26357771 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '26357771812' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '92682513' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '192682513' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '92682513' from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '192682513' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '26357403' normalized to +91-26357403 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '26357403330' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '26357751' normalized to +91-26357751 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '26357751673' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '26357089' normalized to +91-26357089 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '26357089912' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '23705207' normalized to +91-23705207 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '23705207512' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '25805506' normalized to +91-25805506 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '25805506673' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '26357751' normalized to +91-26357751 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '26357751673' from javascript
+2025-05-25 15:53:04,930 - INFO - Valid landline_short: '26356390' normalized to +91-26356390 from javascript
+2025-05-25 15:53:04,930 - WARNING - Rejected: Unrecognized format '26356390530' from javascript
+2025-05-25 15:54:00,428 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:54:00,428 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:54:00,441 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:54:00,441 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 15:54:00,441 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text_std_code
+2025-05-25 15:54:00,462 - WARNING - Rejected: Unrecognized format '73017552' from javascript
+2025-05-25 15:54:00,462 - WARNING - Rejected: Unrecognized format '173017552' from javascript
+2025-05-25 15:54:00,462 - INFO - Valid landline_short: '24390907' normalized to +91-24390907 from javascript
+2025-05-25 15:54:00,462 - WARNING - Rejected: Unrecognized format '24390907155' from javascript
+2025-05-25 15:54:00,477 - INFO - Valid landline_short: '23227180' normalized to +91-23227180 from javascript
+2025-05-25 15:54:00,477 - WARNING - Rejected: Unrecognized format '232271803' from javascript
+2025-05-25 15:54:00,477 - INFO - Valid landline_short: '23228437' normalized to +91-23228437 from javascript
+2025-05-25 15:54:00,477 - WARNING - Rejected: Unrecognized format '232284373' from javascript
+2025-05-25 15:54:00,477 - INFO - Valid landline_short: '22413093' normalized to +91-22413093 from javascript
+2025-05-25 15:54:00,477 - WARNING - Rejected: Unrecognized format '224130935' from javascript
+2025-05-25 15:54:00,477 - INFO - Valid landline_short: '20436685' normalized to +91-20436685 from javascript
+2025-05-25 15:54:00,477 - WARNING - Rejected: Unrecognized format '204366856' from javascript
+2025-05-25 15:54:00,477 - INFO - Valid landline_short: '27525837' normalized to +91-27525837 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '27525837688' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '23358124' normalized to +91-23358124 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '233581246' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '28306752' normalized to +91-28306752 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '283067526' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '23226132' normalized to +91-23226132 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '232261327' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '23227913' normalized to +91-23227913 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '232279137' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '28307305' normalized to +91-28307305 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '283073055' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '20436777' normalized to +91-20436777 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '204367772' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '27525929' normalized to +91-27525929 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '27525929248' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '23994719' normalized to +91-23994719 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '239947193' from javascript
+2025-05-25 15:54:00,480 - INFO - Valid landline_short: '23358338' normalized to +91-23358338 from javascript
+2025-05-25 15:54:00,480 - WARNING - Rejected: Unrecognized format '233583382' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '23226683' normalized to +91-23226683 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '232266836' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '22413228' normalized to +91-22413228 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '224132288' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '23226399' normalized to +91-23226399 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '232263991' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '28306635' normalized to +91-28306635 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '283066357' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '28307547' normalized to +91-28307547 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '283075473' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '23228457' normalized to +91-23228457 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '232284578' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '24494661' normalized to +91-24494661 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '244946610' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '23895077' normalized to +91-23895077 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '238950777' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '23901920' normalized to +91-23901920 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '239019200' from javascript
+2025-05-25 15:54:00,486 - INFO - Valid landline_short: '20436834' normalized to +91-20436834 from javascript
+2025-05-25 15:54:00,486 - WARNING - Rejected: Unrecognized format '204368347' from javascript
+2025-05-25 15:54:00,492 - INFO - Valid landline_short: '27525986' normalized to +91-27525986 from javascript
+2025-05-25 15:54:00,494 - WARNING - Rejected: Unrecognized format '27525986788' from javascript
+2025-05-25 15:54:00,494 - INFO - Valid landline_short: '23227289' normalized to +91-23227289 from javascript
+2025-05-25 15:54:00,496 - WARNING - Rejected: Unrecognized format '232272898' from javascript
+2025-05-25 15:54:00,496 - INFO - Valid landline_short: '20436463' normalized to +91-20436463 from javascript
+2025-05-25 15:54:00,496 - WARNING - Rejected: Unrecognized format '204364635' from javascript
+2025-05-25 15:54:00,496 - INFO - Valid landline_short: '27525615' normalized to +91-27525615 from javascript
+2025-05-25 15:54:00,496 - WARNING - Rejected: Unrecognized format '27525615597' from javascript
+2025-05-25 15:54:00,496 - INFO - Valid landline_short: '25388196' normalized to +91-25388196 from javascript
+2025-05-25 15:54:00,496 - WARNING - Rejected: Unrecognized format '253881969' from javascript
+2025-05-25 15:54:00,496 - WARNING - Rejected: Unrecognized format '74248120' from javascript
+2025-05-25 15:54:00,496 - WARNING - Rejected: Unrecognized format '174248120' from javascript
+2025-05-25 15:54:00,496 - INFO - Valid landline_short: '24513963' normalized to +91-24513963 from javascript
+2025-05-25 15:54:00,498 - WARNING - Rejected: Unrecognized format '24513963955' from javascript
+2025-05-25 15:54:00,498 - INFO - Valid landline_short: '23358398' normalized to +91-23358398 from javascript
+2025-05-25 15:54:00,498 - WARNING - Rejected: Unrecognized format '233583987' from javascript
+2025-05-25 15:54:00,498 - WARNING - Rejected: Unrecognized format '74247096' from javascript
+2025-05-25 15:54:00,498 - WARNING - Rejected: Unrecognized format '174247096' from javascript
+2025-05-25 15:54:00,499 - INFO - Valid landline_short: '24513861' normalized to +91-24513861 from javascript
+2025-05-25 15:54:00,499 - WARNING - Rejected: Unrecognized format '24513861597' from javascript
+2025-05-25 15:54:00,499 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:54:00,499 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript
+2025-05-25 15:54:00,499 - INFO - Valid mobile: '7942552337' normalized to +917942552337 from javascript_mobile

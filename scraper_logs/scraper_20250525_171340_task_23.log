@@ -1,0 +1,21 @@
+2025-05-25 17:13:40,217 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_171340_task_23.log
+2025-05-25 17:13:40,218 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 17:13:40,219 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 17:13:40,245 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 17:13:42,029 - ContactScraper - INFO - Starting scrape for keyword: 'hyaluronic acid whole sellers in Delhi' with strict 10-minute limit
+2025-05-25 17:13:42,036 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 17:13:42,036 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 17:13:42,036 - ContactScraper - INFO - Original keyword: 'hyaluronic acid whole sellers in Delhi' | Optimized query: '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 17:13:42,037 - ContactScraper - INFO - Searching Google for '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 17:13:42,037 - ContactScraper - INFO - Simplified complex query: '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"hyaluronic acid whole sellers in Delhi" contact email phone'
+2025-05-25 17:13:42,037 - ContactScraper - INFO - Reduced exclusions in query: '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 17:13:42,037 - ContactScraper - INFO - Trying imported browser search function for '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 17:14:06,528 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 17:14:06,529 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-25 17:14:06,529 - ContactScraper - INFO - Trying direct search as last resort for '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 17:14:06,529 - ContactScraper - INFO - Performing direct search for '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 17:14:06,529 - ContactScraper - INFO - Direct search found 0 URLs for '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 17:14:06,529 - ContactScraper - WARNING - All search methods failed for '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 17:14:06,530 - ContactScraper - INFO - Searching Google for '"hyaluronic acid whole sellers in Delhi" contact site:.in' (page 0)
+2025-05-25 17:14:06,530 - ContactScraper - INFO - Simplified complex query: '"hyaluronic acid whole sellers in Delhi" contact site:.in' -> '"hyaluronic acid whole sellers in Delhi" contact'
+2025-05-25 17:14:06,530 - ContactScraper - INFO - Trying imported browser search function for '"hyaluronic acid whole sellers in Delhi" contact'

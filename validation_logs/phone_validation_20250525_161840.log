@@ -1,0 +1,435 @@
+2025-05-25 16:19:23,078 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 16:19:23,078 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 16:19:23,078 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 16:19:23,078 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text
+2025-05-25 16:19:23,078 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text_mobile
+2025-05-25 16:19:23,078 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text_mobile
+2025-05-25 16:19:23,078 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_text_plus91
+2025-05-25 16:19:23,093 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link
+2025-05-25 16:19:23,093 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link
+2025-05-25 16:19:23,093 - INFO - Valid mobile: '8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link_mobile
+2025-05-25 16:19:23,093 - INFO - Valid mobile: '+91 8920068400' normalized to +918920068400 from www.manufacturersuppliers.in_tel_link_plus91
+2025-05-25 16:19:52,155 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 16:19:52,155 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 16:19:52,155 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 16:19:52,155 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text
+2025-05-25 16:19:52,155 - INFO - Valid mobile: '07942538161' normalized to +917942538161 from www.cosmopharmaglass.in_text_std_code
+2025-05-25 16:19:52,299 - INFO - Valid landline_short: '54462225' normalized to +91-54462225 from javascript
+2025-05-25 16:19:52,299 - WARNING - Rejected: Unrecognized format '154462225' from javascript
+2025-05-25 16:19:52,299 - INFO - Valid landline_short: '54462225' normalized to +91-54462225 from javascript
+2025-05-25 16:19:52,299 - WARNING - Rejected: Unrecognized format '154462225' from javascript
+2025-05-25 16:19:52,302 - INFO - Valid landline_short: '22535374' normalized to +91-22535374 from javascript
+2025-05-25 16:19:52,302 - WARNING - Rejected: Unrecognized format '22535374791' from javascript
+2025-05-25 16:19:52,303 - WARNING - Rejected: Unrecognized format '84032962' from javascript
+2025-05-25 16:19:52,303 - WARNING - Rejected: Unrecognized format '184032962' from javascript
+2025-05-25 16:19:52,303 - WARNING - Rejected: Unrecognized format '84032962' from javascript
+2025-05-25 16:19:52,303 - WARNING - Rejected: Unrecognized format '184032962' from javascript
+2025-05-25 16:19:52,303 - INFO - Valid landline_short: '25492448' normalized to +91-25492448 from javascript
+2025-05-25 16:19:52,303 - WARNING - Rejected: Unrecognized format '25492448191' from javascript
+2025-05-25 16:19:52,304 - INFO - Valid landline_short: '25492451' normalized to +91-25492451 from javascript
+2025-05-25 16:19:52,304 - WARNING - Rejected: Unrecognized format '25492451048' from javascript
+2025-05-25 16:19:52,304 - INFO - Valid landline_short: '23136822' normalized to +91-23136822 from javascript
+2025-05-25 16:19:52,304 - WARNING - Rejected: Unrecognized format '23136822291' from javascript
+2025-05-25 16:19:52,304 - INFO - Valid landline_short: '22575772' normalized to +91-22575772 from javascript
+2025-05-25 16:19:52,305 - WARNING - Rejected: Unrecognized format '22575772848' from javascript
+2025-05-25 16:19:52,305 - INFO - Valid landline_short: '23182111' normalized to +91-23182111 from javascript
+2025-05-25 16:19:52,305 - WARNING - Rejected: Unrecognized format '23182111688' from javascript
+2025-05-25 16:19:52,305 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript
+2025-05-25 16:19:52,305 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript
+2025-05-25 16:19:52,305 - INFO - Valid mobile: '7942538161' normalized to +917942538161 from javascript_mobile
+2025-05-25 16:19:59,001 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text
+2025-05-25 16:19:59,001 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text
+2025-05-25 16:19:59,001 - INFO - Valid mobile: '08048606480' normalized to +918048606480 from www.sunriseagency.co.in_text_std_code
+2025-05-25 16:19:59,151 - INFO - Valid mobile: '8048606480' normalized to +918048606480 from javascript
+2025-05-25 16:19:59,152 - INFO - Valid mobile: '8048606480' normalized to +918048606480 from javascript
+2025-05-25 16:19:59,152 - INFO - Valid mobile: '8048606480' normalized to +918048606480 from javascript_mobile
+2025-05-25 16:19:59,153 - INFO - Valid landline_short: '54119691' normalized to +91-54119691 from javascript
+2025-05-25 16:19:59,153 - WARNING - Rejected: Unrecognized format '154119691' from javascript
+2025-05-25 16:19:59,153 - INFO - Valid landline_short: '54119691' normalized to +91-54119691 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '154119691' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '22501121' normalized to +91-22501121 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '22501121388' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24348545' normalized to +91-24348545 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '243485458' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24348545' normalized to +91-24348545 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '243485458' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24493869' normalized to +91-24493869 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '244938691' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24493869' normalized to +91-24493869 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '244938691' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24614524' normalized to +91-24614524 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '246145244' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24614524' normalized to +91-24614524 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '246145244' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24767964' normalized to +91-24767964 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '247679644' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24767964' normalized to +91-24767964 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '247679644' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24772113' normalized to +91-24772113 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '247721137' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24772113' normalized to +91-24772113 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '247721137' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24851774' normalized to +91-24851774 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248517742' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24851774' normalized to +91-24851774 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248517742' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24851870' normalized to +91-24851870 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248518701' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24851870' normalized to +91-24851870 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248518701' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24852063' normalized to +91-24852063 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248520638' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24852063' normalized to +91-24852063 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248520638' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24852217' normalized to +91-24852217 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248522175' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24852217' normalized to +91-24852217 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '248522175' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978172' normalized to +91-24978172 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249781728' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978172' normalized to +91-24978172 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249781728' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978412' normalized to +91-24978412 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784126' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978412' normalized to +91-24978412 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784126' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978449' normalized to +91-24978449 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784491' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978449' normalized to +91-24978449 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784491' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978475' normalized to +91-24978475 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784755' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978475' normalized to +91-24978475 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784755' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '25181770' normalized to +91-25181770 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '251817703' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '25181770' normalized to +91-25181770 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '251817703' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978469' normalized to +91-24978469 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784695' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978469' normalized to +91-24978469 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249784695' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '35892751' normalized to +91-35892751 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '135892751' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '35892751' normalized to +91-35892751 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '135892751' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '20678427' normalized to +91-20678427 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '20678427330' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '58349330' normalized to +91-58349330 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '158349330' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '58349330' normalized to +91-58349330 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '158349330' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '22924085' normalized to +91-22924085 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '22924085297' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978383' normalized to +91-24978383 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249783835' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24978383' normalized to +91-24978383 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '249783835' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '27699026' normalized to +91-27699026 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '276990265' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '27699026' normalized to +91-27699026 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '276990265' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '27981760' normalized to +91-27981760 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '279817601' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '27981760' normalized to +91-27981760 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '279817601' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '30023200' normalized to +91-30023200 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '300232005' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '30023200' normalized to +91-30023200 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '300232005' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24221709' normalized to +91-24221709 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '242217095' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24221709' normalized to +91-24221709 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '242217095' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24280367' normalized to +91-24280367 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '242803674' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '24280367' normalized to +91-24280367 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '242803674' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '54119640' normalized to +91-54119640 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '154119640' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '54119640' normalized to +91-54119640 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '154119640' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '22501116' normalized to +91-22501116 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '22501116255' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '58351920' normalized to +91-58351920 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '158351920' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '58351920' normalized to +91-58351920 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '158351920' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '22924344' normalized to +91-22924344 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '22924344248' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '58574116' normalized to +91-58574116 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '158574116' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '58574116' normalized to +91-58574116 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '158574116' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '22946563' normalized to +91-22946563 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '22946563897' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '27363995' normalized to +91-27363995 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '273639958' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '27363995' normalized to +91-27363995 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '273639958' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '54080043' normalized to +91-54080043 from javascript
+2025-05-25 16:19:59,154 - WARNING - Rejected: Unrecognized format '154080043' from javascript
+2025-05-25 16:19:59,154 - INFO - Valid landline_short: '54080043' normalized to +91-54080043 from javascript
+2025-05-25 16:19:59,167 - WARNING - Rejected: Unrecognized format '154080043' from javascript
+2025-05-25 16:19:59,167 - INFO - Valid landline_short: '22497156' normalized to +91-22497156 from javascript
+2025-05-25 16:19:59,167 - WARNING - Rejected: Unrecognized format '22497156548' from javascript
+2025-05-25 16:19:59,167 - INFO - Valid landline_short: '54150184' normalized to +91-54150184 from javascript
+2025-05-25 16:19:59,167 - WARNING - Rejected: Unrecognized format '154150184' from javascript
+2025-05-25 16:19:59,167 - INFO - Valid landline_short: '54150184' normalized to +91-54150184 from javascript
+2025-05-25 16:19:59,167 - WARNING - Rejected: Unrecognized format '154150184' from javascript
+2025-05-25 16:19:59,167 - INFO - Valid landline_short: '22504170' normalized to +91-22504170 from javascript
+2025-05-25 16:19:59,168 - WARNING - Rejected: Unrecognized format '22504170612' from javascript
+2025-05-25 16:19:59,170 - INFO - Valid landline_short: '54289435' normalized to +91-54289435 from javascript
+2025-05-25 16:19:59,170 - WARNING - Rejected: Unrecognized format '154289435' from javascript
+2025-05-25 16:19:59,170 - INFO - Valid landline_short: '54289435' normalized to +91-54289435 from javascript
+2025-05-25 16:19:59,170 - WARNING - Rejected: Unrecognized format '154289435' from javascript
+2025-05-25 16:19:59,170 - INFO - Valid landline_short: '22518095' normalized to +91-22518095 from javascript
+2025-05-25 16:19:59,170 - WARNING - Rejected: Unrecognized format '22518095791' from javascript
+2025-05-25 16:19:59,170 - INFO - Valid landline_short: '29167941' normalized to +91-29167941 from javascript
+2025-05-25 16:19:59,170 - WARNING - Rejected: Unrecognized format '291679412' from javascript
+2025-05-25 16:19:59,170 - INFO - Valid landline_short: '29167941' normalized to +91-29167941 from javascript
+2025-05-25 16:19:59,170 - WARNING - Rejected: Unrecognized format '291679412' from javascript
+2025-05-25 16:19:59,170 - INFO - Valid landline_short: '35892796' normalized to +91-35892796 from javascript
+2025-05-25 16:19:59,170 - WARNING - Rejected: Unrecognized format '135892796' from javascript
+2025-05-25 16:19:59,173 - INFO - Valid landline_short: '35892796' normalized to +91-35892796 from javascript
+2025-05-25 16:19:59,173 - WARNING - Rejected: Unrecognized format '135892796' from javascript
+2025-05-25 16:19:59,173 - INFO - Valid landline_short: '20678431' normalized to +91-20678431 from javascript
+2025-05-25 16:19:59,173 - WARNING - Rejected: Unrecognized format '20678431873' from javascript
+2025-05-25 16:19:59,173 - INFO - Valid landline_short: '54119802' normalized to +91-54119802 from javascript
+2025-05-25 16:19:59,173 - WARNING - Rejected: Unrecognized format '154119802' from javascript
+2025-05-25 16:19:59,173 - INFO - Valid landline_short: '54119802' normalized to +91-54119802 from javascript
+2025-05-25 16:19:59,173 - WARNING - Rejected: Unrecognized format '154119802' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '22501132' normalized to +91-22501132 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '22501132462' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24290933' normalized to +91-24290933 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '242909337' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24290933' normalized to +91-24290933 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '242909337' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978391' normalized to +91-24978391 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249783912' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978391' normalized to +91-24978391 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249783912' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978394' normalized to +91-24978394 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249783946' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978394' normalized to +91-24978394 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249783946' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978456' normalized to +91-24978456 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249784565' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978456' normalized to +91-24978456 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249784565' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978487' normalized to +91-24978487 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249784877' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978487' normalized to +91-24978487 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249784877' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978491' normalized to +91-24978491 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249784916' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '24978491' normalized to +91-24978491 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '249784916' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '22286111' normalized to +91-22286111 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '22286111388' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '23102801' normalized to +91-23102801 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '23102801133' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '22329001' normalized to +91-22329001 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '22329001691' from javascript
+2025-05-25 16:19:59,174 - INFO - Valid landline_short: '22445152' normalized to +91-22445152 from javascript
+2025-05-25 16:19:59,174 - WARNING - Rejected: Unrecognized format '22445152133' from javascript
+2025-05-25 16:20:05,874 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 16:20:05,874 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text
+2025-05-25 16:20:05,874 - INFO - Valid mobile: '08048602555' normalized to +918048602555 from www.essentialoilbottle.in_text_std_code
+2025-05-25 16:20:05,937 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript
+2025-05-25 16:20:05,937 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript
+2025-05-25 16:20:05,937 - INFO - Valid mobile: '8048602555' normalized to +918048602555 from javascript_mobile
+2025-05-25 16:20:05,937 - INFO - Valid landline_short: '20380387' normalized to +91-20380387 from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '203803870' from javascript
+2025-05-25 16:20:05,937 - INFO - Valid landline_short: '20380387' normalized to +91-20380387 from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '203803870' from javascript
+2025-05-25 16:20:05,937 - INFO - Valid landline_short: '27469539' normalized to +91-27469539 from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '27469539030' from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '66160587' from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '166160587' from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '66160587' from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '166160587' from javascript
+2025-05-25 16:20:05,937 - INFO - Valid landline_short: '23705210' normalized to +91-23705210 from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '23705210697' from javascript
+2025-05-25 16:20:05,937 - INFO - Valid landline_short: '28679746' normalized to +91-28679746 from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '286797466' from javascript
+2025-05-25 16:20:05,937 - INFO - Valid landline_short: '28679746' normalized to +91-28679746 from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '286797466' from javascript
+2025-05-25 16:20:05,937 - WARNING - Rejected: Unrecognized format '92673295' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '192673295' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '92673295' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '192673295' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '26356481' normalized to +91-26356481 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '26356481555' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '67199379' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '167199379' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '67199379' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '167199379' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '23809089' normalized to +91-23809089 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '23809089888' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '67199298' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '167199298' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '67199298' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '167199298' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '23809081' normalized to +91-23809081 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '23809081762' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '92676215' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '192676215' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '92676215' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '192676215' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '26356773' normalized to +91-26356773 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '26356773530' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '23897337' normalized to +91-23897337 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '238973375' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '23897337' normalized to +91-23897337 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '238973375' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '67199260' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '167199260' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '67199260' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '167199260' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '23809077' normalized to +91-23809077 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '23809077955' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '92674030' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '192674030' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '92674030' from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '192674030' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '26356555' normalized to +91-26356555 from javascript
+2025-05-25 16:20:05,949 - WARNING - Rejected: Unrecognized format '26356555033' from javascript
+2025-05-25 16:20:05,949 - INFO - Valid landline_short: '23987227' normalized to +91-23987227 from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '239872270' from javascript
+2025-05-25 16:20:05,954 - INFO - Valid landline_short: '23987227' normalized to +91-23987227 from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '239872270' from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '92678842' from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '192678842' from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '92678842' from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '192678842' from javascript
+2025-05-25 16:20:05,954 - INFO - Valid landline_short: '26357036' normalized to +91-26357036 from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '26357036262' from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '92678964' from javascript
+2025-05-25 16:20:05,954 - WARNING - Rejected: Unrecognized format '192678964' from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '92678964' from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '192678964' from javascript
+2025-05-25 16:20:05,955 - INFO - Valid landline_short: '26357048' normalized to +91-26357048 from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '26357048412' from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '92684964' from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '192684964' from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '92684964' from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '192684964' from javascript
+2025-05-25 16:20:05,955 - INFO - Valid landline_short: '26357648' normalized to +91-26357648 from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '26357648430' from javascript
+2025-05-25 16:20:05,955 - WARNING - Rejected: Unrecognized format '92684890' from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '192684890' from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '92684890' from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '192684890' from javascript
+2025-05-25 16:20:05,956 - INFO - Valid landline_short: '26357641' normalized to +91-26357641 from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '26357641055' from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '92685289' from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '192685289' from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '92685289' from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '192685289' from javascript
+2025-05-25 16:20:05,956 - INFO - Valid landline_short: '26357680' normalized to +91-26357680 from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '26357680933' from javascript
+2025-05-25 16:20:05,956 - INFO - Valid landline_short: '23809114' normalized to +91-23809114 from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '23809114962' from javascript
+2025-05-25 16:20:05,956 - INFO - Valid landline_short: '26395970' normalized to +91-26395970 from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '26395970733' from javascript
+2025-05-25 16:20:05,956 - INFO - Valid landline_short: '26357089' normalized to +91-26357089 from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '26357089912' from javascript
+2025-05-25 16:20:05,956 - INFO - Valid landline_short: '27470262' normalized to +91-27470262 from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '27470262397' from javascript
+2025-05-25 16:20:05,956 - INFO - Valid landline_short: '26357667' normalized to +91-26357667 from javascript
+2025-05-25 16:20:05,956 - WARNING - Rejected: Unrecognized format '26357667733' from javascript
+2025-05-25 16:20:12,750 - INFO - Valid landline_short: '28497664' normalized to +91-28497664 from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - INFO - Valid landline_short: '28548466' normalized to +91-28548466 from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - INFO - Valid landline_short: '28526742' normalized to +91-28526742 from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - WARNING - Rejected: Unrecognized format '2849766499062' from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - WARNING - Rejected: Unrecognized format '2854846693133' from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - WARNING - Rejected: Unrecognized format '2852674229312' from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_text_std_code
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,750 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,763 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:12,763 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,763 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,763 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:12,763 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,763 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link
+2025-05-25 16:20:12,764 - INFO - Valid mobile: '07942552337' normalized to +917942552337 from www.glassplanet.in_tel_link_std_code
+2025-05-25 16:20:16,151 - WARNING - Rejected: Unrecognized format '079426684408' from www.trendglobalpackaging.in_text
+2025-05-25 16:20:16,151 - WARNING - Rejected: Unrecognized format '0794266844086' from www.trendglobalpackaging.in_text
+2025-05-25 16:20:16,151 - WARNING - Rejected: Unrecognized format '0794266844086' from www.trendglobalpackaging.in_text_std_code
+2025-05-25 16:20:16,197 - INFO - Valid mobile: '7942668440' normalized to +917942668440 from javascript
+2025-05-25 16:20:16,197 - INFO - Valid mobile: '7942668440' normalized to +917942668440 from javascript
+2025-05-25 16:20:16,197 - INFO - Valid mobile: '7942668440' normalized to +917942668440 from javascript_mobile
+2025-05-25 16:20:16,197 - INFO - Valid landline_short: '26738459' normalized to +91-26738459 from javascript
+2025-05-25 16:20:16,197 - WARNING - Rejected: Unrecognized format '267384591' from javascript
+2025-05-25 16:20:16,197 - INFO - Valid landline_short: '26738458' normalized to +91-26738458 from javascript
+2025-05-25 16:20:16,197 - WARNING - Rejected: Unrecognized format '267384588' from javascript
+2025-05-25 16:20:16,212 - INFO - Valid landline_short: '26738620' normalized to +91-26738620 from javascript
+2025-05-25 16:20:16,212 - WARNING - Rejected: Unrecognized format '267386209' from javascript
+2025-05-25 16:20:16,212 - INFO - Valid landline_short: '26738459' normalized to +91-26738459 from javascript
+2025-05-25 16:20:16,212 - WARNING - Rejected: Unrecognized format '267384590' from javascript
+2025-05-25 16:20:16,212 - INFO - Valid landline_short: '28499971' normalized to +91-28499971 from javascript
+2025-05-25 16:20:16,212 - WARNING - Rejected: Unrecognized format '284999714' from javascript
+2025-05-25 16:20:16,212 - INFO - Valid landline_short: '26738621' normalized to +91-26738621 from javascript
+2025-05-25 16:20:16,212 - WARNING - Rejected: Unrecognized format '267386211' from javascript
+2025-05-25 16:20:16,213 - INFO - Valid landline_short: '28191559' normalized to +91-28191559 from javascript
+2025-05-25 16:20:16,213 - WARNING - Rejected: Unrecognized format '281915592' from javascript
+2025-05-25 16:20:16,213 - INFO - Valid landline_short: '27952048' normalized to +91-27952048 from javascript
+2025-05-25 16:20:16,213 - WARNING - Rejected: Unrecognized format '279520488' from javascript
+2025-05-25 16:20:16,213 - INFO - Valid landline_short: '28191531' normalized to +91-28191531 from javascript
+2025-05-25 16:20:16,213 - WARNING - Rejected: Unrecognized format '281915313' from javascript
+2025-05-25 16:20:16,213 - INFO - Valid landline_short: '27963382' normalized to +91-27963382 from javascript
+2025-05-25 16:20:16,213 - WARNING - Rejected: Unrecognized format '279633823' from javascript
+2025-05-25 16:20:16,213 - INFO - Valid landline_short: '28087006' normalized to +91-28087006 from javascript
+2025-05-25 16:20:16,214 - WARNING - Rejected: Unrecognized format '280870066' from javascript
+2025-05-25 16:20:22,565 - INFO - Valid mobile: '8929632789' normalized to +918929632789 from blenditrawapothecary.in_text
+2025-05-25 16:20:22,565 - INFO - Valid mobile: '8929632789' normalized to +918929632789 from blenditrawapothecary.in_text
+2025-05-25 16:20:22,565 - INFO - Valid mobile: '8929632789' normalized to +918929632789 from blenditrawapothecary.in_text_mobile
+2025-05-25 16:20:22,645 - WARNING - Rejected: Unrecognized format '874905893' from javascript
+2025-05-25 16:20:22,645 - WARNING - Rejected: Unrecognized format '874905893' from javascript
+2025-05-25 16:20:22,645 - INFO - Valid landline_short: '44692304' normalized to +91-44692304 from javascript
+2025-05-25 16:20:22,645 - WARNING - Rejected: Unrecognized format '446923045' from javascript
+2025-05-25 16:20:22,645 - INFO - Valid landline_short: '40640549' normalized to +91-40640549 from javascript
+2025-05-25 16:20:22,645 - WARNING - Rejected: Unrecognized format '140640549' from javascript
+2025-05-25 16:20:22,645 - INFO - Valid mobile: '6928921424' normalized to +916928921424 from javascript
+2025-05-25 16:20:22,645 - WARNING - Rejected: Unrecognized format '69289214245' from javascript
+2025-05-25 16:20:24,062 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid landline_short: '50100150' normalized to +91-50100150 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid landline_short: '20025030' normalized to +91-20025030 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - WARNING - Rejected: Unrecognized format '5010015020025' from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text
+2025-05-25 16:20:24,062 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_text_std_code
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code
+2025-05-25 16:20:24,066 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,068 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link
+2025-05-25 16:20:24,068 - INFO - Valid mobile: '08071794110' normalized to +918071794110 from www.shinepolypacks.in_tel_link_std_code

@@ -1,0 +1,14 @@
+{
+  "status": "completed",
+  "progress": 100,
+  "message": "Found 0 emails and 0 phones",
+  "keyword": "Dropper Bottles in Delhi",
+  "task_id": 15,
+  "results_count": 0,
+  "results_preview": {
+    "emails": [],
+    "phones": []
+  },
+  "elapsed_time": 0.01735299825668335,
+  "results_file": null
+}

@@ -1,0 +1,6 @@
+2025-05-25 14:46:55,500 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_144655_manual.log
+2025-05-25 14:46:55,501 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 14:46:55,501 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 14:46:55,568 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 14:47:00,066 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 14:47:00,066 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.

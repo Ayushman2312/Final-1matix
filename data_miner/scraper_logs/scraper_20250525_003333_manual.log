@@ -1,0 +1,10 @@
+2025-05-25 00:33:33,964 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_003333_manual.log
+2025-05-25 00:33:33,971 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 00:33:33,971 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 00:33:34,009 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 00:33:36,472 - ContactScraper - INFO - Extracting contacts from: https://www.google.com
+2025-05-25 00:33:38,481 - ContactScraper - INFO - Extracting contacts from: https://www.google.com
+2025-05-25 00:33:40,485 - ContactScraper - INFO - Extracting contacts from: https://www.google.com
+2025-05-25 00:33:40,486 - ContactScraper - INFO - Extracting contacts from: https://www.manufacturersuppliers.in/delhi/plastic-dropper-bottles.html
+2025-05-25 00:33:42,558 - ContactScraper - INFO - Extracting contacts from: https://www.manufacturersuppliers.in/delhi/plastic-dropper-bottles.html
+2025-05-25 00:33:44,573 - ContactScraper - INFO - Extracting contacts from: https://www.manufacturersuppliers.in/delhi/plastic-dropper-bottles.html

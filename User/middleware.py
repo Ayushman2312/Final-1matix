@@ -25,6 +25,15 @@ class UserAuthMiddleware:
             '/website/pricing/',  # Pricing page
             '/website/features/',  # Features page
             '/website/templates/',  # Templates showcase
+            '/hr_management/employee_dashboard/',
+            '/hr_management/employee_resignation/',
+            '/hr_management/employee_documents/',
+            '/hr_management/employee_profile/',
+            '/hr_management/employee_salary_slips/',
+            '/hr_management/employee_reimbursement/',
+            '/hr_management/employee_leave/',
+            '/hr_management/employee/login/',
+            '/hr_management/employee_attendance/',
         ]
         
         # Check if the path is a static or media file
@@ -47,11 +56,15 @@ class UserAuthMiddleware:
             request.session.get('_auth_user_id') is not None  # Django auth
         )
         
+        # Check if the path is a data_miner URL and the user is authenticated
+        is_data_miner_path = current_path.startswith('/data_miner/')
+        
         # Check if the path is public, static/media, admin, or other exempt paths
         is_public_path = (
             current_path in public_paths or 
             current_path.rstrip('/') in [p.rstrip('/') for p in public_paths] or  # Compare paths without trailing slashes
             is_static_or_media or 
+            (is_data_miner_path and is_user_authenticated) or  # Allow data_miner access if authenticated
             'contact-us' in current_path or
             'about-us' in current_path or
             'privacy-policy' in current_path or
@@ -61,6 +74,8 @@ class UserAuthMiddleware:
             'upi-payment' in current_path or
             'masteradmin' in current_path or
             'alavi07' in current_path or
+            'onboarding' in current_path or
+            'employee' in current_path or
             # Include website public paths
             current_path.startswith('/website/public/') or
             current_path.startswith('/website/s/') or
@@ -87,6 +102,12 @@ class UserAuthMiddleware:
             # Save the requested URL to redirect back after login
             request.session['next_url'] = current_path
             
+            # Special handling for data_miner app
+            if current_path.startswith('/data_miner/'):
+                print(f"Redirecting unauthenticated user from data_miner to login: {current_path}")
+                messages.warning(request, 'Please log in to access Data Miner')
+                return redirect('/accounts/login/?next=/data_miner/')
+                
             # Check if this is a dashboard path
             if current_path == '/user/dashboard/' or current_path.startswith('/dashboard/'):
                 messages.warning(request, 'Please log in to access the dashboard')

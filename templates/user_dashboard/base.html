@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,141 +22,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/user.css' %}">
+    <!-- Add CSRF Token meta tag -->
+    {% csrf_token %}
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
-        *{
-            font-family: 'Quicksand', sans-serif;
+        @keyframes reminderFlash {
+            0%, 100% { box-shadow: 0 10px 15px -3px rgba(123, 61, 243, 0.2), 0 4px 6px -2px rgba(123, 61, 243, 0.1); }
+            50% { box-shadow: 0 10px 25px -5px rgba(123, 61, 243, 0.4), 0 8px 10px -6px rgba(123, 61, 243, 0.2); }
         }
-        .quicksand {
-            font-family: "Quicksand", sans-serif;
-            font-optical-sizing: auto;
-        }
-        .lexend-1matrix {
-            font-family: "Lexend", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 700;
-            font-style: normal;
-        }
-        .montserrat-header {
-            font-family: "Montserrat", sans-serif;
-            font-optical-sizing: auto;
-            font-size: 20px;
-            font-weight: 600;
-            font-style: normal;
-        }
-        .sidebar-transition {
-            transition: all 0.3s ease-in-out;
-        }
-        .main-transition {
-            transition: margin-left 0.3s ease-in-out;
-        }
-        /* Better responsive sidebar */
-        @media (max-width: 768px) {
-            .sidebar-mobile {
-                transform: translateX(-100%);
-                position: fixed;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                z-index: 50;
-                width: 256px !important;
-            }
-            .sidebar-mobile.open {
-                transform: translateX(0);
-            }
-            .overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                right: 0;
-                bottom: 0;
-                left: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 40;
-            }
-            .overlay.show {
-                display: block;
-            }
-            .main-content-mobile {
-                margin-left: 0 !important;
-                width: 100% !important;
-            }
-            .montserrat-header {
-                font-size: 18px;
-            }
-        }
-        
-        /* Medium screens (tablets, small laptops) - Specific for 1024x778 */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .sidebar-mobile {
-                width: 220px !important;
-            }
-            .main-content-mobile {
-                margin-left: 220px !important;
-            }
-            .montserrat-header {
-                font-size: 22px;
-            }
-            .responsive-padding-md {
-                padding-left: 1rem !important;
-                padding-right: 1rem !important;
-            }
-            .content-container {
-                padding: 1.5rem;
-            }
-            .md-reduced-padding {
-                padding: 1rem !important;
-            }
-            .md-chart-height {
-                height: 220px !important;
-            }
-            .md-grid-cols-2 {
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            }
-            .md-text-sm {
-                font-size: 0.875rem !important;
-            }
-            .md-flex-wrap {
-                flex-wrap: wrap !important;
-            }
-        }
-        
-        @media (min-width: 769px) {
-            .sidebar-mobile {
-                transform: none !important;
-            }
-        }
-        /* For very small screens */
-        @media (max-width: 480px) {
-            .montserrat-header {
-                font-size: 16px;
-            }
-            .responsive-padding {
-                padding-left: 0.75rem !important;
-                padding-right: 0.75rem !important;
-            }
-            .responsive-text {
-                font-size: 0.875rem !important;
-            }
-        }
-        /* Fix table overflow on small screens */
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        /* Make sure all pages have consistent spacing */
-        .content-container {
-            padding: 1rem;
-        }
-        @media (min-width: 640px) {
-            .content-container {
-                padding: 1.5rem;
-            }
-        }
-        @media (min-width: 768px) {
-            .content-container {
-                padding: 2rem;
-            }
+        .reminder-flashing {
+            animation: reminderFlash 1s infinite;
         }
     </style>
 </head>
@@ -513,23 +390,18 @@
                                 <span class="absolute inset-0 flex items-center justify-center text-[#7B3DF3] font-medium text-[15px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">Attendance</span>
                             </div>
                             
-                            <div class="bg-[#E9D8FD] rounded-xl flex items-center justify-center h-12 sm:h-16 group relative cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 sm:w-7 sm:h-7 text-[#7B3DF3] transition-opacity duration-300 group-hover:opacity-0" viewBox="0 0 24 24">
-                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                                </svg>
-                                <span class="absolute inset-0 flex items-center justify-center text-[#7B3DF3] font-medium text-[14px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">Customers</span>
-                            </div>
-                            <div class="bg-[#E9D8FD] rounded-xl flex items-center justify-center h-12 sm:h-16 group relative cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 sm:w-7 sm:h-7 text-[#7B3DF3] transition-opacity duration-300 group-hover:opacity-0" viewBox="0 0 16 16">
-                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
-                                </svg>
-                                <span class="absolute inset-0 flex items-center justify-center text-[#7B3DF3] font-medium text-[14px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">Quick Notes</span>
-                            </div>
-                            <div class="bg-[#E9D8FD] rounded-xl flex items-center justify-center h-12 sm:h-16 group relative cursor-pointer">
+                            <div class="bg-[#E9D8FD] rounded-xl flex items-center justify-center h-12 sm:h-16 group relative cursor-pointer" onclick="openReminderModal()">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 sm:w-7 sm:h-7 text-[#7B3DF3] transition-opacity duration-300 group-hover:opacity-0" viewBox="0 0 16 16">
                                     <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.602-.602A7.001 7.001 0 0 1 7 2.07V1h-.5A.5.5 0 0 1 6 .5m2.5 5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.04 8.04 0 0 0 .86 5.387M11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.04 8.04 0 0 0-3.527-3.527"/>
                                 </svg>
                                 <span class="absolute inset-0 flex items-center justify-center text-[#7B3DF3] font-medium text-[14px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">Reminders</span>
+                            </div>
+                            
+                            <div class="bg-[#E9D8FD] rounded-xl flex items-center justify-center h-12 sm:h-16 group relative cursor-pointer" onclick="openQuickNotesModal()">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 sm:w-7 sm:h-7 text-[#7B3DF3] transition-opacity duration-300 group-hover:opacity-0" viewBox="0 0 16 16">
+                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+                                </svg>
+                                <span class="absolute inset-0 flex items-center justify-center text-[#7B3DF3] font-medium text-[14px] opacity-0 transition-opacity duration-300 group-hover:opacity-100">Quick Notes</span>
                             </div>
                             <div class="bg-[#E9D8FD] rounded-xl flex items-center justify-center h-12 sm:h-16 group relative cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-5 h-5 sm:w-7 sm:h-7 text-[#7B3DF3] transition-opacity duration-300 group-hover:opacity-0 text-center" viewBox="0 0 20 20">
@@ -834,6 +706,1427 @@
     document.getElementById('tagsModal').addEventListener('click', function(e) {
       if (e.target === this) closeTagsModal();
     });
+    </script>
+    
+    <!-- Reminder Modals -->
+    <!-- Main Reminder Modal -->
+    <div id="reminderModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeReminderModal()"></div>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 relative z-10 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-[#7B3DF3] py-3 px-5 flex justify-between items-center">
+                <h3 class="text-white text-base font-bold" id="reminderModalTitle">Reminders</h3>
+                <button onclick="closeReminderModal()" class="text-white hover:text-gray-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Options -->
+            <div id="reminderOptions" class="p-5 space-y-3">
+                <button onclick="showCreateReminderForm()" class="w-full bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create Reminder
+                </button>
+                <button onclick="showViewReminders()" class="w-full border border-[#7B3DF3] hover:bg-[#F0EFFF] text-[#7B3DF3] font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View Reminders
+                </button>
+            </div>
+            
+            <!-- Create Reminder Form (Hidden Initially) -->
+            <div id="createReminderForm" class="p-5 hidden">
+                <form id="reminderForm" class="space-y-3">
+                    <div>
+                        <label for="reminderTitle" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input type="text" id="reminderTitle" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-sm">
+                    </div>
+                    <div>
+                        <label for="reminderDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="reminderDescription" name="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label for="reminderDate" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" id="reminderDate" name="date" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-sm">
+                    </div>
+                    <div>
+                        <label for="reminderTime" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                        <div class="bg-gray-100 p-2 rounded-md mb-2 text-center">
+                            <div id="currentTimeDisplay" class="text-gray-700 font-medium text-sm">Current time: </div>
+                            <div class="text-xs text-gray-500" id="timezoneDisplay"></div>
+                        </div>
+                        <input type="time" id="reminderTime" name="time" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-sm">
+                    </div>
+                    <div class="flex space-x-3 pt-2">
+                        <button type="button" onclick="backToOptions()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Back
+                        </button>
+                        <button type="submit" class="flex-1 bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- View Reminders List (Hidden Initially) -->
+            <div id="viewReminders" class="hidden">
+                <div class="p-4">
+                    <div class="mb-3 flex justify-between items-center">
+                        <h3 class="text-sm font-medium text-gray-700">Your Reminders</h3>
+                        <span class="text-xs text-gray-500">Sorted by newest first</span>
+                    </div>
+                    <div id="remindersContainer" class="max-h-[50vh] overflow-y-auto pb-2">
+                        <!-- Loading/no reminders message container -->
+                        <div id="noRemindersMessage" class="text-center text-gray-500 py-4">
+                            <div class="flex justify-center items-center py-4">
+                                <svg class="animate-spin h-6 w-6 text-[#7B3DF3]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-center">Loading reminders...</p>
+                        </div>
+                        
+                        <!-- Reminders list container -->
+                        <div id="remindersList" class="space-y-3 hidden"></div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 border-t">
+                    <button type="button" onclick="backToOptions()" class="w-full bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reminder Notification Modal -->
+    <div id="reminderNotificationModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 relative z-10 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-[#7B3DF3] py-3 px-5 flex justify-between items-center">
+                <h3 class="text-white text-base font-bold">Reminder</h3>
+                <div class="flex items-center">
+                    <span id="reminderTime" class="text-white text-xs mr-2"></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <button onclick="closeNotificationModal()" class="ml-3 text-white hover:text-gray-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Notification Content -->
+            <div class="p-5">
+                <h4 id="notificationTitle" class="text-lg font-bold text-gray-900 mb-2"></h4>
+                <p id="notificationDescription" class="text-gray-700 mb-5 text-sm"></p>
+                
+                <input type="hidden" id="currentReminderId">
+                
+                <div class="flex space-x-3">
+                    <button onclick="completeReminder()" class="flex-1 bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                        Turn Off
+                    </button>
+                    <button onclick="showSnoozeOptions()" class="flex-1 border border-[#7B3DF3] hover:bg-[#F0EFFF] text-[#7B3DF3] font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                        Remind Later
+                    </button>
+                </div>
+                
+                <div id="snoozeOptions" class="mt-4 hidden">
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Remind me in:</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="snoozeReminder(10)" class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs py-2 px-3 rounded transition duration-200">
+                                10 minutes
+                            </button>
+                            <button onclick="snoozeReminder(30)" class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs py-2 px-3 rounded transition duration-200">
+                                30 minutes
+                            </button>
+                            <button onclick="snoozeReminder(60)" class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs py-2 px-3 rounded transition duration-200">
+                                1 hour
+                            </button>
+                            <button onclick="snoozeReminder(1440)" class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs py-2 px-3 rounded transition duration-200">
+                                1 day
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Custom time:</label>
+                        <div class="flex space-x-2">
+                            <input type="datetime-local" id="customSnoozeTime" class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-sm">
+                            <button onclick="snoozeReminderCustom()" class="bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2 px-3 rounded-lg transition duration-200 text-sm">
+                                Set
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio for reminder notification -->
+    <audio id="reminderSound" preload="auto" loop>
+        <source src="/media/bell-notification-337658.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Reminder JavaScript -->
+    <script>
+        // Reminder Modal Functions
+        function openReminderModal() {
+            document.getElementById('reminderModal').classList.remove('hidden');
+            document.getElementById('reminderOptions').classList.remove('hidden');
+            document.getElementById('createReminderForm').classList.add('hidden');
+            document.getElementById('viewReminders').classList.add('hidden');
+        }
+        
+        function closeReminderModal() {
+            // Hide the modal
+            document.getElementById('reminderModal').classList.add('hidden');
+            
+            // Reset internal state
+            document.getElementById('reminderOptions').classList.remove('hidden');
+            document.getElementById('createReminderForm').classList.add('hidden');
+            document.getElementById('viewReminders').classList.add('hidden');
+            
+            // Stop the clock if running
+            if (window.clockInterval) {
+                clearInterval(window.clockInterval);
+                window.clockInterval = null;
+            }
+            
+            // Reset loading state
+            isLoadingReminders = false;
+        }
+        
+        function showCreateReminderForm() {
+            document.getElementById('reminderOptions').classList.add('hidden');
+            document.getElementById('createReminderForm').classList.remove('hidden');
+            
+            // Set default date to today
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('reminderDate').value = formattedDate;
+            
+            // Set default time to current time + 1 hour
+            const hour = (today.getHours() + 1) % 24;
+            const formattedTime = `${hour.toString().padStart(2, '0')}:${today.getMinutes().toString().padStart(2, '0')}`;
+            document.getElementById('reminderTime').value = formattedTime;
+            
+            // Display the current time and update it every second
+            updateCurrentTime();
+            // Start the clock
+            if (window.clockInterval) {
+                clearInterval(window.clockInterval);
+            }
+            window.clockInterval = setInterval(updateCurrentTime, 1000);
+            
+            // Display timezone information
+            displayTimezoneInfo();
+        }
+        
+        function backToOptions() {
+            document.getElementById('reminderOptions').classList.remove('hidden');
+            document.getElementById('createReminderForm').classList.add('hidden');
+            document.getElementById('viewReminders').classList.add('hidden');
+            
+            // Stop the clock when returning to options
+            if (window.clockInterval) {
+                clearInterval(window.clockInterval);
+                window.clockInterval = null;
+            }
+        }
+        
+        // Function to update the current time display
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: true
+            });
+            document.getElementById('currentTimeDisplay').textContent = `Current time: ${timeString}`;
+        }
+        
+        // Function to display timezone information
+        function displayTimezoneInfo() {
+            const timezoneDisplay = document.getElementById('timezoneDisplay');
+            
+            // Get timezone name if available
+            let timezoneName = '';
+            try {
+                timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            } catch (e) {
+                console.error("Cannot get timezone name:", e);
+            }
+            
+            // Get offset in hours:minutes format
+            const now = new Date();
+            const offsetMinutes = now.getTimezoneOffset();
+            const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+            const offsetMins = Math.abs(offsetMinutes) % 60;
+            const offsetSign = offsetMinutes <= 0 ? '+' : '-';
+            const offsetFormatted = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMins.toString().padStart(2, '0')}`;
+            
+            // Update the display
+            timezoneDisplay.textContent = `Timezone: ${timezoneName || 'Unknown'} (UTC${offsetFormatted})`;
+        }
+        
+        function showViewReminders() {
+            console.log("showViewReminders called");
+            
+            // First make the view visible
+            const reminderOptionsEl = document.getElementById('reminderOptions');
+            const viewRemindersEl = document.getElementById('viewReminders');
+            
+            if (!reminderOptionsEl || !viewRemindersEl) {
+                console.error('Required elements not found:', {
+                    reminderOptions: !!reminderOptionsEl,
+                    viewReminders: !!viewRemindersEl
+                });
+                return;
+            }
+            
+            reminderOptionsEl.classList.add('hidden');
+            viewRemindersEl.classList.remove('hidden');
+            
+            console.log('View switched to reminders view');
+            
+            // Get references to the list elements
+            const remindersList = document.getElementById('remindersList');
+            const noRemindersMessage = document.getElementById('noRemindersMessage');
+            
+            console.log("UI elements:", {
+                remindersList: !!remindersList,
+                noRemindersMessage: !!noRemindersMessage
+            });
+            
+            if (remindersList && noRemindersMessage) {
+                // Reset state
+                remindersList.innerHTML = '';
+                remindersList.classList.add('hidden');
+                noRemindersMessage.classList.remove('hidden');
+                
+                // Load reminders
+                loadReminders();
+            } else {
+                console.error('Required list elements not found');
+            }
+        }
+        
+        // Load Reminders
+        let isLoadingReminders = false; // Flag to prevent multiple simultaneous calls
+        
+        function loadReminders() {
+            // Prevent multiple simultaneous calls
+            if (isLoadingReminders) {
+                console.log('Already loading reminders, request ignored');
+                return;
+            }
+            
+            isLoadingReminders = true;
+            console.log('loadReminders called, fetching data...');
+            
+            // Get references to elements
+            const remindersList = document.getElementById('remindersList');
+            const noRemindersMessage = document.getElementById('noRemindersMessage');
+            
+            if (!remindersList || !noRemindersMessage) {
+                console.error('Could not find required elements:', { 
+                    remindersList: !!remindersList, 
+                    noRemindersMessage: !!noRemindersMessage 
+                });
+                isLoadingReminders = false;
+                return;
+            }
+            
+            // Clear previous content
+            remindersList.innerHTML = '';
+            
+            // Show loading indicator
+            noRemindersMessage.innerHTML = `
+                <div class="flex justify-center items-center py-6">
+                    <svg class="animate-spin h-6 w-6 text-[#7B3DF3]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <p class="text-sm text-center">Loading reminders...</p>
+            `;
+            noRemindersMessage.classList.remove('hidden');
+            remindersList.classList.add('hidden');
+            
+            fetch('/user/api/reminders/list/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                isLoadingReminders = false;
+                console.log('API response:', data);
+                
+                if (data.success) {
+                    if (!data.reminders || data.reminders.length === 0) {
+                        // No reminders case
+                        console.log('No reminders found');
+                        
+                        // Show no reminders message
+                        noRemindersMessage.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <p class="text-sm">No reminders found. Create one to get started!</p>
+                        `;
+                        noRemindersMessage.classList.remove('hidden');
+                        remindersList.classList.add('hidden');
+                    } else {
+                        // We have reminders
+                        console.log(`Found ${data.reminders.length} reminders`);
+                        
+                        // Hide the no reminders message, show the reminders list
+                        noRemindersMessage.classList.add('hidden');
+                        remindersList.classList.remove('hidden');
+                        
+                        // Clear any previous content
+                        remindersList.innerHTML = '';
+                        
+                        // Sort reminders by creation date (newest first)
+                        data.reminders.sort((a, b) => {
+                            // Use created_at for sorting, falling back to reminder_time if not available
+                            const dateA = a.created_at ? new Date(a.created_at) : new Date(a.reminder_time);
+                            const dateB = b.created_at ? new Date(b.created_at) : new Date(b.reminder_time);
+                            return dateB - dateA; // Reverse order for newest first
+                        });
+                        
+                        console.log('Sorted reminders (newest first):', data.reminders.map(r => r.created_at));
+                        
+                        // Add each reminder to the list
+                        data.reminders.forEach(reminder => {
+                            try {
+                                // Parse the datetime and convert to local time
+                                const reminderDate = new Date(reminder.reminder_time);
+                                
+                                // Format date and time in the user's local timezone
+                                const formattedDate = reminderDate.toLocaleDateString([], {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                                
+                                const formattedTime = reminderDate.toLocaleTimeString([], { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit',
+                                    hour12: true  // Use 12-hour format with AM/PM
+                                });
+                                
+                                // Format creation date if available
+                                let createdAtText = '';
+                                if (reminder.created_at) {
+                                    const createdDate = new Date(reminder.created_at);
+                                    // If created today, show "Today at [time]", otherwise show date
+                                    const today = new Date();
+                                    if (createdDate.toDateString() === today.toDateString()) {
+                                        createdAtText = `Created today at ${createdDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: true})}`;
+                                    } else {
+                                        createdAtText = `Created on ${createdDate.toLocaleDateString([], {month: 'short', day: 'numeric', year: 'numeric'})}`;
+                                    }
+                                }
+                                
+                                const reminderElement = document.createElement('div');
+                                reminderElement.className = 'bg-white p-3 rounded-lg border border-gray-200 shadow-sm text-sm';
+                                
+                                let statusBadge = '';
+                                if (reminder.status === 'completed') {
+                                    statusBadge = '<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full ml-2">Completed</span>';
+                                } else if (reminder.status === 'snoozed') {
+                                    statusBadge = '<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full ml-2">Snoozed</span>';
+                                } else if (reminder.is_due) {
+                                    statusBadge = '<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full ml-2">Due</span>';
+                                }
+                                
+                                reminderElement.innerHTML = `
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">${reminder.title} ${statusBadge}</h4>
+                                            <p class="text-xs text-gray-600 mt-1">${reminder.description || 'No description'}</p>
+                                            ${createdAtText ? `<p class="text-[10px] text-gray-400 mt-1">${createdAtText}</p>` : ''}
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-xs text-gray-500">${formattedDate}</p>
+                                            <p class="text-xs font-semibold text-gray-700">${formattedTime}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end space-x-2 mt-2">
+                                        ${reminder.status !== 'completed' ? 
+                                            `<button onclick="completeReminderFromList('${reminder.id}')" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1 px-2 rounded transition duration-200">
+                                                Mark Complete
+                                            </button>` : ''
+                                        }
+                                    </div>
+                                `;
+                                
+                                remindersList.appendChild(reminderElement);
+                            } catch (err) {
+                                console.error('Error processing reminder:', err, reminder);
+                            }
+                        });
+                    }
+                } else {
+                    console.error('API returned error:', data.message);
+                    
+                    // Show error message
+                    noRemindersMessage.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <p class="text-sm text-red-600">Error loading reminders: ${data.message}</p>
+                    `;
+                    noRemindersMessage.classList.remove('hidden');
+                    remindersList.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                isLoadingReminders = false;
+                console.error('Error:', error);
+                
+                // Show error message
+                noRemindersMessage.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p class="text-sm text-red-600">Failed to load reminders. Please try again.</p>
+                `;
+                noRemindersMessage.classList.remove('hidden');
+                remindersList.classList.add('hidden');
+            });
+        }
+        
+        // Mark reminder as complete from the list view
+        function completeReminderFromList(reminderId) {
+            console.log(`Marking reminder ${reminderId} as complete`);
+            
+            if (confirm('Are you sure you want to mark this reminder as complete?')) {
+                fetch(`/user/api/reminders/${reminderId}/complete/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Complete reminder response:', data);
+                    if (data.success) {
+                        // Reload reminders
+                        loadReminders();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to update reminder. Please try again.');
+                });
+            }
+        }
+        
+        // Notification Modal Functions
+        function showReminderNotification(reminder) {
+            const notificationModal = document.getElementById('reminderNotificationModal');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationDescription = document.getElementById('notificationDescription');
+            const reminderTimeDisplay = document.getElementById('reminderTime');
+            const currentReminderId = document.getElementById('currentReminderId');
+            
+            // Set reminder data
+            notificationTitle.textContent = reminder.title;
+            notificationDescription.textContent = reminder.description || 'No description provided';
+            
+            // Parse the datetime and ensure it's displayed in local time
+            const reminderDate = new Date(reminder.reminder_time);
+            console.log(`Reminder datetime from server: ${reminder.reminder_time}`);
+            console.log(`Parsed as local time: ${reminderDate.toLocaleString()}`);
+            
+            // Format the time in the user's local timezone
+            const formattedTime = reminderDate.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true  // Use 12-hour format with AM/PM
+            });
+            
+            // Debug timezone info
+            const userTimezoneOffset = new Date().getTimezoneOffset();
+            const offsetHours = Math.floor(Math.abs(userTimezoneOffset) / 60);
+            const offsetMinutes = Math.abs(userTimezoneOffset) % 60;
+            const offsetSign = userTimezoneOffset <= 0 ? '+' : '-';
+            const userTimezone = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
+            console.log(`User's current timezone offset: ${userTimezone}`);
+            
+            reminderTimeDisplay.textContent = formattedTime;
+            
+            currentReminderId.value = reminder.id;
+            
+            // Hide snooze options initially
+            document.getElementById('snoozeOptions').classList.add('hidden');
+            
+            // Show the modal
+            notificationModal.classList.remove('hidden');
+            
+            // Add a flashing effect to the notification modal to draw attention
+            const modalContent = notificationModal.querySelector('.bg-white');
+            modalContent.classList.add('reminder-flashing');
+            
+            // Play sound (continuous loop is enabled in the audio element)
+            playReminderSound();
+        }
+        
+        function completeReminder() {
+            const reminderId = document.getElementById('currentReminderId').value;
+            
+            // Stop the sound first to provide immediate feedback
+            stopReminderSound();
+            
+            fetch(`/user/api/reminders/${reminderId}/complete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeNotificationModal();
+                } else {
+                    alert('Error: ' + data.message);
+                    // Restart sound if there was an error
+                    playReminderSound();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to update reminder. Please try again.');
+                // Restart sound if there was an error
+                playReminderSound();
+            });
+        }
+        
+        function showSnoozeOptions() {
+            // Don't stop the sound, continue playing while choosing snooze options
+            document.getElementById('snoozeOptions').classList.remove('hidden');
+        }
+        
+        function snoozeReminder(minutes) {
+            const reminderId = document.getElementById('currentReminderId').value;
+            
+            // Stop the sound first to provide immediate feedback
+            stopReminderSound();
+            
+            fetch(`/user/api/reminders/${reminderId}/snooze/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    snooze_minutes: minutes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeNotificationModal();
+                } else {
+                    alert('Error: ' + data.message);
+                    // Restart sound if there was an error
+                    playReminderSound();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to snooze reminder. Please try again.');
+                // Restart sound if there was an error
+                playReminderSound();
+            });
+        }
+        
+        function snoozeReminderCustom() {
+            const reminderId = document.getElementById('currentReminderId').value;
+            const customTime = document.getElementById('customSnoozeTime').value;
+            
+            if (!customTime) {
+                alert('Please select a custom time');
+                return;
+            }
+            
+            // Stop the sound first to provide immediate feedback
+            stopReminderSound();
+            
+            console.log('Custom snooze time selected:', customTime);
+            
+            // Add timezone information
+            // Get the client's timezone offset in minutes
+            const timezoneOffsetMinutes = new Date().getTimezoneOffset();
+            // Convert offset to hours and minutes format (e.g., "+05:30" or "-08:00")
+            const offsetHours = Math.floor(Math.abs(timezoneOffsetMinutes) / 60);
+            const offsetMinutes = Math.abs(timezoneOffsetMinutes) % 60;
+            const offsetSign = timezoneOffsetMinutes <= 0 ? '+' : '-'; // Note: getTimezoneOffset returns negative for positive timezone
+            const timezoneOffset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
+            console.log('User timezone offset:', timezoneOffset);
+            
+            // Get the user's timezone name if available
+            let userTimezoneName = '';
+            try {
+                userTimezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                console.log('User timezone:', userTimezoneName);
+            } catch (e) {
+                console.error("Cannot get timezone name:", e);
+            }
+            
+            // Add timezone information to the datetime string
+            const customTimeWithTZ = `${customTime}${timezoneOffset}`;
+            console.log('Custom snooze time with timezone:', customTimeWithTZ);
+            
+            // For verification, show what this time would be displayed as
+            const testDate = new Date(customTime);
+            console.log('This time will be displayed as:', testDate.toLocaleString());
+            
+            fetch(`/user/api/reminders/${reminderId}/snooze/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    snooze_datetime: customTimeWithTZ,
+                    timezone_name: userTimezoneName
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    closeNotificationModal();
+                } else {
+                    alert('Error: ' + data.message);
+                    // Restart sound if there was an error
+                    playReminderSound();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to snooze reminder. Please try again.');
+                // Restart sound if there was an error
+                playReminderSound();
+            });
+        }
+        
+        function closeNotificationModal() {
+            // Stop the sound
+            stopReminderSound();
+            
+            // Remove the flashing effect
+            const notificationModal = document.getElementById('reminderNotificationModal');
+            const modalContent = notificationModal.querySelector('.bg-white');
+            if (modalContent) {
+                modalContent.classList.remove('reminder-flashing');
+            }
+            
+            // Hide the modal
+            notificationModal.classList.add('hidden');
+        }
+        
+        // Sound Functions
+        function playReminderSound() {
+            const sound = document.getElementById('reminderSound');
+            if (sound) {
+                // Make sure volume is at a good level
+                sound.volume = 0.7;
+                sound.currentTime = 0;
+                
+                // We're using the loop attribute, so playing once will continue
+                // until stopReminderSound is called
+                sound.play().catch(err => {
+                    console.error('Error playing sound:', err);
+                    // Many browsers require user interaction before audio can play
+                    // In that case, we'll try to play without loop as a fallback
+                    sound.loop = false;
+                    sound.play().catch(e => console.error('Could not play sound even without loop:', e));
+                });
+            }
+        }
+        
+        function stopReminderSound() {
+            const sound = document.getElementById('reminderSound');
+            if (sound) {
+                sound.pause();
+                sound.currentTime = 0;
+                // Ensure loop is turned back on for next time
+                sound.loop = true;
+            }
+        }
+        
+        // Helper function to get CSRF token
+        function getCsrfToken() {
+            const cookieValue = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                ?.split('=')[1];
+                
+            return cookieValue || '';
+        }
+        
+        // Add a better way to get the CSRF token
+        function getCSRFToken() {
+            // Try to get it from a meta tag first (most reliable)
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrfToken) {
+                return csrfToken;
+            }
+            
+            // Or try to get it from the cookie
+            return getCsrfToken();
+        }
+        
+        // Check for due reminders periodically
+        function checkDueReminders() {
+            fetch('/user/api/reminders/check/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.has_due_reminders) {
+                    // Show notification for the first due reminder
+                    showReminderNotification(data.due_reminders[0]);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking reminders:', error);
+            });
+        }
+        
+        // Set up reminder checking interval (every minute)
+        document.addEventListener('DOMContentLoaded', function() {
+            setInterval(checkDueReminders, 60000);
+            
+            // Also check on page load after a few seconds
+            setTimeout(checkDueReminders, 5000);
+        });
+
+        // Reminder Creation
+        document.addEventListener('DOMContentLoaded', function() {
+            const reminderForm = document.getElementById('reminderForm');
+            if (reminderForm) {
+                reminderForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const title = document.getElementById('reminderTitle').value;
+                    const description = document.getElementById('reminderDescription').value;
+                    const date = document.getElementById('reminderDate').value;
+                    const time = document.getElementById('reminderTime').value;
+                    
+                    if (!title || !date || !time) {
+                        alert('Please fill in all required fields');
+                        return;
+                    }
+                    
+                    // Create a local Date object in the user's timezone
+                    const localDateTime = new Date(`${date}T${time}`);
+                    console.log('User selected time (local):', localDateTime.toLocaleString());
+                    
+                    // Get the user's timezone information
+                    let userTimezoneName = '';
+                    try {
+                        userTimezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    } catch (e) {
+                        console.error("Cannot get timezone name:", e);
+                    }
+                    
+                    // Get timezone offset in standard format
+                    const timezoneOffsetMinutes = localDateTime.getTimezoneOffset();
+                    const offsetHours = Math.floor(Math.abs(timezoneOffsetMinutes) / 60);
+                    const offsetMinutes = Math.abs(timezoneOffsetMinutes) % 60;
+                    const offsetSign = timezoneOffsetMinutes <= 0 ? '+' : '-';
+                    const timezoneOffset = `${offsetSign}${offsetHours.toString().padStart(2, '0')}:${offsetMinutes.toString().padStart(2, '0')}`;
+                    
+                    console.log('User timezone:', userTimezoneName);
+                    console.log('User timezone offset:', timezoneOffset);
+                    
+                    // Format the datetime string with timezone info
+                    // This is the EXACT time in the user's local timezone
+                    const isoDateTimeStr = localDateTime.toISOString();
+                    const dateTimeWithTZ = `${date}T${time}${timezoneOffset}`;
+                    
+                    console.log('ISO format (converted to UTC):', isoDateTimeStr);
+                    console.log('Local time with explicit offset:', dateTimeWithTZ);
+                    
+                    // We'll send the datetime with explicit timezone offset to ensure
+                    // the server preserves the exact time the user selected
+                    
+                    // Get CSRF token
+                    const csrfToken = getCSRFToken();
+                    console.log('CSRF Token:', csrfToken ? 'Found' : 'Not found');
+                    
+                    // Prepare data
+                    const reminderData = {
+                        title: title,
+                        description: description,
+                        reminder_time: dateTimeWithTZ, // Use the timezone-aware format
+                        timezone_name: userTimezoneName // Include the timezone name for reference
+                    };
+                    console.log('Creating reminder with data:', reminderData);
+                    
+                    // Send the data to the server
+                    fetch('/user/api/reminders/create/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify(reminderData),
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            // Reset form
+                            document.getElementById('reminderForm').reset();
+                            
+                            // Show success message
+                            alert('Reminder created successfully!');
+                            
+                            // If the view reminders section is visible, refresh the list
+                            if (!document.getElementById('viewReminders').classList.contains('hidden')) {
+                                loadReminders();
+                            }
+                            
+                            // Return to options
+                            backToOptions();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error creating reminder:', error);
+                        alert('Failed to create reminder. Please try again. Error: ' + error.message);
+                    });
+                });
+            }
+        });
+    </script>
+
+    <!-- Quick Notes Modal -->
+    <div id="quickNotesModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="closeQuickNotesModal()"></div>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 relative z-10 overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-[#7B3DF3] py-3 px-5 flex justify-between items-center">
+                <h3 class="text-white text-base font-bold" id="quickNotesModalTitle">Quick Notes</h3>
+                <button onclick="closeQuickNotesModal()" class="text-white hover:text-gray-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Options -->
+            <div id="quickNotesOptions" class="p-5 space-y-3">
+                <button onclick="showCreateNoteForm()" class="w-full bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create Note
+                </button>
+                <button onclick="showViewNotes()" class="w-full border border-[#7B3DF3] hover:bg-[#F0EFFF] text-[#7B3DF3] font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center gap-2 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View Notes
+                </button>
+            </div>
+            
+            <!-- Create Note Form (Hidden Initially) -->
+            <div id="createNoteForm" class="p-5 hidden">
+                <form id="noteForm" class="space-y-4">
+                    <div>
+                        <label for="noteTitle" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input type="text" id="noteTitle" name="title" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-sm">
+                    </div>
+                    <div>
+                        <label for="noteDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="noteDescription" name="description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-sm"></textarea>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="pinNote" name="pinned" class="h-4 w-4 text-[#7B3DF3] focus:ring-[#7B3DF3] border-gray-300 rounded">
+                        <label for="pinNote" class="ml-2 block text-sm text-gray-700">Pin this note</label>
+                    </div>
+                    <div class="flex space-x-3 pt-2">
+                        <button type="button" onclick="backToNotesOptions()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Back
+                        </button>
+                        <button type="submit" class="flex-1 bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- View Notes List (Hidden Initially) -->
+            <div id="viewNotes" class="hidden">
+                <div class="p-4">
+                    <div class="mb-3 flex justify-between items-center">
+                        <h3 class="text-sm font-medium text-gray-700">Your Notes</h3>
+                        <span class="text-xs text-gray-500">Sorted by newest first</span>
+                    </div>
+                    <div id="notesContainer" class="max-h-[50vh] overflow-y-auto pb-2">
+                        <!-- Loading/no notes message container -->
+                        <div id="noNotesMessage" class="text-center text-gray-500 py-4">
+                            <div class="flex justify-center items-center py-4">
+                                <svg class="animate-spin h-6 w-6 text-[#7B3DF3]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-center">Loading notes...</p>
+                        </div>
+                        
+                        <!-- Notes list container -->
+                        <div id="notesList" class="space-y-3 hidden"></div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 border-t">
+                    <button type="button" onclick="backToNotesOptions()" class="w-full bg-[#7B3DF3] hover:bg-[#6931D3] text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                        Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pinned Notes Container (Fixed to the right side) -->
+    <div id="pinnedNotesContainer" class="fixed right-4 top-1/4 z-40 space-y-2 w-12 flex flex-col items-center">
+        <!-- Pinned notes will be added here dynamically -->
+    </div>
+
+    <!-- Quick Notes JavaScript -->
+    <script>
+        // Notes Modal Functions
+        function openQuickNotesModal() {
+            document.getElementById('quickNotesModal').classList.remove('hidden');
+            document.getElementById('quickNotesOptions').classList.remove('hidden');
+            document.getElementById('createNoteForm').classList.add('hidden');
+            document.getElementById('viewNotes').classList.add('hidden');
+        }
+        
+        function closeQuickNotesModal() {
+            document.getElementById('quickNotesModal').classList.add('hidden');
+            
+            // Reset internal state
+            document.getElementById('quickNotesOptions').classList.remove('hidden');
+            document.getElementById('createNoteForm').classList.add('hidden');
+            document.getElementById('viewNotes').classList.add('hidden');
+        }
+        
+        function showCreateNoteForm() {
+            document.getElementById('quickNotesOptions').classList.add('hidden');
+            document.getElementById('createNoteForm').classList.remove('hidden');
+            
+            // Reset form
+            document.getElementById('noteForm').reset();
+        }
+        
+        function backToNotesOptions() {
+            document.getElementById('quickNotesOptions').classList.remove('hidden');
+            document.getElementById('createNoteForm').classList.add('hidden');
+            document.getElementById('viewNotes').classList.add('hidden');
+        }
+        
+        function showViewNotes() {
+            document.getElementById('quickNotesOptions').classList.add('hidden');
+            document.getElementById('viewNotes').classList.remove('hidden');
+            
+            // Load notes
+            loadNotes();
+        }
+        
+        // Variables to store notes
+        let notes = [];
+        let isLoadingNotes = false;
+        
+        // Helper function to get CSRF token
+        function getQuickNotesCsrfToken() {
+            const cookieValue = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                ?.split('=')[1];
+                
+            return cookieValue || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        }
+        
+        // Load Notes from API
+        function loadNotes() {
+            if (isLoadingNotes) return;
+            
+            isLoadingNotes = true;
+            
+            const notesList = document.getElementById('notesList');
+            const noNotesMessage = document.getElementById('noNotesMessage');
+            
+            // Clear previous content and show loading
+            notesList.innerHTML = '';
+            notesList.classList.add('hidden');
+            noNotesMessage.classList.remove('hidden');
+            noNotesMessage.innerHTML = `
+                <div class="flex justify-center items-center py-4">
+                    <svg class="animate-spin h-6 w-6 text-[#7B3DF3]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <p class="text-sm text-center">Loading notes...</p>
+            `;
+            
+            // Fetch notes from API
+            fetch('/user/api/quick-notes/list/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    isLoadingNotes = false;
+                    
+                    if (data.success) {
+                        notes = data.notes || [];
+                        
+                        if (notes.length === 0) {
+                            // No notes case
+                            noNotesMessage.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                <p class="text-sm">No notes found. Create one to get started!</p>
+                            `;
+                            noNotesMessage.classList.remove('hidden');
+                            notesList.classList.add('hidden');
+                        } else {
+                            // We have notes
+                            noNotesMessage.classList.add('hidden');
+                            notesList.classList.remove('hidden');
+                            
+                            // Display each note
+                            notes.forEach((note, index) => {
+                                const noteElement = document.createElement('div');
+                                noteElement.className = 'bg-white p-3 rounded-lg border border-gray-200 shadow-sm text-sm';
+                                
+                                // Format date
+                                const createdDate = new Date(note.created_at);
+                                const formattedDate = createdDate.toLocaleDateString();
+                                
+                                noteElement.innerHTML = `
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1 pr-3">
+                                            <h4 class="font-semibold text-gray-900">${note.title}</h4>
+                                            <p class="text-xs text-gray-600 mt-1">${note.description || 'No description'}</p>
+                                            <p class="text-[10px] text-gray-400 mt-1">Created on ${formattedDate}</p>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="toggleNotePin('${note.id}')" class="text-${note.pinned ? '[#7B3DF3]' : 'gray-400'} hover:text-[#7B3DF3] transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="${note.pinned ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                                </svg>
+                                            </button>
+                                            <button onclick="deleteNote('${note.id}')" class="text-red-400 hover:text-red-600 transition-colors">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                notesList.appendChild(noteElement);
+                            });
+                        }
+                    } else {
+                        console.error('API returned error:', data.message);
+                        noNotesMessage.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <p class="text-sm text-red-600">Error loading notes: ${data.message}</p>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    isLoadingNotes = false;
+                    console.error('Error:', error);
+                    
+                    noNotesMessage.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <p class="text-sm text-red-600">Failed to load notes. Please try again.</p>
+                    `;
+                });
+        }
+        
+        // Create a new note via API
+        function createNote(title, description, pinned = false) {
+            const noteData = {
+                title,
+                description,
+                pinned
+            };
+            
+            fetch('/user/api/quick-notes/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getQuickNotesCsrfToken()
+                },
+                body: JSON.stringify(noteData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // If the note is pinned, add it to the pinned notes container
+                    if (pinned) {
+                        addPinnedNoteToUI(data.note);
+                    }
+                    
+                    // Show success message
+                    alert('Note created successfully!');
+                    
+                    // Go back to options
+                    backToNotesOptions();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating note:', error);
+                alert('Failed to create note. Please try again.');
+            });
+        }
+        
+        // Toggle pin status via API
+        function toggleNotePin(noteId) {
+            fetch(`/user/api/quick-notes/${noteId}/toggle-pin/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getQuickNotesCsrfToken()
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Find the note in our array
+                    const noteIndex = notes.findIndex(n => n.id === noteId);
+                    if (noteIndex !== -1) {
+                        // Update the pinned status
+                        notes[noteIndex].pinned = data.is_pinned;
+                        
+                        // Update the UI
+                        if (data.is_pinned) {
+                            addPinnedNoteToUI(notes[noteIndex]);
+                        } else {
+                            removePinnedNoteFromUI(noteId);
+                        }
+                        
+                        // Refresh the notes list if visible
+                        if (!document.getElementById('viewNotes').classList.contains('hidden')) {
+                            loadNotes();
+                        }
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling pin:', error);
+                alert('Failed to update note. Please try again.');
+            });
+        }
+        
+        // Delete a note via API
+        function deleteNote(noteId) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                fetch(`/user/api/quick-notes/${noteId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getQuickNotesCsrfToken()
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Find the note in our array
+                        const noteIndex = notes.findIndex(n => n.id === noteId);
+                        if (noteIndex !== -1) {
+                            const wasPinned = notes[noteIndex].pinned;
+                            
+                            // Remove from array
+                            notes.splice(noteIndex, 1);
+                            
+                            // If the note was pinned, remove it from the pinned container
+                            if (wasPinned) {
+                                removePinnedNoteFromUI(noteId);
+                            }
+                            
+                            // Refresh the notes list
+                            loadNotes();
+                        }
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting note:', error);
+                    alert('Failed to delete note. Please try again.');
+                });
+            }
+        }
+        
+        // Add a pinned note to the UI
+        function addPinnedNoteToUI(note) {
+            const pinnedContainer = document.getElementById('pinnedNotesContainer');
+            
+            // Remove existing note if it's already pinned (to avoid duplicates)
+            removePinnedNoteFromUI(note.id);
+            
+            // Create the pinned note element
+            const pinnedNote = document.createElement('div');
+            pinnedNote.id = `pinned-note-${note.id}`;
+            pinnedNote.className = 'bg-white rounded-full shadow-lg w-10 h-10 flex items-center justify-center cursor-pointer transform hover:scale-110 transition-transform duration-200 relative group';
+            pinnedNote.setAttribute('data-note-id', note.id);
+            pinnedNote.setAttribute('title', note.title);
+            
+            // Add note content
+            pinnedNote.innerHTML = `
+                <div class="absolute opacity-0 group-hover:opacity-100 bottom-full right-0 mb-2 w-48 bg-white rounded-md shadow-lg p-2 transform transition-opacity duration-200 text-left z-50 border border-gray-200">
+                    <h4 class="font-semibold text-gray-900 text-sm">${note.title}</h4>
+                    <p class="text-xs text-gray-600 mt-1 line-clamp-3">${note.description || 'No description'}</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#7B3DF3]" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+            `;
+            
+            // Add click handler to unpin
+            pinnedNote.addEventListener('click', function() {
+                toggleNotePin(note.id);
+            });
+            
+            // Add to the container
+            pinnedContainer.appendChild(pinnedNote);
+        }
+        
+        // Remove a pinned note from the UI
+        function removePinnedNoteFromUI(noteId) {
+            const pinnedNote = document.getElementById(`pinned-note-${noteId}`);
+            if (pinnedNote) {
+                pinnedNote.remove();
+            }
+        }
+        
+        // Load pinned notes on page load
+        function loadPinnedNotes() {
+            fetch('/user/api/quick-notes/list/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        notes = data.notes || [];
+                        
+                        // Add all pinned notes to the UI
+                        notes.filter(note => note.pinned).forEach(note => {
+                            addPinnedNoteToUI(note);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading pinned notes:', error);
+                });
+        }
+        
+        // Initialize everything when the document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup note form submission
+            const noteForm = document.getElementById('noteForm');
+            if (noteForm) {
+                noteForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const title = document.getElementById('noteTitle').value.trim();
+                    const description = document.getElementById('noteDescription').value.trim();
+                    const pinned = document.getElementById('pinNote').checked;
+                    
+                    if (!title) {
+                        alert('Please enter a title for your note');
+                        return;
+                    }
+                    
+                    // Create the note
+                    createNote(title, description, pinned);
+                });
+            }
+            
+            // Load pinned notes
+            loadPinnedNotes();
+            
+            // Add click handler to the Quick Notes button in the grid
+            const quickNotesButton = document.querySelector('.grid-cols-3 .group:nth-child(5)');
+            if (quickNotesButton) {
+                quickNotesButton.addEventListener('click', openQuickNotesModal);
+            }
+        });
     </script>
 </body>
 </html>

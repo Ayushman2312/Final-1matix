@@ -1,0 +1,113 @@
+2025-05-25 16:51:24,939 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_165124_task_20.log
+2025-05-25 16:51:24,940 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 16:51:24,942 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 16:51:24,968 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 16:51:26,818 - ContactScraper - INFO - Starting scrape for keyword: 'mobile tempered glass karol bagh' with strict 10-minute limit
+2025-05-25 16:51:26,831 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 16:51:26,831 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 16:51:26,831 - ContactScraper - INFO - Original keyword: 'mobile tempered glass karol bagh' | Optimized query: '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 16:51:26,832 - ContactScraper - INFO - Searching Google for '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 16:51:26,832 - ContactScraper - INFO - Simplified complex query: '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"mobile tempered glass karol bagh" contact email phone -'
+2025-05-25 16:51:26,832 - ContactScraper - INFO - Reduced exclusions in query: '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:51:26,832 - ContactScraper - INFO - Trying imported browser search function for '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:52:07,598 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 16:52:07,600 - ContactScraper - INFO - Extracting contacts from: https://www.karolbaghtemperedglass.com/uncategorized/wholesale-tempered-glass-and-mobile-accessories-updated-rate-jan-2025-best-prices-at-karol-bagh/
+2025-05-25 16:52:09,643 - ContactScraper - INFO - Direct request found 2 emails and 1 phones
+2025-05-25 16:52:09,643 - ContactScraper - INFO - Found 2 emails and 1 phones on www.karolbaghtemperedglass.com
+2025-05-25 16:52:09,644 - ContactScraper - INFO - Extracting contacts from: https://gaffarwala.com/our-contacts/?srsltid=AfmBOorbU7vOjkRRdZvayJcj0KzugP8nTuaKofH2xn67TKojwpKjbDWS
+2025-05-25 16:52:11,478 - ContactScraper - INFO - Direct request found 3 emails and 3 phones
+2025-05-25 16:52:11,478 - ContactScraper - INFO - Found 3 emails and 3 phones on gaffarwala.com
+2025-05-25 16:52:11,479 - ContactScraper - INFO - Searching Google for '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 1)
+2025-05-25 16:52:11,479 - ContactScraper - INFO - Simplified complex query: '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"mobile tempered glass karol bagh" contact email phone -'
+2025-05-25 16:52:11,479 - ContactScraper - INFO - Reduced exclusions in query: '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:52:11,479 - ContactScraper - INFO - Trying imported browser search function for '"mobile tempered glass karol bagh" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:52:39,106 - ContactScraper - INFO - Imported browser search found 9 results
+2025-05-25 16:52:39,107 - ContactScraper - INFO - Extracting contacts from: https://www.buzzmeeh.com/contact-us
+2025-05-25 16:52:43,184 - ContactScraper - INFO - Direct request found 0 emails and 4 phones
+2025-05-25 16:52:43,184 - ContactScraper - INFO - Found 0 emails and 4 phones on www.buzzmeeh.com
+2025-05-25 16:52:43,184 - ContactScraper - INFO - Extracting contacts from: https://www.karolbaghtemperedglass.com/uncategorized/tempered-glass-wholesale-price-get-the-best-deals-in-karol-bagh/
+2025-05-25 16:52:45,872 - ContactScraper - INFO - Direct request found 5 emails and 1 phones
+2025-05-25 16:52:45,872 - ContactScraper - INFO - Found 5 emails and 1 phones on www.karolbaghtemperedglass.com
+2025-05-25 16:52:45,873 - ContactScraper - INFO - Extracting contacts from: https://www.temperedglasswholesale.com/products-and-services.html
+2025-05-25 16:52:47,864 - ContactScraper - INFO - Direct request found 0 emails and 1 phones
+2025-05-25 16:52:51,696 - ContactScraper - INFO - Found 0 emails and 1 phones on www.temperedglasswholesale.com
+2025-05-25 16:52:51,698 - ContactScraper - INFO - Extracting contacts from: https://www.temperedwala.in/contact/
+2025-05-25 16:52:51,979 - ContactScraper - WARNING - Connection error requesting https://www.temperedwala.in/contact/
+2025-05-25 16:52:51,995 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.temperedwala.in', port=443): Max retries exceeded with url: /contact/ (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x000001E387A3B970>: Failed to resolve 'www.temperedwala.in' ([Errno 11001] getaddrinfo failed)"))
+2025-05-25 16:52:51,996 - ContactScraper - WARNING - Error fetching contact page https://www.temperedwala.in/contact: HTTPSConnectionPool(host='www.temperedwala.in', port=443): Max retries exceeded with url: /contact (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x000001E387A3AF80>: Failed to resolve 'www.temperedwala.in' ([Errno 11001] getaddrinfo failed)"))
+2025-05-25 16:52:52,007 - ContactScraper - WARNING - Error fetching contact page https://www.temperedwala.in/contact-us: HTTPSConnectionPool(host='www.temperedwala.in', port=443): Max retries exceeded with url: /contact-us (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x000001E387A3B130>: Failed to resolve 'www.temperedwala.in' ([Errno 11001] getaddrinfo failed)"))
+2025-05-25 16:52:52,008 - ContactScraper - INFO - Found 0 emails and 0 phones on www.temperedwala.in
+2025-05-25 16:52:52,008 - ContactScraper - INFO - Extracting contacts from: https://www.buzzmeeh.com/mobile-repair-in-delhi
+2025-05-25 16:52:56,212 - ContactScraper - INFO - Direct request found 8 emails and 4 phones
+2025-05-25 16:52:56,212 - ContactScraper - INFO - Found 8 emails and 4 phones on www.buzzmeeh.com
+2025-05-25 16:52:56,212 - ContactScraper - INFO - Extracting contacts from: https://akinfo.in/blogs/how-to-remove-or-replace-phone-glass-screen-protector.php
+2025-05-25 16:52:57,568 - ContactScraper - INFO - Direct request found 8 emails and 3 phones
+2025-05-25 16:52:57,568 - ContactScraper - INFO - Found 8 emails and 3 phones on akinfo.in
+2025-05-25 16:52:57,568 - ContactScraper - INFO - Extracting contacts from: https://www.dial4trade.com/vn-enterprises-2015809/full-glass-mobile-tempered-glass-pdid-9108186.htm
+2025-05-25 16:53:39,383 - ContactScraper - INFO - Direct request found 0 emails and 3 phones
+2025-05-25 16:53:39,383 - ContactScraper - INFO - Found 0 emails and 3 phones on www.dial4trade.com
+2025-05-25 16:53:39,383 - ContactScraper - INFO - Searching Google for '"mobile tempered glass karol bagh" contact' (page 0)
+2025-05-25 16:53:39,383 - ContactScraper - INFO - Trying imported browser search function for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:54:38,851 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 16:54:38,851 - ContactScraper - INFO - Extracting contacts from: https://magicpin.in/New-Delhi/Karol-Bagh/Electronics/Tempered-Glass/store/71ac5c/?srsltid=AfmBOop337JduMM0Ex9T0mq-4IXt9wzxcFfmSE94rIZABKYzxlN72_Bo
+2025-05-25 16:54:39,756 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 16:54:40,501 - ContactScraper - INFO - Found 1 emails and 0 phones on magicpin.in
+2025-05-25 16:54:40,502 - ContactScraper - INFO - Extracting contacts from: https://www.yellopages.in/mobile-and-mobile-accessories/shree-hari-traders/5073/Details
+2025-05-25 16:54:41,928 - ContactScraper - INFO - Direct request found 0 emails and 5 phones
+2025-05-25 16:54:41,928 - ContactScraper - INFO - Found 0 emails and 5 phones on www.yellopages.in
+2025-05-25 16:54:41,929 - ContactScraper - INFO - Extracting contacts from: https://magicpin.in/india/New-Delhi/Karol-Bagh/Electronics/Tempered-Glass/?srsltid=AfmBOooobnv6-pNjPzuP3xky6GMCoYyM5vVb1T9cMhdj_vXaH7lcIiue
+2025-05-25 16:54:42,804 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 16:54:43,798 - ContactScraper - INFO - Found 1 emails and 0 phones on magicpin.in
+2025-05-25 16:54:43,798 - ContactScraper - INFO - Extracting contacts from: https://gkartaccessories.in/
+2025-05-25 16:55:39,788 - ContactScraper - INFO - Direct request found 1 emails and 1 phones
+2025-05-25 16:55:42,172 - ContactScraper - INFO - Found 1 emails and 1 phones on gkartaccessories.in
+2025-05-25 16:55:42,177 - ContactScraper - INFO - Extracting contacts from: https://nextgenmobiles.in/collections/nextgen-mobile-tempered-glass?srsltid=AfmBOop9IDQy3h6GYThCTkyW3hhHV9yQSSDYdtuZRPIVTQbjXrBX9vvb
+2025-05-25 16:55:43,286 - ContactScraper - INFO - Direct request found 0 emails and 3 phones
+2025-05-25 16:55:43,286 - ContactScraper - INFO - Found 0 emails and 3 phones on nextgenmobiles.in
+2025-05-25 16:55:43,286 - ContactScraper - INFO - Extracting contacts from: https://greatchoice.co.in/tempered-glass/
+2025-05-25 16:55:43,969 - ContactScraper - INFO - Direct request found 5 emails and 6 phones
+2025-05-25 16:55:43,969 - ContactScraper - INFO - Found 5 emails and 6 phones on greatchoice.co.in
+2025-05-25 16:55:43,969 - ContactScraper - INFO - Extracting contacts from: https://www.chargermanufacturer.in/mobile-tempered-glass.html
+2025-05-25 16:55:46,145 - ContactScraper - INFO - Direct request found 0 emails and 5 phones
+2025-05-25 16:55:46,145 - ContactScraper - INFO - Found 0 emails and 5 phones on www.chargermanufacturer.in
+2025-05-25 16:55:46,145 - ContactScraper - INFO - Extracting contacts from: https://greatchoice.co.in/super-x-tempered-glass/
+2025-05-25 16:55:46,682 - ContactScraper - INFO - Direct request found 6 emails and 6 phones
+2025-05-25 16:55:46,683 - ContactScraper - INFO - Found 6 emails and 6 phones on greatchoice.co.in
+2025-05-25 16:55:46,684 - ContactScraper - INFO - Extracting contacts from: https://www.yellopages.in/mobile-and-mobile-accessories/apollo-plus-mobile-accessories/5065/Details
+2025-05-25 16:55:47,650 - ContactScraper - INFO - Direct request found 0 emails and 4 phones
+2025-05-25 16:55:47,650 - ContactScraper - INFO - Found 0 emails and 4 phones on www.yellopages.in
+2025-05-25 16:55:47,650 - ContactScraper - INFO - Searching Google for '"mobile tempered glass karol bagh" contact' (page 0)
+2025-05-25 16:55:47,650 - ContactScraper - INFO - Trying imported browser search function for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:56:39,659 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 16:56:39,659 - ContactScraper - INFO - Extracting contacts from: https://magicpin.in/New-Delhi/Karol-Bagh/Electronics/Tempered-Glass/store/71ac5c/?srsltid=AfmBOoq2UgN_W0wb7vOySDoRA1c2uqpKKrkufV4WVk5A7CWibl9xaCne
+2025-05-25 16:56:40,308 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 16:56:40,971 - ContactScraper - INFO - Found 1 emails and 0 phones on magicpin.in
+2025-05-25 16:56:40,973 - ContactScraper - INFO - Extracting contacts from: https://magicpin.in/india/New-Delhi/Karol-Bagh/Electronics/Tempered-Glass/?srsltid=AfmBOoobnVonBPimJrNUpi7Sz4meAjmieqU-9789uSRo-JyyRBmFTI0Y
+2025-05-25 16:56:41,774 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-25 16:56:44,973 - ContactScraper - INFO - Found 1 emails and 0 phones on magicpin.in
+2025-05-25 16:56:44,974 - ContactScraper - INFO - Extracting contacts from: https://nextgenmobiles.in/collections/nextgen-mobile-tempered-glass?srsltid=AfmBOoqOWEGP8CZFH7oT8ciDUVr9wOiX2x9FoER13oCox3Wt7nKqkHgy
+2025-05-25 16:56:45,331 - ContactScraper - INFO - Direct request found 0 emails and 3 phones
+2025-05-25 16:56:45,332 - ContactScraper - INFO - Found 0 emails and 3 phones on nextgenmobiles.in
+2025-05-25 16:56:45,333 - ContactScraper - INFO - Searching Google for '"mobile tempered glass karol bagh" contact' (page 0)
+2025-05-25 16:56:45,333 - ContactScraper - INFO - Trying imported browser search function for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,486 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,486 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-25 16:58:41,486 - ContactScraper - INFO - Trying direct search as last resort for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,486 - ContactScraper - INFO - Performing direct search for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,486 - ContactScraper - INFO - Direct search found 0 URLs for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,487 - ContactScraper - WARNING - All search methods failed for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,487 - ContactScraper - INFO - Performing direct search for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,487 - ContactScraper - INFO - Direct search found 0 URLs for '"mobile tempered glass karol bagh" contact'
+2025-05-25 16:58:41,487 - ContactScraper - INFO - Searching Google for '"mobile tempered glass karol bagh" contact' (page 0)
+2025-05-25 16:58:41,487 - ContactScraper - INFO - Trying imported browser search function for '"mobile tempered glass karol bagh" contact'
+2025-05-25 17:01:33,375 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"mobile tempered glass karol bagh" contact'
+2025-05-25 17:01:33,375 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-25 17:01:33,375 - ContactScraper - INFO - Trying direct search as last resort for '"mobile tempered glass karol bagh" contact'
+2025-05-25 17:01:33,375 - ContactScraper - INFO - Performing direct search for '"mobile tempered glass karol bagh" contact'
+2025-05-25 17:01:33,375 - ContactScraper - INFO - Direct search found 0 URLs for '"mobile tempered glass karol bagh" contact'
+2025-05-25 17:01:33,375 - ContactScraper - WARNING - All search methods failed for '"mobile tempered glass karol bagh" contact'
+2025-05-25 17:01:33,375 - ContactScraper - INFO - Performing direct search for 'mobile tempered glass karol bagh'
+2025-05-25 17:01:33,375 - ContactScraper - INFO - Direct search found 0 URLs for 'mobile tempered glass karol bagh'
+2025-05-25 17:01:33,378 - ContactScraper - INFO - Results saved to scraped_data\contacts_mobile tempered glass karol bagh_20250525_170133.csv
+2025-05-25 17:01:33,380 - ContactScraper - INFO - Detailed results saved to scraped_data\detailed_mobile tempered glass karol bagh_20250525_170133.csv
+2025-05-25 17:01:33,380 - ContactScraper - INFO - Scraping completed: found 35 emails and 40 phones

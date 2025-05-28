@@ -17,4 +17,17 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('debug-session/', DebugSessionView.as_view(), name='debug_session'),
     path('logout/', Logout, name='logout'),
+    
+    # Reminder URLs
+    path('api/reminders/create/', CreateReminderView.as_view(), name='create_reminder'),
+    path('api/reminders/list/', ListRemindersView.as_view(), name='list_reminders'),
+    path('api/reminders/check/', CheckDueRemindersView.as_view(), name='check_reminders'),
+    path('api/reminders/<uuid:reminder_id>/complete/', CompleteReminderView.as_view(), name='complete_reminder'),
+    path('api/reminders/<uuid:reminder_id>/snooze/', SnoozeReminderView.as_view(), name='snooze_reminder'),
+    
+    # Quick Notes URLs
+    path('api/quick-notes/create/', CreateQuickNoteView.as_view(), name='create_quick_note'),
+    path('api/quick-notes/list/', ListQuickNotesView.as_view(), name='list_quick_notes'),
+    path('api/quick-notes/<uuid:note_id>/toggle-pin/', ToggleQuickNotePinView.as_view(), name='toggle_note_pin'),
+    path('api/quick-notes/<uuid:note_id>/delete/', DeleteQuickNoteView.as_view(), name='delete_quick_note'),
 ]

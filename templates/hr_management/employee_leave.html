@@ -1,0 +1,370 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">Leave Management</h1>
+        <p class="text-gray-600">Apply for leave and view your leave history</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Leave Balance Card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Leave Balance</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                            <span class="text-sm text-gray-700">Casual Leave</span>
+                        </div>
+                        <span class="text-sm font-medium">{{ leave_balance.casual }}/{{ leave_policy.casual }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                            <span class="text-sm text-gray-700">Sick Leave</span>
+                        </div>
+                        <span class="text-sm font-medium">{{ leave_balance.sick }}/{{ leave_policy.sick }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                            <span class="text-sm text-gray-700">Annual Leave</span>
+                        </div>
+                        <span class="text-sm font-medium">{{ leave_balance.annual }}/{{ leave_policy.annual }}</span>
+                    </div>
+                    
+                    <div class="pt-2 border-t border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-700">Total Available</span>
+                            <span class="text-sm font-bold text-gray-800">{{ leave_balance.total }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Apply for Leave Form -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Apply for Leave</h2>
+                <form id="leaveApplicationForm" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label for="leaveType" class="block text-sm font-medium text-gray-700 mb-1">Leave Type</label>
+                        <select id="leaveType" name="leave_type" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">Select leave type</option>
+                            {% for key, value in leave_types.items %}
+                                <option value="{{ key }}">{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input type="date" id="startDate" name="start_date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input type="date" id="endDate" name="end_date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    
+                    <div>
+                        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                        <textarea id="reason" name="reason" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="document" class="block text-sm font-medium text-gray-700 mb-1">Supporting Document (Optional)</label>
+                        <input type="file" id="document" name="document" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Upload a medical certificate or other supporting document (PDF, JPG, PNG)</p>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="w-full bg-[#7B3DF3] hover:bg-[#6935D3] text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7B3DF3]">
+                            Submit Leave Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Leave History -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Leave History</h2>
+                
+                {% if leave_applications %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Days</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied On</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for leave in leave_applications %}
+                            <tr>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ leave.get_leave_type_display }}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    {{ leave.start_date|date:"d M Y" }} - {{ leave.end_date|date:"d M Y" }}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    {{ leave.duration }}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    {% if leave.status == 'pending' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Pending
+                                    </span>
+                                    {% elif leave.status == 'approved' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Approved
+                                    </span>
+                                    {% elif leave.status == 'rejected' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Rejected
+                                    </span>
+                                    {% elif leave.status == 'cancelled' %}
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        Cancelled
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    {{ leave.created_at|date:"d M Y" }}
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                    <button 
+                                        class="text-blue-600 hover:text-blue-800 mr-2" 
+                                        onclick="viewLeaveDetails('{{ leave.leave_id }}')"
+                                        title="View Details"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                    
+                                    {% if leave.status == 'pending' %}
+                                    <button 
+                                        class="text-red-600 hover:text-red-800" 
+                                        onclick="cancelLeave('{{ leave.leave_id }}')"
+                                        title="Cancel Application"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-gray-500">No leave applications found</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const leaveForm = document.getElementById('leaveApplicationForm');
+        
+        if (leaveForm) {
+            leaveForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitLeaveApplication();
+            });
+        }
+        
+        // Set min date for leave inputs to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').setAttribute('min', today);
+        document.getElementById('endDate').setAttribute('min', today);
+        
+        // Set end date min value based on start date
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('endDate').setAttribute('min', this.value);
+            if (document.getElementById('endDate').value < this.value) {
+                document.getElementById('endDate').value = this.value;
+            }
+        });
+    });
+    
+    function submitLeaveApplication() {
+        const form = document.getElementById('leaveApplicationForm');
+        const formData = {
+            leave_type: form.querySelector('[name="leave_type"]').value,
+            start_date: form.querySelector('[name="start_date"]').value,
+            end_date: form.querySelector('[name="end_date"]').value,
+            reason: form.querySelector('[name="reason"]').value
+        };
+        
+        // Validate inputs
+        if (!formData.leave_type) {
+            showNotification('Please select a leave type', 'error');
+            return;
+        }
+        
+        if (!formData.start_date) {
+            showNotification('Please select a start date', 'error');
+            return;
+        }
+        
+        if (!formData.end_date) {
+            showNotification('Please select an end date', 'error');
+            return;
+        }
+        
+        if (!formData.reason) {
+            showNotification('Please provide a reason for your leave', 'error');
+            return;
+        }
+        
+        // Check if document is uploaded
+        const documentFile = form.querySelector('[name="document"]').files[0];
+        
+        if (documentFile) {
+            // Handle file upload separately
+            const fileFormData = new FormData();
+            fileFormData.append('document', documentFile);
+            // Additional fields can be added here
+        }
+        
+        // Submit API request
+        fetch('/hr_management/api/leave/apply/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Leave application submitted successfully', 'success');
+                // Reset form
+                form.reset();
+                // Reload page after 2 seconds to show updated list
+                setTimeout(function() {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                showNotification(data.message || 'Failed to submit leave application', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred. Please try again.', 'error');
+        });
+    }
+    
+    function viewLeaveDetails(leaveId) {
+        // Fetch leave details and show in modal
+        Swal.fire({
+            title: 'Leave Details',
+            html: '<div class="text-center py-4"><p class="text-gray-500">Loading details...</p></div>',
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: '32rem'
+        });
+        
+        // This would typically fetch details from the server
+        // For now, just show a placeholder
+        setTimeout(() => {
+            Swal.update({
+                html: `
+                    <div class="text-left px-4">
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-500">Leave Type</p>
+                            <p class="font-medium">Annual Leave</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-500">Duration</p>
+                            <p class="font-medium">5 days (Aug 15, 2023 - Aug 19, 2023)</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-500">Status</p>
+                            <p class="font-medium">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    Pending
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-500">Reason</p>
+                            <p class="font-medium">Family vacation</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-500">Applied On</p>
+                            <p class="font-medium">Aug 1, 2023</p>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: true,
+                confirmButtonText: 'Close',
+                confirmButtonColor: '#7B3DF3'
+            });
+        }, 1000);
+    }
+    
+    function cancelLeave(leaveId) {
+        Swal.fire({
+            title: 'Cancel Leave Application',
+            text: 'Are you sure you want to cancel this leave application?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, cancel it',
+            cancelButtonText: 'No, keep it',
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Handle leave cancellation
+                showNotification('Leave application cancelled successfully', 'success');
+                // Reload page after 2 seconds
+                setTimeout(function() {
+                    window.location.reload();
+                }, 2000);
+            }
+        });
+    }
+    
+    function showNotification(message, type = 'success') {
+        const bgColor = type === 'success' ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800';
+        
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-4 py-2 border-l-4 rounded shadow-md ${bgColor} transition-opacity duration-300`;
+        notification.style.zIndex = '9999';
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+</script>
+{% endblock %} 

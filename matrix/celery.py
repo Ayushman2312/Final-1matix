@@ -1,23 +1,22 @@
 """
+Celery configuration for 1matrix project.
+"""
 import os
-# from celery import Celery
+from celery import Celery
 
 # Set the default Django settings module
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'matrix.settings')
 
 # Create the Celery app
-# app = Celery('matrix')
+app = Celery('matrix')
 
 # Load config from Django settings, using a namespace to prevent clashes
-# app.config_from_object('django.conf:settings', namespace='CELERY')
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Auto-discover tasks in all installed apps
-# app.autodiscover_tasks()
+app.autodiscover_tasks()
 
 # Configure task routing
-"""
-
-"""
 app.conf.update(
     task_routes={
         # High priority queue for data mining tasks
@@ -34,10 +33,11 @@ app.conf.update(
     task_acks_late=True,  # Only acknowledge tasks after they are completed
     task_reject_on_worker_lost=True,  # Requeue tasks if worker dies
     worker_concurrency=2,  # Number of concurrent worker processes/threads
+    # Using SQLite for both broker and backend to avoid Redis connection issues
+    broker_url='sqla+sqlite:///celery-broker.sqlite',
+    result_backend='db+sqlite:///celery-results.sqlite',
 )
-"""
 
-"""
 @app.task(bind=True)
 def debug_task(self):
     '''Basic debugging task'''
@@ -46,20 +46,6 @@ def debug_task(self):
         'args': self.request.args,
         'kwargs': self.request.kwargs,
         'status': 'Debugging task executed successfully'
-    } 
-"""
+    }
 
-# Dummy app for imports that expect a Celery app
-# class DummyApp:
-#     def task(self, *args, **kwargs):
-#         def decorator(func):
-#             return func
-#         return decorator
-    
-#     def autodiscover_tasks(self, *args, **kwargs):
-#         pass
-    
-#     def config_from_object(self, *args, **kwargs):
-#         pass
-
-# app = DummyApp() 
+# Remove the dummy app code as we're using the real Celery app now 

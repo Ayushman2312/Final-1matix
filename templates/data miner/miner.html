@@ -23,7 +23,7 @@
     <div class="grid grid-cols-[1fr,1.2fr] gap-8">
         <!-- Search Form -->
         <div>
-            <form id="miningForm" class="space-y-6 w-full" method="POST" action="/data_miner/">
+            <form id="miningForm" class="space-y-6 w-full" method="POST" action="{% url 'data_miner' %}">
                 {% csrf_token %}
                 <!-- Search and Country Row -->
                 <div class="flex gap-4">
@@ -352,7 +352,7 @@
         const keyword = formData.get('keyword');
         const dataType = formData.get('data_type');
         const country = formData.get('country');
-        const runInBackground = formData.get('background') === 'true';
+        const runInBackground = document.querySelector('input[name="background"]').checked;
         
         // Validate
         if (!keyword || keyword.length < 3) {
@@ -368,42 +368,45 @@
         // Start timer and progress animation
         startTimer();
         
-        // Send request to server
-        fetch('/data_miner/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // If task_id is provided, start checking task status
-                if (data.task_id) {
-                    currentTaskId = data.task_id;
-                    // Store task ID in DataMinerTasks for persistence across page navigation
-                    if (typeof DataMinerTasks !== 'undefined') {
-                        DataMinerTasks.storeTask(data.task_id);
-                    } else if (typeof trackNewTask === 'function') {
-                        trackNewTask(data.task_id);
-                    }
-                    startTaskStatusCheck(data.task_id);
-                } else if (data.data) {
-                    // If data is provided directly (cached results), display it
-                    showResults(data);
+        // Submit form for background task
+        if (runInBackground) {
+            // Add CSRF token
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Start background task
+            fetch('{% url "data_miner" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Task started successfully
+                    const taskId = data.task_id;
+                    
+                    // Save task ID to localStorage
+                    storeTaskId(taskId);
+                    
+                    // Show success message and reload
+                    alert(`Background task started: ${data.message}`);
+                    window.location.reload();
                 } else {
-                    // In-process task, keep checking status
-                    inProcessStatusCheck();
+                    // Show error message
+                    showError(data.message || 'An error occurred');
                 }
-            } else {
-                showError(data.error || 'An error occurred');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError('An error occurred while communicating with the server');
-        });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('An error occurred while starting the task');
+            });
+        } else {
+            // Submit form normally for immediate results
+            this.submit();
+        }
     });
     
     function startTaskStatusCheck(taskId) {
@@ -548,277 +551,21 @@
                 `;
                 setTimeout(() => {
                     this.innerHTML = `
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
                         </svg>
-                        Copy All
                     `;
-                }, 2000);
+                }, 1000);
             });
         });
     }
     
-    function downloadResults(results, resultType) {
-        const keyword = document.getElementById('keyword').value;
-        const dataType = resultType === 'phones' ? 'phone' : 'email';
-        const country = document.getElementById('country').value;
-        
-        // Call API to get Excel file
-        fetch('/data_miner/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                results: results,
-                keyword: keyword,
-                data_type: dataType,
-                country: country
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (data.history_id) {
-                    // Direct download for authenticated users
-                    window.location.href = `/data_miner/download/${data.history_id}/`;
-                } else if (data.temp_file) {
-                    // Use form to download temp file for anonymous users
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = '/data_miner/';
-                    
-                    const csrfField = document.createElement('input');
-                    csrfField.type = 'hidden';
-                    csrfField.name = 'csrfmiddlewaretoken';
-                    csrfField.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                    
-                    const tempFileField = document.createElement('input');
-                    tempFileField.type = 'hidden';
-                    tempFileField.name = 'temp_file';
-                    tempFileField.value = data.temp_file;
-                    
-                    form.appendChild(csrfField);
-                    form.appendChild(tempFileField);
-                    document.body.appendChild(form);
-                    form.submit();
-                    document.body.removeChild(form);
-                }
-            } else {
-                alert(data.error || 'Error downloading results');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while downloading results');
+    // Cancel running task
+    document.querySelectorAll('.cancel-task-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            cancelTask(taskId);
         });
-    }
-    
-    function showError(message) {
-        // Hide loading and results
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('results').classList.add('hidden');
-        
-        // Show error message
-        const errorElement = document.getElementById('errorMessage');
-        errorElement.textContent = message;
-        errorElement.classList.remove('hidden');
-    }
-    
-    function cancelTask(taskId) {
-        if (!taskId) return;
-        
-        if (!confirm('Are you sure you want to stop this task?')) return;
-        
-        fetch(`/data_miner/api/cancel-task/${taskId}/`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Reload the page to refresh task list
-                window.location.reload();
-            } else {
-                alert(data.error || 'Error cancelling task');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while cancelling the task');
-        });
-    }
-    
-    // Handle task cancellation
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set up cancel buttons
-        document.querySelectorAll('.cancel-task-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const taskId = this.dataset.taskId;
-                cancelTask(taskId);
-            });
-        });
-        
-        // Update running task status
-        function updateRunningTasks() {
-            document.querySelectorAll('.task-item').forEach(taskItem => {
-                const taskId = taskItem.dataset.taskId;
-                
-                fetch(`/data_miner/api/task-status/${taskId}/`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Update progress
-                    const progress = data.progress || 0;
-                    const progressText = taskItem.querySelector('.task-progress-text');
-                    if (progressText) {
-                        progressText.textContent = `${progress}%`;
-                    }
-                    
-                    // Update progress circle
-                    const progressCircle = taskItem.querySelector('.task-progress-circle');
-                    if (progressCircle) {
-                        progressCircle.setAttribute('stroke-dasharray', `${progress * 1.005} 100`);
-                    }
-                    
-                    // Check if completed
-                    if (data.status === 'completed' || data.status === 'error' || data.status === 'cancelled') {
-                        // Show notification
-                        showTaskNotification({
-                            id: taskId,
-                            name: taskItem.querySelector('h3').textContent.trim(),
-                            status: data.status,
-                            historyId: data.history_id
-                        });
-                        
-                        // Reload to update UI
-                        window.location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error updating task status:', error);
-                });
-            });
-        }
-        
-        // Function to show desktop notification when task completes
-        function showTaskNotification(task) {
-            // Check if Notification API is supported
-            if (!("Notification" in window)) {
-                console.log("This browser does not support desktop notifications");
-                return;
-            }
-            
-            // Check if permission is already granted
-            if (Notification.permission === "granted") {
-                createNotification(task);
-            } 
-            // Otherwise, request permission
-            else if (Notification.permission !== "denied") {
-                Notification.requestPermission().then(function (permission) {
-                    if (permission === "granted") {
-                        createNotification(task);
-                    }
-                });
-            }
-        }
-        
-        // Create notification
-        function createNotification(task) {
-            const options = {
-                body: `Task "${task.name}" has ${task.status === 'completed' ? 'completed successfully' : 'finished with status: ' + task.status}`,
-                icon: '/static/img/logo-icon.png', // Path to an icon
-                tag: 'task-notification'
-            };
-            
-            const notification = new Notification("Data Mining Task Update", options);
-            
-            // Close the notification after 10 seconds
-            setTimeout(notification.close.bind(notification), 10000);
-            
-            // Add click handler
-            notification.onclick = function() {
-                window.focus();
-                notification.close();
-                if (task.status === 'completed' && task.historyId) {
-                    window.location.href = `/data_miner/download/${task.historyId}/`;
-                }
-            };
-        }
-        
-        // Store task IDs in localStorage so we can track them across page reloads
-        function storeTaskId(taskId) {
-            if (!taskId) return;
-            
-            let tasks = JSON.parse(localStorage.getItem('dataMinerTasks') || '[]');
-            if (!tasks.includes(taskId)) {
-                tasks.push(taskId);
-                localStorage.setItem('dataMinerTasks', JSON.stringify(tasks));
-            }
-        }
-        
-        // Check for stored tasks on page load and resume tracking
-        function checkStoredTasks() {
-            const tasks = JSON.parse(localStorage.getItem('dataMinerTasks') || '[]');
-            
-            if (tasks.length > 0) {
-                // We have stored tasks, check their status
-                tasks.forEach(taskId => {
-                    fetch(`/data_miner/api/task-status/${taskId}/`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // If task is still running, we don't need to do anything special
-                            // If task completed while user was away, show notification
-                            if (data.status === 'completed' || data.status === 'error' || data.status === 'cancelled') {
-                                showTaskNotification({
-                                    id: taskId,
-                                    name: data.task_name || 'Data Mining Task',
-                                    status: data.status,
-                                    historyId: data.history_id
-                                });
-                                
-                                // Remove this task from localStorage
-                                removeStoredTask(taskId);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error checking stored task:', error);
-                            // Remove invalid tasks
-                            removeStoredTask(taskId);
-                        });
-                });
-            }
-        }
-        
-        // Remove a task from localStorage
-        function removeStoredTask(taskId) {
-            let tasks = JSON.parse(localStorage.getItem('dataMinerTasks') || '[]');
-            tasks = tasks.filter(id => id !== taskId);
-            localStorage.setItem('dataMinerTasks', JSON.stringify(tasks));
-        }
-        
-        // Request notification permission on page load
-        if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-            Notification.requestPermission();
-        }
-        
-        // Check stored tasks when page loads
-        checkStoredTasks();
-        
-        // Update task status every 5 seconds
-        if (document.querySelectorAll('.task-item').length > 0) {
-            updateRunningTasks(); // Initial check
-            setInterval(updateRunningTasks, 5000);
-        }
     });
 </script>
-
-<!-- Load our custom JavaScript file -->
-<script src="{% static 'js/data_miner.js' %}"></script>
 {% endblock %}

@@ -1,23 +1,27 @@
-from .models import *
-from django.views.generic import TemplateView
-from django.views import View
-from masteradmin.models import Tickets
-from django.http import JsonResponse
-from customersupport.models import SupportDepartment, SupportUser
-from django.db.models import Count, Q
-from .models import Feedbacks
-import json
-from django.shortcuts import redirect, render
-from django.contrib.auth.hashers import make_password
-from .models import User
-from django.contrib import messages
 import re
+import json
 import logging
+import datetime
+import requests
+from django.contrib.auth.hashers import make_password
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from django.utils import timezone
-from allauth.socialaccount.models import SocialApp, SocialAccount
+from django.views import View
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from django.contrib.auth.models import User as AuthUser
+from allauth.socialaccount.models import SocialApp, SocialAccount
+from masteradmin.models import Tickets
+from customersupport.models import SupportDepartment, SupportUser
+from django.db.models import Count, Q
+from django.contrib import messages
 from .google_auth import get_google_auth_url, handle_google_callback
+from .models import User, Reminder, Feedbacks, UserArticle, UserPolicy, QuickNote
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 logger = logging.getLogger(__name__)
 
@@ -490,6 +494,748 @@ def Logout(request):
     
     messages.success(request, 'You have been logged out successfully.')
     return redirect('/user/login/')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateReminderView(View):
+    def post(self, request):
+        print("Create reminder API called")
+        print(f"Session data: {request.session.get('user_id')}")
+        
+        if not request.session.get('user_id'):
+            print("User not authenticated")
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        
+        try:
+            data = json.loads(request.body)
+            print(f"Received data: {data}")
+            
+            user_id = request.session.get('user_id')
+            print(f"Looking up user with ID: {user_id}")
+            
+            # Try different ways to find the user
+            user = None
+            
+            # Try by user_id UUID field first
+            try:
+                user = User.objects.get(user_id=user_id)
+                print(f"Found user by user_id: {user.name}")
+            except User.DoesNotExist:
+                pass
+                
+            # If not found, try by id
+            if not user:
+                try:
+                    user = User.objects.get(id=user_id)
+                    print(f"Found user by id: {user.name}")
+                except (User.DoesNotExist, ValueError):
+                    pass
+            
+            # If still not found, try by id (numeric)
+            if not user:
+                try:
+                    # Try to convert to int
+                    numeric_id = int(user_id)
+                    user = User.objects.get(id=numeric_id)
+                    print(f"Found user by numeric id: {user.name}")
+                except (User.DoesNotExist, ValueError):
+                    pass
+                    
+            # If we still couldn't find the user, return an error
+            if not user:
+                print(f"User not found with any ID method: {user_id}")
+                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            
+            title = data.get('title')
+            description = data.get('description', '')
+            reminder_datetime_str = data.get('reminder_time')
+            timezone_name = data.get('timezone_name', '')
+            
+            print(f"Processing reminder with timezone: {timezone_name}")
+            
+            if not title or not reminder_datetime_str:
+                print("Missing required fields")
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'Title and reminder time are required'
+                }, status=400)
+            
+            # Parse the datetime string - handle different ISO formats
+            try:
+                print(f"Processing reminder time string: '{reminder_datetime_str}'")
+                
+                # First try simple fromisoformat (works with most formats)
+                try:
+                    reminder_time = datetime.datetime.fromisoformat(reminder_datetime_str)
+                    print(f"Successfully parsed with fromisoformat: {reminder_time}")
+                except ValueError as e:
+                    print(f"fromisoformat failed: {e}")
+                    # If that fails, try stripping 'Z' and milliseconds
+                    if reminder_datetime_str.endswith('Z'):
+                        # Remove the 'Z' and parse
+                        clean_dt_str = reminder_datetime_str.rstrip('Z')
+                        # Also remove milliseconds if present
+                        if '.' in clean_dt_str:
+                            clean_dt_str = clean_dt_str.split('.')[0]
+                        print(f"Cleaned string (removed Z/ms): '{clean_dt_str}'")
+                        reminder_time = datetime.datetime.fromisoformat(clean_dt_str)
+                        print(f"Parsed after cleaning Z and ms: {reminder_time}")
+                    else:
+                        # If no Z but has milliseconds
+                        if '.' in reminder_datetime_str:
+                            clean_dt_str = reminder_datetime_str.split('.')[0]
+                            print(f"Cleaned string (removed ms): '{clean_dt_str}'")
+                            reminder_time = datetime.datetime.fromisoformat(clean_dt_str)
+                            print(f"Parsed after cleaning ms: {reminder_time}")
+                        else:
+                            # Last resort, use dateutil parser which is more flexible
+                            from dateutil import parser
+                            reminder_time = parser.parse(reminder_datetime_str)
+                            print(f"Parsed with dateutil parser: {reminder_time}")
+                
+                # Apply timezone handling
+                if reminder_time.tzinfo is None:
+                    print("Time is naive (no timezone info)")
+                    # If no timezone info provided, assume it's in user's local timezone
+                    # and convert to Django's timezone (typically UTC)
+                    reminder_time = timezone.make_aware(reminder_time, timezone.get_current_timezone())
+                    print(f"Made timezone aware (assuming local time): {reminder_time}")
+                else:
+                    print(f"Time already has timezone info: {reminder_time.tzinfo}")
+                    # Ensure it's in Django's timezone format
+                    reminder_time = timezone.localtime(reminder_time, timezone=timezone.get_current_timezone())
+                    print(f"Converted to Django timezone: {reminder_time}")
+                    
+                # Store the original user timezone for later use when displaying
+                user_timezone = None
+                if "+" in reminder_datetime_str or "-" in reminder_datetime_str:
+                    # Try to extract timezone offset from the string
+                    try:
+                        last_plus = reminder_datetime_str.rfind('+')
+                        last_minus = reminder_datetime_str.rfind('-')
+                        # Get the index of the last +/- that isn't at the start
+                        if last_plus > 0 and (last_minus <= 0 or last_plus > last_minus):
+                            user_timezone = reminder_datetime_str[last_plus:]
+                        elif last_minus > 0:
+                            user_timezone = reminder_datetime_str[last_minus:]
+                        print(f"Extracted user timezone: {user_timezone}")
+                    except Exception as e:
+                        print(f"Error extracting timezone: {e}")
+                        
+            except Exception as e:
+                print(f"Error parsing datetime: {e}")
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Invalid date format: {str(e)}'
+                }, status=400)
+                
+            print(f"Final reminder time to save: {reminder_time}")
+            
+            # Create the reminder
+            reminder = Reminder.objects.create(
+                user=user,
+                title=title,
+                description=description,
+                reminder_time=reminder_time,
+                timezone_name=timezone_name  # Save the timezone name
+            )
+            
+            print(f"Reminder created with ID: {reminder.id}")
+            return JsonResponse({
+                'success': True,
+                'message': 'Reminder created successfully',
+                'reminder': {
+                    'id': str(reminder.id),
+                    'title': reminder.title,
+                    'description': reminder.description,
+                    'reminder_time': reminder.reminder_time.isoformat(),
+                    'status': reminder.status
+                }
+            })
+            
+        except User.DoesNotExist:
+            print("User not found exception")
+            return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+        except json.JSONDecodeError:
+            print("Invalid JSON")
+            return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            print(f"Error creating reminder: {e}")
+            import traceback
+            traceback.print_exc()
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ListRemindersView(View):
+    def get(self, request):
+        if not request.session.get('user_id'):
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        
+        try:
+            user_id = request.session.get('user_id')
+            
+            # Try different ways to find the user
+            user = None
+            
+            # Try by user_id UUID field first
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                pass
+                
+            # If not found, try by id
+            if not user:
+                try:
+                    user = User.objects.get(id=user_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+            
+            # If still not found, try by id (numeric)
+            if not user:
+                try:
+                    # Try to convert to int
+                    numeric_id = int(user_id)
+                    user = User.objects.get(id=numeric_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+                    
+            # If we still couldn't find the user, return an error
+            if not user:
+                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            
+            reminders = Reminder.objects.filter(user=user).order_by('reminder_time')
+            
+            reminders_list = []
+            for reminder in reminders:
+                reminders_list.append({
+                    'id': str(reminder.id),
+                    'title': reminder.title,
+                    'description': reminder.description,
+                    'reminder_time': reminder.reminder_time.isoformat(),
+                    'status': reminder.status,
+                    'is_due': reminder.is_due(),
+                    'created_at': reminder.created_at.isoformat()
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'reminders': reminders_list
+            })
+            
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CheckDueRemindersView(View):
+    def get(self, request):
+        if not request.session.get('user_id'):
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        
+        try:
+            user_id = request.session.get('user_id')
+            
+            # Try different ways to find the user
+            user = None
+            
+            # Try by user_id UUID field first
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                pass
+                
+            # If not found, try by id
+            if not user:
+                try:
+                    user = User.objects.get(id=user_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+            
+            # If still not found, try by id (numeric)
+            if not user:
+                try:
+                    # Try to convert to int
+                    numeric_id = int(user_id)
+                    user = User.objects.get(id=numeric_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+                    
+            # If we still couldn't find the user, return an error
+            if not user:
+                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            
+            # Get current time
+            now = timezone.now()
+            
+            # Find reminders that are due
+            due_reminders = []
+            
+            # Check pending reminders that are due
+            pending_reminders = Reminder.objects.filter(
+                user=user,
+                status='pending',
+                reminder_time__lte=now
+            )
+            
+            for reminder in pending_reminders:
+                due_reminders.append({
+                    'id': str(reminder.id),
+                    'title': reminder.title,
+                    'description': reminder.description,
+                    'reminder_time': reminder.reminder_time.isoformat()
+                })
+                # Record that we sent a notification
+                reminder.record_notification()
+            
+            # Check snoozed reminders that are now due
+            snoozed_reminders = Reminder.objects.filter(
+                user=user,
+                status='snoozed',
+                snoozed_until__lte=now
+            )
+            
+            for reminder in snoozed_reminders:
+                due_reminders.append({
+                    'id': str(reminder.id),
+                    'title': reminder.title,
+                    'description': reminder.description,
+                    'reminder_time': reminder.reminder_time.isoformat()
+                })
+                # Record that we sent a notification
+                reminder.record_notification()
+            
+            # Check reminders that were notified more than 10 minutes ago but still active
+            renotify_time = now - timezone.timedelta(minutes=10)
+            renotify_reminders = Reminder.objects.filter(
+                user=user,
+                status__in=['pending', 'snoozed'],
+                last_notification__lt=renotify_time,
+                reminder_time__lte=now
+            )
+            
+            for reminder in renotify_reminders:
+                if reminder.id not in [r['id'] for r in due_reminders]:
+                    due_reminders.append({
+                        'id': str(reminder.id),
+                        'title': reminder.title,
+                        'description': reminder.description,
+                        'reminder_time': reminder.reminder_time.isoformat()
+                    })
+                    # Record that we sent a notification
+                    reminder.record_notification()
+            
+            return JsonResponse({
+                'success': True,
+                'due_reminders': due_reminders,
+                'has_due_reminders': len(due_reminders) > 0
+            })
+            
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CompleteReminderView(View):
+    def post(self, request, reminder_id):
+        if not request.session.get('user_id'):
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        
+        try:
+            user_id = request.session.get('user_id')
+            
+            # Try different ways to find the user
+            user = None
+            
+            # Try by user_id UUID field first
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                pass
+                
+            # If not found, try by id
+            if not user:
+                try:
+                    user = User.objects.get(id=user_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+            
+            # If still not found, try by id (numeric)
+            if not user:
+                try:
+                    # Try to convert to int
+                    numeric_id = int(user_id)
+                    user = User.objects.get(id=numeric_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+                    
+            # If we still couldn't find the user, return an error
+            if not user:
+                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            
+            reminder = Reminder.objects.get(id=reminder_id, user=user)
+            reminder.mark_as_completed()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Reminder marked as completed'
+            })
+            
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+        except Reminder.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Reminder not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SnoozeReminderView(View):
+    def post(self, request, reminder_id):
+        if not request.session.get('user_id'):
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        
+        try:
+            data = json.loads(request.body)
+            user_id = request.session.get('user_id')
+            
+            # Get snooze time in minutes (default to 10 minutes)
+            snooze_minutes = data.get('snooze_minutes', 10)
+            
+            # Or get specific snooze datetime if provided
+            snooze_datetime_str = data.get('snooze_datetime')
+            
+            # Get timezone name if provided
+            timezone_name = data.get('timezone_name', '')
+            print(f"Processing snooze with timezone: {timezone_name}")
+            
+            # Try different ways to find the user
+            user = None
+            
+            # Try by user_id UUID field first
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                pass
+                
+            # If not found, try by id
+            if not user:
+                try:
+                    user = User.objects.get(id=user_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+            
+            # If still not found, try by id (numeric)
+            if not user:
+                try:
+                    # Try to convert to int
+                    numeric_id = int(user_id)
+                    user = User.objects.get(id=numeric_id)
+                except (User.DoesNotExist, ValueError):
+                    pass
+                    
+            # If we still couldn't find the user, return an error
+            if not user:
+                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            
+            reminder = Reminder.objects.get(id=reminder_id, user=user)
+            
+            if snooze_datetime_str:
+                # Parse the datetime string - handle different ISO formats
+                try:
+                    print(f"Processing snooze time string: '{snooze_datetime_str}'")
+                    
+                    # First try simple fromisoformat (works with most formats)
+                    try:
+                        snooze_datetime = datetime.datetime.fromisoformat(snooze_datetime_str)
+                        print(f"Successfully parsed with fromisoformat: {snooze_datetime}")
+                    except ValueError as e:
+                        print(f"fromisoformat failed: {e}")
+                        # If that fails, try stripping 'Z' and milliseconds
+                        if snooze_datetime_str.endswith('Z'):
+                            # Remove the 'Z' and parse
+                            clean_dt_str = snooze_datetime_str.rstrip('Z')
+                            # Also remove milliseconds if present
+                            if '.' in clean_dt_str:
+                                clean_dt_str = clean_dt_str.split('.')[0]
+                            print(f"Cleaned string (removed Z/ms): '{clean_dt_str}'")
+                            snooze_datetime = datetime.datetime.fromisoformat(clean_dt_str)
+                            print(f"Parsed after cleaning Z and ms: {snooze_datetime}")
+                        else:
+                            # If no Z but has milliseconds
+                            if '.' in snooze_datetime_str:
+                                clean_dt_str = snooze_datetime_str.split('.')[0]
+                                print(f"Cleaned string (removed ms): '{clean_dt_str}'")
+                                snooze_datetime = datetime.datetime.fromisoformat(clean_dt_str)
+                                print(f"Parsed after cleaning ms: {snooze_datetime}")
+                            else:
+                                # Last resort, use dateutil parser which is more flexible
+                                from dateutil import parser
+                                snooze_datetime = parser.parse(snooze_datetime_str)
+                                print(f"Parsed with dateutil parser: {snooze_datetime}")
+                    
+                    # Apply timezone handling
+                    if snooze_datetime.tzinfo is None:
+                        print("Time is naive (no timezone info)")
+                        # If no timezone info provided, assume it's in user's local timezone
+                        # and convert to Django's timezone (typically UTC)
+                        snooze_datetime = timezone.make_aware(snooze_datetime, timezone.get_current_timezone())
+                        print(f"Made timezone aware (assuming local time): {snooze_datetime}")
+                    else:
+                        print(f"Time already has timezone info: {snooze_datetime.tzinfo}")
+                        # Ensure it's in Django's timezone format
+                        snooze_datetime = timezone.localtime(snooze_datetime, timezone=timezone.get_current_timezone())
+                        print(f"Converted to Django timezone: {snooze_datetime}")
+                    
+                    print(f"Final snooze time to save: {snooze_datetime}")
+                    
+                    reminder.status = 'snoozed'
+                    reminder.snoozed_until = snooze_datetime
+                    
+                    # Save timezone information if provided
+                    if timezone_name:
+                        reminder.timezone_name = timezone_name
+                        
+                    reminder.save()
+                except Exception as e:
+                    print(f"Error parsing datetime: {e}")
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Invalid date format: {str(e)}'
+                    }, status=400)
+            else:
+                # Use the minutes-based snooze
+                reminder.snooze(minutes=snooze_minutes)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Reminder snoozed successfully',
+                'snoozed_until': reminder.snoozed_until.isoformat()
+            })
+            
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+        except Reminder.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Reminder not found'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateQuickNoteView(View):
+    """
+    API endpoint for creating quick notes
+    """
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            user_id = request.session.get('user_id')
+            
+            if not user_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not authenticated'
+                }, status=401)
+            
+            # Get the user
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not found'
+                }, status=404)
+            
+            title = data.get('title')
+            description = data.get('description', '')
+            pinned = data.get('pinned', False)
+            
+            if not title:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Title is required'
+                }, status=400)
+            
+            # Create the quick note
+            note = QuickNote.objects.create(
+                user=user,
+                title=title,
+                description=description,
+                pinned=pinned
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Quick note created successfully',
+                'note': {
+                    'id': str(note.id),
+                    'title': note.title,
+                    'description': note.description,
+                    'pinned': note.pinned,
+                    'created_at': note.created_at.isoformat()
+                }
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ListQuickNotesView(View):
+    """
+    API endpoint for listing user quick notes
+    """
+    def get(self, request):
+        try:
+            user_id = request.session.get('user_id')
+            
+            if not user_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not authenticated'
+                }, status=401)
+            
+            # Get the user
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not found'
+                }, status=404)
+            
+            # Get all notes for the user
+            notes = QuickNote.objects.filter(user=user)
+            
+            # Format the notes for the response
+            notes_data = []
+            for note in notes:
+                notes_data.append({
+                    'id': str(note.id),
+                    'title': note.title,
+                    'description': note.description,
+                    'pinned': note.pinned,
+                    'created_at': note.created_at.isoformat()
+                })
+            
+            return JsonResponse({
+                'success': True,
+                'notes': notes_data
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ToggleQuickNotePinView(View):
+    """
+    API endpoint for toggling pin status of a quick note
+    """
+    def post(self, request, note_id):
+        try:
+            user_id = request.session.get('user_id')
+            
+            if not user_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not authenticated'
+                }, status=401)
+            
+            # Get the user
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not found'
+                }, status=404)
+            
+            # Get the note
+            try:
+                note = QuickNote.objects.get(id=note_id, user=user)
+            except QuickNote.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Note not found'
+                }, status=404)
+            
+            # Toggle the pin status
+            note.pinned = not note.pinned
+            note.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Note {"pinned" if note.pinned else "unpinned"} successfully',
+                'is_pinned': note.pinned
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteQuickNoteView(View):
+    """
+    API endpoint for deleting a quick note
+    """
+    def post(self, request, note_id):
+        try:
+            user_id = request.session.get('user_id')
+            
+            if not user_id:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not authenticated'
+                }, status=401)
+            
+            # Get the user
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User not found'
+                }, status=404)
+            
+            # Get the note
+            try:
+                note = QuickNote.objects.get(id=note_id, user=user)
+            except QuickNote.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Note not found'
+                }, status=404)
+            
+            # Delete the note
+            note.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Note deleted successfully'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=500)
+
 
 
 

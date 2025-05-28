@@ -1,0 +1,2 @@
+{"status": "processing", "progress": 5, "message": "Starting search for 'Dropper Bottles in Delhi'", "keyword": "Dropper Bottles in Delhi", "task_id": 18, "results_count": 0, "elapsed_time": 0, "timestamp": "2025-05-25T16:30:18.488443"}
+{"status": "completed", "progress": 100, "message": "Completed. Found 1 emails and 55 phones", "keyword": "Dropper Bottles in Delhi", "task_id": 18, "results_count": 56, "elapsed_time": 0.8820857604344686, "timestamp": "2025-05-25T16:31:11.413292"}

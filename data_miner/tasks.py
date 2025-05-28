@@ -13,6 +13,8 @@ import traceback
 from .models import MiningHistory, BackgroundTask
 # Import the run_web_scraper_task function directly
 from .web_scrapper import run_web_scraper_task
+# Import the SerpAPI scraper
+from .scrap import scrape_with_serpapi
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -358,6 +360,192 @@ def scrape_contacts(self, keyword, data_type, country, user_id, max_results=30, 
             "task_id": task_id
         }
 
+@shared_task(bind=True, name="data_miner.tasks.scrape_serpapi")
+def scrape_serpapi(self, keyword, data_type, country, user_id, max_results=50, max_runtime_minutes=15):
+    """
+    Run the SerpAPI scraping process in the background
+    
+    Args:
+        keyword (str): Search keyword
+        data_type (str): Type of data to extract ('phone' or 'email')
+        country (str): Country code (e.g., 'IN', 'US')
+        user_id (int): User ID
+        max_results (int): Maximum number of results to retrieve
+        max_runtime_minutes (int): Maximum runtime in minutes
+        
+    Returns:
+        dict: Results of the scraping process
+    """
+    task_id = self.request.id
+    logger.info(f"Starting scrape_serpapi task {task_id} for keyword '{keyword}', data_type '{data_type}'")
+    
+    # Create or update background task record
+    try:
+        from django.utils import timezone
+        task_record, created = BackgroundTask.objects.get_or_create(
+            task_id=task_id,
+            defaults={
+                'user_id': user_id,
+                'task_name': f"Mining {data_type}s for '{keyword}' using SerpAPI",
+                'status': 'processing',
+                'parameters': {
+                    'keyword': keyword,
+                    'data_type': data_type,
+                    'country': country,
+                    'max_results': max_results,
+                    'max_runtime_minutes': max_runtime_minutes
+                },
+                'progress': 0
+            }
+        )
+        
+        if not created:
+            task_record.status = 'processing'
+            task_record.progress = 0
+            task_record.error_message = None
+            task_record.save()
+        
+        logger.info(f"Created/updated task record for task {task_id}: {task_record.id}")
+    except Exception as e:
+        logger.error(f"Error creating/updating task record: {e}")
+        logger.error(traceback.format_exc())
+        task_record = None
+    
+    # Create a status file to track progress
+    status_file_path = os.path.join(settings.MEDIA_ROOT, 'mining_status', f"{task_id}.json")
+    os.makedirs(os.path.dirname(status_file_path), exist_ok=True)
+    
+    # Initialize status
+    status = {
+        "status": "processing",
+        "progress": 0,
+        "message": "Initializing SerpAPI scraper...",
+        "start_time": datetime.now().isoformat(),
+        "keyword": keyword,
+        "data_type": data_type,
+        "country": country,
+        "task_id": task_id,
+        "results_count": 0,
+        "elapsed_time": 0
+    }
+    
+    # Save initial status
+    with open(status_file_path, 'w') as f:
+        json.dump(status, f)
+    
+    start_time = time.time()
+    
+    try:
+        # Update status
+        status["progress"] = 5
+        status["message"] = "Searching for websites..."
+        _update_status(status_file_path, status)
+        
+        # Update task record
+        if task_record:
+            task_record.progress = 5
+            task_record.save()
+        
+        # Execute the SerpAPI scraping
+        logger.info(f"Executing SerpAPI scraper for task {task_id}")
+        scraper_results = scrape_with_serpapi(
+            keyword=keyword,
+            data_type=data_type,
+            country=country,
+            task_id=task_id,
+            max_results=max_results
+        )
+        
+        # Calculate elapsed time
+        elapsed_time = (time.time() - start_time) / 60.0  # in minutes
+        
+        # Extract relevant data
+        items = scraper_results.get('results', [])
+        
+        # Create a proper DataFrame and save as Excel
+        df = pd.DataFrame({data_type.capitalize(): items})
+        
+        # Generate unique filename
+        filename = f"mining_results_{keyword.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        excel_path = os.path.join('mining_results', filename)
+        
+        # Save to Excel in memory
+        excel_content = ContentFile(b'')
+        df.to_excel(excel_content, index=False)
+        excel_content.seek(0)
+        
+        # Save to MiningHistory
+        history = MiningHistory(
+            user_id=user_id,
+            keyword=keyword,
+            country=country,
+            data_type=data_type,
+            results_count=len(items)
+        )
+        
+        # Save Excel file to storage
+        history.excel_file.save(excel_path, excel_content)
+        history.save()
+        
+        logger.info(f"Task {task_id} completed successfully with {len(items)} results. History ID: {history.id}")
+        
+        # Update status to complete
+        status["status"] = "completed"
+        status["progress"] = 100
+        status["message"] = f"Found {len(items)} {data_type}s"
+        status["results_count"] = len(items)
+        status["results"] = items[:10]  # Include preview of first 10 results
+        status["elapsed_time"] = elapsed_time
+        status["history_id"] = history.id
+        _update_status(status_file_path, status)
+        
+        # Update task record
+        if task_record:
+            from django.utils import timezone
+            task_record.status = 'completed'
+            task_record.progress = 100
+            task_record.mining_history = history
+            task_record.completed_at = timezone.now()
+            task_record.save()
+            logger.info(f"Updated task record {task_record.id} as completed")
+        
+        return {
+            "success": True,
+            "history_id": history.id,
+            "results_count": len(items),
+            "elapsed_time": elapsed_time,
+            "task_id": task_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in SerpAPI scraping for task {task_id}: {e}")
+        logger.error(traceback.format_exc())
+        
+        # Update status to error
+        status["status"] = "error"
+        status["message"] = f"Error: {str(e)}"
+        status["elapsed_time"] = (time.time() - start_time) / 60.0
+        _update_status(status_file_path, status)
+        
+        # Update task record
+        if task_record:
+            try:
+                task_record.status = 'failed'
+                task_record.error_message = str(e)
+                from django.utils import timezone
+                task_record.completed_at = timezone.now()
+                task_record.save()
+                logger.info(f"Updated task record {task_record.id} as failed")
+            except Exception as e2:
+                logger.error(f"Error updating task record on failure: {e2}")
+        
+        return {
+            "success": False,
+            "error": str(e),
+            "elapsed_time": (time.time() - start_time) / 60.0,
+            "task_id": task_id
+        }
+
 def _update_status(status_file_path, status_data):
     """Update the status file with the latest status"""
     status_data["updated_at"] = datetime.now().isoformat()
@@ -387,3 +575,58 @@ def _update_status(status_file_path, status_data):
             task.save()
         except Exception as e:
             logger.error(f"Error updating task record from status: {e}") 
+
+# Add update_task_status function after _update_status function
+def update_task_status(task_id, status_data, task_record=None):
+    """
+    Update the status of a task with the given status data.
+    This function is used by the web_scrapper module to update task status.
+    
+    Args:
+        task_id (str): The ID of the task to update
+        status_data (dict): Status data including progress, message, etc.
+        task_record (BackgroundTask, optional): The task record object
+    """
+    # First update the status file
+    status_file_path = os.path.join(settings.MEDIA_ROOT, 'mining_status', f"{task_id}.json")
+    os.makedirs(os.path.dirname(status_file_path), exist_ok=True)
+    
+    # Update the file
+    _update_status(status_file_path, status_data)
+    
+    # Also try to update the task record directly if provided
+    if task_record and hasattr(task_record, 'save'):
+        try:
+            task_record.progress = status_data.get("progress", 0)
+            
+            # Map status
+            status_mapping = {
+                "processing": "processing",
+                "completed": "completed", 
+                "error": "failed",
+                "failed": "failed",
+                "cancelled": "cancelled"
+            }
+            
+            if "status" in status_data and status_data["status"] in status_mapping:
+                task_record.status = status_mapping[status_data["status"]]
+                
+            # Update message
+            if hasattr(task_record, 'message'):
+                task_record.message = status_data.get("message", "")
+                
+            # Update error message if there's an error
+            if (status_data.get("status") == "error" or status_data.get("status") == "failed") and hasattr(task_record, 'error_message'):
+                task_record.error_message = status_data.get("message", "Unknown error")
+                
+            # Set completed timestamp if task is finished
+            if status_data.get("status") in ["completed", "error", "failed", "cancelled"]:
+                from django.utils import timezone
+                task_record.completed_at = timezone.now()
+                
+            # Save the record
+            task_record.save()
+            logger.info(f"Task record {task_id} updated: progress={task_record.progress}, status={task_record.status}")
+        except Exception as e:
+            logger.error(f"Error updating task record in update_task_status: {e}")
+            logger.error(traceback.format_exc()) 

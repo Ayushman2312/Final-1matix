@@ -1,0 +1,2 @@
+{"status": "processing", "progress": 5, "message": "Starting search for 'Dropper Bottles in Delhi'", "keyword": "Dropper Bottles in Delhi", "task_id": 7, "results_count": 0, "elapsed_time": 0, "timestamp": "2025-05-25T15:39:12.337965"}
+{"status": "error", "progress": 0, "message": "Error: 'ContactScraper' object has no attribute 'search_duckduckgo'", "keyword": "Dropper Bottles in Delhi", "task_id": 7, "results_count": 9, "elapsed_time": 1.897084657351176, "timestamp": "2025-05-25T15:41:06.160349"}

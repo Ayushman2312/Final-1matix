@@ -28,6 +28,9 @@ class Employee(models.Model):
     location = models.CharField(max_length=255,null=True,blank=True)
     employee_name = models.CharField(max_length=255)
     employee_email = models.EmailField(unique=True)
+    password = models.CharField(max_length=255,null=True,blank=True)
+    is_active = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
     attendance_verification = models.BooleanField(default=False)
     last_attendance_time = models.DateTimeField(null=True, blank=True)
     attendance_status = models.CharField(max_length=20, 
@@ -148,3 +151,256 @@ class Folder(models.Model):
 
     def __str__(self):
         return self.name
+
+class OnboardingInvitation(models.Model):
+    INVITATION_STATUS = (
+        ('pending', 'Pending'),
+        ('sent', 'Sent'),
+        ('completed', 'Completed'),
+        ('expired', 'Expired'),
+        ('rejected', 'Rejected'),
+        ('accepted', 'Accepted'),
+        ('need_discussion', 'Need Discussion'),
+    )
+    
+    invitation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+    designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, null=True, blank=True)
+    role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
+    offer_letter_template = models.ForeignKey(OfferLetter, on_delete=models.SET_NULL, null=True, blank=True)
+    form_link = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=INVITATION_STATUS, default='pending')
+    policies = models.JSONField(null=True, blank=True)
+    photo = models.ImageField(upload_to='employee_photos/', null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    sent_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True, null=True)
+    discussion_message = models.TextField(blank=True, null=True)
+    has_viewed_offer = models.BooleanField(default=False)
+    is_form_completed = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.name} - {self.email}"
+
+    class Meta:
+        ordering = ['-created_at']
+        
+    def accept_invitation(self):
+        """Mark invitation as accepted and update related fields"""
+        self.status = 'accepted'
+        self.accepted_at = timezone.now()
+        self.save()
+        return True
+        
+    def reject_invitation(self, reason=None):
+        """Mark invitation as rejected with optional reason"""
+        self.status = 'rejected'
+        self.rejected_at = timezone.now()
+        if reason:
+            self.rejection_reason = reason
+        self.save()
+        return True
+
+class EmployeeAttendance(models.Model):
+    attendance_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey('employee.Employee', on_delete=models.CASCADE, related_name='attendances')
+    check_in_time = models.DateTimeField(default=timezone.now)
+    check_out_time = models.DateTimeField(null=True, blank=True)
+    date = models.DateField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=[
+        ('present', 'Present'),
+        ('absent', 'Absent'),
+        ('late', 'Late'),
+        ('half_day', 'Half Day'),
+        ('leave', 'Leave'),
+    ], default='present')
+    notes = models.TextField(null=True, blank=True)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    device_info = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['employee', 'date']
+        ordering = ['-date', '-check_in_time']
+    
+    def __str__(self):
+        return f"{self.employee.name} - {self.date} - {self.status}"
+
+class LeaveApplication(models.Model):
+    LEAVE_STATUS = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    LEAVE_TYPES = [
+        ('casual', 'Casual Leave'),
+        ('sick', 'Sick Leave'),
+        ('annual', 'Annual Leave'),
+        ('maternity', 'Maternity Leave'),
+        ('paternity', 'Paternity Leave'),
+        ('bereavement', 'Bereavement Leave'),
+        ('unpaid', 'Unpaid Leave'),
+        ('other', 'Other'),
+    ]
+    
+    leave_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey('employee.Employee', on_delete=models.CASCADE, related_name='leave_applications')
+    leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
+    document = models.FileField(upload_to='leave_documents/', null=True, blank=True)
+    reviewed_by = models.ForeignKey('employee.Employee', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_leaves')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_notes = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.employee.name} - {self.leave_type} ({self.start_date} to {self.end_date})"
+    
+    @property
+    def duration(self):
+        """Calculate the number of days in the leave period"""
+        return (self.end_date - self.start_date).days + 1
+
+class ReimbursementRequest(models.Model):
+    REQUEST_STATUS = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('paid', 'Paid'),
+    ]
+    
+    EXPENSE_CATEGORIES = [
+        ('travel', 'Travel'),
+        ('meals', 'Meals & Entertainment'),
+        ('office', 'Office Supplies'),
+        ('equipment', 'Equipment'),
+        ('software', 'Software & Subscriptions'),
+        ('training', 'Training & Education'),
+        ('medical', 'Medical Expenses'),
+        ('other', 'Other'),
+    ]
+    
+    reimbursement_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey('employee.Employee', on_delete=models.CASCADE, related_name='reimbursement_requests')
+    expense_date = models.DateField()
+    category = models.CharField(max_length=20, choices=EXPENSE_CATEGORIES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=3, default='INR')
+    description = models.TextField()
+    receipt = models.FileField(upload_to='receipts/', null=True, blank=True)
+    status = models.CharField(max_length=20, choices=REQUEST_STATUS, default='pending')
+    approved_by = models.ForeignKey('employee.Employee', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_reimbursements')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approval_notes = models.TextField(null=True, blank=True)
+    payment_date = models.DateField(null=True, blank=True)
+    payment_reference = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.employee.name} - {self.category} - {self.amount} {self.currency}"
+
+class SalarySlip(models.Model):
+    salary_slip_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey('employee.Employee', on_delete=models.CASCADE, related_name='salary_slips')
+    month = models.IntegerField()  # 1-12 for Jan-Dec
+    year = models.IntegerField()
+    basic_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    allowances = models.JSONField(default=dict)  # For storing different allowances
+    deductions = models.JSONField(default=dict)  # For storing different deductions
+    net_salary = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateField()
+    payment_method = models.CharField(max_length=50)
+    payment_reference = models.CharField(max_length=100, null=True, blank=True)
+    pdf_file = models.FileField(upload_to='salary_slips/', null=True, blank=True)
+    is_paid = models.BooleanField(default=False)
+    notes = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['employee', 'month', 'year']
+        ordering = ['-year', '-month']
+    
+    def __str__(self):
+        return f"{self.employee.name} - {self.get_month_name()} {self.year}"
+    
+    def get_month_name(self):
+        """Convert month number to name"""
+        return {
+            1: 'January', 2: 'February', 3: 'March', 4: 'April',
+            5: 'May', 6: 'June', 7: 'July', 8: 'August',
+            9: 'September', 10: 'October', 11: 'November', 12: 'December'
+        }.get(self.month, '')
+    
+    @property
+    def period_display(self):
+        """Display the salary period in a readable format"""
+        return f"{self.get_month_name()} {self.year}"
+
+class Resignation(models.Model):
+    RESIGNATION_STATUS = [
+        ('pending', 'Pending'),
+        ('acknowledged', 'Acknowledged'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    resignation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey('employee.Employee', on_delete=models.CASCADE, related_name='resignations')
+    resignation_date = models.DateField(default=timezone.now)
+    last_working_date = models.DateField()
+    reason = models.TextField()
+    additional_notes = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=RESIGNATION_STATUS, default='pending')
+    processed_by = models.ForeignKey('employee.Employee', on_delete=models.SET_NULL, null=True, blank=True, related_name='processed_resignations')
+    processed_at = models.DateTimeField(null=True, blank=True)
+    feedback = models.TextField(null=True, blank=True)
+    exit_interview_date = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.employee.name} - {self.resignation_date}"
+    
+    @property
+    def notice_period_days(self):
+        """Calculate the notice period in days"""
+        return (self.last_working_date - self.resignation_date).days
+
+class EmployeeDocument(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=100)
+    document_name = models.CharField(max_length=255)
+    notes = models.TextField(blank=True, null=True)
+    file = models.FileField(upload_to='employee_documents/')
+    file_size = models.CharField(max_length=20, blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.document_name} ({self.document_type})"

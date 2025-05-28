@@ -1,0 +1,423 @@
+2025-05-25 16:52:09,592 - INFO - Valid mobile: '+91-9999 208808' normalized to +919999208808 from www.karolbaghtemperedglass.com_text
+2025-05-25 16:52:09,592 - INFO - Valid mobile: '+91-9999 208808' normalized to +919999208808 from www.karolbaghtemperedglass.com_text
+2025-05-25 16:52:09,643 - INFO - Valid mobile: '+91-9999 208808' normalized to +919999208808 from www.karolbaghtemperedglass.com_validation
+2025-05-25 16:52:11,251 - INFO - Valid landline: '011-41041660' normalized to +91-114-1041660 from gaffarwala.com_text
+2025-05-25 16:52:11,252 - INFO - Valid mobile: '9560035149' normalized to +919560035149 from gaffarwala.com_text
+2025-05-25 16:52:11,257 - INFO - Valid landline: '011-41041660' normalized to +91-114-1041660 from gaffarwala.com_text
+2025-05-25 16:52:11,257 - INFO - Valid landline: '011-41041660' normalized to +91-114-1041660 from gaffarwala.com_text
+2025-05-25 16:52:11,257 - INFO - Valid mobile: '(9560035149' normalized to +919560035149 from gaffarwala.com_text
+2025-05-25 16:52:11,257 - INFO - Valid landline: '011-41041660' normalized to +91-114-1041660 from gaffarwala.com_text
+2025-05-25 16:52:11,257 - INFO - Valid mobile: '9560035149' normalized to +919560035149 from gaffarwala.com_text_mobile
+2025-05-25 16:52:11,257 - INFO - Valid landline: '011-41041660' normalized to +91-114-1041660 from gaffarwala.com_text_std_code
+2025-05-25 16:52:11,257 - INFO - Valid landline: '011-41041660' normalized to +91-114-1041660 from gaffarwala.com_text_std_code
+2025-05-25 16:52:11,287 - WARNING - Rejected: Unrecognized format '92046111' from javascript
+2025-05-25 16:52:11,287 - WARNING - Rejected: Unrecognized format '192046111' from javascript
+2025-05-25 16:52:11,469 - INFO - Valid mobile: '9560035149' normalized to +919560035149 from gaffarwala.com_validation
+2025-05-25 16:52:11,469 - INFO - Valid mobile: '(9560035149' normalized to +919560035149 from gaffarwala.com_validation
+2025-05-25 16:52:11,469 - INFO - Valid landline: '011-41041660' normalized to +91-114-1041660 from gaffarwala.com_validation
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_mobile
+2025-05-25 16:52:43,053 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:43,064 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:43,064 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:43,064 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:43,064 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:43,064 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:43,065 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:43,067 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,067 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,067 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,067 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,068 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,068 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,068 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,068 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,068 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,068 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_mobile
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_mobile
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,069 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,070 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_mobile
+2025-05-25 16:52:43,070 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,070 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,070 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,070 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_mobile
+2025-05-25 16:52:43,070 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,071 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,071 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,071 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_mobile
+2025-05-25 16:52:43,071 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,071 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,071 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:43,071 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_mobile
+2025-05-25 16:52:43,072 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:43,103 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:43,103 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:43,104 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_mobile
+2025-05-25 16:52:43,104 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct
+2025-05-25 16:52:43,104 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct
+2025-05-25 16:52:43,104 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct_mobile
+2025-05-25 16:52:43,104 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct_plus91
+2025-05-25 16:52:43,104 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:43,104 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:43,105 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_mobile
+2025-05-25 16:52:43,105 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_plus91
+2025-05-25 16:52:43,108 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,108 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,108 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,108 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,109 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,110 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:43,111 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:43,112 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:43,184 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:43,184 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:43,184 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:43,184 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:45,816 - INFO - Valid mobile: '9999208808' normalized to +919999208808 from www.karolbaghtemperedglass.com_text
+2025-05-25 16:52:45,816 - INFO - Valid mobile: '9999208808' normalized to +919999208808 from www.karolbaghtemperedglass.com_text
+2025-05-25 16:52:45,816 - INFO - Valid mobile: '9999208808' normalized to +919999208808 from www.karolbaghtemperedglass.com_text_mobile
+2025-05-25 16:52:45,871 - INFO - Valid mobile: '9999208808' normalized to +919999208808 from www.karolbaghtemperedglass.com_validation
+2025-05-25 16:52:47,760 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_text
+2025-05-25 16:52:47,760 - WARNING - Rejected: Too short (5 digits) '10654' from www.temperedglasswholesale.com_text
+2025-05-25 16:52:47,760 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_text
+2025-05-25 16:52:47,760 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_text_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link
+2025-05-25 16:52:47,764 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_tel_link_std_code
+2025-05-25 16:52:47,864 - INFO - Valid mobile: '08048269721' normalized to +918048269721 from www.temperedglasswholesale.com_validation
+2025-05-25 16:52:55,863 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:55,863 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:55,863 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:55,863 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_text
+2025-05-25 16:52:55,863 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_mobile
+2025-05-25 16:52:55,863 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_mobile
+2025-05-25 16:52:55,863 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_text_plus91
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_plus91
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link
+2025-05-25 16:52:55,871 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_tel_link_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_plus91
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_direct_plus91
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_jsonld_nested_plus91
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,923 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from javascript_mobile
+2025-05-25 16:52:55,933 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from javascript_plus91
+2025-05-25 16:52:56,212 - INFO - Valid mobile: '+91-8010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:56,212 - INFO - Valid mobile: '8010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:56,212 - INFO - Valid mobile: '+918010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:56,212 - INFO - Valid mobile: '+91 8010969696' normalized to +918010969696 from www.buzzmeeh.com_validation
+2025-05-25 16:52:57,474 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_text
+2025-05-25 16:52:57,474 - INFO - Valid mobile: '9640057000' normalized to +919640057000 from akinfo.in_text
+2025-05-25 16:52:57,489 - INFO - Valid mobile: '+91 9640057000' normalized to +919640057000 from akinfo.in_text
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_text
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '9640057000' normalized to +919640057000 from akinfo.in_text
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+91 9640057000' normalized to +919640057000 from akinfo.in_text
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '9640057000' normalized to +919640057000 from akinfo.in_text_mobile
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '9640057000' normalized to +919640057000 from akinfo.in_text_mobile
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_text_plus91
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+91 9640057000' normalized to +919640057000 from akinfo.in_text_plus91
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link_plus91
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link_plus91
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link
+2025-05-25 16:52:57,490 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_tel_link_plus91
+2025-05-25 16:52:57,568 - INFO - Valid mobile: '+919640057000' normalized to +919640057000 from akinfo.in_validation
+2025-05-25 16:52:57,568 - INFO - Valid mobile: '9640057000' normalized to +919640057000 from akinfo.in_validation
+2025-05-25 16:52:57,568 - INFO - Valid mobile: '+91 9640057000' normalized to +919640057000 from akinfo.in_validation
+2025-05-25 16:52:58,382 - INFO - Valid mobile: '+91-8510971098' normalized to +918510971098 from www.dial4trade.com_text
+2025-05-25 16:53:39,274 - INFO - Valid mobile: '+91-8510971098' normalized to +918510971098 from www.dial4trade.com_text
+2025-05-25 16:53:39,274 - INFO - Valid mobile: '8510971098' normalized to +918510971098 from www.dial4trade.com_text_mobile
+2025-05-25 16:53:39,274 - INFO - Valid mobile: '+91-8510971098' normalized to +918510971098 from www.dial4trade.com_text_plus91
+2025-05-25 16:53:39,278 - INFO - Valid mobile: '08510971098' normalized to +918510971098 from www.dial4trade.com_tel_link
+2025-05-25 16:53:39,278 - INFO - Valid mobile: '08510971098' normalized to +918510971098 from www.dial4trade.com_tel_link
+2025-05-25 16:53:39,278 - INFO - Valid mobile: '08510971098' normalized to +918510971098 from www.dial4trade.com_tel_link_std_code
+2025-05-25 16:53:39,383 - INFO - Valid mobile: '08510971098' normalized to +918510971098 from www.dial4trade.com_validation
+2025-05-25 16:53:39,383 - INFO - Valid mobile: '8510971098' normalized to +918510971098 from www.dial4trade.com_validation
+2025-05-25 16:53:39,383 - INFO - Valid mobile: '+91-8510971098' normalized to +918510971098 from www.dial4trade.com_validation
+2025-05-25 16:54:41,897 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_text
+2025-05-25 16:54:41,897 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_text
+2025-05-25 16:54:41,897 - INFO - Valid mobile: '+91-8527707749' normalized to +918527707749 from www.yellopages.in_text
+2025-05-25 16:54:41,897 - WARNING - Rejected: Unrecognized format '+91-011-25801424' from www.yellopages.in_text
+2025-05-25 16:54:41,898 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_text
+2025-05-25 16:54:41,898 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_text
+2025-05-25 16:54:41,898 - INFO - Valid mobile: '+91-8527707749' normalized to +918527707749 from www.yellopages.in_text
+2025-05-25 16:54:41,898 - WARNING - Rejected: Unrecognized format '+91-011-25801424' from www.yellopages.in_text
+2025-05-25 16:54:41,898 - INFO - Valid mobile: '9717066915' normalized to +919717066915 from www.yellopages.in_text_mobile
+2025-05-25 16:54:41,898 - INFO - Valid mobile: '9717066915' normalized to +919717066915 from www.yellopages.in_text_mobile
+2025-05-25 16:54:41,898 - INFO - Valid mobile: '8527707749' normalized to +918527707749 from www.yellopages.in_text_mobile
+2025-05-25 16:54:41,899 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_text_plus91
+2025-05-25 16:54:41,899 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_text_plus91
+2025-05-25 16:54:41,899 - INFO - Valid mobile: '+91-8527707749' normalized to +918527707749 from www.yellopages.in_text_plus91
+2025-05-25 16:54:41,899 - INFO - Valid landline: '011-25801424' normalized to +91-112-5801424 from www.yellopages.in_text_std_code
+2025-05-25 16:54:41,899 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '9717066915' normalized to +919717066915 from www.yellopages.in_tel_link_mobile
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_tel_link_plus91
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '9717066915' normalized to +919717066915 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '9717066915' normalized to +919717066915 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '9717066915' normalized to +919717066915 from www.yellopages.in_tel_link_mobile
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '8527707749' normalized to +918527707749 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,900 - INFO - Valid mobile: '8527707749' normalized to +918527707749 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,903 - INFO - Valid mobile: '8527707749' normalized to +918527707749 from www.yellopages.in_tel_link_mobile
+2025-05-25 16:54:41,903 - INFO - Valid landline: '011-25801424' normalized to +91-112-5801424 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,903 - INFO - Valid landline: '011-25801424' normalized to +91-112-5801424 from www.yellopages.in_tel_link
+2025-05-25 16:54:41,903 - INFO - Valid landline: '011-25801424' normalized to +91-112-5801424 from www.yellopages.in_tel_link_std_code
+2025-05-25 16:54:41,927 - INFO - Valid mobile: '+91-9717066915' normalized to +919717066915 from www.yellopages.in_validation
+2025-05-25 16:54:41,927 - INFO - Valid mobile: '+91-8527707749' normalized to +918527707749 from www.yellopages.in_validation
+2025-05-25 16:54:41,928 - INFO - Valid mobile: '9717066915' normalized to +919717066915 from www.yellopages.in_validation
+2025-05-25 16:54:41,928 - INFO - Valid landline: '011-25801424' normalized to +91-112-5801424 from www.yellopages.in_validation
+2025-05-25 16:54:41,928 - INFO - Valid mobile: '8527707749' normalized to +918527707749 from www.yellopages.in_validation
+2025-05-25 16:54:47,639 - INFO - Valid mobile: '+91-9311232425' normalized to +919311232425 from gkartaccessories.in_text
+2025-05-25 16:55:39,677 - INFO - Valid mobile: '+91-9311232425' normalized to +919311232425 from gkartaccessories.in_text
+2025-05-25 16:55:39,677 - INFO - Valid mobile: '+91-9311232425' normalized to +919311232425 from gkartaccessories.in_text_plus91
+2025-05-25 16:55:39,788 - INFO - Valid mobile: '+91-9311232425' normalized to +919311232425 from gkartaccessories.in_validation
+2025-05-25 16:55:43,218 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_text
+2025-05-25 16:55:43,218 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_text
+2025-05-25 16:55:43,218 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_text_std_code
+2025-05-25 16:55:43,239 - INFO - Valid landline_short: '33268196' normalized to +91-33268196 from javascript
+2025-05-25 16:55:43,239 - WARNING - Rejected: Unrecognized format '332681969821' from javascript
+2025-05-25 16:55:43,239 - INFO - Valid mobile: '6640776002' normalized to +916640776002 from javascript
+2025-05-25 16:55:43,239 - WARNING - Rejected: Unrecognized format '66407760029' from javascript
+2025-05-25 16:55:43,286 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_validation
+2025-05-25 16:55:43,286 - INFO - Valid mobile: '6640776002' normalized to +916640776002 from nextgenmobiles.in_validation
+2025-05-25 16:55:43,286 - INFO - Valid landline_short: '33268196' normalized to +91-33268196 from nextgenmobiles.in_validation
+2025-05-25 16:55:43,815 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:43,815 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:43,815 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_text
+2025-05-25 16:55:43,815 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:43,815 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:43,815 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_text
+2025-05-25 16:55:43,815 - INFO - Valid mobile: '9319285799' normalized to +919319285799 from greatchoice.co.in_text_mobile
+2025-05-25 16:55:43,820 - INFO - Valid mobile: '9319285799' normalized to +919319285799 from greatchoice.co.in_text_mobile
+2025-05-25 16:55:43,820 - INFO - Valid mobile: '9319643999' normalized to +919319643999 from greatchoice.co.in_text_mobile
+2025-05-25 16:55:43,820 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text_plus91
+2025-05-25 16:55:43,820 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text_plus91
+2025-05-25 16:55:43,820 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_text_plus91
+2025-05-25 16:55:43,860 - WARNING - Rejected: Unrecognized format '748165708' from javascript
+2025-05-25 16:55:43,865 - WARNING - Rejected: Unrecognized format '1748165708' from javascript
+2025-05-25 16:55:43,865 - INFO - Valid mobile: '9193192857' normalized to +919193192857 from javascript
+2025-05-25 16:55:43,865 - INFO - Valid mobile: '919319285799' normalized to +919319285799 from javascript
+2025-05-25 16:55:43,965 - INFO - Valid mobile: '919319285799' normalized to +919319285799 from greatchoice.co.in_validation
+2025-05-25 16:55:43,965 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_validation
+2025-05-25 16:55:43,965 - INFO - Valid mobile: '9319643999' normalized to +919319643999 from greatchoice.co.in_validation
+2025-05-25 16:55:43,969 - INFO - Valid mobile: '9193192857' normalized to +919193192857 from greatchoice.co.in_validation
+2025-05-25 16:55:43,969 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_validation
+2025-05-25 16:55:43,969 - INFO - Valid mobile: '9319285799' normalized to +919319285799 from greatchoice.co.in_validation
+2025-05-25 16:55:46,067 - INFO - Valid mobile: '08044011037' normalized to +918044011037 from www.chargermanufacturer.in_text
+2025-05-25 16:55:46,067 - WARNING - Rejected: Too short (5 digits) '10400' from www.chargermanufacturer.in_text
+2025-05-25 16:55:46,067 - INFO - Valid mobile: '08044011037' normalized to +918044011037 from www.chargermanufacturer.in_text
+2025-05-25 16:55:46,067 - WARNING - Rejected: Unrecognized format '032 10400' from www.chargermanufacturer.in_text
+2025-05-25 16:55:46,067 - INFO - Valid mobile: '08044011037' normalized to +918044011037 from www.chargermanufacturer.in_text_std_code
+2025-05-25 16:55:46,092 - INFO - Valid mobile: '8044011037' normalized to +918044011037 from javascript
+2025-05-25 16:55:46,092 - INFO - Valid mobile: '8044011037' normalized to +918044011037 from javascript
+2025-05-25 16:55:46,092 - INFO - Valid mobile: '8044011037' normalized to +918044011037 from javascript_mobile
+2025-05-25 16:55:46,092 - INFO - Valid landline_short: '27455834' normalized to +91-27455834 from javascript
+2025-05-25 16:55:46,092 - WARNING - Rejected: Unrecognized format '274558349' from javascript
+2025-05-25 16:55:46,092 - INFO - Valid landline_short: '27455834' normalized to +91-27455834 from javascript
+2025-05-25 16:55:46,092 - WARNING - Rejected: Unrecognized format '274558349' from javascript
+2025-05-25 16:55:46,092 - INFO - Valid landline_short: '28611811' normalized to +91-28611811 from javascript
+2025-05-25 16:55:46,092 - WARNING - Rejected: Unrecognized format '286118119' from javascript
+2025-05-25 16:55:46,092 - INFO - Valid landline_short: '28611811' normalized to +91-28611811 from javascript
+2025-05-25 16:55:46,092 - WARNING - Rejected: Unrecognized format '286118119' from javascript
+2025-05-25 16:55:46,092 - INFO - Valid landline_short: '28612546' normalized to +91-28612546 from javascript
+2025-05-25 16:55:46,092 - WARNING - Rejected: Unrecognized format '286125463' from javascript
+2025-05-25 16:55:46,092 - INFO - Valid landline_short: '28612546' normalized to +91-28612546 from javascript
+2025-05-25 16:55:46,092 - WARNING - Rejected: Unrecognized format '286125463' from javascript
+2025-05-25 16:55:46,140 - INFO - Valid landline_short: '28612546' normalized to +91-28612546 from www.chargermanufacturer.in_validation
+2025-05-25 16:55:46,145 - INFO - Valid landline_short: '28611811' normalized to +91-28611811 from www.chargermanufacturer.in_validation
+2025-05-25 16:55:46,145 - INFO - Valid mobile: '8044011037' normalized to +918044011037 from www.chargermanufacturer.in_validation
+2025-05-25 16:55:46,145 - INFO - Valid landline_short: '27455834' normalized to +91-27455834 from www.chargermanufacturer.in_validation
+2025-05-25 16:55:46,145 - INFO - Valid mobile: '08044011037' normalized to +918044011037 from www.chargermanufacturer.in_validation
+2025-05-25 16:55:46,506 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:46,506 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:46,506 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_text
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_text
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '9319285799' normalized to +919319285799 from greatchoice.co.in_text_mobile
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '9319285799' normalized to +919319285799 from greatchoice.co.in_text_mobile
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '9319643999' normalized to +919319643999 from greatchoice.co.in_text_mobile
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text_plus91
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_text_plus91
+2025-05-25 16:55:46,513 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_text_plus91
+2025-05-25 16:55:46,562 - WARNING - Rejected: Unrecognized format '748165967' from javascript
+2025-05-25 16:55:46,562 - WARNING - Rejected: Unrecognized format '1748165967' from javascript
+2025-05-25 16:55:46,562 - INFO - Valid mobile: '9193192857' normalized to +919193192857 from javascript
+2025-05-25 16:55:46,562 - INFO - Valid mobile: '919319285799' normalized to +919319285799 from javascript
+2025-05-25 16:55:46,679 - INFO - Valid mobile: '919319285799' normalized to +919319285799 from greatchoice.co.in_validation
+2025-05-25 16:55:46,679 - INFO - Valid mobile: '+91 9319285799' normalized to +919319285799 from greatchoice.co.in_validation
+2025-05-25 16:55:46,682 - INFO - Valid mobile: '9319643999' normalized to +919319643999 from greatchoice.co.in_validation
+2025-05-25 16:55:46,682 - INFO - Valid mobile: '9193192857' normalized to +919193192857 from greatchoice.co.in_validation
+2025-05-25 16:55:46,682 - INFO - Valid mobile: '+91 9319643999' normalized to +919319643999 from greatchoice.co.in_validation
+2025-05-25 16:55:46,682 - INFO - Valid mobile: '9319285799' normalized to +919319285799 from greatchoice.co.in_validation
+2025-05-25 16:55:47,617 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_text
+2025-05-25 16:55:47,617 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_text
+2025-05-25 16:55:47,617 - INFO - Valid mobile: '+91-9213544103' normalized to +919213544103 from www.yellopages.in_text
+2025-05-25 16:55:47,617 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_text
+2025-05-25 16:55:47,617 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_text
+2025-05-25 16:55:47,617 - INFO - Valid mobile: '+91-9213544103' normalized to +919213544103 from www.yellopages.in_text
+2025-05-25 16:55:47,623 - INFO - Valid mobile: '9891687140' normalized to +919891687140 from www.yellopages.in_text_mobile
+2025-05-25 16:55:47,623 - INFO - Valid mobile: '9891687140' normalized to +919891687140 from www.yellopages.in_text_mobile
+2025-05-25 16:55:47,623 - INFO - Valid mobile: '9213544103' normalized to +919213544103 from www.yellopages.in_text_mobile
+2025-05-25 16:55:47,623 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_text_plus91
+2025-05-25 16:55:47,623 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_text_plus91
+2025-05-25 16:55:47,623 - INFO - Valid mobile: '+91-9213544103' normalized to +919213544103 from www.yellopages.in_text_plus91
+2025-05-25 16:55:47,624 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_tel_link
+2025-05-25 16:55:47,624 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_tel_link
+2025-05-25 16:55:47,624 - INFO - Valid mobile: '9891687140' normalized to +919891687140 from www.yellopages.in_tel_link_mobile
+2025-05-25 16:55:47,624 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_tel_link_plus91
+2025-05-25 16:55:47,624 - INFO - Valid mobile: '9891687140' normalized to +919891687140 from www.yellopages.in_tel_link
+2025-05-25 16:55:47,624 - INFO - Valid mobile: '9891687140' normalized to +919891687140 from www.yellopages.in_tel_link
+2025-05-25 16:55:47,626 - INFO - Valid mobile: '9891687140' normalized to +919891687140 from www.yellopages.in_tel_link_mobile
+2025-05-25 16:55:47,626 - INFO - Valid mobile: '9213544103' normalized to +919213544103 from www.yellopages.in_tel_link
+2025-05-25 16:55:47,626 - INFO - Valid mobile: '9213544103' normalized to +919213544103 from www.yellopages.in_tel_link
+2025-05-25 16:55:47,626 - INFO - Valid mobile: '9213544103' normalized to +919213544103 from www.yellopages.in_tel_link_mobile
+2025-05-25 16:55:47,650 - INFO - Valid mobile: '9891687140' normalized to +919891687140 from www.yellopages.in_validation
+2025-05-25 16:55:47,650 - INFO - Valid mobile: '+91-9891687140' normalized to +919891687140 from www.yellopages.in_validation
+2025-05-25 16:55:47,650 - INFO - Valid mobile: '9213544103' normalized to +919213544103 from www.yellopages.in_validation
+2025-05-25 16:55:47,650 - INFO - Valid mobile: '+91-9213544103' normalized to +919213544103 from www.yellopages.in_validation
+2025-05-25 16:56:45,259 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_text
+2025-05-25 16:56:45,261 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_text
+2025-05-25 16:56:45,261 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_text_std_code
+2025-05-25 16:56:45,283 - INFO - Valid landline_short: '33268196' normalized to +91-33268196 from javascript
+2025-05-25 16:56:45,283 - WARNING - Rejected: Unrecognized format '332681969821' from javascript
+2025-05-25 16:56:45,283 - INFO - Valid mobile: '6640776002' normalized to +916640776002 from javascript
+2025-05-25 16:56:45,283 - WARNING - Rejected: Unrecognized format '66407760029' from javascript
+2025-05-25 16:56:45,330 - INFO - Valid mobile: '09654869595' normalized to +919654869595 from nextgenmobiles.in_validation
+2025-05-25 16:56:45,331 - INFO - Valid mobile: '6640776002' normalized to +916640776002 from nextgenmobiles.in_validation
+2025-05-25 16:56:45,331 - INFO - Valid landline_short: '33268196' normalized to +91-33268196 from nextgenmobiles.in_validation

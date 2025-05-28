@@ -1,0 +1,3 @@
+[2025-05-25T18:25:11.300543] Status: PROCESSING | Progress: 5% | Results: 0 | Message: Starting search for 'hyaluronic acid whole sellers in Delhi'
+[2025-05-25T18:25:11.318428] Status: PROCESSING | Progress: 5% | Results: 0 | Message: Error optimizing query: 'ContactScraper' object has no attribute 'fallback_optimize_search_query'. Continuing with original query.
+[2025-05-25T18:25:11.341225] Status: ERROR | Progress: 0% | Results: 0 | Message: Error: 'ContactScraper' object has no attribute 'search_google'

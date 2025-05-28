@@ -1,0 +1,32 @@
+2025-05-25 16:36:35,560 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_163635_task_19.log
+2025-05-25 16:36:35,567 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 16:36:35,567 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 16:36:35,594 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 16:36:37,336 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi' with strict 10-minute limit
+2025-05-25 16:36:37,336 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-25 16:36:37,336 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 16:36:37,336 - ContactScraper - INFO - Original keyword: 'Dropper Bottles in Delhi' | Optimized query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 16:36:37,336 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-25 16:36:37,336 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 16:36:37,336 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:36:37,336 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:37:01,349 - ContactScraper - INFO - Imported browser search found 1 results
+2025-05-25 16:37:01,349 - ContactScraper - INFO - Extracting contacts from: https://www.manufacturersuppliers.in/delhi/plastic-dropper-bottles.html
+2025-05-25 16:37:01,745 - ContactScraper - INFO - Direct request found 0 emails and 1 phones
+2025-05-25 16:37:02,354 - ContactScraper - INFO - Contact page https://www.manufacturersuppliers.in/contact found 0 emails and 0 phones
+2025-05-25 16:37:02,642 - ContactScraper - INFO - Contact page https://www.manufacturersuppliers.in/contact-us found 0 emails and 0 phones
+2025-05-25 16:37:02,642 - ContactScraper - INFO - Found 0 emails and 1 phones on www.manufacturersuppliers.in
+2025-05-25 16:37:02,642 - ContactScraper - INFO - Searching Google for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 1)
+2025-05-25 16:37:02,642 - ContactScraper - INFO - Simplified complex query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone'
+2025-05-25 16:37:02,642 - ContactScraper - INFO - Reduced exclusions in query: '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:37:02,642 - ContactScraper - INFO - Trying imported browser search function for '"Dropper Bottles in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-25 16:37:27,847 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-25 16:37:27,847 - ContactScraper - INFO - Extracting contacts from: https://www.essentialoilbottle.in/essential-oil-bottle.html
+2025-05-25 16:37:29,614 - ContactScraper - INFO - Direct request found 1 emails and 17 phones
+2025-05-25 16:37:29,614 - ContactScraper - INFO - Found 1 emails and 17 phones on www.essentialoilbottle.in
+2025-05-25 16:37:29,616 - ContactScraper - INFO - Extracting contacts from: https://www.sunriseagency.co.in/glass-bottle-supplier-in-delhi.html
+2025-05-25 16:37:32,068 - ContactScraper - INFO - Direct request found 1 emails and 33 phones
+2025-05-25 16:37:32,068 - ContactScraper - INFO - Found 1 emails and 33 phones on www.sunriseagency.co.in
+2025-05-25 16:37:32,068 - ContactScraper - INFO - Results saved to scraped_data\contacts_Dropper Bottles in Delhi_20250525_163732.csv
+2025-05-25 16:37:32,068 - ContactScraper - INFO - Detailed results saved to scraped_data\detailed_Dropper Bottles in Delhi_20250525_163732.csv
+2025-05-25 16:37:32,091 - ContactScraper - INFO - Scraping completed: found 1 emails and 51 phones

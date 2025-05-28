@@ -1,0 +1,127 @@
+2025-05-25 16:13:24,352 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_161324_task_12.log
+2025-05-25 16:13:24,354 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 16:13:24,355 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 16:13:24,384 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 16:13:26,234 - ContactScraper - INFO - Starting scrape for keyword: 'Dropper Bottles in Delhi'
+2025-05-25 16:13:26,234 - ContactScraper - INFO - Updating task status for 12: processing
+2025-05-25 16:13:26,234 - ContactScraper - ERROR - Error updating task status: name 'settings' is not defined
+2025-05-25 16:13:26,237 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2832, in update_task_status
+    status_dir = os.path.join(settings.MEDIA_ROOT, 'mining_status')
+NameError: name 'settings' is not defined
+
+2025-05-25 16:13:26,238 - ContactScraper - INFO - Using original keyword as query: 'Dropper Bottles in Delhi'
+2025-05-25 16:13:26,238 - ContactScraper - INFO - Updating task status for 12: processing
+2025-05-25 16:13:26,238 - ContactScraper - ERROR - Error updating task status: name 'settings' is not defined
+2025-05-25 16:13:26,239 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2832, in update_task_status
+    status_dir = os.path.join(settings.MEDIA_ROOT, 'mining_status')
+NameError: name 'settings' is not defined
+
+2025-05-25 16:13:26,241 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:26,241 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:26,242 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:26,242 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:26,242 - ContactScraper - ERROR - Error in direct search: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:26,242 - ContactScraper - INFO - Trying Google search with simplified query: 'Dropper Bottles in Delhi contact'
+2025-05-25 16:13:26,242 - ContactScraper - ERROR - Error in Google search with simplified query: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:26,242 - ContactScraper - WARNING - Failed to find any URLs for 'Dropper Bottles in Delhi' using all search strategies
+2025-05-25 16:13:26,242 - ContactScraper - ERROR - Google error: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:26,242 - ContactScraper - ERROR - Direct search error: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:26,245 - ContactScraper - INFO - Extracting contacts from: https://www.google.com/search?q=Dropper Bottles in Delhi+contact+phone+india
+2025-05-25 16:13:26,245 - ContactScraper - INFO - Detected contact page: https://www.google.com/search?q=Dropper Bottles in Delhi+contact+phone+india
+2025-05-25 16:13:26,245 - ContactScraper - ERROR - Error fetching https://www.google.com/search?q=Dropper Bottles in Delhi+contact+phone+india with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:13:26,245 - ContactScraper - INFO - Trying browser fallback for https://www.google.com/search?q=Dropper Bottles in Delhi+contact+phone+india
+2025-05-25 16:13:26,247 - ContactScraper - INFO - Initializing browser for web scraping...
+2025-05-25 16:13:27,018 - ContactScraper - INFO - Playwright initialized successfully
+2025-05-25 16:13:27,018 - ContactScraper - WARNING - Proxy setup failed, continuing without proxy: 'ContactScraper' object has no attribute 'get_random_proxy'
+2025-05-25 16:13:27,018 - ContactScraper - INFO - Launching browser...
+2025-05-25 16:13:27,112 - ContactScraper - INFO - Chromium browser launched successfully
+2025-05-25 16:13:27,112 - ContactScraper - INFO - Creating browser context...
+2025-05-25 16:13:27,112 - ContactScraper - ERROR - Failed to create browser context: 'ContactScraper' object has no attribute 'get_random_user_agent'
+2025-05-25 16:13:27,112 - ContactScraper - INFO - Closing browser...
+2025-05-25 16:13:27,183 - ContactScraper - INFO - Stopping playwright...
+2025-05-25 16:13:27,196 - ContactScraper - INFO - Browser resources cleanup completed
+2025-05-25 16:13:27,196 - ContactScraper - ERROR - Browser initialization failed
+2025-05-25 16:13:27,197 - ContactScraper - INFO - Found 0 emails and 0 phones on www.google.com
+2025-05-25 16:13:27,197 - ContactScraper - INFO - Extracting contacts from: https://www.justdial.com/search?q=Dropper Bottles in Delhi
+2025-05-25 16:13:27,197 - ContactScraper - ERROR - Error fetching https://www.justdial.com/search?q=Dropper Bottles in Delhi with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:13:27,198 - ContactScraper - INFO - Found 0 emails and 0 phones on www.justdial.com
+2025-05-25 16:13:27,198 - ContactScraper - INFO - Extracting contacts from: https://www.indiamart.com/search.html?ss=Dropper Bottles in Delhi&prdsrc=1
+2025-05-25 16:13:27,198 - ContactScraper - ERROR - Error fetching https://www.indiamart.com/search.html?ss=Dropper Bottles in Delhi&prdsrc=1 with regular request: 'ContactScraper' object has no attribute 'make_request'
+2025-05-25 16:13:27,200 - ContactScraper - INFO - Found 0 emails and 0 phones on www.indiamart.com
+2025-05-25 16:13:27,200 - ContactScraper - INFO - Updating task status for 12: processing
+2025-05-25 16:13:27,200 - ContactScraper - ERROR - Error updating task status: name 'settings' is not defined
+2025-05-25 16:13:27,200 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2832, in update_task_status
+    status_dir = os.path.join(settings.MEDIA_ROOT, 'mining_status')
+NameError: name 'settings' is not defined
+
+2025-05-25 16:13:27,200 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,200 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,200 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,200 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,200 - ContactScraper - ERROR - Error in direct search: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,208 - ContactScraper - INFO - Trying Google search with simplified query: 'Dropper Bottles in Delhi contact'
+2025-05-25 16:13:27,208 - ContactScraper - ERROR - Error in Google search with simplified query: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,208 - ContactScraper - WARNING - Failed to find any URLs for 'Dropper Bottles in Delhi' using all search strategies
+2025-05-25 16:13:27,208 - ContactScraper - ERROR - Google error: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,208 - ContactScraper - ERROR - Direct search error: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,208 - ContactScraper - INFO - Updating task status for 12: processing
+2025-05-25 16:13:27,208 - ContactScraper - ERROR - Error updating task status: name 'settings' is not defined
+2025-05-25 16:13:27,211 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2832, in update_task_status
+    status_dir = os.path.join(settings.MEDIA_ROOT, 'mining_status')
+NameError: name 'settings' is not defined
+
+2025-05-25 16:13:27,211 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,211 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,215 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,219 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,219 - ContactScraper - ERROR - Error in direct search: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,219 - ContactScraper - INFO - Trying Google search with simplified query: 'Dropper Bottles in Delhi contact'
+2025-05-25 16:13:27,219 - ContactScraper - ERROR - Error in Google search with simplified query: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,219 - ContactScraper - WARNING - Failed to find any URLs for 'Dropper Bottles in Delhi' using all search strategies
+2025-05-25 16:13:27,219 - ContactScraper - ERROR - Google error: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,221 - ContactScraper - ERROR - Direct search error: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,221 - ContactScraper - INFO - Updating task status for 12: processing
+2025-05-25 16:13:27,221 - ContactScraper - ERROR - Error updating task status: name 'settings' is not defined
+2025-05-25 16:13:27,224 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2832, in update_task_status
+    status_dir = os.path.join(settings.MEDIA_ROOT, 'mining_status')
+NameError: name 'settings' is not defined
+
+2025-05-25 16:13:27,224 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,225 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,225 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,225 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,225 - ContactScraper - ERROR - Error in direct search: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,225 - ContactScraper - INFO - Trying Google search with simplified query: 'Dropper Bottles in Delhi contact'
+2025-05-25 16:13:27,225 - ContactScraper - ERROR - Error in Google search with simplified query: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,225 - ContactScraper - WARNING - Failed to find any URLs for 'Dropper Bottles in Delhi' using all search strategies
+2025-05-25 16:13:27,225 - ContactScraper - ERROR - Google error: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,225 - ContactScraper - ERROR - Direct search error: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,229 - ContactScraper - INFO - Updating task status for 12: processing
+2025-05-25 16:13:27,229 - ContactScraper - ERROR - Error updating task status: name 'settings' is not defined
+2025-05-25 16:13:27,231 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2832, in update_task_status
+    status_dir = os.path.join(settings.MEDIA_ROOT, 'mining_status')
+NameError: name 'settings' is not defined
+
+2025-05-25 16:13:27,234 - ContactScraper - INFO - Searching with multiple strategies for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,234 - ContactScraper - INFO - Trying Google search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,234 - ContactScraper - ERROR - Error in Google search: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,234 - ContactScraper - INFO - Trying direct search for 'Dropper Bottles in Delhi'
+2025-05-25 16:13:27,234 - ContactScraper - ERROR - Error in direct search: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,234 - ContactScraper - INFO - Trying Google search with simplified query: 'Dropper Bottles in Delhi contact'
+2025-05-25 16:13:27,234 - ContactScraper - ERROR - Error in Google search with simplified query: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,234 - ContactScraper - WARNING - Failed to find any URLs for 'Dropper Bottles in Delhi' using all search strategies
+2025-05-25 16:13:27,234 - ContactScraper - ERROR - Google error: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 16:13:27,238 - ContactScraper - ERROR - Direct search error: 'ContactScraper' object has no attribute 'direct_search'
+2025-05-25 16:13:27,238 - ContactScraper - INFO - Updating task status for 12: completed
+2025-05-25 16:13:27,238 - ContactScraper - ERROR - Error updating task status: name 'settings' is not defined
+2025-05-25 16:13:27,240 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2832, in update_task_status
+    status_dir = os.path.join(settings.MEDIA_ROOT, 'mining_status')
+NameError: name 'settings' is not defined
+

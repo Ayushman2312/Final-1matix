@@ -26,7 +26,7 @@ class RegisterView(TemplateView):
                     context['employee_error'] = 'Employee has already registered'
                     context['policies'] = employee.department.terms_and_conditions
                 else:
-                    context['email'] = employee.email
+                    context['email'] = employee.employee_email
                     context['employee_passcode'] = passcode
                     context['employee_policy'] = employee.department.terms_and_conditions
             else:
@@ -154,7 +154,7 @@ def EmployeeLogin(request):
             return render(request, 'employee/employee_login.html')
             
         try:
-            user = Employee.objects.get(email=email)
+            user = Employee.objects.get(employee_email=email)
             password = check_password(password, user.password)
             if password:
                 request.session['employee_id'] = str(user.id)
@@ -201,7 +201,7 @@ class Success(TemplateView):
         passcode = self.kwargs.get('passcode')
         try:
             employee = Employee.objects.get(employee_passcode=passcode)
-            context['email'] = employee.email
+            context['email'] = employee.employee_email
             context['passcode'] = passcode
         except Employee.DoesNotExist:
             context['email'] = ''

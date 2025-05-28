@@ -1,0 +1,83 @@
+2025-05-25 17:57:08,007 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_175708_task_26.log
+2025-05-25 17:57:08,013 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 17:57:08,013 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 17:57:08,071 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 17:57:12,366 - ContactScraper - INFO - Starting scrape for keyword: 'hyaluronic acid whole sellers in Delhi' with strict 10-minute limit
+2025-05-25 17:57:12,382 - ContactScraper - INFO - Gemini API not available, using fallback query optimization
+2025-05-25 17:57:12,391 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 17:57:12,391 - ContactScraper - INFO - Original keyword: 'hyaluronic acid whole sellers in Delhi' | Optimized query: '"hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-25 17:57:12,391 - ContactScraper - INFO - Searching Google for: "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com (page 0)
+2025-05-25 17:57:47,247 - ContactScraper - WARNING - Google search request failed with status code 429
+2025-05-25 17:57:47,247 - ContactScraper - WARNING - All Google search methods failed
+2025-05-25 17:57:47,247 - ContactScraper - INFO - Searching Google for: "hyaluronic acid whole sellers in Delhi" contact site:.in (page 0)
+2025-05-25 17:58:18,070 - ContactScraper - WARNING - Google search request failed with status code 429
+2025-05-25 17:58:18,073 - ContactScraper - WARNING - All Google search methods failed
+2025-05-25 17:58:18,073 - ContactScraper - INFO - Performing direct search for: "hyaluronic acid whole sellers in Delhi" contact site:.in
+2025-05-25 17:58:18,073 - ContactScraper - INFO - Generated 56 potential URLs for direct search
+2025-05-25 17:58:18,078 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersincontactsitein.biz
+2025-05-25 17:58:18,078 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersincontactsitein.biz
+2025-05-25 17:58:18,339 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersincontactsitein.biz
+2025-05-25 17:58:18,339 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersincontactsitein.biz =====
+2025-05-25 17:58:18,339 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:18,339 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersincontactsitein.biz
+2025-05-25 17:58:18,348 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:18,348 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:18,413 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersindelhicontactsiteincompany.co.in
+2025-05-25 17:58:18,413 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersindelhicontactsiteincompany.co.in
+2025-05-25 17:58:18,718 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersindelhicontactsiteincompany.co.in
+2025-05-25 17:58:18,718 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersindelhicontactsiteincompany.co.in =====
+2025-05-25 17:58:18,718 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:18,718 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersindelhicontactsiteincompany.co.in
+2025-05-25 17:58:18,727 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:18,727 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:18,727 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersindelhicontactsiteinofficial.org
+2025-05-25 17:58:18,727 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersindelhicontactsiteinofficial.org
+2025-05-25 17:58:19,044 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersindelhicontactsiteinofficial.org
+2025-05-25 17:58:19,046 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersindelhicontactsiteinofficial.org =====
+2025-05-25 17:58:19,046 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:19,048 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersindelhicontactsiteinofficial.org
+2025-05-25 17:58:19,048 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:19,048 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:19,048 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersincontactsiteinofficial.com
+2025-05-25 17:58:19,048 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersincontactsiteinofficial.com
+2025-05-25 17:58:19,365 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersincontactsiteinofficial.com
+2025-05-25 17:58:19,368 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersincontactsiteinofficial.com =====
+2025-05-25 17:58:19,368 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:19,368 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersincontactsiteinofficial.com
+2025-05-25 17:58:19,368 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:19,368 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:19,375 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersincontactsiteincompany.net
+2025-05-25 17:58:19,375 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersincontactsiteincompany.net
+2025-05-25 17:58:19,580 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersincontactsiteincompany.net
+2025-05-25 17:58:19,584 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersincontactsiteincompany.net =====
+2025-05-25 17:58:19,584 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:19,584 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersincontactsiteincompany.net
+2025-05-25 17:58:19,584 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:19,584 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:19,591 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersincontactsiteincompany.biz
+2025-05-25 17:58:19,597 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersincontactsiteincompany.biz
+2025-05-25 17:58:19,806 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersincontactsiteincompany.biz
+2025-05-25 17:58:19,806 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersincontactsiteincompany.biz =====
+2025-05-25 17:58:19,806 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:19,811 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersincontactsiteincompany.biz
+2025-05-25 17:58:19,812 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:19,812 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:19,819 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersincontactsiteincompany.org
+2025-05-25 17:58:19,819 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersincontactsiteincompany.org
+2025-05-25 17:58:20,234 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersincontactsiteincompany.org
+2025-05-25 17:58:20,234 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersincontactsiteincompany.org =====
+2025-05-25 17:58:20,234 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:20,242 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersincontactsiteincompany.org
+2025-05-25 17:58:20,242 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:20,243 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:20,243 - ContactScraper - INFO - Extracting contacts from: https://www.exportersindia.com/search.php?term=hyaluronic%20acid%20whole%20sellers%20in%20%20contact%20sitein
+2025-05-25 17:58:20,243 - ContactScraper - INFO - Skipping excluded domain: www.exportersindia.com
+2025-05-25 17:58:20,243 - ContactScraper - INFO - Extracting contacts from: https://www.hyaluronicacidwholesellersindelhicontactsitein.com
+2025-05-25 17:58:20,243 - ContactScraper - INFO - Requesting page via direct HTTP: https://www.hyaluronicacidwholesellersindelhicontactsitein.com
+2025-05-25 17:58:20,559 - ContactScraper - WARNING - Connection error requesting https://www.hyaluronicacidwholesellersindelhicontactsitein.com
+2025-05-25 17:58:20,563 - ContactScraper - INFO - ===== EXTRACTION SUMMARY FOR www.hyaluronicacidwholesellersindelhicontactsitein.com =====
+2025-05-25 17:58:20,563 - ContactScraper - INFO - Total pages visited: 1
+2025-05-25 17:58:20,563 - ContactScraper - INFO - Pages: https://www.hyaluronicacidwholesellersindelhicontactsitein.com
+2025-05-25 17:58:20,563 - ContactScraper - INFO - Found 0 emails: None
+2025-05-25 17:58:20,564 - ContactScraper - INFO - Found 0 phones: None
+2025-05-25 17:58:20,571 - ContactScraper - INFO - Searching Google for: "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com (page 1)

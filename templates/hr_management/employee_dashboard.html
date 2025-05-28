@@ -1,0 +1,1361 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <title>HR Portal | Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #6366F1;
+            --primary-light: #818CF8;
+            --primary-dark: #4F46E5;
+            --secondary-color: #0F172A;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --light-bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border-color: #E2E8F0;
+        }
+        body {
+            font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light-bg);
+            scroll-behavior: smooth;
+        }
+        .dashboard-card {
+            @apply bg-white rounded-xl border border-slate-100/80 transition-all duration-300;
+            background: linear-gradient(145deg, #FFFFFF, #F8FAFC);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .dashboard-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        .dashboard-card-title {
+            @apply text-base font-semibold mb-4 text-slate-800 flex items-center;
+        }
+        .dashboard-card-icon {
+            @apply w-6 h-6 mr-2 text-indigo-500;
+        }
+        .action-button {
+            @apply py-2.5 px-4 rounded-lg text-white text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center shadow-sm;
+        }
+        .action-button-primary {
+            @apply bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500;
+        }
+        .action-button-secondary {
+            @apply bg-slate-600 hover:bg-slate-700 focus:ring-slate-500;
+        }
+        .action-button-success {
+            @apply bg-emerald-500 hover:bg-emerald-600 focus:ring-emerald-500;
+        }
+        .action-button-danger {
+            @apply bg-red-500 hover:bg-red-600 focus:ring-red-500;
+        }
+        .stat-card {
+            @apply transition-all duration-300;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover::after {
+            transform: scaleX(1);
+        }
+        .nav-header {
+            @apply text-white py-2 sticky top-0 z-50 backdrop-blur-lg;
+            background: rgba(79, 70, 229, 0.98);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-in-right {
+            animation: slideInRight 0.5s ease-out;
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .slide-in-left {
+            animation: slideInLeft 0.5s ease-out;
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+        }
+        .action-icon {
+            @apply w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @media (max-width: 768px) {
+            .dashboard-card {
+                @apply p-4;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <!-- Navigation Header -->
+    <div class="nav-header">
+        <div class="container mx-auto px-4 md:px-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-md bg-white/20 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <span class="text-lg font-semibold ml-2">HR Portal</span>
+                </div>
+                <div class="hidden md:flex space-x-1">
+                    <a href="{% url 'employee_dashboard' %}" class="px-3 py-2 text-sm rounded-md text-white/90 hover:text-white hover:bg-white/10 transition-colors">Dashboard</a>
+                    <a href="{% url 'employee_profile' %}" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors">Profile</a>
+                    <a href="{% url 'employee_leave' %}" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors">Leave</a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                            <i class="fas fa-bell text-xs"></i>
+                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center">2</span>
+                        </button>
+                    </div>
+                    <button class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                        <i class="fas fa-cog text-xs"></i>
+                    </button>
+                    <div class="h-5 w-[1px] bg-white/20 mx-1"></div>
+                </div>
+                <div class="hidden md:flex items-center space-x-3">
+                    <div class="text-right mr-2">
+                        <p class="text-xs text-white/80">Welcome</p>
+                        <p class="text-sm font-medium">{{ employee.name|slice:":15" }}</p>
+                    </div>
+                    {% if employee.photo %}
+                        <img class="h-9 w-9 rounded-full border-2 border-white/50 object-cover" src="{{ employee.photo.url }}" alt="{{ employee.name }}">
+                    {% else %}
+                        <div class="h-9 w-9 rounded-full border-2 border-white/50 bg-white/20 flex items-center justify-center text-sm font-bold">
+                            {{ employee.name|slice:":1" }}
+                        </div>
+                    {% endif %}
+                </div>
+                <form action="{% url 'employee_logout' %}" method="post" class="hidden md:block">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md text-xs transition-colors flex items-center space-x-2">
+                        <span>Logout</span>
+                        <i class="fas fa-sign-out-alt text-xs"></i>
+                    </button>
+                </form>
+                <button id="mobileMenuBtn" class="md:hidden w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <i class="fas fa-bars text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu (hidden by default) -->
+    <div id="mobileMenu" class="md:hidden bg-white shadow-lg rounded-b-lg mb-4 hidden animate__animated animate__fadeIn">
+        <div class="container mx-auto px-4 py-2 space-y-1">
+            <div class="flex items-center space-x-3 p-3 border-b border-slate-100">
+                {% if employee.photo %}
+                    <img class="h-10 w-10 rounded-full border border-indigo-200 object-cover" src="{{ employee.photo.url }}" alt="{{ employee.name }}">
+                {% else %}
+                    <div class="h-10 w-10 rounded-full border border-indigo-200 bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700">
+                        {{ employee.name|slice:":1" }}
+                    </div>
+                {% endif %}
+                <div>
+                    <p class="font-medium text-slate-800 text-sm">{{ employee.name }}</p>
+                    <p class="text-xs text-slate-500">{{ employee.designation }}</p>
+                </div>
+            </div>
+            <a href="{% url 'employee_dashboard' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-home text-slate-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Dashboard</span>
+            </a>
+            <a href="{% url 'employee_profile' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-user-circle text-slate-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">My Profile</span>
+            </a>
+            <a href="{% url 'employee_leave' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-calendar-alt text-slate-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Apply Leave</span>
+            </a>
+            <a href="{% url 'employee_reimbursement' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-receipt text-slate-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Reimbursement</span>
+            </a>
+            <a href="{% url 'employee_documents' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-file-alt text-slate-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Documents</span>
+            </a>
+            <form action="{% url 'employee_logout' %}" method="post" class="border-t border-slate-100 pt-2 mt-2">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center py-2.5 px-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <i class="fas fa-sign-out-alt w-5 text-center mr-3"></i>
+                    <span class="text-sm">Logout</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 md:px-6 py-6 max-w-7xl">
+        {% if not employee.is_approved or not employee.is_active %}
+        <!-- Onboarding Status Alert -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8 fade-in">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-amber-500 text-xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-amber-800">Account Pending Approval</h3>
+                    <div class="mt-2 text-sm text-amber-700">
+                        <p>Your employee account is pending approval from HR. You'll get full access to all features once your account is approved.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if invitations and invitations|length > 0 %}
+        <!-- Pending Invitations Alert -->
+        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-8 fade-in">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-envelope-open-text text-indigo-500 text-xl"></i>
+                </div>
+                <div class="ml-3 w-full">
+                    <h3 class="text-sm font-medium text-indigo-800">Pending Invitations</h3>
+                    <div class="mt-2 text-sm text-indigo-700">
+                        <p>You have {{ invitations|length }} pending invitation{% if invitations|length > 1 %}s{% endif %} that require your response.</p>
+                    </div>
+                    <div class="mt-3 space-y-2">
+                        {% for invitation in invitations %}
+                        <div class="bg-white shadow-sm rounded-lg p-3 flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div>
+                                <p class="font-medium text-slate-800 text-sm">{{ invitation.company.company_name }}</p>
+                                <p class="text-xs text-slate-500">{{ invitation.created_at|date:"F j, Y" }}</p>
+                            </div>
+                            <div class="mt-2 sm:mt-0 flex gap-2">
+                                <a href="{% url 'invitation-detail' invitation.invitation_id %}" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg shadow-sm inline-flex items-center">
+                                    <i class="fas fa-eye mr-1.5 text-[10px]"></i>
+                                    View Invitation
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Welcome Section -->
+        <div class="mb-8 fade-in">
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100/80 hover:shadow-md transition-all duration-300">
+                <div class="md:flex">
+                    <div class="md:shrink-0 bg-gradient-to-br from-indigo-600 to-indigo-800 md:w-52 flex items-center justify-center p-6 relative overflow-hidden">
+                        <div class="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full"></div>
+                        <div class="absolute bottom-5 right-5 w-20 h-20 bg-white/5 rounded-full"></div>
+                        <div class="absolute top-10 right-10 w-6 h-6 bg-white/20 rounded-full"></div>
+                        <div class="absolute bottom-20 left-5 w-4 h-4 bg-white/20 rounded-full"></div>
+                        <div class="relative z-10 text-center">
+                            {% if employee.photo %}
+                                <img class="h-24 w-24 rounded-full mx-auto border-2 border-white/70 shadow-md object-cover" src="{{ employee.photo.url }}" alt="{{ employee.name }}">
+                            {% else %}
+                                <div class="h-24 w-24 rounded-full mx-auto border-2 border-white/70 shadow-md bg-indigo-400 flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-white">{{ employee.name|slice:":1" }}</span>
+                                </div>
+                            {% endif %}
+                            <div class="mt-3 text-white/90 text-xs">Employee ID: #{{ employee.id|default:"00000" }}</div>
+                        </div>
+                    </div>
+                    <div class="p-5 md:p-6 w-full bg-gradient-to-br from-white to-slate-50/50">
+                        <div class="flex flex-col md:flex-row md:items-end justify-between">
+                            <div class="animate__animated animate__fadeInUp">
+                                <div class="uppercase tracking-wider text-xs font-semibold text-indigo-500 mb-1">Welcome back</div>
+                                <h1 class="text-xl md:text-2xl font-bold text-slate-800 mb-2">{{ employee.name }}</h1>
+                                <div class="flex items-center text-slate-500 text-xs mb-3">
+                                    <i class="far fa-calendar-alt mr-2"></i>
+                                    <span>{{ today_date|date:"l, F j, Y" }}</span>
+                                </div>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    {% if employee.department %}
+                                        <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium flex items-center">
+                                            <i class="fas fa-building mr-1.5 text-indigo-400 text-[10px]"></i>
+                                            {{ employee.department }}
+                                        </span>
+                                    {% endif %}
+                                    {% if employee.designation %}
+                                        <span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium flex items-center">
+                                            <i class="fas fa-id-badge mr-1.5 text-purple-400 text-[10px]"></i>
+                                            {{ employee.designation }}
+                                        </span>
+                                    {% endif %}
+                                    {% if employee.role %}
+                                        <span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium flex items-center">
+                                            <i class="fas fa-user-tag mr-1.5 text-blue-400 text-[10px]"></i>
+                                            {{ employee.role }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="mt-4 md:mt-0">
+                                <div class="flex items-center p-3 rounded-xl bg-white shadow-sm border border-slate-100">
+                                    <div class="mr-3">
+                                        <p class="text-xs font-medium text-slate-500">Today's Status</p>
+                                        {% if today_status == 'present' %}
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-emerald-500 rounded-full mr-1.5 pulse-animation"></span>
+                                                <span class="text-emerald-600 font-medium text-xs">Present</span>
+                                            </div>
+                                        {% elif today_status == 'leave' %}
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-1.5"></span>
+                                                <span class="text-blue-600 font-medium text-xs">On Leave</span>
+                                            </div>
+                                        {% else %}
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-slate-400 rounded-full mr-1.5"></span>
+                                                <span class="text-slate-600 font-medium text-xs">Not Marked</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <button id="quickAttendanceBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center justify-center font-medium shadow-sm hover:shadow {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                                        <i class="fas fa-clock mr-1.5 text-[10px]"></i>
+                                        {% if today_status == 'present' and not checked_out %}
+                                            Check Out
+                                        {% else %}
+                                            Check In
+                                        {% endif %}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+            <!-- Attendance Stats -->
+            <div class="dashboard-card stat-card p-5 hover:shadow-md slide-in-left" style="animation-delay: 0.1s">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="dashboard-card-title mb-0">
+                        <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center mr-2 shadow-sm">
+                            <i class="fas fa-calendar-check text-indigo-600"></i>
+                        </div>
+                        <span class="text-sm font-semibold text-slate-800">Attendance</span>
+                    </div>
+                    <div class="h-12 w-12">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline">
+                        <p class="text-2xl font-bold text-slate-800">{{ attendance_stats.present }}</p>
+                        <span class="text-sm font-normal text-slate-500 ml-1">/{{ attendance_stats.total }}</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-3">Present Days This Month</p>
+                </div>
+                <div class="mt-2">
+                    <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-indigo-600 h-1.5 rounded-full" style="width: {% if attendance_stats.total %}{{ attendance_stats.present|floatformat:0 }}%{% else %}0%{% endif %}"></div>
+                    </div>
+                    <div class="flex justify-between mt-1.5 text-xs text-slate-500">
+                        <span>Present: {{ attendance_stats.present }} days</span>
+                        <span>{{ attendance_stats.present|floatformat:0 }}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Leave Balance -->
+            <div class="dashboard-card stat-card p-5 hover:shadow-md slide-in-left" style="animation-delay: 0.2s">
+                <div class="flex items-center mb-3">
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mr-2 shadow-sm">
+                        <i class="fas fa-calendar-day text-purple-600"></i>
+                    </div>
+                    <span class="text-sm font-semibold text-slate-800">Leave Balance</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <p class="text-xs text-slate-500 mb-1">Casual</p>
+                        <div class="flex items-baseline">
+                            <p class="text-lg font-bold text-slate-800">{{ leave_balance.casual }}</p>
+                            <span class="text-xs text-slate-500 ml-1">/{{ leave_policy.casual }}</span>
+                        </div>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <p class="text-xs text-slate-500 mb-1">Sick</p>
+                        <div class="flex items-baseline">
+                            <p class="text-lg font-bold text-slate-800">{{ leave_balance.sick }}</p>
+                            <span class="text-xs text-slate-500 ml-1">/{{ leave_policy.sick }}</span>
+                        </div>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <p class="text-xs text-slate-500 mb-1">Annual</p>
+                        <div class="flex items-baseline">
+                            <p class="text-lg font-bold text-slate-800">{{ leave_balance.annual }}</p>
+                            <span class="text-xs text-slate-500 ml-1">/{{ leave_policy.annual }}</span>
+                        </div>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <p class="text-xs text-slate-500 mb-1">Total</p>
+                        <p class="text-lg font-bold text-slate-800">{{ leave_balance.total }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Requests -->
+            <div class="dashboard-card stat-card p-5 hover:shadow-md slide-in-left" style="animation-delay: 0.3s">
+                <div class="flex items-center mb-3">
+                    <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center mr-2 shadow-sm">
+                        <i class="fas fa-clock text-amber-600"></i>
+                    </div>
+                    <span class="text-sm font-semibold text-slate-800">Pending Requests</span>
+                </div>
+                <div class="space-y-3 mt-2">
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-0.5">Leave Requests</p>
+                            <p class="text-lg font-bold text-slate-800">{{ pending_counts.leave }}</p>
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shadow-sm">
+                            <i class="fas fa-calendar-day text-amber-600 text-xs"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-0.5">Reimbursements</p>
+                            <p class="text-lg font-bold text-slate-800">{{ pending_counts.reimbursement }}</p>
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center shadow-sm">
+                            <i class="fas fa-receipt text-amber-600 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Latest Salary -->
+            <div class="dashboard-card stat-card p-5 hover:shadow-md slide-in-left" style="animation-delay: 0.4s">
+                <div class="flex items-center mb-3">
+                    <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mr-2 shadow-sm">
+                        <i class="fas fa-money-bill-wave text-emerald-600"></i>
+                    </div>
+                    <span class="text-sm font-semibold text-slate-800">Latest Salary</span>
+                </div>
+                {% if latest_slip %}
+                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100 mb-3 mt-2">
+                    <div>
+                        <p class="text-xs text-slate-500 mb-0.5">{{ latest_slip.get_month_name }} {{ latest_slip.year }}</p>
+                        <p class="text-lg font-bold text-slate-800">₹{{ latest_slip.net_salary }}</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shadow-sm">
+                        <i class="fas fa-file-invoice-dollar text-emerald-600 text-xs"></i>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <p class="text-xs text-slate-500 mb-0.5">Basic Salary</p>
+                        <p class="text-sm font-medium text-slate-800">₹{{ latest_slip.basic_salary }}</p>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <p class="text-xs text-slate-500 mb-0.5">Payment Date</p>
+                        <p class="text-sm font-medium text-slate-800">{{ latest_slip.payment_date|date:"d M" }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="flex items-center justify-center h-24 text-center text-slate-500 p-3 mt-2">
+                    <div>
+                        <i class="fas fa-file-invoice text-2xl mb-2 text-slate-300"></i>
+                        <p class="text-xs">No salary data available</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Activity Feed -->
+        <div class="mb-8 fade-in" style="animation-delay: 0.3s">
+            <div class="dashboard-card p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="dashboard-card-title mb-0">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mr-2 shadow-sm">
+                            <i class="fas fa-stream text-blue-600"></i>
+                        </div>
+                        <span class="text-sm font-semibold text-slate-800">Recent Activity</span>
+                    </div>
+                    <button class="text-indigo-600 text-xs hover:text-indigo-700 font-medium transition-colors" id="viewAllActivityBtn">
+                        View All
+                    </button>
+                </div>
+                
+                <div class="space-y-2">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="flex items-start p-3 rounded-lg hover:bg-slate-50 transition-colors">
+                            <div class="w-8 h-8 rounded-full bg-{{ activity.color }}-100 flex items-center justify-center mr-3 flex-shrink-0">
+                                <i class="fas fa-{{ activity.icon }} text-{{ activity.color }}-600 text-xs"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="text-sm font-medium text-slate-800">{{ activity.title }}</p>
+                                <p class="text-xs text-slate-500">{{ activity.description }}</p>
+                            </div>
+                            <div class="text-xs text-slate-400">{{ activity.time_ago }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="flex items-center justify-center h-24 text-center text-slate-500 p-3">
+                            <div>
+                                <i class="fas fa-history text-2xl mb-2 text-slate-300"></i>
+                                <p class="text-xs">No recent activities</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="mb-8 fade-in" style="animation-delay: 0.3s">
+            <h2 class="text-base font-semibold text-slate-800 mb-4 flex items-center">
+                <span class="bg-indigo-50 text-indigo-600 p-1.5 rounded-lg mr-2 shadow-sm">
+                    <i class="fas fa-bolt text-sm"></i>
+                </span>
+                Quick Actions
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
+                <!-- Mark Attendance -->
+                <button id="markAttendanceBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-indigo-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-indigo-100 transition-colors">
+                        <i class="fas fa-qrcode text-indigo-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-slate-700 group-hover:text-indigo-700">Attendance</span>
+                </button>
+                
+                <!-- Apply for Leave -->
+                <button id="applyLeaveBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-purple-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-purple-100 transition-colors">
+                        <i class="fas fa-calendar-plus text-purple-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-slate-700 group-hover:text-purple-700">Apply Leave</span>
+                </button>
+                
+                <!-- Submit Reimbursement -->
+                <button id="submitReimbursementBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-blue-100 transition-colors">
+                        <i class="fas fa-receipt text-blue-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-slate-700 group-hover:text-blue-700">Reimbursement</span>
+                </button>
+                
+                <!-- View Salary Slips -->
+                <button id="viewSalarySlipsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-emerald-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                    <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-emerald-100 transition-colors">
+                        <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-slate-700 group-hover:text-emerald-700">Salary Slips</span>
+                </button>
+                
+                <!-- View Profile -->
+                <button id="viewProfileBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-slate-100 transition-colors">
+                        <i class="fas fa-user text-slate-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-slate-700 group-hover:text-slate-800">My Profile</span>
+                </button>
+                
+                <!-- Documents -->
+                <button id="viewDocumentsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-slate-100 transition-colors">
+                        <i class="fas fa-file-alt text-slate-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-slate-700 group-hover:text-slate-800">Documents</span>
+                </button>
+                
+                <!-- Submit Resignation -->
+                <button id="submitResignationBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-red-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                    <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-red-100 transition-colors">
+                        <i class="fas fa-door-open text-red-600"></i>
+                    </div>
+                    <span class="text-xs font-medium text-slate-700 group-hover:text-red-700">Resignation</span>
+                </button>
+                
+                <!-- Logout -->
+                <form action="{% url 'employee_logout' %}" method="post" class="contents">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-slate-100 transition-colors">
+                            <i class="fas fa-sign-out-alt text-slate-600"></i>
+                        </div>
+                        <span class="text-xs font-medium text-slate-700 group-hover:text-slate-800">Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-6 mt-8 text-sm">
+        <div class="container mx-auto px-4 md:px-6 max-w-7xl">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0 flex flex-col md:flex-row items-center md:space-x-8">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center mr-2">
+                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-slate-800">HR Portal</p>
+                    </div>
+                    
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 transition-colors text-xs flex items-center">
+                            <i class="fas fa-info-circle mr-1.5 text-slate-400"></i>
+                            About
+                        </a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 transition-colors text-xs flex items-center">
+                            <i class="fas fa-envelope mr-1.5 text-slate-400"></i>
+                            Contact HR
+                        </a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 transition-colors text-xs flex items-center">
+                            <i class="fas fa-question-circle mr-1.5 text-slate-400"></i>
+                            Help Center
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center md:items-end">
+                    <div class="flex items-center space-x-4 mb-3">
+                        <a href="#" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 transition-colors">
+                            <i class="fab fa-linkedin-in text-sm"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 transition-colors">
+                            <i class="fab fa-twitter text-sm"></i>
+                        </a>
+                        <a href="#" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 transition-colors">
+                            <i class="fab fa-instagram text-sm"></i>
+                        </a>
+                    </div>
+                    <p class="text-xs text-slate-500">&copy; 2023 Company Name. All rights reserved.</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap justify-center md:justify-between gap-4 text-xs text-slate-500">
+                <div class="flex flex-wrap gap-4">
+                    <a href="#" class="hover:text-indigo-600 transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-indigo-600 transition-colors">Terms of Service</a>
+                    <a href="#" class="hover:text-indigo-600 transition-colors">Cookie Policy</a>
+                </div>
+                <div>
+                    <span>Version 1.2.0</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- QR Scanner Modal -->
+    <div id="qrScannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-lg max-w-md w-full p-5 mx-4 fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-base font-semibold text-slate-800 flex items-center">
+                    <span class="bg-indigo-50 text-indigo-600 p-1.5 rounded-lg mr-2 shadow-sm">
+                        <i class="fas fa-qrcode"></i>
+                    </span>
+                    Mark Attendance
+                </h3>
+                <button id="closeQrScannerBtn" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="qrScannerContainer" class="mb-5 overflow-hidden rounded-xl relative border border-slate-100">
+                <div id="qrScanner" class="w-full h-64 bg-slate-50 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-3 pulse-animation">
+                            <i class="fas fa-camera text-indigo-600"></i>
+                        </div>
+                        <p class="text-xs text-slate-500">Loading camera...</p>
+                    </div>
+                </div>
+                <!-- Scanning animation overlay -->
+                <div class="absolute inset-0 pointer-events-none">
+                    <div class="absolute inset-0 border border-indigo-200 rounded-xl"></div>
+                    <div class="h-0.5 w-full bg-indigo-500 absolute top-1/2 animate-pulse"></div>
+                    <div class="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-indigo-500 rounded-tl"></div>
+                    <div class="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-indigo-500 rounded-tr"></div>
+                    <div class="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-indigo-500 rounded-bl"></div>
+                    <div class="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-indigo-500 rounded-br"></div>
+                </div>
+            </div>
+            
+            <p id="qrScanStatus" class="text-sm text-slate-600 mb-5 text-center flex items-center justify-center">
+                <span class="w-2 h-2 bg-indigo-600 rounded-full mr-2 animate-ping"></span>
+                Scanning for QR code...
+            </p>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button id="markAttendanceQrBtn" class="action-button action-button-primary bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center shadow-sm disabled:opacity-50" disabled>
+                    <i class="fas fa-check mr-1.5"></i>
+                    Mark Attendance
+                </button>
+                <button id="markManuallyBtn" class="action-button bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+                    <i class="fas fa-map-marker-alt mr-1.5"></i>
+                    Mark Manually
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the attendance chart
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            const presentDays = {{ attendance_stats.present }};
+            const totalDays = {{ attendance_stats.total }};
+            const absentDays = totalDays - presentDays;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [presentDays, absentDays],
+                        backgroundColor: [
+                            '#6366F1',
+                            '#E5E7EB'
+                        ],
+                        borderWidth: 0,
+                        cutout: '80%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    return index === 0 ? 'Present: ' + presentDays + ' days' : 'Absent: ' + absentDays + ' days';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // ==== BUTTON FUNCTIONALITY ====
+            
+            // Quick Attendance Button - Check In/Out
+            const quickAttendanceBtn = document.getElementById('quickAttendanceBtn');
+            if (quickAttendanceBtn) {
+                quickAttendanceBtn.addEventListener('click', function() {
+                    {% if not employee.is_approved %}
+                    // If employee is not approved, show warning
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Account Pending Approval',
+                        text: 'You need to wait for your account to be approved before using this feature.',
+                        confirmButtonColor: '#6366F1',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    });
+                    {% else %}
+                    handleAttendanceAction(this);
+                    {% endif %}
+                });
+            }
+            
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    if (mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.remove('hidden');
+                        mobileMenu.classList.add('animate__fadeIn');
+                    } else {
+                        mobileMenu.classList.add('animate__fadeOut');
+                        setTimeout(() => {
+                            mobileMenu.classList.add('hidden');
+                            mobileMenu.classList.remove('animate__fadeOut');
+                        }, 300);
+                    }
+                });
+            }
+            
+            // ==== QUICK ACTIONS FUNCTIONALITY ====
+            
+            // Mark Attendance Button (QR Scanner)
+            const markAttendanceBtn = document.getElementById('markAttendanceBtn');
+            const qrScannerModal = document.getElementById('qrScannerModal');
+            const closeQrScannerBtn = document.getElementById('closeQrScannerBtn');
+            
+            if (markAttendanceBtn && qrScannerModal) {
+                markAttendanceBtn.addEventListener('click', function() {
+                    // Check if button is disabled
+                    if (this.hasAttribute('disabled') || this.classList.contains('cursor-not-allowed')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Account Pending Approval',
+                            text: 'You need to wait for your account to be approved before using this feature.',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                        return;
+                    }
+                    
+                    qrScannerModal.classList.remove('hidden');
+                    // Initialize QR scanner (in a real app, this would initialize a QR code scanner)
+                    initQRScanner();
+                });
+            }
+            
+            if (closeQrScannerBtn && qrScannerModal) {
+                closeQrScannerBtn.addEventListener('click', function() {
+                    qrScannerModal.classList.add('hidden');
+                    // Stop QR scanner (in a real app, this would release the camera and stop the scanner)
+                    stopQRScanner();
+                });
+            }
+            
+            // Apply Leave Button
+            const applyLeaveBtn = document.getElementById('applyLeaveBtn');
+            if (applyLeaveBtn) {
+                applyLeaveBtn.addEventListener('click', function() {
+                    // Check if button is disabled
+                    if (this.hasAttribute('disabled') || this.classList.contains('cursor-not-allowed')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Account Pending Approval',
+                            text: 'You need to wait for your account to be approved before using this feature.',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                        return;
+                    }
+                    
+                    navigateTo("{% url 'employee_leave' %}", "Navigating to leave application page...");
+                });
+            }
+            
+            // Submit Reimbursement Button
+            const submitReimbursementBtn = document.getElementById('submitReimbursementBtn');
+            if (submitReimbursementBtn) {
+                submitReimbursementBtn.addEventListener('click', function() {
+                    // Check if button is disabled
+                    if (this.hasAttribute('disabled') || this.classList.contains('cursor-not-allowed')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Account Pending Approval',
+                            text: 'You need to wait for your account to be approved before using this feature.',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                        return;
+                    }
+                    
+                    navigateTo("{% url 'employee_reimbursement' %}", "Navigating to reimbursement submission page...");
+                });
+            }
+            
+            // View Salary Slips Button
+            const viewSalarySlipsBtn = document.getElementById('viewSalarySlipsBtn');
+            if (viewSalarySlipsBtn) {
+                viewSalarySlipsBtn.addEventListener('click', function() {
+                    // Check if button is disabled
+                    if (this.hasAttribute('disabled') || this.classList.contains('cursor-not-allowed')) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Account Pending Approval',
+                            text: 'You need to wait for your account to be approved before using this feature.',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                        return;
+                    }
+                    
+                    navigateTo("{% url 'employee_salary_slips' %}", "Navigating to salary slips page...");
+                });
+            }
+            
+            // View Profile Button
+            const viewProfileBtn = document.getElementById('viewProfileBtn');
+            if (viewProfileBtn) {
+                viewProfileBtn.addEventListener('click', function() {
+                    navigateTo("{% url 'employee_profile' %}", "Navigating to your profile page...");
+                });
+            }
+            
+            // View Documents Button
+            const viewDocumentsBtn = document.getElementById('viewDocumentsBtn');
+            if (viewDocumentsBtn) {
+                viewDocumentsBtn.addEventListener('click', function() {
+                    navigateTo("{% url 'employee_documents' %}", "Navigating to documents page...");
+                });
+            }
+            
+            // Submit Resignation Button
+            const submitResignationBtn = document.getElementById('submitResignationBtn');
+            if (submitResignationBtn) {
+                submitResignationBtn.addEventListener('click', function() {
+                    Swal.fire({
+                        title: 'Submit Resignation?',
+                        text: 'Are you sure you want to submit your resignation? This action may initiate the resignation process.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#EF4444',
+                        cancelButtonColor: '#64748B',
+                        confirmButtonText: 'Yes, proceed',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            navigateTo("{% url 'employee_resignation' %}", "Navigating to resignation submission page...");
+                        }
+                    });
+                });
+            }
+            
+            // ==== QR SCANNER FUNCTIONALITY ====
+            
+            // Mark Attendance with QR and Manual Options
+            const markAttendanceQrBtn = document.getElementById('markAttendanceQrBtn');
+            const markManuallyBtn = document.getElementById('markManuallyBtn');
+            
+            if (markAttendanceQrBtn) {
+                markAttendanceQrBtn.addEventListener('click', function() {
+                    // Close QR scanner modal
+                    qrScannerModal.classList.add('hidden');
+                    
+                    // Process QR attendance
+                    handleQrAttendance();
+                });
+            }
+            
+            if (markManuallyBtn) {
+                markManuallyBtn.addEventListener('click', function() {
+                    // Hide QR scanner modal
+                    qrScannerModal.classList.add('hidden');
+                    
+                    // Show a confirmation dialog
+                    Swal.fire({
+                        title: 'Mark Attendance',
+                        text: 'Are you sure you want to mark your attendance manually?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#6366F1',
+                        cancelButtonColor: '#64748B',
+                        confirmButtonText: 'Yes, mark it!',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Process manual attendance
+                            processManualAttendance();
+                        }
+                    });
+                });
+            }
+            
+            // ==== UTILITY FUNCTIONS ====
+            
+            // Function to handle navigation with loading indicator
+            function navigateTo(url, loadingMessage = 'Loading...') {
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Please wait',
+                    text: loadingMessage,
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    },
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    },
+                    timer: 800
+                }).then(() => {
+                    // Navigate to the specified URL
+                    window.location.href = url;
+                });
+            }
+            
+            // Function to handle attendance actions (check in/out)
+            function handleAttendanceAction(button) {
+                // Show loading state
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5 text-[10px]"></i>Processing...';
+                button.disabled = true;
+                
+                // Determine the action type
+                const action = '{% if today_status == "present" and not checked_out %}check_out{% else %}check_in{% endif %}';
+                
+                // Send attendance request
+                fetch('{% url "api_mark_attendance" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        method: 'button'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset button state
+                    button.disabled = false;
+                    
+                    if(data.success) {
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message || 'Attendance marked successfully',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        }).then(() => {
+                            // Reload page to reflect changes
+                            window.location.reload();
+                        });
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to mark attendance',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                        // Reset button text
+                        button.innerHTML = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An unexpected error occurred. Please try again.',
+                        confirmButtonColor: '#6366F1',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    });
+                    // Reset button
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                });
+            }
+            
+            // Function to process manual attendance
+            function processManualAttendance() {
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Processing',
+                    text: 'Marking your attendance...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading()
+                    },
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    }
+                });
+                
+                // Get geolocation if available (for location-based attendance)
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        // Success callback
+                        (position) => {
+                            submitAttendance({
+                                action: '{% if today_status == "present" and not checked_out %}check_out{% else %}check_in{% endif %}',
+                                method: 'manual',
+                                location: {
+                                    latitude: position.coords.latitude,
+                                    longitude: position.coords.longitude
+                                }
+                            });
+                        },
+                        // Error callback
+                        (error) => {
+                            console.warn("Geolocation error:", error);
+                            // Still submit attendance but without location
+                            submitAttendance({
+                                action: '{% if today_status == "present" and not checked_out %}check_out{% else %}check_in{% endif %}',
+                                method: 'manual'
+                            });
+                        }
+                    );
+                } else {
+                    // Geolocation not supported, submit without location
+                    submitAttendance({
+                        action: '{% if today_status == "present" and not checked_out %}check_out{% else %}check_in{% endif %}',
+                        method: 'manual'
+                    });
+                }
+            }
+            
+            // Function to submit attendance data to server
+            function submitAttendance(data) {
+                fetch('{% url "api_mark_attendance" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message || 'Attendance marked successfully',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        }).then(() => {
+                            // Reload page to reflect changes
+                            window.location.reload();
+                        });
+                    } else {
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to mark attendance',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An unexpected error occurred. Please try again.',
+                        confirmButtonColor: '#6366F1',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    });
+                });
+            }
+            
+            // QR scanner functions (simulation for demo)
+            let qrScannerActive = false;
+            
+            function initQRScanner() {
+                if (qrScannerActive) return;
+                
+                qrScannerActive = true;
+                const qrScanStatus = document.getElementById('qrScanStatus');
+                const markAttendanceQrBtn = document.getElementById('markAttendanceQrBtn');
+                
+                if (qrScanStatus) {
+                    qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-indigo-600 rounded-full mr-2 animate-ping"></span>Initializing camera...';
+                }
+                
+                // Simulating camera activation and QR code scanning
+                // In a real implementation, you would use a library like instascan or html5-qrcode
+                setTimeout(() => {
+                    if (qrScanStatus && qrScannerActive) {
+                        qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-indigo-600 rounded-full mr-2 animate-ping"></span>Scanning for QR code...';
+                    }
+                    
+                    // Simulate successful QR code detection after 3 seconds
+                    setTimeout(() => {
+                        if (qrScanStatus && markAttendanceQrBtn && qrScannerActive) {
+                            qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>QR code detected successfully!';
+                            markAttendanceQrBtn.disabled = false;
+                        }
+                    }, 3000);
+                }, 1000);
+            }
+            
+            function stopQRScanner() {
+                qrScannerActive = false;
+                // In a real implementation, this would release the camera and stop the scanner
+                const markAttendanceQrBtn = document.getElementById('markAttendanceQrBtn');
+                const qrScanStatus = document.getElementById('qrScanStatus');
+                
+                if (markAttendanceQrBtn) {
+                    markAttendanceQrBtn.disabled = true;
+                }
+                
+                if (qrScanStatus) {
+                    qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-indigo-600 rounded-full mr-2 animate-ping"></span>Scanning for QR code...';
+                }
+            }
+            
+            function handleQrAttendance() {
+                // Hide QR scanner modal
+                qrScannerModal.classList.add('hidden');
+                
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Processing',
+                    text: 'Marking your attendance via QR code...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading()
+                    },
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    }
+                });
+                
+                // Submit attendance with QR code data
+                submitAttendance({
+                    action: '{% if today_status == "present" and not checked_out %}check_out{% else %}check_in{% endif %}',
+                    method: 'qr',
+                    qr_code: 'SIMULATED_QR_CODE_DATA' // This would be the actual QR code data in a real implementation
+                });
+            }
+            
+            // Initialize activity feed functionality
+            const viewAllActivityBtn = document.getElementById('viewAllActivityBtn');
+            if (viewAllActivityBtn) {
+                viewAllActivityBtn.addEventListener('click', function() {
+                    // Build HTML for all activities
+                    let activitiesHtml = '';
+                    {% if activities %}
+                        {% for activity in activities %}
+                            activitiesHtml += `
+                                <div class="flex items-start p-3 rounded-lg bg-slate-50 border border-slate-100 mb-2">
+                                    <div class="w-8 h-8 rounded-full bg-{{ activity.color }}-100 flex items-center justify-center mr-3 flex-shrink-0">
+                                        <i class="fas fa-{{ activity.icon }} text-{{ activity.color }}-600 text-xs"></i>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <p class="text-sm font-medium text-slate-800">{{ activity.title }}</p>
+                                        <p class="text-xs text-slate-500">{{ activity.description }}</p>
+                                    </div>
+                                    <div class="text-xs text-slate-400">{{ activity.time_ago }}</div>
+                                </div>
+                            `;
+                        {% endfor %}
+                    {% else %}
+                        activitiesHtml = `
+                            <div class="flex items-center justify-center h-24 text-center text-slate-500 p-3">
+                                <div>
+                                    <i class="fas fa-history text-2xl mb-2 text-slate-300"></i>
+                                    <p class="text-xs">No activity history found</p>
+                                </div>
+                            </div>
+                        `;
+                    {% endif %}
+                    
+                    Swal.fire({
+                        title: 'Activity History',
+                        html: `<div class="text-left space-y-3 mt-4">${activitiesHtml}</div>`,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Close',
+                        confirmButtonColor: '#6366F1',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

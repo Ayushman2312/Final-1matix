@@ -1,0 +1,11 @@
+2025-05-25 17:53:14,424 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_175314_manual.log
+2025-05-25 17:53:14,441 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 17:53:14,441 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 17:53:14,524 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 17:53:18,945 - ContactScraper - INFO - Gemini API not available, using fallback query optimization
+2025-05-25 17:53:18,945 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-25 17:53:18,947 - ContactScraper - INFO - Searching Google for: "hyaluronic acid whole sellers in Delhi" contact email phone site:.in -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com (page 0)
+2025-05-25 17:53:49,445 - ContactScraper - WARNING - Google search request failed with status code 429
+2025-05-25 17:53:49,445 - ContactScraper - WARNING - All Google search methods failed
+2025-05-25 17:53:49,451 - ContactScraper - INFO - Performing direct search for: hyaluronic acid whole sellers in Delhi
+2025-05-25 17:53:49,452 - ContactScraper - INFO - Generated 56 potential URLs for direct search

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Job Offer - {{ company_name }}</title>
+    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .offer-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #7B3DF3;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #7B3DF3;
+        }
+        .btn-primary {
+            background-color: #7B3DF3;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #6532d1;
+        }
+        .btn-success {
+            background-color: #10B981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        .btn-danger {
+            background-color: #EF4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-danger:hover {
+            background-color: #DC2626;
+        }
+        .btn-warning {
+            background-color: #F59E0B;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-warning:hover {
+            background-color: #D97706;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="offer-container">
+        <div class="header">
+            {% if company_logo %}
+            <img src="{{ company_logo }}" alt="{{ company_name }}" class="h-16 mx-auto mb-4">
+            {% endif %}
+            <h1 class="text-2xl font-bold">Job Offer from {{ company_name }}</h1>
+        </div>
+        
+        <div class="body">
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-2">Dear {{ invitation.name }},</h2>
+                <p class="text-gray-700">
+                    We are pleased to offer you the position of <strong>{{ invitation.designation.name }}</strong> 
+                    at <strong>{{ company_name }}</strong>. We believe your skills and experience will be a valuable 
+                    addition to our team.
+                </p>
+            </div>
+            
+            <!-- Offer Details -->
+            <div class="section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Position Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Department</p>
+                        <p class="text-gray-800">{{ invitation.department.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Designation</p>
+                        <p class="text-gray-800">{{ invitation.designation.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Role</p>
+                        <p class="text-gray-800">{{ invitation.role.name }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Offer Letter -->
+            <div class="section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Offer Letter</h3>
+                <div class="offer-content prose prose-sm max-w-none">
+                    {{ offer_letter_content|safe }}
+                </div>
+            </div>
+            
+            <!-- Company Policies -->
+            {% if policies %}
+            <div class="section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Company Policies</h3>
+                <div class="space-y-3">
+                    {% for policy in policies %}
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <h4 class="font-medium text-gray-800">{{ policy.name }}</h4>
+                        <p class="text-sm text-gray-600">{{ policy.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Response Section -->
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Your Response</h3>
+                <p class="text-gray-700 mb-4">
+                    Please review this offer carefully and provide your response by clicking one of the buttons below.
+                </p>
+                
+                <div class="flex flex-col md:flex-row gap-4 justify-center">
+                    <form id="acceptForm" action="{% url 'offer-response' invitation.invitation_id %}" method="POST" class="w-full md:w-auto">
+                        {% csrf_token %}
+                        <input type="hidden" name="response" value="accept">
+                        <button type="submit" class="btn-success w-full">I Accept</button>
+                    </form>
+                    
+                    <button type="button" onclick="showRejectModal()" class="btn-danger w-full md:w-auto">I Reject</button>
+                    
+                    <button type="button" onclick="showDiscussModal()" class="btn-warning w-full md:w-auto">Discuss with HR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Reason for Rejection</h3>
+            <form id="rejectForm" action="{% url 'offer-response' invitation.invitation_id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="response" value="reject">
+                <textarea name="reason" class="w-full border border-gray-300 rounded-md p-3 mb-4" rows="4" 
+                    placeholder="Please provide the reason for rejecting this offer (optional)"></textarea>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="hideRejectModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700">Cancel</button>
+                    <button type="submit" class="btn-danger">Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Discuss Modal -->
+    <div id="discussModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Discussion Request</h3>
+            <form id="discussForm" action="{% url 'offer-response' invitation.invitation_id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="response" value="discuss">
+                <textarea name="message" class="w-full border border-gray-300 rounded-md p-3 mb-4" rows="4" 
+                    placeholder="Please provide details about what you'd like to discuss (optional)"></textarea>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="hideDiscussModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700">Cancel</button>
+                    <button type="submit" class="btn-warning">Request Discussion</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Modal functions
+        function showRejectModal() {
+            document.getElementById('rejectModal').classList.remove('hidden');
+        }
+        
+        function hideRejectModal() {
+            document.getElementById('rejectModal').classList.add('hidden');
+        }
+        
+        function showDiscussModal() {
+            document.getElementById('discussModal').classList.remove('hidden');
+        }
+        
+        function hideDiscussModal() {
+            document.getElementById('discussModal').classList.add('hidden');
+        }
+        
+        // Check for response in session storage and disable buttons if already responded
+        document.addEventListener('DOMContentLoaded', function() {
+            const responseStatus = sessionStorage.getItem('offerResponse_{{ invitation.invitation_id }}');
+            if (responseStatus) {
+                // Disable all buttons if already responded
+                document.querySelectorAll('button[type="submit"], button[onclick]').forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                });
+                
+                // Show message about response
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4';
+                
+                if (responseStatus === 'accept') {
+                    messageDiv.innerHTML = `<p>You have accepted this offer. Please complete the onboarding form.</p>`;
+                    // Redirect to form after a short delay
+                    setTimeout(() => {
+                        window.location.href = "{% url 'onboarding-form' invitation.form_link|cut:'http://127.0.0.1:8000/hr_management/onboarding/form/'|cut:'/' %}";
+                    }, 2000);
+                } else if (responseStatus === 'reject') {
+                    messageDiv.innerHTML = `<p>You have rejected this offer. Thank you for your consideration.</p>`;
+                } else if (responseStatus === 'discuss') {
+                    messageDiv.innerHTML = `<p>You have requested a discussion with HR. Someone will contact you soon.</p>`;
+                } else {
+                    messageDiv.innerHTML = `<p>You have already responded to this offer.</p>`;
+                }
+                
+                const responseSection = document.querySelector('.mt-8');
+                if (responseSection) {
+                    responseSection.insertBefore(messageDiv, responseSection.firstChild);
+                }
+            }
+        });
+        
+        // Update form submissions to store response in session storage
+        document.addEventListener('DOMContentLoaded', function() {
+            const acceptForm = document.getElementById('acceptForm');
+            const rejectForm = document.getElementById('rejectForm');
+            const discussForm = document.getElementById('discussForm');
+            
+            if (acceptForm) {
+                acceptForm.addEventListener('submit', function() {
+                    sessionStorage.setItem('offerResponse_{{ invitation.invitation_id }}', 'accept');
+                });
+            }
+            
+            if (rejectForm) {
+                rejectForm.addEventListener('submit', function() {
+                    sessionStorage.setItem('offerResponse_{{ invitation.invitation_id }}', 'reject');
+                });
+            }
+            
+            if (discussForm) {
+                discussForm.addEventListener('submit', function() {
+                    sessionStorage.setItem('offerResponse_{{ invitation.invitation_id }}', 'discuss');
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

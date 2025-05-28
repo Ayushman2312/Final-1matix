@@ -2,6 +2,7 @@ from django.db import models
 import uuid
 from agents.models import AgentUser
 from django.contrib.auth.hashers import check_password as django_check_password
+from django.utils import timezone
 # Create your models here
 
 class User(models.Model):
@@ -75,3 +76,70 @@ class Feedbacks(models.Model):
     
     def __str__(self):
         return f"Feedback from {self.name} - {self.rating} stars"
+
+class Reminder(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('snoozed', 'Snoozed'),
+    )
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reminders')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    reminder_time = models.DateTimeField()
+    timezone_name = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    snoozed_until = models.DateTimeField(null=True, blank=True)
+    last_notification = models.DateTimeField(null=True, blank=True)
+    notification_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.user.name}"
+    
+    def is_due(self):
+        """Check if the reminder is due for notification"""
+        now = timezone.now()
+        
+        if self.status == 'completed':
+            return False
+            
+        if self.status == 'snoozed' and self.snoozed_until and self.snoozed_until > now:
+            return False
+            
+        return self.reminder_time <= now
+    
+    def snooze(self, minutes=10):
+        """Snooze the reminder for the specified number of minutes"""
+        self.status = 'snoozed'
+        self.snoozed_until = timezone.now() + timezone.timedelta(minutes=minutes)
+        self.save()
+    
+    def mark_as_completed(self):
+        """Mark the reminder as completed"""
+        self.status = 'completed'
+        self.save()
+    
+    def record_notification(self):
+        """Record that a notification was sent for this reminder"""
+        self.last_notification = timezone.now()
+        self.notification_count += 1
+        self.save()
+
+class QuickNote(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quick_notes')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    pinned = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.user.name}"
+    
+    class Meta:
+        ordering = ['-created_at']  # Newest first by default

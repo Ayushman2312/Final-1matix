@@ -1,0 +1,6 @@
+2025-05-25 00:23:44,264 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_002344_manual.log
+2025-05-25 00:23:44,271 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 00:23:44,271 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 00:23:44,316 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 00:23:46,850 - ContactScraper - INFO - Searching Google for 'Dropper Bottles in Delhi' (page 0)
+2025-05-25 00:23:59,319 - ContactScraper - INFO - Found 1 results for 'Dropper Bottles in Delhi'

@@ -1,0 +1,430 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">Resignation</h1>
+        <p class="text-gray-600">Submit your resignation and track its status</p>
+    </div>
+    
+    {% if has_resignation %}
+        <!-- Existing Resignation Status -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-start mb-6">
+                <h2 class="text-lg font-semibold text-gray-800">Current Resignation Status</h2>
+                
+                <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                    {% if resignation.status == 'pending' %}
+                        bg-yellow-100 text-yellow-800
+                    {% elif resignation.status == 'acknowledged' %}
+                        bg-blue-100 text-blue-800
+                    {% elif resignation.status == 'processing' %}
+                        bg-purple-100 text-purple-800
+                    {% elif resignation.status == 'completed' %}
+                        bg-green-100 text-green-800
+                    {% elif resignation.status == 'cancelled' %}
+                        bg-gray-100 text-gray-800
+                    {% elif resignation.status == 'rejected' %}
+                        bg-red-100 text-red-800
+                    {% endif %}
+                ">
+                    {{ resignation.get_status_display }}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Resignation Date</p>
+                    <p class="text-base text-gray-900">{{ resignation.resignation_date|date:"d M Y" }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Last Working Day</p>
+                    <p class="text-base text-gray-900">{{ resignation.last_working_date|date:"d M Y" }}</p>
+                </div>
+                
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Notice Period</p>
+                    <p class="text-base text-gray-900">{{ resignation.notice_period_days }} days</p>
+                </div>
+                
+                <div>
+                    <p class="text-sm font-medium text-gray-500 mb-1">Submitted On</p>
+                    <p class="text-base text-gray-900">{{ resignation.created_at|date:"d M Y" }}</p>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-sm font-medium text-gray-500 mb-1">Reason for Resignation</p>
+                <p class="text-base text-gray-900">{{ resignation.reason }}</p>
+            </div>
+            
+            {% if resignation.additional_notes %}
+            <div class="mb-6">
+                <p class="text-sm font-medium text-gray-500 mb-1">Additional Notes</p>
+                <p class="text-base text-gray-900">{{ resignation.additional_notes }}</p>
+            </div>
+            {% endif %}
+            
+            {% if resignation.processed_by %}
+            <div class="border-t border-gray-200 pt-4 mt-4">
+                <p class="text-sm font-medium text-gray-500 mb-1">Processed By</p>
+                <p class="text-base text-gray-900">{{ resignation.processed_by.name }}</p>
+                
+                {% if resignation.processed_at %}
+                <p class="text-sm text-gray-500 mt-1">{{ resignation.processed_at|date:"d M Y" }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if resignation.status == 'pending' %}
+            <div class="mt-6">
+                <button id="cancelResignationBtn" class="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Cancel Resignation
+                </button>
+            </div>
+            {% endif %}
+            
+            {% if resignation.exit_interview_date and resignation.status != 'cancelled' %}
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <h3 class="text-md font-medium text-blue-800 mb-2">Exit Interview Scheduled</h3>
+                <p class="text-sm text-blue-700">
+                    Your exit interview is scheduled for {{ resignation.exit_interview_date|date:"d M Y" }} at {{ resignation.exit_interview_date|date:"h:i A" }}.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Resignation Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-6">Submit Resignation</h2>
+                    
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    <strong>Important:</strong> Submitting a resignation is a significant decision. Please ensure you've discussed this with your manager before proceeding.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="resignationForm" class="space-y-6">
+                        {% csrf_token %}
+                        <div>
+                            <label for="lastWorkingDate" class="block text-sm font-medium text-gray-700 mb-1">Last Working Day</label>
+                            <input type="date" id="lastWorkingDate" name="last_working_date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-1">The minimum notice period is 14 days from today</p>
+                        </div>
+                        
+                        <div>
+                            <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason for Resignation</label>
+                            <select id="reason" name="reason" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="">Select a reason</option>
+                                <option value="Career growth opportunity">Career growth opportunity</option>
+                                <option value="Better compensation package">Better compensation package</option>
+                                <option value="Work-life balance">Work-life balance</option>
+                                <option value="Relocation">Relocation</option>
+                                <option value="Further education">Further education</option>
+                                <option value="Personal reasons">Personal reasons</option>
+                                <option value="Health reasons">Health reasons</option>
+                                <option value="Company culture">Company culture</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div id="otherReasonContainer" class="hidden">
+                            <label for="otherReason" class="block text-sm font-medium text-gray-700 mb-1">Please specify</label>
+                            <input type="text" id="otherReason" name="other_reason" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label for="additionalNotes" class="block text-sm font-medium text-gray-700 mb-1">Additional Notes (Optional)</label>
+                            <textarea id="additionalNotes" name="additional_notes" rows="4" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="confirmation" name="confirmation" type="checkbox" class="h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="confirmation" class="font-medium text-gray-700">I confirm that I wish to resign from my position</label>
+                                <p class="text-gray-500">I understand that this action may not be reversible once processed</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                            <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                Cancel
+                            </button>
+                            <button type="submit" id="submitBtn" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#7B3DF3] hover:bg-[#6935D3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7B3DF3]">
+                                Submit Resignation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-1">
+                <!-- Resignation Information -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Resignation Process</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-[#7B3DF3] text-white text-xs font-bold">1</div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">Submit Resignation</p>
+                                <p class="text-xs text-gray-500">Fill out the form with your last working day and reason</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-[#7B3DF3] text-white text-xs font-bold">2</div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">HR Acknowledgment</p>
+                                <p class="text-xs text-gray-500">HR will review and acknowledge your resignation</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-[#7B3DF3] text-white text-xs font-bold">3</div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">Exit Interview</p>
+                                <p class="text-xs text-gray-500">HR will schedule an exit interview</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-[#7B3DF3] text-white text-xs font-bold">4</div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">Handover</p>
+                                <p class="text-xs text-gray-500">Complete handover of responsibilities</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-[#7B3DF3] text-white text-xs font-bold">5</div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">Clearance</p>
+                                <p class="text-xs text-gray-500">Return company assets and complete clearance</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-[#7B3DF3] text-white text-xs font-bold">6</div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">Final Settlement</p>
+                                <p class="text-xs text-gray-500">Receive your final settlement and relieving letter</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const resignationForm = document.getElementById('resignationForm');
+        const reasonSelect = document.getElementById('reason');
+        const otherReasonContainer = document.getElementById('otherReasonContainer');
+        const otherReasonInput = document.getElementById('otherReason');
+        const cancelResignationBtn = document.getElementById('cancelResignationBtn');
+        
+        // Set minimum date for last working day (14 days from today)
+        if (document.getElementById('lastWorkingDate')) {
+            const today = new Date();
+            const minDate = new Date(today);
+            minDate.setDate(today.getDate() + 14);
+            
+            document.getElementById('lastWorkingDate').setAttribute('min', minDate.toISOString().split('T')[0]);
+            
+            // Set default date to 30 days from today (common notice period)
+            const defaultDate = new Date(today);
+            defaultDate.setDate(today.getDate() + 30);
+            document.getElementById('lastWorkingDate').value = defaultDate.toISOString().split('T')[0];
+        }
+        
+        // Handle reason select change to show/hide "other" field
+        if (reasonSelect) {
+            reasonSelect.addEventListener('change', function() {
+                if (this.value === 'Other') {
+                    otherReasonContainer.classList.remove('hidden');
+                    otherReasonInput.setAttribute('required', 'required');
+                } else {
+                    otherReasonContainer.classList.add('hidden');
+                    otherReasonInput.removeAttribute('required');
+                }
+            });
+        }
+        
+        // Handle form submission
+        if (resignationForm) {
+            resignationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitResignation();
+            });
+        }
+        
+        // Handle cancel button
+        if (document.getElementById('cancelBtn')) {
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                // Redirect back to dashboard
+                window.location.href = "{% url 'employee_dashboard' %}";
+            });
+        }
+        
+        // Handle cancel resignation
+        if (cancelResignationBtn) {
+            cancelResignationBtn.addEventListener('click', function() {
+                cancelResignation();
+            });
+        }
+    });
+    
+    function submitResignation() {
+        // Validate form
+        const lastWorkingDate = document.getElementById('lastWorkingDate').value;
+        const reason = document.getElementById('reason').value;
+        const otherReason = document.getElementById('otherReason').value;
+        const additionalNotes = document.getElementById('additionalNotes').value;
+        const confirmation = document.getElementById('confirmation').checked;
+        
+        if (!lastWorkingDate) {
+            showNotification('Please select your last working day', 'error');
+            return;
+        }
+        
+        if (!reason) {
+            showNotification('Please select a reason for resignation', 'error');
+            return;
+        }
+        
+        if (reason === 'Other' && !otherReason) {
+            showNotification('Please specify your reason for resignation', 'error');
+            return;
+        }
+        
+        if (!confirmation) {
+            showNotification('Please confirm your resignation by checking the confirmation box', 'error');
+            return;
+        }
+        
+        // Confirm resignation submission
+        Swal.fire({
+            title: 'Submit Resignation?',
+            text: 'Are you sure you want to submit your resignation? This action may not be reversible once processed.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, submit',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#7B3DF3',
+            cancelButtonColor: '#6B7280',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Prepare data
+                const formData = {
+                    last_working_date: lastWorkingDate,
+                    reason: reason === 'Other' ? otherReason : reason,
+                    additional_notes: additionalNotes
+                };
+                
+                // Submit resignation
+                fetch('/hr_management/api/resignation/submit/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccessAndRedirect(data.message || 'Resignation submitted successfully');
+                    } else {
+                        showNotification(data.message || 'Failed to submit resignation', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred. Please try again.', 'error');
+                });
+            }
+        });
+    }
+    
+    function cancelResignation() {
+        Swal.fire({
+            title: 'Cancel Resignation',
+            text: 'Are you sure you want to cancel your resignation request?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, cancel it',
+            cancelButtonText: 'No, keep it',
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#6B7280',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // This would typically make an API call to cancel the resignation
+                // For now, just show a success message and reload
+                showSuccessAndRedirect('Resignation request cancelled successfully');
+            }
+        });
+    }
+    
+    function showSuccessAndRedirect(message) {
+        Swal.fire({
+            title: 'Success',
+            text: message,
+            icon: 'success',
+            confirmButtonColor: '#7B3DF3',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Reload the page
+            window.location.reload();
+        });
+    }
+    
+    function showNotification(message, type = 'success') {
+        const bgColor = type === 'success' ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800';
+        
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-4 py-2 border-l-4 rounded shadow-md ${bgColor} transition-opacity duration-300`;
+        notification.style.zIndex = '9999';
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+</script>
+{% endblock %} 

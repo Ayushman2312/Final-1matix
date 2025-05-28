@@ -1,0 +1,14 @@
+2025-05-25 18:25:06,754 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250525_182506_task_27.log
+2025-05-25 18:25:06,757 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-25 18:25:06,762 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-25 18:25:06,833 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-25 18:25:11,292 - ContactScraper - INFO - Starting scrape for keyword: 'hyaluronic acid whole sellers in Delhi' with strict 10-minute limit
+2025-05-25 18:25:11,318 - ContactScraper - WARNING - Gemini API client not configured, using fallback optimization
+2025-05-25 18:25:11,318 - ContactScraper - ERROR - Error optimizing query with Gemini: 'ContactScraper' object has no attribute 'fallback_optimize_search_query'
+2025-05-25 18:25:11,318 - ContactScraper - ERROR - Error optimizing query: 'ContactScraper' object has no attribute 'fallback_optimize_search_query'
+2025-05-25 18:25:11,334 - ContactScraper - ERROR - Error during scraping: 'ContactScraper' object has no attribute 'search_google'
+2025-05-25 18:25:11,341 - ContactScraper - ERROR - Traceback (most recent call last):
+  File "C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\data_miner\web_scrapper.py", line 2239, in scrape
+    search_results = self.search_google(optimized_query, num_results=10, page=search_page-1)
+AttributeError: 'ContactScraper' object has no attribute 'search_google'
+
