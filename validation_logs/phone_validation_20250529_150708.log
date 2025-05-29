@@ -1,0 +1,478 @@
+2025-05-29 15:09:59,834 - INFO - Valid mobile: '+91 9811141427' normalized to +919811141427 from vsdryfruit.com_text
+2025-05-29 15:09:59,840 - INFO - Valid mobile: '+91 9811141427' normalized to +919811141427 from vsdryfruit.com_text
+2025-05-29 15:09:59,840 - INFO - Valid mobile: '9811141427' normalized to +919811141427 from vsdryfruit.com_text_mobile
+2025-05-29 15:09:59,843 - INFO - Valid mobile: '+91 9811141427' normalized to +919811141427 from vsdryfruit.com_text_plus91
+2025-05-29 15:10:25,522 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:26,035 - INFO - Valid mobile: '(+91) 9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:26,035 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text_mobile
+2025-05-29 15:10:26,055 - INFO - Valid landline_short: '20987136' normalized to +91-20987136 from buykharibaoli.com_tel_link
+2025-05-29 15:10:26,058 - WARNING - Rejected: Unrecognized format '209871365946' from buykharibaoli.com_tel_link
+2025-05-29 15:10:26,501 - WARNING - Rejected: Too short (5 digits) '14860' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,515 - WARNING - Rejected: Too short (5 digits) '14854' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,519 - WARNING - Rejected: Too short (5 digits) '14854' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,577 - WARNING - Rejected: Too short (5 digits) '17155' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,634 - WARNING - Rejected: Too short (7 digits) '1666158' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,640 - WARNING - Rejected: Too short (7 digits) '9366979' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,640 - WARNING - Rejected: Too short (7 digits) '9366979' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,649 - WARNING - Rejected: Too short (5 digits) '17162' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,657 - WARNING - Rejected: Too short (5 digits) '57868' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,659 - WARNING - Rejected: Too short (5 digits) '17164' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,663 - WARNING - Rejected: Too short (5 digits) '57869' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,665 - WARNING - Rejected: Too short (5 digits) '17165' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,674 - WARNING - Rejected: Too short (7 digits) '2074738' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,679 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:10:26,681 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:10:30,403 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:30,406 - INFO - Valid mobile: '(+91) 9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:30,408 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text_mobile
+2025-05-29 15:10:30,419 - INFO - Valid landline_short: '20987136' normalized to +91-20987136 from buykharibaoli.com_tel_link
+2025-05-29 15:10:30,419 - WARNING - Rejected: Unrecognized format '209871365946' from buykharibaoli.com_tel_link
+2025-05-29 15:10:31,182 - WARNING - Rejected: Too short (5 digits) '14860' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,195 - WARNING - Rejected: Too short (5 digits) '15799' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,202 - WARNING - Rejected: Too short (5 digits) '14695' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,202 - WARNING - Rejected: Too short (5 digits) '14695' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,207 - WARNING - Rejected: Too short (5 digits) '14695' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,207 - WARNING - Rejected: Too short (5 digits) '14695' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,207 - WARNING - Rejected: Too short (5 digits) '14695' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,211 - WARNING - Rejected: Too short (5 digits) '14362' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,213 - WARNING - Rejected: Too short (5 digits) '14362' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,216 - WARNING - Rejected: Too short (5 digits) '14362' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,216 - WARNING - Rejected: Too short (5 digits) '14362' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,220 - WARNING - Rejected: Too short (5 digits) '14362' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,224 - WARNING - Rejected: Too short (5 digits) '19397' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,226 - WARNING - Rejected: Too short (5 digits) '19397' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,231 - WARNING - Rejected: Too short (5 digits) '19397' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,231 - WARNING - Rejected: Too short (5 digits) '19397' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,231 - WARNING - Rejected: Too short (5 digits) '19397' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,231 - WARNING - Rejected: Too short (5 digits) '21756' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,231 - WARNING - Rejected: Too short (5 digits) '21756' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,240 - WARNING - Rejected: Too short (5 digits) '21756' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,240 - WARNING - Rejected: Too short (5 digits) '21756' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,240 - WARNING - Rejected: Too short (5 digits) '21756' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,244 - WARNING - Rejected: Too short (5 digits) '17670' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,247 - WARNING - Rejected: Too short (5 digits) '17670' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,251 - WARNING - Rejected: Too short (5 digits) '17670' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,251 - WARNING - Rejected: Too short (5 digits) '17670' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,254 - WARNING - Rejected: Too short (5 digits) '17670' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,254 - WARNING - Rejected: Too short (5 digits) '17664' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,254 - WARNING - Rejected: Too short (5 digits) '17664' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,254 - WARNING - Rejected: Too short (5 digits) '17664' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,262 - WARNING - Rejected: Too short (5 digits) '17664' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,262 - WARNING - Rejected: Too short (5 digits) '17664' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,264 - WARNING - Rejected: Too short (5 digits) '21433' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,266 - WARNING - Rejected: Too short (5 digits) '21433' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,267 - WARNING - Rejected: Too short (5 digits) '21433' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,269 - WARNING - Rejected: Too short (5 digits) '21433' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,269 - WARNING - Rejected: Too short (5 digits) '21433' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,269 - WARNING - Rejected: Too short (5 digits) '21320' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,269 - WARNING - Rejected: Too short (5 digits) '21320' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,278 - WARNING - Rejected: Too short (5 digits) '21320' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,279 - WARNING - Rejected: Too short (5 digits) '21320' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,282 - WARNING - Rejected: Too short (5 digits) '21320' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,282 - WARNING - Rejected: Too short (5 digits) '12256' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,284 - WARNING - Rejected: Too short (5 digits) '12256' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,286 - WARNING - Rejected: Too short (5 digits) '12256' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,288 - WARNING - Rejected: Too short (5 digits) '12256' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,288 - WARNING - Rejected: Too short (5 digits) '12256' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,299 - WARNING - Rejected: Too short (5 digits) '21389' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,302 - WARNING - Rejected: Too short (5 digits) '21389' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,302 - WARNING - Rejected: Too short (5 digits) '21389' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,302 - WARNING - Rejected: Too short (5 digits) '21389' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,302 - WARNING - Rejected: Too short (5 digits) '21389' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,310 - WARNING - Rejected: Too short (5 digits) '11809' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,312 - WARNING - Rejected: Too short (5 digits) '11809' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,312 - WARNING - Rejected: Too short (5 digits) '11809' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,312 - WARNING - Rejected: Too short (5 digits) '11809' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,316 - WARNING - Rejected: Too short (5 digits) '11809' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,316 - WARNING - Rejected: Too short (5 digits) '10017' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,316 - WARNING - Rejected: Too short (5 digits) '10017' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,320 - WARNING - Rejected: Too short (5 digits) '10017' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,320 - WARNING - Rejected: Too short (5 digits) '10017' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,323 - WARNING - Rejected: Too short (5 digits) '10017' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,326 - WARNING - Rejected: Too short (5 digits) '21386' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,326 - WARNING - Rejected: Too short (5 digits) '21386' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,326 - WARNING - Rejected: Too short (5 digits) '21386' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,326 - WARNING - Rejected: Too short (5 digits) '21386' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,326 - WARNING - Rejected: Too short (5 digits) '21386' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,340 - WARNING - Rejected: Too short (5 digits) '10099' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,345 - WARNING - Rejected: Too short (5 digits) '10099' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,345 - WARNING - Rejected: Too short (5 digits) '10099' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,345 - WARNING - Rejected: Too short (5 digits) '10099' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,345 - WARNING - Rejected: Too short (5 digits) '10099' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,345 - WARNING - Rejected: Too short (5 digits) '14403' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,345 - WARNING - Rejected: Too short (5 digits) '14403' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,358 - WARNING - Rejected: Too short (5 digits) '14403' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,358 - WARNING - Rejected: Too short (5 digits) '14403' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,358 - WARNING - Rejected: Too short (5 digits) '14403' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,363 - WARNING - Rejected: Too short (5 digits) '19474' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,363 - WARNING - Rejected: Too short (5 digits) '19474' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,363 - WARNING - Rejected: Too short (5 digits) '19474' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,370 - WARNING - Rejected: Too short (5 digits) '19474' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,370 - WARNING - Rejected: Too short (5 digits) '19474' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,379 - WARNING - Rejected: Too short (5 digits) '21754' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,381 - WARNING - Rejected: Too short (5 digits) '21754' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,382 - WARNING - Rejected: Too short (5 digits) '21754' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,382 - WARNING - Rejected: Too short (5 digits) '21754' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,382 - WARNING - Rejected: Too short (5 digits) '21754' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,386 - WARNING - Rejected: Too short (5 digits) '21380' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,388 - WARNING - Rejected: Too short (5 digits) '21380' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,388 - WARNING - Rejected: Too short (5 digits) '21380' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,388 - WARNING - Rejected: Too short (5 digits) '21380' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,388 - WARNING - Rejected: Too short (5 digits) '21380' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,396 - WARNING - Rejected: Too short (5 digits) '21376' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,396 - WARNING - Rejected: Too short (5 digits) '21376' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,396 - WARNING - Rejected: Too short (5 digits) '21376' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,402 - WARNING - Rejected: Too short (5 digits) '21376' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,405 - WARNING - Rejected: Too short (5 digits) '21376' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,405 - WARNING - Rejected: Too short (5 digits) '19069' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,405 - WARNING - Rejected: Too short (5 digits) '19069' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,405 - WARNING - Rejected: Too short (5 digits) '19069' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,405 - WARNING - Rejected: Too short (5 digits) '19069' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,405 - WARNING - Rejected: Too short (5 digits) '19069' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,413 - WARNING - Rejected: Too short (5 digits) '17601' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,413 - WARNING - Rejected: Too short (5 digits) '17601' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,417 - WARNING - Rejected: Too short (5 digits) '17601' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,421 - WARNING - Rejected: Too short (5 digits) '17601' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,421 - WARNING - Rejected: Too short (5 digits) '17601' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,421 - WARNING - Rejected: Too short (5 digits) '17922' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,428 - WARNING - Rejected: Too short (5 digits) '17922' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,430 - WARNING - Rejected: Too short (5 digits) '17922' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,430 - WARNING - Rejected: Too short (5 digits) '17922' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,430 - WARNING - Rejected: Too short (5 digits) '17922' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,433 - WARNING - Rejected: Too short (5 digits) '17901' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,438 - WARNING - Rejected: Too short (5 digits) '17901' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,438 - WARNING - Rejected: Too short (5 digits) '17901' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,440 - WARNING - Rejected: Too short (5 digits) '17901' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,440 - WARNING - Rejected: Too short (5 digits) '17901' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,442 - WARNING - Rejected: Too short (5 digits) '20282' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,446 - WARNING - Rejected: Too short (5 digits) '20282' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,448 - WARNING - Rejected: Too short (5 digits) '20282' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,449 - WARNING - Rejected: Too short (5 digits) '20282' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,451 - WARNING - Rejected: Too short (5 digits) '20282' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,454 - WARNING - Rejected: Too short (5 digits) '17919' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,457 - WARNING - Rejected: Too short (5 digits) '17919' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,459 - WARNING - Rejected: Too short (5 digits) '17919' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,463 - WARNING - Rejected: Too short (5 digits) '17919' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,463 - WARNING - Rejected: Too short (5 digits) '17919' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,467 - WARNING - Rejected: Too short (5 digits) '21668' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,469 - WARNING - Rejected: Too short (5 digits) '21668' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,469 - WARNING - Rejected: Too short (5 digits) '21668' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,469 - WARNING - Rejected: Too short (5 digits) '21668' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,474 - WARNING - Rejected: Too short (5 digits) '21668' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,477 - WARNING - Rejected: Too short (5 digits) '14717' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,482 - WARNING - Rejected: Too short (5 digits) '14717' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,482 - WARNING - Rejected: Too short (5 digits) '14717' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,482 - WARNING - Rejected: Too short (5 digits) '14717' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,482 - WARNING - Rejected: Too short (5 digits) '14717' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,488 - WARNING - Rejected: Too short (7 digits) '2074738' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,497 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:10:31,497 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:10:34,873 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:34,884 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:34,888 - INFO - Valid mobile: '(+91) 9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:34,889 - INFO - Valid mobile: '(+91) 9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:10:34,890 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text_mobile
+2025-05-29 15:10:34,892 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text_mobile
+2025-05-29 15:10:34,909 - INFO - Valid landline_short: '20987136' normalized to +91-20987136 from buykharibaoli.com_tel_link
+2025-05-29 15:10:34,912 - WARNING - Rejected: Unrecognized format '209871365946' from buykharibaoli.com_tel_link
+2025-05-29 15:10:34,915 - INFO - Valid landline_short: '20987136' normalized to +91-20987136 from buykharibaoli.com_tel_link
+2025-05-29 15:10:34,916 - WARNING - Rejected: Unrecognized format '209871365946' from buykharibaoli.com_tel_link
+2025-05-29 15:10:35,175 - WARNING - Rejected: Too short (5 digits) '14860' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,187 - WARNING - Rejected: Too short (5 digits) '15543' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,191 - WARNING - Rejected: Too short (5 digits) '15543' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,193 - WARNING - Rejected: Too short (7 digits) '8815087' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,195 - WARNING - Rejected: Too short (7 digits) '8815087' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,199 - WARNING - Rejected: Too short (7 digits) '0205986' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,212 - WARNING - Rejected: Too short (7 digits) '2074738' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,217 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:10:35,218 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:10:59,860 - INFO - Valid mobile: '9999630880' normalized to +919999630880 from dilligrocery.com_text
+2025-05-29 15:10:59,866 - INFO - Valid landline_international: '+91-11-23972784' normalized to +911123972784 from dilligrocery.com_text
+2025-05-29 15:10:59,869 - INFO - Valid mobile: '+91-9999630880' normalized to +919999630880 from dilligrocery.com_text
+2025-05-29 15:10:59,869 - INFO - Valid mobile: '9999630880' normalized to +919999630880 from dilligrocery.com_text
+2025-05-29 15:10:59,869 - INFO - Valid landline_international: '+91-11-23972784' normalized to +911123972784 from dilligrocery.com_text
+2025-05-29 15:10:59,869 - INFO - Valid mobile: '+91-9999630880' normalized to +919999630880 from dilligrocery.com_text
+2025-05-29 15:10:59,869 - INFO - Valid mobile: '9999630880' normalized to +919999630880 from dilligrocery.com_text_mobile
+2025-05-29 15:10:59,876 - INFO - Valid mobile: '9999630880' normalized to +919999630880 from dilligrocery.com_text_mobile
+2025-05-29 15:10:59,876 - INFO - Valid mobile: '+91-9999630880' normalized to +919999630880 from dilligrocery.com_text_plus91
+2025-05-29 15:11:00,383 - INFO - Valid landline_short: '42807572' normalized to +91-42807572 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,383 - WARNING - Rejected: Unrecognized format '4280757268' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,383 - INFO - Valid landline_short: '39755556' normalized to +91-39755556 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,383 - WARNING - Rejected: Unrecognized format '3975555609' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,401 - INFO - Valid landline_short: '42292069' normalized to +91-42292069 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,403 - WARNING - Rejected: Unrecognized format '4229206997' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,404 - WARNING - Rejected: Unrecognized format '693926603' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,404 - WARNING - Rejected: Unrecognized format '1693926603' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,404 - WARNING - Rejected: Unrecognized format '866441430' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,404 - WARNING - Rejected: Unrecognized format '866441430' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,404 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,404 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,404 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,419 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,423 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,423 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,423 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,428 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,428 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,432 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,661 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,662 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,664 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,664 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,670 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,670 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,672 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,674 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,677 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,679 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,679 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,679 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,685 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,685 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,685 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,685 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,692 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,693 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,697 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,697 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,697 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,697 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,704 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,704 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,704 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,704 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,710 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,713 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,715 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,716 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,718 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,718 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,721 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,721 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,724 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,724 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,726 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,729 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,732 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,732 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,732 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,732 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,732 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,732 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,741 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,742 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,747 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,748 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,750 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,750 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,754 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,754 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:00,758 - INFO - Valid landline_short: '40117031' normalized to +91-40117031 from dilligrocery.com_data_attr
+2025-05-29 15:11:00,761 - WARNING - Rejected: Unrecognized format '1401170319' from dilligrocery.com_data_attr
+2025-05-29 15:11:05,819 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:11:05,819 - INFO - Valid mobile: '(+91) 9871365946' normalized to +919871365946 from buykharibaoli.com_text
+2025-05-29 15:11:05,824 - INFO - Valid mobile: '9871365946' normalized to +919871365946 from buykharibaoli.com_text_mobile
+2025-05-29 15:11:05,831 - INFO - Valid landline_short: '20987136' normalized to +91-20987136 from buykharibaoli.com_tel_link
+2025-05-29 15:11:05,831 - WARNING - Rejected: Unrecognized format '209871365946' from buykharibaoli.com_tel_link
+2025-05-29 15:11:06,270 - WARNING - Rejected: Too short (5 digits) '14860' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,282 - WARNING - Rejected: Too short (5 digits) '14854' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,285 - WARNING - Rejected: Too short (5 digits) '14854' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,342 - WARNING - Rejected: Too short (5 digits) '17155' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,397 - WARNING - Rejected: Too short (7 digits) '1666158' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,402 - WARNING - Rejected: Too short (7 digits) '9366979' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,402 - WARNING - Rejected: Too short (7 digits) '9366979' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,414 - WARNING - Rejected: Too short (5 digits) '17162' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,420 - WARNING - Rejected: Too short (5 digits) '57868' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,421 - WARNING - Rejected: Too short (5 digits) '17164' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,424 - WARNING - Rejected: Too short (5 digits) '57869' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,424 - WARNING - Rejected: Too short (5 digits) '17165' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,433 - WARNING - Rejected: Too short (7 digits) '2074738' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,441 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:11:06,444 - WARNING - Rejected: Too short (7 digits) '7326522' from buykharibaoli.com_data_attr
+2025-05-29 15:11:10,708 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_text
+2025-05-29 15:11:10,708 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_text
+2025-05-29 15:11:10,708 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_text_std_code
+2025-05-29 15:11:10,716 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,716 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,717 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:10,717 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,717 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,717 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:10,717 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,722 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,722 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:10,722 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,722 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:10,722 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:10,774 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from www.sswholesale.in_jsonld_direct
+2025-05-29 15:11:10,774 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from www.sswholesale.in_jsonld_direct
+2025-05-29 15:11:10,774 - INFO - Valid mobile: '8046038536' normalized to +918046038536 from www.sswholesale.in_jsonld_direct_mobile
+2025-05-29 15:11:10,774 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from www.sswholesale.in_jsonld_direct_plus91
+2025-05-29 15:11:10,782 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from javascript
+2025-05-29 15:11:10,782 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from javascript
+2025-05-29 15:11:10,782 - INFO - Valid mobile: '8046038536' normalized to +918046038536 from javascript_mobile
+2025-05-29 15:11:10,782 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from javascript_plus91
+2025-05-29 15:11:10,782 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from javascript
+2025-05-29 15:11:10,788 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from javascript
+2025-05-29 15:11:10,788 - INFO - Valid mobile: '8046038536' normalized to +918046038536 from javascript_mobile
+2025-05-29 15:11:10,790 - INFO - Valid mobile: '+91-8046038536' normalized to +918046038536 from javascript_plus91
+2025-05-29 15:11:10,903 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,903 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,907 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,908 - INFO - Valid landline_short: '30680213' normalized to +91-30680213 from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,910 - WARNING - Rejected: Unrecognized format '306802131' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,910 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,912 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,914 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,917 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,919 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,920 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,922 - INFO - Valid landline_short: '30680213' normalized to +91-30680213 from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,922 - WARNING - Rejected: Unrecognized format '306802131' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,922 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,925 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,928 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,930 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,932 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:10,932 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:28,741 - INFO - Valid landline_short: '23952798' normalized to +91-23952798 from www.mapsofindia.com_text
+2025-05-29 15:11:28,745 - INFO - Valid landline_short: '23952798' normalized to +91-23952798 from www.mapsofindia.com_text
+2025-05-29 15:11:28,949 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:28,949 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:28,959 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:28,959 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:28,962 - WARNING - Rejected: Unrecognized format '024708682' from www.mapsofindia.com_comment
+2025-05-29 15:11:28,962 - WARNING - Rejected: Unrecognized format '1024708682' from www.mapsofindia.com_comment
+2025-05-29 15:11:28,967 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:28,967 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:28,967 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:28,977 - INFO - Valid landline_short: '22444427' normalized to +91-22444427 from www.mapsofindia.com_comment
+2025-05-29 15:11:58,027 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_text
+2025-05-29 15:11:58,034 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_text
+2025-05-29 15:11:58,039 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_text_std_code
+2025-05-29 15:11:58,052 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,052 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,054 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,055 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,067 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,071 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,071 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,071 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,071 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,076 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,084 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,089 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,089 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,091 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,092 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,094 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,094 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,094 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,094 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,094 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,099 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,100 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,100 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,100 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,106 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,106 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,109 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,111 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,113 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,115 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,117 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,117 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,120 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,120 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,120 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,124 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,128 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,128 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,128 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,128 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,132 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,136 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,141 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,143 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,143 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,147 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,148 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,148 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,157 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,160 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,160 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,160 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,164 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,164 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,164 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,167 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,171 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,171 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,175 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,177 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,179 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,179 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,180 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,182 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,184 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,188 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,188 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,190 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,190 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,191 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,191 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,191 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,195 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,195 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,195 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,195 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link
+2025-05-29 15:11:58,199 - INFO - Valid mobile: '08046038536' normalized to +918046038536 from www.sswholesale.in_tel_link_std_code
+2025-05-29 15:11:58,974 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,976 - INFO - Valid landline_short: '30680213' normalized to +91-30680213 from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,976 - WARNING - Rejected: Unrecognized format '306802131' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,978 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,980 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,984 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,985 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,986 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,989 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,989 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,989 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,994 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,996 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,997 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:58,998 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,000 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,000 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,003 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,006 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,009 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,009 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,011 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,012 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,012 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,012 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,017 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,019 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,023 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,025 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,026 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,029 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,029 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr
+2025-05-29 15:11:59,029 - WARNING - Rejected: Too short (7 digits) '1423978' from www.sswholesale.in_data_attr

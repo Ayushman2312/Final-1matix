@@ -1,0 +1,83 @@
+2025-05-29 15:08:58,695 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250529_150858_manual.log
+2025-05-29 15:08:58,699 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-29 15:08:58,701 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-29 15:08:58,982 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-29 15:09:14,232 - ContactScraper - INFO - Starting scrape for keyword: 'Dry fruits wholesaler in khari baoli'
+2025-05-29 15:09:14,236 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-29 15:09:14,238 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-29 15:09:14,239 - ContactScraper - INFO - Original keyword: 'Dry fruits wholesaler in khari baoli' | Optimized query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:09:14,243 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-29 15:09:14,284 - ContactScraper - INFO - Simplified complex query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -'
+2025-05-29 15:09:14,286 - ContactScraper - INFO - Reduced exclusions in query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:09:14,287 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:09:28,152 - ContactScraper - INFO - Imported browser search found 4 results
+2025-05-29 15:09:28,152 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact' (page 0)
+2025-05-29 15:09:28,152 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:09:57,640 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-29 15:09:57,641 - ContactScraper - INFO - Extracting contacts from: http://vsdryfruit.com/
+2025-05-29 15:09:59,893 - ContactScraper - INFO - Direct request found 1 emails and 0 phones
+2025-05-29 15:09:59,895 - ContactScraper - INFO - Searching for contact pages on vsdryfruit.com
+2025-05-29 15:10:00,531 - ContactScraper - INFO - Checking contact page: http://vsdryfruit.com/contact
+2025-05-29 15:10:03,693 - ContactScraper - INFO - Checking contact page: http://vsdryfruit.com/contact-us
+2025-05-29 15:10:06,868 - ContactScraper - INFO - Checking contact page: http://vsdryfruit.com/contactus
+2025-05-29 15:10:10,248 - ContactScraper - INFO - Found 1 emails and 0 phones on vsdryfruit.com
+2025-05-29 15:10:10,252 - ContactScraper - INFO - Extracting contacts from: https://zayadryfruits.com/Khari-Baoli-Dry-Fruits-Rate-List-Today?srsltid=AfmBOorrizD1fp0nfSLB5HbhaEYw2NRK-c8CdNoji6yh5v5paqvGsP8U
+2025-05-29 15:10:13,944 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-29 15:10:13,946 - ContactScraper - INFO - Searching for contact pages on zayadryfruits.com
+2025-05-29 15:10:14,346 - ContactScraper - INFO - Checking contact page: https://zayadryfruits.com/contact
+2025-05-29 15:10:17,118 - ContactScraper - INFO - Contact page https://zayadryfruits.com/contact found 0 emails and 0 phones
+2025-05-29 15:10:17,118 - ContactScraper - INFO - Checking contact page: https://zayadryfruits.com/contact-us
+2025-05-29 15:10:18,657 - ContactScraper - INFO - Contact page https://zayadryfruits.com/contact-us found 0 emails and 0 phones
+2025-05-29 15:10:18,659 - ContactScraper - INFO - Checking contact page: https://zayadryfruits.com/contactus
+2025-05-29 15:10:20,090 - ContactScraper - INFO - Contact page https://zayadryfruits.com/contactus found 0 emails and 0 phones
+2025-05-29 15:10:20,090 - ContactScraper - INFO - Found 0 emails and 0 phones on zayadryfruits.com
+2025-05-29 15:10:20,090 - ContactScraper - INFO - Extracting contacts from: https://buykharibaoli.com/?srsltid=AfmBOooMOp6U4JrD_zr7y0j9mJUELDtP3GATV0aszP-2rf1aBSgXMHAv
+2025-05-29 15:10:26,681 - ContactScraper - INFO - Direct request found 5 emails and 0 phones
+2025-05-29 15:10:26,695 - ContactScraper - INFO - Found 5 emails and 0 phones on buykharibaoli.com
+2025-05-29 15:10:26,702 - ContactScraper - INFO - Extracting contacts from: https://buykharibaoli.com/product-category/dry-fruits/
+2025-05-29 15:10:31,520 - ContactScraper - INFO - Direct request found 5 emails and 0 phones
+2025-05-29 15:10:31,521 - ContactScraper - INFO - Found 5 emails and 0 phones on buykharibaoli.com
+2025-05-29 15:10:31,530 - ContactScraper - INFO - Extracting contacts from: https://buykharibaoli.com/contact-us/
+2025-05-29 15:10:35,225 - ContactScraper - INFO - Direct request found 8 emails and 0 phones
+2025-05-29 15:10:35,226 - ContactScraper - INFO - Found 8 emails and 0 phones on buykharibaoli.com
+2025-05-29 15:10:35,240 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 1)
+2025-05-29 15:10:35,241 - ContactScraper - INFO - Simplified complex query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -'
+2025-05-29 15:10:35,242 - ContactScraper - INFO - Reduced exclusions in query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:10:35,245 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:10:57,467 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-29 15:10:57,470 - ContactScraper - INFO - Extracting contacts from: https://dilligrocery.com/?srsltid=AfmBOoqIOgGQAuxauNAG3fVP8G5nss2QxFv63hG4FB3UI33sjhQiyvfP
+2025-05-29 15:11:00,774 - ContactScraper - INFO - Direct request found 7 emails and 0 phones
+2025-05-29 15:11:00,774 - ContactScraper - INFO - Found 7 emails and 0 phones on dilligrocery.com
+2025-05-29 15:11:00,794 - ContactScraper - INFO - Extracting contacts from: https://buykharibaoli.com/?srsltid=AfmBOorA7TzZdeWE_swPaaEXM3pJ2alisFFbRbOz7mRRMlLiirSzucm9
+2025-05-29 15:11:06,455 - ContactScraper - INFO - Direct request found 5 emails and 0 phones
+2025-05-29 15:11:06,455 - ContactScraper - INFO - Found 5 emails and 0 phones on buykharibaoli.com
+2025-05-29 15:11:06,462 - ContactScraper - INFO - Extracting contacts from: https://www.sswholesale.in/
+2025-05-29 15:11:10,942 - ContactScraper - INFO - Direct request found 0 emails and 0 phones
+2025-05-29 15:11:10,944 - ContactScraper - INFO - Searching for contact pages on www.sswholesale.in
+2025-05-29 15:11:12,537 - ContactScraper - INFO - Checking contact page: https://www.sswholesale.in/contact
+2025-05-29 15:11:14,543 - ContactScraper - INFO - Checking contact page: https://www.sswholesale.in/contact-us
+2025-05-29 15:11:16,915 - ContactScraper - INFO - Checking contact page: https://www.sswholesale.in/contactus
+2025-05-29 15:11:20,109 - ContactScraper - INFO - Trying to generate likely emails for Indian domain: www.sswholesale.in
+2025-05-29 15:11:20,113 - ContactScraper - INFO - Generated 15 potential emails
+2025-05-29 15:11:20,113 - ContactScraper - INFO - Found 15 emails and 0 phones on www.sswholesale.in
+2025-05-29 15:11:20,130 - ContactScraper - INFO - Extracting contacts from: https://www.mapsofindia.com/whitepages/businesses/index/khalstr
+2025-05-29 15:11:28,983 - ContactScraper - INFO - Direct request found 4 emails and 0 phones
+2025-05-29 15:11:28,985 - ContactScraper - INFO - Found 4 emails and 0 phones on www.mapsofindia.com
+2025-05-29 15:11:28,992 - ContactScraper - INFO - Extracting contacts from: https://www.ambrosianuts.com/products.php
+2025-05-29 15:11:31,279 - ContactScraper - WARNING - Connection error requesting https://www.ambrosianuts.com/products.php
+2025-05-29 15:11:31,285 - ContactScraper - INFO - Searching for contact pages on www.ambrosianuts.com
+2025-05-29 15:11:32,148 - ContactScraper - WARNING - Error fetching base URL to find contact pages: HTTPSConnectionPool(host='www.ambrosianuts.com', port=443): Max retries exceeded with url: /products.php (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:997)')))
+2025-05-29 15:11:32,153 - ContactScraper - INFO - Checking contact page: https://www.ambrosianuts.com/contact
+2025-05-29 15:11:34,886 - ContactScraper - WARNING - Error fetching contact page https://www.ambrosianuts.com/contact: HTTPSConnectionPool(host='www.ambrosianuts.com', port=443): Max retries exceeded with url: /contact (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:997)')))
+2025-05-29 15:11:34,894 - ContactScraper - INFO - Checking contact page: https://www.ambrosianuts.com/contact-us
+2025-05-29 15:11:38,112 - ContactScraper - WARNING - Error fetching contact page https://www.ambrosianuts.com/contact-us: HTTPSConnectionPool(host='www.ambrosianuts.com', port=443): Max retries exceeded with url: /contact-us (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:997)')))
+2025-05-29 15:11:38,117 - ContactScraper - INFO - Checking contact page: https://www.ambrosianuts.com/contactus
+2025-05-29 15:11:41,189 - ContactScraper - WARNING - Error fetching contact page https://www.ambrosianuts.com/contactus: HTTPSConnectionPool(host='www.ambrosianuts.com', port=443): Max retries exceeded with url: /contactus (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:997)')))
+2025-05-29 15:11:41,191 - ContactScraper - INFO - Found 0 emails and 0 phones on www.ambrosianuts.com
+2025-05-29 15:11:41,198 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact' (page 0)
+2025-05-29 15:11:41,200 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:11:54,519 - ContactScraper - INFO - Imported browser search found 10 results
+2025-05-29 15:11:54,523 - ContactScraper - INFO - Extracting contacts from: https://www.sswholesale.in/dry-fruits.html
+2025-05-29 15:11:59,046 - ContactScraper - INFO - Direct request found 2 emails and 0 phones
+2025-05-29 15:11:59,047 - ContactScraper - INFO - Found 2 emails and 0 phones on www.sswholesale.in
+2025-05-29 15:11:59,050 - ContactScraper - INFO - Extracting contacts from: https://nutcraft.in/

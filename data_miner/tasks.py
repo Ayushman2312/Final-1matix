@@ -14,7 +14,7 @@ from .models import MiningHistory, BackgroundTask
 # Import the run_web_scraper_task function directly
 from .web_scrapper import run_web_scraper_task
 # Import the SerpAPI scraper
-from .scrap import scrape_with_serpapi
+from .scrap import scrape_with_serpapi, SerpApiScraper
 
 # Configure logging
 logger = logging.getLogger(__name__)

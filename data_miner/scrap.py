@@ -21,8 +21,8 @@ try:
     )
 except ImportError:
     # Default values if settings.py is not available
-    SERPAPI_KEY = "934b601b0908067948a53616306c790179658a297a2e103379a55d09e7b75a7c"
-    GEMINI_API_KEY = None
+    SERPAPI_KEY = "64e3a48333bbb33f4ce8ded91e5268cd453a80fb244104de63b7ad9af9cc2a58"
+    GEMINI_API_KEY = 'AIzaSyDsXH-_ftI5xn4aWfkwpw__4ixUMs7a7fM'
     DEFAULT_MAX_RESULTS = 50
     DEFAULT_MAX_PAGES = 5
     DEFAULT_TIMEOUT = 10
@@ -43,6 +43,89 @@ logger = logging.getLogger(__name__)
 
 # Dictionary to track active tasks and their stop flags
 active_tasks = {}
+
+# Class to manage API keys for SerpAPI
+class ApiKeyManager:
+    """Manages a pool of API keys and rotates them when needed"""
+    
+    def __init__(self, api_keys_file='data_miner/apis.txt'):
+        """Initialize with a file containing API keys"""
+        self.api_keys = []
+        self.current_key_index = 0
+        self.disabled_keys = set()  # Set to track disabled keys
+        
+        # Load API keys from file
+        try:
+            with open(api_keys_file, 'r') as f:
+                for line in f:
+                    # Clean up the line and extract just the key
+                    key = line.strip()
+                    if key and not key.startswith('#'):
+                        # Extract key if it's in format "1.key123456"
+                        if '.' in key:
+                            key = key.split('.', 1)[1]
+                        self.api_keys.append(key)
+            
+            logger.info(f"Loaded {len(self.api_keys)} API keys")
+        except Exception as e:
+            logger.error(f"Error loading API keys: {e}")
+            # Use default key as fallback
+            self.api_keys = [SERPAPI_KEY]
+    
+    def get_current_key(self):
+        """Get the current active API key"""
+        if not self.api_keys:
+            logger.error("No API keys available")
+            return None
+            
+        # Skip disabled keys
+        while self.current_key_index < len(self.api_keys):
+            key = self.api_keys[self.current_key_index]
+            if key not in self.disabled_keys:
+                return key
+            self.current_key_index += 1
+            
+        # If we've gone through all keys, reset to start and try again
+        self.current_key_index = 0
+        while self.current_key_index < len(self.api_keys):
+            key = self.api_keys[self.current_key_index]
+            if key not in self.disabled_keys:
+                return key
+            self.current_key_index += 1
+            
+        logger.error("All API keys are disabled")
+        return None
+    
+    def rotate_key(self):
+        """Move to the next available API key"""
+        self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
+        logger.info(f"Rotated to API key index {self.current_key_index}")
+        return self.get_current_key()
+    
+    def disable_current_key(self):
+        """Mark the current key as disabled (e.g., when it runs out of searches)"""
+        if not self.api_keys:
+            return None
+            
+        current_key = self.api_keys[self.current_key_index]
+        self.disabled_keys.add(current_key)
+        logger.warning(f"Disabled API key {current_key[:8]}... due to usage limits")
+        
+        # Move to next key
+        return self.rotate_key()
+    
+    def is_error_limit_reached(self, response):
+        """Check if the error is due to API limits being reached"""
+        if isinstance(response, dict):
+            # Check for common limit errors
+            if 'error' in response:
+                error_msg = response['error'].lower()
+                limit_indicators = ['run out of searches', 'limit exceeded', 'api limit', 'quota exceeded']
+                return any(indicator in error_msg for indicator in limit_indicators)
+        return False
+
+# Initialize global API key manager
+api_key_manager = ApiKeyManager()
 
 def stop_task(task_id):
     """
@@ -195,8 +278,12 @@ class SerpApiScraper:
             update_status_callback (callable): Function to call for status updates
             task_id (str): Task ID for tracking
         """
-        # Use provided API key or get from settings
-        self.api_key = api_key or SERPAPI_KEY
+        # Use API Key Manager instead of a single key
+        self.api_key_manager = api_key_manager
+        
+        # Still store a specific key if provided explicitly
+        self.specific_api_key = api_key
+        
         self.update_status = update_status_callback
         self.task_id = task_id
         
@@ -882,16 +969,19 @@ class SerpApiScraper:
             current_progress = 10 + int((page - 1) / max_pages * total_progress_value)
             self._update_progress(current_progress, f"Searching page {page} of {max_pages}...")
             
-            # Configure SerpAPI parameters
+            # Configure SerpAPI parameters with current API key from manager or the specific one provided
+            current_api_key = self.specific_api_key or self.api_key_manager.get_current_key()
+            if not current_api_key:
+                logger.error("No API keys available")
+                break
+                
             params = {
                 "engine": "google",
                 "q": optimized_query,
-                "api_key": self.api_key,
+                "api_key": current_api_key,
                 "num": 100,  # Get more results per page
-                "start": (page - 1) * 100,
                 "gl": country.lower(),  # Google country (lowercase)
                 "hl": "en",  # Language set to English
-                "device": "desktop",
             }
             
             # Add country-specific parameters
@@ -902,184 +992,212 @@ class SerpApiScraper:
                 params["location"] = "United States"
                 params["google_domain"] = "google.com"
             
-            try:
-                # Make the SerpAPI request
-                self._update_progress(current_progress + 2, f"Fetching search results from SerpAPI...")
-                search = GoogleSearch(params)
-                results = search.get_dict()
-                
-                # Debug log the entire results structure
-                logger.debug(f"SerpAPI response structure: {list(results.keys())}")
-                
-                # Extract organic results - ensure we handle all possible response formats
-                organic_results = []
-                
-                # Try standard organic_results key
-                if "organic_results" in results:
-                    organic_results = results.get("organic_results", [])
-                    logger.info(f"Found {len(organic_results)} standard organic results")
-                
-                # If no results yet, try alternative keys that might contain results
-                if not organic_results and "shopping_results" in results:
-                    # Extract links from shopping results
-                    shopping_results = results.get("shopping_results", [])
-                    for item in shopping_results:
-                        if "link" in item:
-                            organic_results.append({"link": item["link"], "title": item.get("title", "")})
-                    logger.info(f"Found {len(organic_results)} shopping results")
-                
-                # Try knowledge graph if available
-                if "knowledge_graph" in results:
-                    kg = results.get("knowledge_graph", {})
-                    if "website" in kg:
-                        organic_results.append({"link": kg["website"], "title": kg.get("title", "")})
-                        logger.info("Added knowledge graph website to results")
-                
-                # Try local results if available
-                if "local_results" in results:
-                    local_results = results.get("local_results", [])
-                    for item in local_results:
-                        if "website" in item:
-                            organic_results.append({"link": item["website"], "title": item.get("title", "")})
-                    logger.info(f"Found {len(local_results)} local results with websites")
-                
-                # Log the number of results found
-                logger.info(f"Total combined results: {len(organic_results)}")
-                
-                if not organic_results:
-                    logger.warning(f"No organic results found for page {page}")
+            # Track if we need to retry with a different API key
+            retry_with_new_key = True
+            max_key_retries = min(5, len(self.api_key_manager.api_keys))  # Limit retry attempts
+            key_retry_count = 0
+            
+            while retry_with_new_key and key_retry_count < max_key_retries:
+                try:
+                    # Make the SerpAPI request
+                    self._update_progress(current_progress + 2, f"Fetching search results from SerpAPI...")
+                    search = GoogleSearch(params)
+                    results = search.get_dict()
                     
-                    # Try with alternative query on failure
-                    if page == 1:
-                        # Construct a more direct query as fallback
-                        if data_type == 'email':
-                            fallback_query = f'"{keyword}" "contact us" "email" OR "contact" OR "get in touch" site:.{country.lower()}'
-                        else:  # phone
-                            fallback_query = f'"{keyword}" "contact us" "phone" OR "call us" OR "mobile" site:.{country.lower()}'
+                    # Check if the response indicates API key has run out of searches
+                    if self.api_key_manager.is_error_limit_reached(results):
+                        if self.specific_api_key:
+                            # If using a specific key, we can't rotate
+                            logger.error(f"Specific API key has run out of searches: {results.get('error', '')}")
+                            return {
+                                'success': False,
+                                'data_type': data_type,
+                                'keyword': keyword,
+                                'error': f"API key has run out of searches: {results.get('error', '')}"
+                            }
+                        
+                        # Disable current key and get next one
+                        logger.warning(f"API key ran out of searches: {results.get('error', '')}")
+                        new_key = self.api_key_manager.disable_current_key()
+                        
+                        if not new_key:
+                            logger.error("No more API keys available")
+                            return {
+                                'success': False,
+                                'data_type': data_type,
+                                'keyword': keyword,
+                                'error': "All API keys have run out of searches"
+                            }
                             
-                        # Try the fallback query
-                        params["q"] = fallback_query
-                        self._update_progress(current_progress + 2, f"Trying alternative query: '{fallback_query}'")
-                        
-                        search = GoogleSearch(params)
-                        results = search.get_dict()
-                        
-                        # Try all possible result types again
-                        if "organic_results" in results:
-                            organic_results = results.get("organic_results", [])
-                        
-                        if not organic_results and "shopping_results" in results:
-                            shopping_results = results.get("shopping_results", [])
-                            for item in shopping_results:
-                                if "link" in item:
-                                    organic_results.append({"link": item["link"], "title": item.get("title", "")})
-                        
-                        if "knowledge_graph" in results:
-                            kg = results.get("knowledge_graph", {})
-                            if "website" in kg:
-                                organic_results.append({"link": kg["website"], "title": kg.get("title", "")})
-                        
-                        if "local_results" in results:
-                            local_results = results.get("local_results", [])
-                            for item in local_results:
-                                if "website" in item:
-                                    organic_results.append({"link": item["website"], "title": item.get("title", "")})
-                        
-                        if not organic_results:
-                            logger.warning(f"Still no results with fallback query")
-                            break  # If still no results, move on
-                    else:
-                        break  # For subsequent pages, just move on
-                    
-                self._update_progress(current_progress + 5, f"Found {len(organic_results)} results on page {page}")
-                
-                # Get a shuffled subset of results to randomize the order
-                subset_size = min(len(organic_results), urls_per_page)
-                selected_indices = random.sample(range(len(organic_results)), subset_size)
-                
-                # Process results in random order to avoid patterns
-                progress_per_url = progress_per_page / max(subset_size, 1)
-                
-                for idx, i in enumerate(selected_indices):
-                    # Check if stop flag is set
-                    if self.task_id and self.task_id in active_tasks and active_tasks[self.task_id]['stop']:
-                        logger.info(f"Task {self.task_id} is stopping due to stop flag")
-                        break
-                        
-                    result = organic_results[i]
-                    url = result.get("link")
-                    
-                    # Skip if URL is not valid or already scraped
-                    if not url or not self.is_valid_url(url) or url in scraped_urls:
+                        # Update params with new key and retry
+                        params["api_key"] = new_key
+                        key_retry_count += 1
+                        logger.info(f"Retrying with new API key (attempt {key_retry_count})")
                         continue
                     
-                    # Skip if domain is in failed domains list
-                    domain = urlparse(url).netloc
-                    if domain in failed_domains:
-                        continue
+                    # If we get here, the request succeeded
+                    retry_with_new_key = False
+                    
+                    # Debug log the entire results structure
+                    logger.debug(f"SerpAPI response structure: {list(results.keys())}")
+                    
+                    # Extract organic results - ensure we handle all possible response formats
+                    organic_results = []
+                    
+                    # Try standard organic_results key
+                    if "organic_results" in results:
+                        organic_results = results.get("organic_results", [])
+                        logger.info(f"Found {len(organic_results)} standard organic results")
+                    
+                    # If no results yet, try alternative keys that might contain results
+                    if not organic_results and "shopping_results" in results:
+                        # Extract links from shopping results
+                        shopping_results = results.get("shopping_results", [])
+                        for item in shopping_results:
+                            if "link" in item:
+                                organic_results.append({"link": item["link"], "title": item.get("title", "")})
+                        logger.info(f"Found {len(organic_results)} shopping results")
+                    
+                    # Try knowledge graph if available
+                    if "knowledge_graph" in results:
+                        kg = results.get("knowledge_graph", {})
+                        if "website" in kg:
+                            organic_results.append({"link": kg["website"], "title": kg.get("title", "")})
+                            logger.info("Added knowledge graph website to results")
+                    
+                    # Try local results if available
+                    if "local_results" in results:
+                        local_results = results.get("local_results", [])
+                        for item in local_results:
+                            if "website" in item:
+                                organic_results.append({"link": item["website"], "title": item.get("title", "")})
+                        logger.info(f"Found {len(local_results)} local results with websites")
+                    
+                    # Log the number of results found
+                    logger.info(f"Total combined results: {len(organic_results)}")
+                    
+                    if not organic_results:
+                        logger.warning(f"No organic results found for page {page}")
                         
-                    scraped_urls.add(url)
-                    
-                    # Update progress
-                    item_progress = current_progress + 5 + int(idx * progress_per_url)
-                    self._update_progress(item_progress, f"Scraping {url}...")
-                    
-                    # Extract data from the URL
-                    extracted_data = self.extract_data_from_url(url, data_type, country)
-                    
-                    # Check for successful extraction
-                    if extracted_data:
-                        # Add unique results
-                        all_results.update(extracted_data)
-                        # Log successful extraction
-                        logger.info(f"Found {len(extracted_data)} {data_type}s on {url}")
-                    else:
-                        # Add to failed domains if extraction failed completely
-                        # Only mark completely failed domains, not just ones with no data
-                        domain_success_rate = self.domain_success_rates.get(domain, {}).get('rate', 1.0)
-                        if domain_success_rate < 0.3:  # If success rate is very low
-                            failed_domains.add(domain)
-                            logger.warning(f"Adding {domain} to failed domains list due to low success rate")
-                    
-                    # Break if we have enough results
-                    if len(all_results) >= max_results:
-                        break
+                        # Try with alternative query on failure
+                        if page == 1:
+                            # Construct a more direct query as fallback
+                            if data_type == 'email':
+                                fallback_query = f'"{keyword}" "contact us" "email" OR "contact" OR "get in touch" site:.{country.lower()}'
+                            else:  # phone
+                                fallback_query = f'"{keyword}" "contact us" "phone" OR "call us" OR "mobile" site:.{country.lower()}'
+                                
+                            # Try the fallback query
+                            params["q"] = fallback_query
+                            self._update_progress(current_progress + 2, f"Trying alternative query: '{fallback_query}'")
+                            
+                            # Reset the retry flag and try again with fallback query
+                            retry_with_new_key = True
+                            key_retry_count = 0
+                            continue
+                        else:
+                            break  # For subsequent pages, just move on
                         
-                    # Add a random delay between URL processing to appear more human
-                    time.sleep(random.uniform(0.5, 2.0))
+                    self._update_progress(current_progress + 5, f"Found {len(organic_results)} results on page {page}")
+                    
+                    # Get a shuffled subset of results to randomize the order
+                    subset_size = min(len(organic_results), urls_per_page)
+                    selected_indices = random.sample(range(len(organic_results)), subset_size)
+                    
+                    # Process results in random order to avoid patterns
+                    progress_per_url = progress_per_page / max(subset_size, 1)
+                    
+                    for idx, i in enumerate(selected_indices):
+                        # Check if stop flag is set
+                        if self.task_id and self.task_id in active_tasks and active_tasks[self.task_id]['stop']:
+                            logger.info(f"Task {self.task_id} is stopping due to stop flag")
+                            break
+                            
+                        result = organic_results[i]
+                        url = result.get("link")
+                        
+                        # Skip if URL is not valid or already scraped
+                        if not url or not self.is_valid_url(url) or url in scraped_urls:
+                            continue
+                        
+                        # Skip if domain is in failed domains list
+                        domain = urlparse(url).netloc
+                        if domain in failed_domains:
+                            continue
+                            
+                        scraped_urls.add(url)
+                        
+                        # Update progress
+                        item_progress = current_progress + 5 + int(idx * progress_per_url)
+                        self._update_progress(item_progress, f"Scraping {url}...")
+                        
+                        # Extract data from the URL
+                        extracted_data = self.extract_data_from_url(url, data_type, country)
+                        
+                        # Check for successful extraction
+                        if extracted_data:
+                            # Add unique results
+                            all_results.update(extracted_data)
+                            # Log successful extraction
+                            logger.info(f"Found {len(extracted_data)} {data_type}s on {url}")
+                        else:
+                            # Add to failed domains if extraction failed completely
+                            # Only mark completely failed domains, not just ones with no data
+                            domain_success_rate = self.domain_success_rates.get(domain, {}).get('rate', 1.0)
+                            if domain_success_rate < 0.3:  # If success rate is very low
+                                failed_domains.add(domain)
+                                logger.warning(f"Adding {domain} to failed domains list due to low success rate")
+                        
+                        # Break if we have enough results
+                        if len(all_results) >= max_results:
+                            break
+                            
+                        # Add a random delay between URL processing to appear more human
+                        time.sleep(random.uniform(0.5, 2.0))
                 
-                # Add a longer delay between pages to avoid rate limiting
-                time.sleep(random.uniform(2.0, 5.0))
-                
-            except InterruptedError:
-                # Task was stopped manually
-                logger.info(f"Task {self.task_id} was interrupted")
-                # Clean up
-                if self.task_id in active_tasks:
-                    active_tasks[self.task_id]['running'] = False
-                # Return partial results
-                final_results = list(all_results)[:max_results]
-                return {
-                    'success': False,
-                    'status': 'stopped',
-                    'data_type': data_type,
-                    'keyword': keyword,
-                    'optimized_query': optimized_query,
-                    'country': country,
-                    'results_count': len(final_results),
-                    'results': final_results
-                }
-                
-            except Exception as e:
-                logger.error(f"Error in search for page {page}: {e}")
-                logger.error(traceback.format_exc())
-                self._update_progress(current_progress, f"Error in search: {str(e)}")
-                
-                # Add a delay after error before trying next page
-                time.sleep(random.uniform(3.0, 6.0))
-                
-                # Continue to the next page instead of breaking completely
-                continue
+                except InterruptedError:
+                    # Task was stopped manually
+                    logger.info(f"Task {self.task_id} was interrupted")
+                    # Clean up
+                    if self.task_id in active_tasks:
+                        active_tasks[self.task_id]['running'] = False
+                    # Return partial results
+                    final_results = list(all_results)[:max_results]
+                    return {
+                        'success': False,
+                        'status': 'stopped',
+                        'data_type': data_type,
+                        'keyword': keyword,
+                        'optimized_query': optimized_query,
+                        'country': country,
+                        'results_count': len(final_results),
+                        'results': final_results
+                    }
+                    
+                except Exception as e:
+                    logger.error(f"Error in search for page {page}: {e}")
+                    logger.error(traceback.format_exc())
+                    
+                    # Check if this might be an API key issue and we should retry
+                    if 'quota' in str(e).lower() or 'limit' in str(e).lower() or 'api key' in str(e).lower():
+                        if not self.specific_api_key:
+                            new_key = self.api_key_manager.rotate_key()
+                            if new_key:
+                                params["api_key"] = new_key
+                                key_retry_count += 1
+                                logger.info(f"Error might be API related, retrying with new key (attempt {key_retry_count})")
+                                continue
+                    
+                    self._update_progress(current_progress, f"Error in search: {str(e)}")
+                    
+                    # Add a delay after error before trying next page
+                    time.sleep(random.uniform(3.0, 6.0))
+                    
+                    # Break the retry loop
+                    retry_with_new_key = False
+            
+            # Add a longer delay between pages to avoid rate limiting
+            time.sleep(random.uniform(2.0, 5.0))
         
         # If we don't have enough results, try to generate some based on domain patterns
         if len(all_results) < max_results / 2 and data_type == 'email':
@@ -1212,6 +1330,41 @@ def scrape_with_serpapi(keyword, data_type='email', country='IN', task_id=None, 
             max_results=max_results
         )
         
+        # Check if results indicate an API key issue
+        if not results.get('success', True) and 'error' in results:
+            error_msg = results.get('error', '').lower()
+            if 'api key' in error_msg or 'quota' in error_msg or 'limit' in error_msg or 'run out of searches' in error_msg:
+                task_logger.warning(f"API key issue detected: {error_msg}")
+                task_logger.info("Attempting to use a different API key")
+                
+                # Try again with a different API key
+                new_key = api_key_manager.rotate_key()
+                if new_key:
+                    task_logger.info(f"Retrying with a different API key")
+                    
+                    # Update status to inform about retry
+                    if task_id:
+                        update_task_status(task_id, {
+                            'status': 'processing',
+                            'progress': 10,
+                            'message': f'Retrying with a different API key'
+                        })
+                    
+                    # Create a new scraper with a specific API key
+                    scraper = SerpApiScraper(
+                        api_key=new_key,
+                        update_status_callback=update_task_status,
+                        task_id=task_id
+                    )
+                    
+                    # Try again with the new key
+                    results = scraper.search_and_scrape(
+                        keyword=keyword,
+                        data_type=data_type,
+                        country=country,
+                        max_results=max_results
+                    )
+        
         # Check if task was stopped
         if task_id and task_id in active_tasks and active_tasks[task_id]['stop']:
             if task_id in active_tasks:
@@ -1219,8 +1372,8 @@ def scrape_with_serpapi(keyword, data_type='email', country='IN', task_id=None, 
             return results
         
         # If we got very few results, try a slightly different approach
-        if results['results_count'] < 5 and task_id:
-            task_logger.warning(f"Few results ({results['results_count']}) found, trying alternative approach")
+        if results.get('results_count', 0) < 5 and task_id:
+            task_logger.warning(f"Few results ({results.get('results_count', 0)}) found, trying alternative approach")
             
             # Check if task was stopped before continuing
             if task_id in active_tasks and active_tasks[task_id]['stop']:
@@ -1250,8 +1403,8 @@ def scrape_with_serpapi(keyword, data_type='email', country='IN', task_id=None, 
             )
             
             # Merge results from both approaches
-            combined_results = set(results['results'])
-            combined_results.update(alt_results['results'])
+            combined_results = set(results.get('results', []))
+            combined_results.update(alt_results.get('results', []))
             
             # Update the results with the combined set
             results['results'] = list(combined_results)
@@ -1270,9 +1423,9 @@ def scrape_with_serpapi(keyword, data_type='email', country='IN', task_id=None, 
             update_task_status(task_id, {
                 'status': 'completed',
                 'progress': 100,
-                'message': f'Found {results["results_count"]} {data_type} results',
+                'message': f'Found {results.get("results_count", 0)} {data_type} results',
                 'data_type': data_type,
-                'results': results['results']
+                'results': results.get('results', [])
             })
             
             # Clean up task tracking
@@ -1312,6 +1465,42 @@ def scrape_with_serpapi(keyword, data_type='email', country='IN', task_id=None, 
         # Log the error
         task_logger.error(f"Error in scrape_with_serpapi: {e}")
         task_logger.error(traceback.format_exc())
+        
+        # Check if this might be an API key issue
+        if 'api key' in str(e).lower() or 'quota' in str(e).lower() or 'limit' in str(e).lower():
+            task_logger.warning(f"API key issue detected in exception: {e}")
+            
+            # Try with a different API key
+            new_key = api_key_manager.rotate_key()
+            if new_key:
+                task_logger.info(f"Retrying with a different API key after exception")
+                
+                # Update status to inform about retry
+                if task_id:
+                    update_task_status(task_id, {
+                        'status': 'processing',
+                        'progress': 10,
+                        'message': f'Retrying with a different API key after error'
+                    })
+                
+                try:
+                    # Create a new scraper with the new key
+                    scraper = SerpApiScraper(
+                        api_key=new_key,
+                        update_status_callback=update_task_status,
+                        task_id=task_id
+                    )
+                    
+                    # Try again with the new key
+                    return scraper.search_and_scrape(
+                        keyword=keyword,
+                        data_type=data_type,
+                        country=country,
+                        max_results=max_results
+                    )
+                except Exception as retry_e:
+                    task_logger.error(f"Error in retry attempt: {retry_e}")
+                    # Continue to general error handling
         
         # If we have a task ID, update status to show error
         if task_id:

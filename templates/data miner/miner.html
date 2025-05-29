@@ -88,8 +88,8 @@
 
                 <div class="flex items-center justify-between">
                     <label class="inline-flex items-center">
-                        <input type="checkbox" class="form-checkbox text-indigo-600" name="background" value="true" checked>
-                        <span class="ml-2 text-sm text-gray-700">Run in background</span>
+                        <input type="checkbox" class="form-checkbox text-indigo-600" name="background" value="true" disabled>
+                        <span class="ml-2 text-sm text-gray-700">Run in background (temporarily disabled)</span>
                     </label>
                     <button type="submit" class="w-[30%] bg-indigo-600 text-white px-8 py-2.5 rounded-md hover:bg-indigo-700 transition-colors duration-200">
                         Get
@@ -352,7 +352,9 @@
         const keyword = formData.get('keyword');
         const dataType = formData.get('data_type');
         const country = formData.get('country');
-        const runInBackground = document.querySelector('input[name="background"]').checked;
+        
+        // Force runInBackground to be false (temporarily disabled background processing)
+        const runInBackground = false; // document.querySelector('input[name="background"]').checked;
         
         // Validate
         if (!keyword || keyword.length < 3) {
@@ -368,45 +370,8 @@
         // Start timer and progress animation
         startTimer();
         
-        // Submit form for background task
-        if (runInBackground) {
-            // Add CSRF token
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            
-            // Start background task
-            fetch('{% url "data_miner" %}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Task started successfully
-                    const taskId = data.task_id;
-                    
-                    // Save task ID to localStorage
-                    storeTaskId(taskId);
-                    
-                    // Show success message and reload
-                    alert(`Background task started: ${data.message}`);
-                    window.location.reload();
-                } else {
-                    // Show error message
-                    showError(data.message || 'An error occurred');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('An error occurred while starting the task');
-            });
-        } else {
-            // Submit form normally for immediate results
-            this.submit();
-        }
+        // Always use the non-background processing path
+        this.submit();
     });
     
     function startTaskStatusCheck(taskId) {

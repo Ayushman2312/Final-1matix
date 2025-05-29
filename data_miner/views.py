@@ -33,6 +33,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.utils import OperationalError as DjangoOperationalError
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from django.utils.decorators import method_decorator
+from .scrap import update_task_status  # Import the update_task_status function
 
 # Celery/kombu imports for error handling
 try:
@@ -373,7 +374,7 @@ class BackgroundTasksView(LoginRequiredMixin, TemplateView):
                             redis_client = Redis(host=redis_host, port=redis_port, socket_timeout=3)
                             if not redis_client.ping():
                                 logger.warning("Redis ping failed, skipping Celery task checks")
-                                raise RedisConnectionError("Redis ping failed")
+                                raise RedisConnectionError("Redis ping failed") from e
                         except (RedisConnectionError, socket.gaierror) as e:
                             logger.warning(f"Redis connection error: {e}")
                             raise KombuConnectionError("Redis connection failed") from e
@@ -828,211 +829,121 @@ class DataMinerView(LoginRequiredMixin, TemplateView):
             
         try:
             keyword = request.POST.get('keyword', '')
-            num_results = int(request.POST.get('num_results', 50))
-            max_runtime = int(request.POST.get('max_runtime', 15))
-            data_type = request.POST.get('data_type', 'all')
+            data_type = request.POST.get('data_type', 'phone')
+            country = request.POST.get('country', 'IN')
             
-            # Limit values to reasonable ranges
-            num_results = min(max(10, num_results), 500)  # Between 10 and 500
-            max_runtime = min(max(5, max_runtime), 60)  # Between 5 and 60 minutes
+            logger.info(f"Starting SerpAPI scraping for keyword: {keyword}, data type: {data_type}, country: {country}")
             
-            logger.info(f"Starting background scraping task for keyword: {keyword}, data type: {data_type}")
+            # Initialize the SerpAPI scraper for real-time processing
+            from .scrap import scrape_with_serpapi
             
-            # Ensure background services are running
-            logger.info("Ensuring background services are running...")
-            services_running = ensure_services_running()
-            logger.info(f"Services are {'running and ready for background task' if services_running else 'not running properly'}")
-            
-            # Create a database record for tracking
-            task_record = BackgroundTask.objects.create(
-                user=request.user,
-                task_id=str(uuid.uuid4()),  # Generate temporary UUID
-                task_name='scrape_contacts',
-                status='pending',
-                parameters=json.dumps({
-                    'keyword': keyword,
-                    'num_results': num_results,
-                    'max_runtime': max_runtime,
-                    'data_type': data_type
-                }),
-                progress=0
-            )
-            
-            # Enhance the error handling in the post method
-            celery_working = True
             try:
-                # Check if we're using Redis
-                from django.conf import settings
-                broker_url = getattr(settings, 'CELERY_BROKER_URL', '')
+                # Create a task ID for tracking
+                task_id = str(uuid.uuid4())
                 
-                # Test Redis connection only if using Redis as broker
-                if broker_url.startswith('redis://'):
-                    try:
-                        from redis import Redis
-                        from redis.exceptions import ConnectionError as RedisConnectionError
-                        
-                        # Parse Redis connection details
-                        redis_host = broker_url.split('@')[-1].split(':')[0] or 'localhost'
-                        redis_port = int(broker_url.split(':')[-1].split('/')[0] or 6379)
-                        
-                        # Test connection with timeout
-                        redis_client = Redis(host=redis_host, port=redis_port, socket_timeout=2)
-                        if not redis_client.ping():
-                            logger.warning("Redis ping failed, skipping Celery task checks")
-                            celery_working = False
-                            raise RedisConnectionError("Redis ping failed")
-                    except (RedisConnectionError, socket.gaierror) as e:
-                        logger.warning(f"Redis connection error: {e}")
-                        celery_working = False
+                # Create a background task record
+                task_record = BackgroundTask.objects.create(
+                    user=request.user,
+                    task_id=task_id,
+                    task_name=f"Mining {data_type}s for '{keyword}'",
+                    status='processing',
+                    parameters={
+                        'keyword': keyword,
+                        'data_type': data_type,
+                        'country': country
+                    },
+                    progress=0
+                )
                 
-                if celery_working:
-                    try:
-                        # Try to send the task to Celery with proper parameters
-                        task = scrape_serpapi.delay(
-                            keyword=keyword,
-                            data_type=data_type,
-                            country=request.POST.get('country', 'IN'),
-                            user_id=request.user.id,
-                            max_results=num_results,
-                            max_runtime_minutes=max_runtime
-                        )
-                        
-                        # Update the task record with the Celery task ID
-                        task_record.task_id = task.id
-                        task_record.save()
-                        
-                        logger.info(f"Background task started successfully with ID: {task.id}")
-                        
-                        return JsonResponse({
-                            'status': 'success',
-                            'task_id': task_record.id,
-                            'message': f"Started scraping for '{keyword}'"
-                        })
-                    except (RequestsConnectionError, DjangoOperationalError, IOError) as e:
-                        # Django database connection errors
-                        logger.error(f"Database connection error: {str(e)}")
-                        celery_working = False
-                    except Exception as e:
-                        # Check for Celery/Kombu connection errors
-                        error_type = type(e).__name__
-                        if (KombuOperationalError and isinstance(e, KombuOperationalError)) or \
-                           (KombuConnectionError and isinstance(e, KombuConnectionError)) or \
-                           'OperationalError' in error_type or 'ConnectionError' in error_type or \
-                           'AMQPError' in error_type:
-                            logger.error(f"Celery broker connection error: {str(e)}")
-                            celery_working = False
-                        else:
-                            # Re-raise other exceptions
-                            logger.error(f"Error starting Celery task: {str(e)}")
-                            raise
-            except Exception as e:
-                # Catch any other errors in the Redis/Celery checking process
-                logger.error(f"Unexpected error in Celery/Redis setup: {e}")
-                logger.error(traceback.format_exc())
-                celery_working = False
+                # Execute SerpAPI scraping
+                results = scrape_with_serpapi(
+                    keyword=keyword,
+                    data_type=data_type,
+                    country=country,
+                    task_id=task_id,
+                    max_results=30
+                )
+                
+                if results and results.get('success', False):
+                    # Get the results list based on data type
+                    result_items = results.get('results', [])
+                    
+                    # Save the mining history
+                    excel_path = self.generate_excel(
+                        result_items,
+                        keyword,
+                        data_type
+                    )
+                    
+                    mining_history = MiningHistory.objects.create(
+                        user=request.user,
+                        keyword=keyword,
+                        data_type=data_type,
+                        country=country,
+                        results_count=len(result_items),
+                        excel_file=excel_path
+                    )
+                    
+                    # Link the task record to the history
+                    task_record.mining_history = mining_history
+                    task_record.status = 'completed'
+                    task_record.progress = 100
+                    task_record.save()
+                    
+                    # Prepare context for rendering
+                    context = {
+                        'success': True,
+                        'data': {data_type + 's': result_items},
+                        'message': f"Found {len(result_items)} {data_type}s",
+                        'history_id': mining_history.id
+                    }
+                    
+                    # Get additional context data
+                    additional_context = self.get_context_data()
+                    context.update(additional_context)
+                    
+                    return render(request, self.template_name, context)
+                else:
+                    # Handle error case
+                    error_msg = results.get('error', 'No results found or an error occurred')
+                    logger.error(f"Error in SerpAPI search: {error_msg}")
+                    
+                    # Update task record
+                    task_record.status = 'failed'
+                    task_record.error_message = error_msg
+                    task_record.save()
+                    
+                    # Prepare error context
+                    context = self.get_context_data()
+                    context.update({
+                        'error': error_msg
+                    })
+                    
+                    return render(request, self.template_name, context)
             
-            # If Celery isn't working, run directly in a thread
-            if not celery_working:
-                logger.info(f"Falling back to direct thread execution for '{keyword}'")
+            except Exception as inner_e:
+                logger.error(f"Error during SerpAPI scraping: {inner_e}")
+                logger.error(traceback.format_exc())
                 
-                # Update task record
-                task_record.status = 'processing'
-                parameters = json.loads(task_record.parameters)
-                parameters['status_message'] = f"Starting direct execution for '{keyword}' (Celery unavailable)"
-                task_record.parameters = json.dumps(parameters)
-                task_record.save()
-                
-                # Create a thread to run the task
-                def run_search_thread():
-                    try:
-                        # Import SerpAPI scraper instead of ContactScraper
-                        from data_miner.scrap import SerpApiScraper, update_task_status
-                        
-                        # Initialize scraper
-                        scraper = SerpApiScraper(update_status_callback=update_task_status, task_id=task_record.id)
-                        
-                        # Run the scrape method
-                        logger.info(f"Starting direct SerpAPI scraping for '{keyword}'")
-                        results = scraper.search_and_scrape(
-                            keyword=keyword,
-                            data_type=data_type,
-                            country=request.POST.get('country', 'IN'),
-                            max_results=num_results
-                        )
-                        
-                        # Extract results
-                        items = results.get('results', [])
-                        
-                        # Create a DataFrame for Excel export
-                        df = pd.DataFrame({data_type.capitalize(): items})
-                        
-                        # Generate unique filename
-                        filename = f"mining_results_{keyword.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-                        excel_path = os.path.join('mining_results', filename)
-                        
-                        # Ensure directory exists
-                        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'mining_results'), exist_ok=True)
-                        
-                        # Save Excel file
-                        full_path = os.path.join(settings.MEDIA_ROOT, excel_path)
-                        df.to_excel(full_path, index=False)
-                        
-                        # Create MiningHistory record
-                        history = MiningHistory.objects.create(
-                            user=request.user,
-                            keyword=keyword,
-                            country=request.POST.get('country', 'IN'),
-                            data_type=data_type,
-                            results_count=len(items),
-                            excel_file=excel_path
-                        )
-                        
-                        # Update task record
-                        task_record.status = 'completed'
-                        task_record.progress = 100
-                        task_record.completed_at = timezone.now()
-                        task_record.mining_history = history
-                        task_record.parameters = json.dumps({
-                            'keyword': keyword,
-                            'results': {
-                                'count': len(items)
-                            },
-                            'status_message': f"Found {len(items)} {data_type}s"
-                        })
-                        task_record.save()
-                        
-                        logger.info(f"Direct SerpAPI scraping completed for '{keyword}': {len(items)} {data_type}s")
-                        
-                    except Exception as e:
-                        logger.error(f"Error in SerpAPI search thread: {str(e)}")
-                        logger.error(traceback.format_exc())
-                        
-                        # Update task with error status
-                        task_record.status = 'failed'
-                        task_record.error_message = str(e)
-                        task_record.completed_at = timezone.now()
-                        task_record.save()
-                
-                # Start the thread
-                import threading
-                thread = threading.Thread(target=run_search_thread)
-                thread.daemon = True
-                thread.start()
-                
-                return JsonResponse({
-                    'status': 'success',
-                    'task_id': task_record.id,
-                    'message': f"Started direct scraping for '{keyword}' (background services unavailable)",
-                    'direct_execution': True
+                # Prepare error context
+                context = self.get_context_data()
+                context.update({
+                    'error': f"Error during scraping: {str(inner_e)}"
                 })
                 
+                return render(request, self.template_name, context)
+            
         except Exception as e:
-            logger.error(f"Error in POST request: {str(e)}")
+            logger.error(f"Error in POST request: {e}")
             logger.error(traceback.format_exc())
-            return JsonResponse({
-                'status': 'error',
-                'message': f"Error starting task: {str(e)}"
-            }, status=500)
+            
+            # Prepare error context
+            context = self.get_context_data()
+            context.update({
+                'error': f"An error occurred: {str(e)}"
+            })
+            
+            return render(request, self.template_name, context)
 
     def get_excel(self, request, history_id):
         """Download Excel file for a specific mining history"""

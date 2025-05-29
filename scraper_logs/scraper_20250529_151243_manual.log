@@ -1,0 +1,69 @@
+2025-05-29 15:12:43,965 - ContactScraper - INFO - Logging to file: scraper_logs\scraper_20250529_151243_manual.log
+2025-05-29 15:12:43,965 - ContactScraper - WARNING - No Gemini API key found in environment variables. Set GEMINI_API_KEY for enhanced query optimization.
+2025-05-29 15:12:43,969 - ContactScraper - INFO - Configured 149 excluded domains for ethical scraping
+2025-05-29 15:12:44,047 - ContactScraper - INFO - Using fake-useragent for more realistic user agents
+2025-05-29 15:12:48,517 - ContactScraper - INFO - Starting scrape for keyword: 'Dry fruits wholesaler in khari baoli'
+2025-05-29 15:12:48,518 - ContactScraper - WARNING - Gemini API not available for query optimization. Using fallback method.
+2025-05-29 15:12:48,518 - ContactScraper - INFO - Fallback optimized query (security-check-friendly): "Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com
+2025-05-29 15:12:48,518 - ContactScraper - INFO - Original keyword: 'Dry fruits wholesaler in khari baoli' | Optimized query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:12:48,518 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 0)
+2025-05-29 15:12:48,525 - ContactScraper - INFO - Simplified complex query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -'
+2025-05-29 15:12:48,526 - ContactScraper - INFO - Reduced exclusions in query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:12:48,526 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:13:18,582 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:13:18,584 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-29 15:13:18,585 - ContactScraper - INFO - Trying direct search as last resort for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:13:18,588 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:13:18,589 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:13:18,592 - ContactScraper - WARNING - All search methods failed for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:13:18,594 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact' (page 0)
+2025-05-29 15:13:18,596 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,791 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,791 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-29 15:14:02,793 - ContactScraper - INFO - Trying direct search as last resort for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,794 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,796 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,796 - ContactScraper - WARNING - All search methods failed for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,796 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,802 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:14:02,802 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' (page 1)
+2025-05-29 15:14:02,807 - ContactScraper - INFO - Simplified complex query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -'
+2025-05-29 15:14:02,807 - ContactScraper - INFO - Reduced exclusions in query: '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com' -> '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:14:02,807 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:14:27,303 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com'
+2025-05-29 15:14:27,304 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-29 15:14:27,304 - ContactScraper - INFO - Trying direct search as last resort for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:14:27,307 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:14:27,309 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:14:27,309 - ContactScraper - WARNING - All search methods failed for '"Dry fruits wholesaler in khari baoli" contact email phone -site:facebook.com -site:twitter.com -site:instagram.com -site:linkedin.com -site:youtube.com'
+2025-05-29 15:14:27,313 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact' (page 0)
+2025-05-29 15:14:27,313 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,676 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,676 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-29 15:15:05,676 - ContactScraper - INFO - Trying direct search as last resort for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,683 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,683 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,685 - ContactScraper - WARNING - All search methods failed for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,687 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,687 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:05,698 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact' (page 0)
+2025-05-29 15:15:05,698 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,628 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,630 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-29 15:15:46,630 - ContactScraper - INFO - Trying direct search as last resort for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,630 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,630 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,630 - ContactScraper - WARNING - All search methods failed for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,630 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,630 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:15:46,630 - ContactScraper - INFO - Searching Google for '"Dry fruits wholesaler in khari baoli" contact' (page 0)
+2025-05-29 15:15:46,643 - ContactScraper - INFO - Trying imported browser search function for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:16:22,899 - ContactScraper - INFO - Trying DuckDuckGo as fallback for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:16:22,900 - ContactScraper - INFO - DuckDuckGo search method has been disabled
+2025-05-29 15:16:22,900 - ContactScraper - INFO - Trying direct search as last resort for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:16:22,901 - ContactScraper - INFO - Performing direct search for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:16:22,903 - ContactScraper - INFO - Direct search found 0 URLs for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:16:22,903 - ContactScraper - WARNING - All search methods failed for '"Dry fruits wholesaler in khari baoli" contact'
+2025-05-29 15:16:22,903 - ContactScraper - INFO - Performing direct search for 'Dry fruits wholesaler in khari baoli'
+2025-05-29 15:16:22,910 - ContactScraper - INFO - Direct search found 0 URLs for 'Dry fruits wholesaler in khari baoli'
+2025-05-29 15:16:22,910 - ContactScraper - INFO - Scraping completed: found 0 emails and 0 phones

@@ -17,7 +17,9 @@ class DataMinerConfig(AppConfig):
             
         # Import and check auto-start setting
         from django.conf import settings
-        auto_start = getattr(settings, 'DATA_MINER_AUTOSTART_SERVICES', False)
+        # TEMPORARILY DISABLED: Background services have been disabled
+        # auto_start = getattr(settings, 'DATA_MINER_AUTOSTART_SERVICES', False)
+        auto_start = False  # Force auto_start to False to disable background services
         
         if auto_start:
             # Import in the ready method to avoid circular imports
