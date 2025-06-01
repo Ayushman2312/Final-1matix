@@ -39,6 +39,8 @@ class Employee(models.Model):
     no_of_meetings_completed = models.IntegerField(default=0)
     no_of_sales = models.IntegerField(default=0)
     total_sales = models.IntegerField(default=0)
+    salary_ctc = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    allowances = models.JSONField(default=dict, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

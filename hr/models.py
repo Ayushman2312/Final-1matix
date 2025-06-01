@@ -1,7 +1,14 @@
 from django.db import models
 import uuid
 from django.utils import timezone
+import json
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+import logging
+from User.models import User  # Import User model
 # Create your models here.
+
+logger = logging.getLogger(__name__)
 
 class Company(models.Model):
     company_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -16,6 +23,7 @@ class Company(models.Model):
     company_pincode = models.CharField(max_length=6,null=True,blank=True)
     company_created_at = models.DateTimeField(default=timezone.now)
     company_updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='companies')
 
     def __str__(self):
         return self.company_name
@@ -35,7 +43,7 @@ class Employee(models.Model):
     last_attendance_time = models.DateTimeField(null=True, blank=True)
     attendance_status = models.CharField(max_length=20, 
     default='not_marked')  # can be 'marked', 'unmarked', 'completed'
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='employees')
 
     def __str__(self):
         return self.employee_name
@@ -46,6 +54,7 @@ class Department(models.Model):
     name = models.CharField(max_length=100,null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='departments')
 
     def __str__(self):
         return self.name
@@ -55,6 +64,7 @@ class Designation(models.Model):
     name = models.CharField(max_length=100,null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='designations')
 
     def __str__(self):
         return self.name
@@ -65,6 +75,7 @@ class TandC(models.Model):
     description = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='terms_and_conditions')
 
     def __str__(self):
         return self.name
@@ -74,6 +85,7 @@ class Role(models.Model):
     name = models.CharField(max_length=100,null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='roles')
 
     def __str__(self):
         return self.name
@@ -84,6 +96,7 @@ class OfferLetter(models.Model):
     content = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='offer_letters')
 
     def __str__(self):
         return self.name
@@ -94,6 +107,7 @@ class HiringAgreement(models.Model):
     content = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='hiring_agreements')
 
     def __str__(self):
         return self.name
@@ -104,6 +118,7 @@ class Handbook(models.Model):
     content = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='handbooks')
 
     def __str__(self):
         return self.name
@@ -114,6 +129,7 @@ class TrainingMaterial(models.Model):
     content = models.TextField(null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='training_materials')
 
     def __str__(self):
         return self.name
@@ -126,6 +142,7 @@ class QRCode(models.Model):
     secret_key = models.CharField(max_length=64, default=uuid.uuid4)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='qr_codes')
 
     def __str__(self):
         return self.company.company_name
@@ -136,6 +153,7 @@ class Device(models.Model):
     user = models.ForeignKey(Employee, on_delete=models.CASCADE,null=True,blank=True)                       
     platform = models.CharField(max_length=255)                
     created_at = models.DateTimeField(auto_now_add=True)       
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='devices')
 
     def __str__(self):
         return f"{self.device_id} - {self.ip_address}"
@@ -148,9 +166,10 @@ class Folder(models.Model):
     json_data = models.JSONField(null=True,blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='folders')
 
     def __str__(self):
-        return self.name
+        return self.name or str(self.folder_id)
 
 class OnboardingInvitation(models.Model):
     INVITATION_STATUS = (
@@ -171,9 +190,14 @@ class OnboardingInvitation(models.Model):
     designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     offer_letter_template = models.ForeignKey(OfferLetter, on_delete=models.SET_NULL, null=True, blank=True)
+    hiring_agreement_template = models.ForeignKey(HiringAgreement, on_delete=models.SET_NULL, null=True, blank=True)
+    handbook_template = models.ForeignKey(Handbook, on_delete=models.SET_NULL, null=True, blank=True)
+    hr_policies_template = models.ForeignKey(TandC, on_delete=models.SET_NULL, null=True, blank=True, related_name='hr_policies_invitations')
+    training_material_template = models.ForeignKey(TrainingMaterial, on_delete=models.SET_NULL, null=True, blank=True)
     form_link = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=20, choices=INVITATION_STATUS, default='pending')
     policies = models.JSONField(null=True, blank=True)
+    additional_documents = models.JSONField(null=True, blank=True)
     photo = models.ImageField(upload_to='employee_photos/', null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     sent_at = models.DateTimeField(null=True, blank=True)
@@ -184,12 +208,54 @@ class OnboardingInvitation(models.Model):
     discussion_message = models.TextField(blank=True, null=True)
     has_viewed_offer = models.BooleanField(default=False)
     is_form_completed = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='onboarding_invitations')
     
     def __str__(self):
         return f"{self.name} - {self.email}"
 
     class Meta:
         ordering = ['-created_at']
+        
+    def save(self, *args, **kwargs):
+        """Ensure policies is properly serialized as JSON before saving"""
+        # Make sure policies is a valid dictionary
+        if self.policies is None:
+            self.policies = {}
+        # Handle string conversion if needed
+        elif isinstance(self.policies, str):
+            try:
+                self.policies = json.loads(self.policies)
+            except json.JSONDecodeError:
+                self.policies = {}
+                
+        # Make sure policies is a dictionary
+        if not isinstance(self.policies, dict):
+            self.policies = {}
+        
+        # For completed forms, ensure we have a backup copy of the form data
+        if self.is_form_completed and self.status == 'completed':
+            # If form_data exists in policies, save a backup copy in the rejection_reason field
+            # This adds redundancy in case of JSON serialization issues
+            if 'form_data' in self.policies:
+                # We'll use the rejection_reason field to store a compressed form data summary
+                try:
+                    # Create a summary of the form data
+                    form_data_summary = {
+                        'submission_time': timezone.now().isoformat(),
+                        'field_count': len(self.policies['form_data']),
+                        'has_structured_data': 'structured_data' in self.policies['form_data'],
+                        'has_personal_info': 'personal_info' in self.policies['form_data'],
+                        'has_employment_details': 'employment_details' in self.policies['form_data']
+                    }
+                    
+                    # Store the summary as backup
+                    if not self.rejection_reason:  # Only set if not already used
+                        self.rejection_reason = f"FORM_DATA_BACKUP: {json.dumps(form_data_summary)}"
+                except Exception as e:
+                    logger.error(f"Error creating form data backup: {str(e)}", exc_info=True)
+        
+        # Call the original save method
+        super().save(*args, **kwargs)
         
     def accept_invitation(self):
         """Mark invitation as accepted and update related fields"""
@@ -226,6 +292,7 @@ class EmployeeAttendance(models.Model):
     device_info = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='employee_attendances')
     
     class Meta:
         unique_together = ['employee', 'date']
@@ -266,6 +333,7 @@ class LeaveApplication(models.Model):
     review_notes = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='leave_applications')
     
     class Meta:
         ordering = ['-created_at']
@@ -313,6 +381,7 @@ class ReimbursementRequest(models.Model):
     payment_reference = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='reimbursement_requests')
     
     class Meta:
         ordering = ['-created_at']
@@ -337,6 +406,7 @@ class SalarySlip(models.Model):
     notes = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='salary_slips')
     
     class Meta:
         unique_together = ['employee', 'month', 'year']
@@ -381,6 +451,7 @@ class Resignation(models.Model):
     exit_interview_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='resignations')
     
     class Meta:
         ordering = ['-created_at']
@@ -401,6 +472,49 @@ class EmployeeDocument(models.Model):
     file = models.FileField(upload_to='employee_documents/')
     file_size = models.CharField(max_length=20, blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='employee_documents')
     
     def __str__(self):
-        return f"{self.document_name} ({self.document_type})"
+        return f"{self.employee.employee_name} - {self.document_name}"
+
+class TrustedDevice(models.Model):
+    device_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='trusted_devices')
+    device_name = models.CharField(max_length=255, null=True, blank=True)
+    browser_info = models.CharField(max_length=255, null=True, blank=True)
+    platform = models.CharField(max_length=100, null=True, blank=True)
+    last_used = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return f"{self.employee.employee_name}'s device ({self.device_id})"
+    
+    class Meta:
+        unique_together = ['device_id', 'employee']
+        ordering = ['-last_used']
+
+# Add a pre-save signal handler for OnboardingInvitation
+@receiver(pre_save, sender='hr.OnboardingInvitation')
+def ensure_onboarding_data_saved(sender, instance, **kwargs):
+    """Ensure form data is properly saved before saving the model to database"""
+    # Skip if not a completed form
+    if not instance.is_form_completed:
+        return
+    
+    # Ensure policies field is initialized
+    if instance.policies is None:
+        instance.policies = {}
+    elif isinstance(instance.policies, str):
+        try:
+            instance.policies = json.loads(instance.policies)
+        except json.JSONDecodeError:
+            logger.warning(f"Failed to parse policies JSON for invitation {instance.invitation_id}")
+            instance.policies = {}
+    
+    # Log form data size
+    if 'form_data' in instance.policies:
+        form_data_size = len(str(instance.policies['form_data']))
+        logger.info(f"Saving form data ({form_data_size} bytes) for invitation {instance.invitation_id}")
+    else:
+        logger.warning(f"No form_data found in policies for completed invitation {instance.invitation_id}")

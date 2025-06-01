@@ -1,4 +1,6 @@
 from django.urls import path
+
+from employee.views import EmployeeReadView
 from .views import *
 from django.views.decorators.csrf import csrf_exempt
 
@@ -10,7 +12,10 @@ urlpatterns = [
     path('qr-code/', csrf_exempt(QRCodeView.as_view()), name='qr-code'),
     path('get-qr-code/', QRCodeView.as_view(), name='get-qr-code'),
     path('generate-qr-code/', QRCodeView.as_view(), name='generate-qr-code'),
+    path('qr-code-details/<uuid:qr_code_id>/', QRCodeDetailsView.as_view(), name='qr-code-details'),
+    path('delete-qr-code/<uuid:qr_code_id>/', csrf_exempt(DeleteQRCodeView.as_view()), name='delete-qr-code'),
     path('mark-attendance/', EmployeeAttendanceView.as_view(), name='mark_attendance'),
+    path('attend/<uuid:qr_code_id>/<str:secret_key>/', QRAttendanceRedirectView.as_view(), name='qr_attendance_redirect'),
     path('create-company/', CreateCompanyView.as_view(), name='create-company'),
     path('create-folder/', CreateFolderView.as_view(), name='create-folder'),
     path('folder/<str:folder_id>/', FolderView.as_view(), name='folder'),
@@ -38,7 +43,7 @@ urlpatterns = [
     path('employee/login/', HREmployeeLoginView.as_view(), name='hr_employee_login'),
     path('employee/dashboard/', EmployeeDashboardView.as_view(), name='employee_dashboard'),
     path('employee/profile/', EmployeeProfileView.as_view(), name='employee_profile'),
-    path('employee/leave/', EmployeeLeaveView.as_view(), name='employee_leave'),
+    path('employee/leave/', EmployeeReadView.as_view(), name='employee_leave'),
     path('employee/reimbursement/', EmployeeReimbursementView.as_view(), name='employee_reimbursement'),
     path('employee/salary-slips/', EmployeeSalarySlipsView.as_view(), name='employee_salary_slips'),
     path('employee/resignation/', EmployeeResignationView.as_view(), name='employee_resignation'),

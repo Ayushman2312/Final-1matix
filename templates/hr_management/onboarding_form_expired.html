@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Form Expired</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div class="bg-white shadow-md rounded-lg p-8 max-w-2xl mx-auto my-8">
+    <div class="text-center">
+        <div class="mb-4">
+            <svg class="h-16 w-16 text-red-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </div>
+        
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Form Already Submitted</h2>
+        
+        <div class="text-gray-600 mb-6">
+            <p class="mb-2">This form has already been submitted and is no longer accessible.</p>
+            {% if completed_at %}
+            <p class="text-sm text-gray-500">Completed on: {{ completed_at|date:"F j, Y, g:i a" }}</p>
+            {% endif %}
+        </div>
+        
+        {% if invitation.company %}
+        <div class="border-t border-gray-200 pt-4 mt-4">
+            <p class="text-sm text-gray-500">If you need assistance, please contact {{ invitation.company.company_name }} HR department.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Disable back button to prevent form resubmission
+    history.pushState(null, null, document.URL);
+    window.addEventListener('popstate', function () {
+        history.pushState(null, null, document.URL);
+    });
+</script>
+</body>
+</html> 

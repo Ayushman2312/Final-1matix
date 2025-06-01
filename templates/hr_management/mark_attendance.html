@@ -5,109 +5,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance QR Scanner</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .scanner-active {
+        .qr-scanner-box {
             position: relative;
             overflow: hidden;
-            border: 3px solid #333;
+            border: 3px solid #3B82F6;
             border-radius: 10px;
-            animation: pulse 1.5s infinite;
+            animation: scanner-pulse 1.5s infinite;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
         }
         
-        @keyframes pulse {
-            0% { border-color: #333; }
-            50% { border-color: #4CAF50; }
-            100% { border-color: #333; }
+        .qr-scanner-box:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            margin: 8px;
+            pointer-events: none;
         }
         
-        .detected {
-            border-color: #FF3B58 !important;
-            animation: none !important;
+        @keyframes scanner-pulse {
+            0% { border-color: #3B82F6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            50% { border-color: #10B981; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4); }
+            100% { border-color: #3B82F6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        }
+        
+        .scanning-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #10B981, transparent);
+            top: 50%;
+            animation: scanning-animation 2s infinite ease-in-out;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+        }
+        
+        @keyframes scanning-animation {
+            0% { top: 20%; }
+            50% { top: 80%; }
+            100% { top: 20%; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Make sure QR code detector is fully visible */
+        #qr-scanner video {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Animation for status indicator pulse */
+        @keyframes status-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .animate-pulse {
+            animation: status-pulse 1.5s infinite;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 min-h-screen">
+    <!-- QR parameters from URL, stored here for JavaScript to access -->
+    <div id="qr-params-container" class="hidden" data-params="{{ qr_params|safe }}"></div>
+    
     <div class="container mx-auto px-4 py-8">
-        <div class="max-w-md bg-white mx-auto shadow-lg rounded-lg p-6">
-            <div id="attendance-flow">
-                <!-- Step 1: Device Check -->
-                <div id="device-check" class="step active">
-                    <h2 class="text-2xl font-bold mb-4">Mark Attendance</h2>
-                    <p class="text-gray-600 mb-4">Checking device registration...</p>
-                </div>
-    
-                <!-- Step 2: Email Verification -->
-                <div id="email-verification" class="step hidden">
-                    <h2 class="text-2xl font-bold mb-4">Verify Your Email</h2>
-                    <div class="space-y-4">
-                        <input type="email" id="email-input" class="w-full p-2 border rounded" placeholder="Enter your email">
-                        <button onclick="attendanceFlow.sendOTP()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                            Send OTP
-                        </button>
+        <div class="max-w-md mx-auto bg-white shadow-lg rounded-xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
+                <h1 class="text-2xl font-bold text-white">Attendance System</h1>
+                <p class="text-blue-100">Scan QR code to mark your attendance</p>
+            </div>
+            
+            <!-- Alert box for messages -->
+            <div id="alert-box" class="hidden mx-6 my-4"></div>
+            
+            <!-- Email Verification Section -->
+            <div id="email-section" class="attendance-section p-6 fade-in">
+                <h2 class="text-xl font-semibold mb-4">Verify Your Email</h2>
+                <p class="text-gray-600 mb-4">Enter your registered email to receive a verification code</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="email-input" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <input type="email" id="email-input" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                            placeholder="your.email@company.com">
                     </div>
+                    
+                    <button id="send-otp-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        Send Verification Code
+                    </button>
                 </div>
-    
-                <!-- Step 3: OTP Verification -->
-                <div id="otp-verification" class="step hidden">
-                    <h2 class="text-2xl font-bold mb-4">Enter OTP</h2>
-                    <div class="space-y-4">
-                        <input type="text" id="otp-input" class="w-full p-2 border rounded" placeholder="Enter OTP">
-                        <button onclick="attendanceFlow.verifyOTP()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-                            Verify OTP
-                        </button>
+            </div>
+            
+            <!-- OTP Verification Section -->
+            <div id="otp-section" class="attendance-section hidden p-6 fade-in">
+                <h2 class="text-xl font-semibold mb-2">Enter Verification Code</h2>
+                <p class="text-gray-600 mb-4">A verification code has been sent to <span id="otp-email-display" class="font-medium"></span></p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="otp-input" class="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
+                        <input type="text" id="otp-input" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-2xl tracking-wider" 
+                            placeholder="000000" maxlength="6">
                     </div>
+                    
+                    <button id="verify-otp-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        Verify Code
+                    </button>
                 </div>
-    
-                <!-- Step 4: QR Scanner (using the implementation from file 2) -->
-                <div id="qr-scanner" class="step hidden">
-                    <h2 class="text-2xl font-bold mb-4">Scan QR Code</h2>
-                    <div class="space-y-4">
-                        <div id="video-container" class="w-full scanner-active">
-                            <video id="qr-video" class="w-full h-auto" playsinline autoplay></video>
+            </div>
+            
+            <!-- QR Scanner Section -->
+            <div id="scanner-section" class="attendance-section hidden p-6 fade-in">
+                <h2 class="text-xl font-semibold mb-2">Scan QR Code</h2>
+                <p class="text-gray-600 mb-2">Point your camera at the attendance QR code</p>
+                
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4 text-xs text-blue-700">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <i class="fas fa-info-circle text-blue-500 text-sm"></i>
                         </div>
-                        <canvas id="qr-canvas" class="hidden"></canvas>
-                        <div id="scan-result" class="mt-4 text-center hidden">
-                            <div class="text-green-500 font-bold text-lg">QR Code detected!</div>
-                            <div id="result-content" class="text-gray-700 mt-2"></div>
-                        </div>
-                        <div id="scan-status" class="text-sm text-gray-500 text-center">
-                            Point camera at attendance QR code
+                        <div class="ml-2">
+                            <p class="font-medium">Location Requirement</p>
+                            <ul class="mt-1 list-disc list-inside ml-1 space-y-1">
+                                <li>You must be within <span class="font-semibold">20 meters</span> of the QR code location</li>
+                                <li>Please ensure your device location services are enabled</li>
+                                <li>Attendance will only be marked if you're physically present at the location</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Step 5: Success Message -->
-                <div id="success-message" class="step hidden">
-                    <div class="text-center">
-                        <svg class="w-16 h-16 text-green-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <h2 class="text-2xl font-bold mb-2 mt-4">Attendance Marked!</h2>
-                        <p class="text-gray-600 mb-4" id="success-details">Your attendance has been recorded successfully.</p>
-                        <button onclick="window.location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            Done
-                        </button>
-                    </div>
+                <!-- Location status indicator -->
+                <div id="location-status" class="p-2 bg-gray-100 rounded-lg mb-4 flex items-center justify-center text-sm">
+                    <span class="w-2 h-2 bg-gray-400 rounded-full inline-block mr-2"></span>
+                    <span>Waiting for location...</span>
                 </div>
                 
-                <!-- Error Message -->
-                <div id="error-message" class="step hidden">
-                    <div class="text-center">
-                        <svg class="w-16 h-16 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                        <h2 class="text-2xl font-bold mb-2 mt-4">Error</h2>
-                        <p class="text-gray-600 mb-4" id="error-details">Failed to mark attendance.</p>
-                        <button onclick="window.location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            Try Again
+                <!-- Debug tools (hidden by default) -->
+                <div id="debug-tools" class="mb-4 hidden">
+                    <button id="generate-test-qr" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded">
+                        Generate Test QR (Demo)
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">Use this button in development/testing only</p>
+                </div>
+                
+                <!-- Increased height for better scanning -->
+                <div class="qr-scanner-box mb-4">
+                    <div id="qr-scanner" class="w-full h-80"></div>
+                    <div class="scanning-line"></div>
+                </div>
+                
+                <div id="scan-status" class="text-sm text-gray-600 text-center mb-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full inline-block mr-1"></span> Initializing camera...
+                </div>
+                
+                <!-- Added a cancel button -->
+                <button id="cancel-scan-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                    Cancel
+                </button>
+            </div>
+            
+            <!-- Success Section -->
+            <div id="success-section" class="attendance-section hidden p-6 bg-green-50 fade-in">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-2xl text-green-600"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold mt-4 mb-2">Attendance Marked</h2>
+                    <p id="success-message" class="text-gray-700 mb-6">Your attendance has been recorded successfully.</p>
+                    
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors try-again-btn">
+                        Done
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Error Section -->
+            <div id="error-section" class="attendance-section hidden p-6 bg-red-50 fade-in">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold mt-4 mb-2">Error</h2>
+                    <p id="error-message" class="text-gray-700 mb-6">An error occurred while processing your request.</p>
+                    
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors try-again-btn">
+                        Try Again
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        <p>© {% now "Y" %} 1Matrix</p>
+                    </div>
+                    <div>
+                        <button id="reset-device-btn" class="text-xs text-gray-500 hover:text-red-600" 
+                                onclick="attendanceSystem.clearTrustToken(); window.location.reload();">
+                            Reset Device
                         </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <script src="{% static 'js/hr/mark_attendance.js' %}"></script>
+    
+    <script src="{% static 'js/hr/qr_attendance.js' %}"></script>
 </body>
 </html>

@@ -15,8 +15,8 @@ document.getElementById('folderForm').addEventListener('submit', function(e) {
     const logoFile = document.getElementById('folderLogo').files[0];
 
     // Add form data directly without Blob wrapping
-    formData.append('folderTitle', title);
-    formData.append('folderDescription', description);
+    formData.append('title', title);
+    formData.append('description', description);
 
     if (logoFile) {
         // Validate file type and size
@@ -28,7 +28,7 @@ document.getElementById('folderForm').addEventListener('submit', function(e) {
             alert('File size should be less than 10MB');
             return;
         }
-        formData.append('folderLogo', logoFile);
+        formData.append('logo', logoFile);
     }
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;

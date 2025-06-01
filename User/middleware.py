@@ -76,6 +76,8 @@ class UserAuthMiddleware:
             'alavi07' in current_path or
             'onboarding' in current_path or
             'employee' in current_path or
+            'mark-attendance' in current_path or
+            'attend' in current_path or
             # Include website public paths
             current_path.startswith('/website/public/') or
             current_path.startswith('/website/s/') or

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Discussion Request from {{ name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .header {
+            background-color: #7B3DF3;
+            padding: 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+            border-top: 1px solid #eeeeee;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .message-box {
+            background-color: #f0ecfd;
+            border-left: 4px solid #7B3DF3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #7B3DF3;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .details {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .details-item {
+            margin-bottom: 10px;
+        }
+        .details-label {
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Discussion Request</h1>
+        </div>
+        
+        <div class="content">
+            <p>Dear HR Team,</p>
+            
+            <p>A candidate has requested to discuss their job offer before making a decision.</p>
+            
+            <div class="details">
+                <div class="details-item">
+                    <span class="details-label">Name:</span> {{ name }}
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Email:</span> {{ email }}
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Department:</span> {{ department }}
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Designation:</span> {{ designation }}
+                </div>
+                <div class="details-item">
+                    <span class="details-label">Role:</span> {{ role }}
+                </div>
+            </div>
+            
+            <p><strong>Discussion Message:</strong></p>
+            <div class="message-box">
+                {{ discussion_message|default:"No specific message provided, but the candidate would like to discuss the offer." }}
+            </div>
+            
+            <p>Please contact the candidate as soon as possible to address their questions or concerns.</p>
+            
+            <p>You can view the full invitation details in the HR dashboard.</p>
+            
+            <a href="{{ dashboard_url }}" class="button">View in Dashboard</a>
+            
+            <p>Thank you,<br>1Matrix HR System</p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; {{ current_year }} 1Matrix. All rights reserved.</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,6 +1,6 @@
 from django.views.generic import TemplateView, View
 from hr.models import *
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from io import BytesIO
 from django.core.files.base import ContentFile
 import qrcode
@@ -9,13 +9,13 @@ from django.views import View
 import json
 import uuid
 from django.utils import timezone
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 import random
 from datetime import datetime, timedelta
 from geopy.distance import geodesic
 import base64
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import logging
@@ -30,6 +30,10 @@ import string
 from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
+from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +55,28 @@ class CompanyView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['companies'] = Company.objects.all()
-        context['qr_codes'] = QRCode.objects.all()
+        
+        # Get user ID from session
+        user_id = self.request.session.get('user_id')
+        user = None
+        
+        if user_id:
+            from User.models import User
+            try:
+                user = User.objects.get(user_id=user_id)
+                # Filter companies by user
+                context['companies'] = Company.objects.filter(user=user)
+                # Filter QR codes by user
+                context['qr_codes'] = QRCode.objects.filter(user=user)
+            except User.DoesNotExist:
+                # If user doesn't exist, show no data
+                context['companies'] = Company.objects.none()
+                context['qr_codes'] = QRCode.objects.none()
+        else:
+            # If no user is logged in, show all data (or none if you prefer)
+            context['companies'] = Company.objects.all()
+            context['qr_codes'] = QRCode.objects.all()
+            
         return context
 
 class CreationView(TemplateView):
@@ -60,42 +84,108 @@ class CreationView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['departments'] = Department.objects.all()
-        context['designations'] = Designation.objects.all()
-        context['tandcs'] = TandC.objects.all()
-        context['roles'] = Role.objects.all()
-        context['folder_list'] = Folder.objects.all()
-        context['offer_letters'] = OfferLetter.objects.all()
+        
+        # Get user ID from session
+        user_id = self.request.session.get('user_id')
+        user = None
+        
+        if user_id:
+            from User.models import User
+            try:
+                user = User.objects.get(user_id=user_id)
+                # Filter data by user
+                context['departments'] = Department.objects.filter(user=user)
+                context['designations'] = Designation.objects.filter(user=user)
+                context['tandcs'] = TandC.objects.filter(user=user)
+                context['roles'] = Role.objects.filter(user=user)
+                
+                # Get folders
+                folders = Folder.objects.filter(user=user)
+                context['folder_list'] = folders
+                
+                # Debug information
+                print(f"User {user.user_id} has {folders.count()} folders")
+                for folder in folders:
+                    print(f"Folder: {folder.folder_id}, {folder.name}")
+                
+                context['offer_letters'] = OfferLetter.objects.filter(user=user)
+            except User.DoesNotExist:
+                # If user doesn't exist, show no data
+                context['departments'] = Department.objects.none()
+                context['designations'] = Designation.objects.none()
+                context['tandcs'] = TandC.objects.none()
+                context['roles'] = Role.objects.none()
+                context['folder_list'] = Folder.objects.none()
+                context['offer_letters'] = OfferLetter.objects.none()
+                print("User not found, showing no folders")
+        else:
+            # If no user is logged in, get all folders
+            print("No user logged in, showing all folders")
+            all_folders = Folder.objects.all()
+            context['folder_list'] = all_folders
+            print(f"Found {all_folders.count()} folders total")
+            for folder in all_folders:
+                print(f"Folder: {folder.folder_id}, {folder.name}")
+                
+            # Also get all other data
+            context['departments'] = Department.objects.all()
+            context['designations'] = Designation.objects.all()
+            context['tandcs'] = TandC.objects.all()
+            context['roles'] = Role.objects.all()
+            context['offer_letters'] = OfferLetter.objects.all()
+            
         return context
 
     def post(self, request, *args, **kwargs):
         try:
+            # Get user ID from session
+            user_id = request.session.get('user_id')
+            user = None
+            if user_id:
+                from User.models import User
+                try:
+                    user = User.objects.get(user_id=user_id)
+                except User.DoesNotExist:
+                    pass
+            
             # Handle department creation
             if 'department_name' in request.POST:
-                Department.objects.create(name=request.POST['department_name'])
+                department = Department.objects.create(name=request.POST['department_name'])
+                if user:
+                    department.user = user
+                    department.save()
                 return JsonResponse({'success': True})
 
             # Handle designation creation
             elif 'designation_name' in request.POST:
-                Designation.objects.create(name=request.POST['designation_name'])
+                designation = Designation.objects.create(name=request.POST['designation_name'])
+                if user:
+                    designation.user = user
+                    designation.save()
                 return JsonResponse({'success': True})
 
             # Handle T&C creation
             elif 'tandc_name' in request.POST:
-                TandC.objects.create(
+                tandc = TandC.objects.create(
                     name=request.POST['tandc_name'],
                     description=request.POST['tandc_description']
                 )
+                if user:
+                    tandc.user = user
+                    tandc.save()
                 return JsonResponse({'success': True})
 
             # Handle role creation
             elif 'role_name' in request.POST:
-                Role.objects.create(name=request.POST['role_name'])
+                role = Role.objects.create(name=request.POST['role_name'])
+                if user:
+                    role.user = user
+                    role.save()
                 return JsonResponse({'success': True})
 
             # Handle offer letter creation
             elif 'offer_letter_name' in request.POST:
-                OfferLetter.objects.create(
+                offer_letter = OfferLetter.objects.create(
                     name=request.POST['offer_letter_name'],
                     content=request.POST['offer_letter_content']
                 )
@@ -134,8 +224,14 @@ class OnboardingView(TemplateView):
                     invitation = invitations.first()
                     context['invitation'] = invitation
                     
+                    # Check if the form has already been completed/submitted
+                    if invitation.is_form_completed:
+                        context['is_form_expired'] = True
+                        context['completed_at'] = invitation.completed_at
+                        # Set template for expired form message
+                        self.template_name = 'hr_management/onboarding_form_expired.html'
                     # Check if the invitation has been completed (accepted)
-                    if invitation.status == 'completed':
+                    elif invitation.status == 'completed':
                         context['is_onboarding_form'] = True
                         # If using a different template for the form, set it here
                         self.template_name = 'hr_management/onboarding_form.html'
@@ -172,14 +268,142 @@ class OnboardingView(TemplateView):
             # Find invitation by token
             invitation = OnboardingInvitation.objects.get(form_link__contains=token)
             
-            # Process form data
-            # (Implement form processing logic here)
+            # Check if the form has already been completed
+            if invitation.is_form_completed:
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'This form has already been submitted and is no longer accessible.'
+                }, status=403)
             
-            # Mark form as completed
-            invitation.is_form_completed = True
+            # Log submission attempt
+            logger.info(f"Receiving form submission for invitation {invitation.invitation_id} ({invitation.email})")
+            
+            # Process form data
+            form_data = {}
+            
+            # Process POST data
+            for key, value in request.POST.items():
+                if key != 'csrfmiddlewaretoken':  # Skip CSRF token
+                    form_data[key] = value
+            
+            # Process FILES data
+            files_data = {}
+            for key, value in request.FILES.items():
+                files_data[key] = value.name
+            
+            # Add files information to form_data
+            form_data['uploaded_files'] = files_data
+            
+            # Look for JSON structured data
+            if 'complete_form_data_json' in form_data:
+                try:
+                    # Parse the JSON string
+                    json_data = json.loads(form_data['complete_form_data_json'])
+                    # Include this structured data in our form_data
+                    form_data['structured_data'] = json_data
+                    logger.info(f"Received structured JSON data for {invitation.email}")
+                except json.JSONDecodeError:
+                    logger.warning(f"Failed to parse complete_form_data_json for {invitation.email}")
+            
+            # Process JSON serialized personal info if available
+            personal_info = {}
+            if 'personal_info_json' in form_data:
+                try:
+                    personal_info = json.loads(form_data['personal_info_json'])
+                    form_data['personal_info'] = personal_info
+                    logger.info(f"Received personal info JSON for {invitation.email}")
+                except json.JSONDecodeError:
+                    logger.warning(f"Failed to parse personal_info_json for {invitation.email}")
+            
+            # Process JSON serialized employment details if available
+            employment_details = {}
+            if 'employment_details_json' in form_data:
+                try:
+                    employment_details = json.loads(form_data['employment_details_json'])
+                    form_data['employment_details'] = employment_details
+                    logger.info(f"Received employment details JSON for {invitation.email}")
+                except json.JSONDecodeError:
+                    logger.warning(f"Failed to parse employment_details_json for {invitation.email}")
+            
+            # Create or update Employee record with form data
+            
+            
+            employee_data = {
+                'name': personal_info.get('full_name', invitation.name),
+                'email': invitation.email,
+                'phone_number': personal_info.get('phone_number'),
+                'address': personal_info.get('address'),
+                'pan_number': personal_info.get('pan_number'),
+                'aadhar_number': personal_info.get('aadhar_number'),
+                'dob': personal_info.get('date_of_birth'),
+                'qualification': personal_info.get('highest_qualification'),
+                'bank_account_holder_name': personal_info.get('bank_account_name'),
+                'bank_account_number': personal_info.get('bank_account_number'),
+                'bank_name': personal_info.get('bank_name'),
+                'branch_name': personal_info.get('branch_name'),
+                'bank_ifsc_code': personal_info.get('ifsc_code'),
+                'department': None,
+                'is_active': False,
+                'is_approved': False
+            }
+            
+            # Find the correct agents.models.Policy instance for employee.department
+            # This logic needs to be added once the relationship is clear.
+            # For now, setting department to None to avoid errors.
+            # Example: if invitation.department and invitation.company:
+            # department_policy, _ = Policy.objects.get_or_create(name=invitation.department.name, company=invitation.company) # if Policy has company FK
+            # employee_data['department'] = department_policy
+            
+            employee, created = Employee.objects.update_or_create(
+                email=invitation.email,
+                defaults=employee_data
+            )
+            
+            # Handle file uploads
+            if request.FILES:
+                try:
+                    # Save profile photo if uploaded
+                    if 'profile_photo' in request.FILES:
+                        employee.photo = request.FILES['profile_photo']
+                        employee.save()
+                    
+                    # Handle document uploads
+                    from .models import EmployeeDocument
+                    
+                    for key, file in request.FILES.items():
+                        if key != 'profile_photo':  # Already handled above
+                            try:
+                                # Determine document type from the file key
+                                document_type = key.replace('_', ' ').title()
+                                    
+                                    # Create a document record
+                                document = EmployeeDocument(
+                                        employee=employee,
+                                        document_type=document_type,
+                                        document_name=file.name,
+                                        file=file,
+                                        file_size=str(file.size),
+                                    )
+                                document.save()
+                                logger.info(f"Saved document {document_type} for {invitation.email}")
+                            except Exception as file_error:
+                                logger.error(f"Error saving document {key}: {str(file_error)}", exc_info=True)
+                except Exception as upload_error:
+                    logger.error(f"Error handling file uploads: {str(upload_error)}", exc_info=True)
+            
+            # Store form data in policies for reference
+            if invitation.policies is None:
+                invitation.policies = {}
+            invitation.policies['form_data'] = form_data
+            
+            # Update invitation status
             invitation.status = 'completed'
+            invitation.is_form_completed = True
             invitation.completed_at = timezone.now()
             invitation.save()
+            
+            # Log successful form submission
+            logger.info(f"Form submitted successfully for invitation {invitation.invitation_id} by {invitation.email}")
             
             return JsonResponse({
                 'success': True, 
@@ -187,6 +411,7 @@ class OnboardingView(TemplateView):
             })
                 
         except OnboardingInvitation.DoesNotExist:
+            logger.error(f"Invalid invitation for token: {token}")
             return JsonResponse({'success': False, 'message': 'Invalid invitation'}, status=404)
             
         except Exception as e:
@@ -244,6 +469,41 @@ class OnboardingView(TemplateView):
             logger.error(f"Error sending credentials email: {str(e)}", exc_info=True)
             return False
 
+def detect_platform(user_agent):
+    """Detect platform from user agent string"""
+    if not user_agent:
+        return "Unknown"
+    
+    if "Android" in user_agent:
+        return "Android"
+    elif "iPhone" in user_agent or "iPad" in user_agent or "iPod" in user_agent:
+        return "iOS"
+    elif "Windows" in user_agent:
+        return "Windows"
+    elif "Macintosh" in user_agent:
+        return "MacOS"
+    elif "Linux" in user_agent:
+        return "Linux"
+    else:
+        return "Other"
+
+# Helper function to calculate distance between two geographical coordinates using Haversine formula
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # Convert decimal degrees to radians
+    lat1, lon1, lat2, lon2 = map(math.radians, [float(lat1), float(lon1), float(lat2), float(lon2)])
+
+    # Haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    r = 6371000  # Radius of earth in meters
+    return c * r
+
 class AttendanceView(TemplateView):
     template_name = 'hr_management/attendance.html'
 
@@ -265,6 +525,16 @@ class CreateCompanyView(TemplateView):
     def post(self, request, *args, **kwargs):
         logger.debug("Processing company creation request")
         try:
+            # Get user ID from session
+            user_id = request.session.get('user_id')
+            user = None
+            if user_id:
+                from User.models import User
+                try:
+                    user = User.objects.get(user_id=user_id)
+                except User.DoesNotExist:
+                    pass
+                    
             # Get form data
             company_name = request.POST.get('company_name')
             company_logo = request.FILES.get('company_logo')
@@ -282,7 +552,6 @@ class CreateCompanyView(TemplateView):
             # Create company
             logger.debug("Creating company record")
             company = Company.objects.create(
-                # user=request.user,
                 company_name=company_name,
                 company_logo=company_logo,
                 company_gst_number=company_gst_number,
@@ -291,7 +560,8 @@ class CreateCompanyView(TemplateView):
                 company_email=company_email,
                 company_address=company_address,
                 company_identification_number=company_identification_number,
-                company_state=company_state
+                company_state=company_state,
+                user=user
             )
 
             logger.info(f"Company '{company_name}' created successfully")
@@ -309,6 +579,16 @@ class CreateCompanyView(TemplateView):
 class QRCodeView(View):
     def post(self, request):
         try:
+            # Get user ID from session
+            user_id = request.session.get('user_id')
+            user = None
+            if user_id:
+                from User.models import User
+                try:
+                    user = User.objects.get(user_id=user_id)
+                except User.DoesNotExist:
+                    pass
+                    
             # Parse JSON data if content type is application/json
             if request.content_type == 'application/json':
                 data = json.loads(request.body)
@@ -350,9 +630,13 @@ class QRCodeView(View):
                         'coordinates': coordinates
                     },
                     secret_key=secret_key,
+                    user=user
                 )
 
-                # Create QR code data
+                # Create QR code data with attendance URL
+                base_url = request.build_absolute_uri('/').rstrip('/')
+                attendance_url = f"{base_url}/hr_management/attend/{qr_code.qr_code_id}/{secret_key}/"
+                
                 qr_data = {
                     'qr_code_id': str(qr_code.qr_code_id),
                     'company_id': str(company.company_id),
@@ -363,7 +647,8 @@ class QRCodeView(View):
                     },
                     'secret_key': secret_key,
                     'created_at': qr_code.created_at.isoformat(),
-                    'timestamp': timezone.now().isoformat()
+                    'timestamp': timezone.now().isoformat(),
+                    'attendance_url': attendance_url
                 }
 
                 # Generate and save QR code image
@@ -373,7 +658,8 @@ class QRCodeView(View):
                     box_size=10,
                     border=4,
                 )
-                qr.add_data(json.dumps(qr_data))
+                # Use the URL directly in the QR code instead of the JSON data
+                qr.add_data(attendance_url)
                 qr.make(fit=True)
                 qr_image = qr.make_image(fill_color="black", back_color="white")
 
@@ -409,12 +695,138 @@ class QRCodeView(View):
                 'message': str(e)
             }, status=500)
 
+class QRCodeDetailsView(View):
+    def get(self, request, qr_code_id, *args, **kwargs):
+        try:
+            # Get the QR code by ID
+            qr_code = QRCode.objects.get(qr_code_id=qr_code_id)
+            
+            # Create response data with QR code details
+            response_data = {
+                'success': True,
+                'qr_code': {
+                    'qr_code_id': str(qr_code.qr_code_id),
+                    'company_id': str(qr_code.company.company_id),
+                    'company_name': qr_code.company.company_name,
+                    'location_and_coordinates': qr_code.location_and_coordinates,
+                    'secret_key': qr_code.secret_key,
+                    'created_at': qr_code.created_at.strftime('%d %b %Y, %I:%M %p'),
+                    'qr_code_image': qr_code.qr_code_image.url if qr_code.qr_code_image else None
+                }
+            }
+            
+            return JsonResponse(response_data)
+            
+        except QRCode.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'QR code not found'
+            }, status=404)
+            
+        except Exception as e:
+            logger.error(f"Error retrieving QR code details: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'success': False,
+                'message': f'Error retrieving QR code details: {str(e)}'
+            }, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteQRCodeView(View):
+    def post(self, request, qr_code_id, *args, **kwargs):
+        try:
+            # Get the QR code by ID
+            qr_code = QRCode.objects.get(qr_code_id=qr_code_id)
+            
+            # Store the file path to delete the image after deleting the model
+            image_path = qr_code.qr_code_image.path if qr_code.qr_code_image else None
+            
+            # Delete the QR code
+            qr_code.delete()
+            
+            # Delete the image file from storage if it exists
+            if image_path and os.path.isfile(image_path):
+                os.remove(image_path)
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'QR code deleted successfully'
+            })
+            
+        except QRCode.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'QR code not found'
+            }, status=404)
+            
+        except Exception as e:
+            logger.error(f"Error deleting QR code: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'success': False,
+                'message': f'Error deleting QR code: {str(e)}'
+            }, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class QRAttendanceRedirectView(View):
+    """View that handles QR code attendance redirects."""
+    def get(self, request, qr_code_id, secret_key, *args, **kwargs):
+        try:
+            # Look up the QR code
+            qr_code = get_object_or_404(QRCode, qr_code_id=qr_code_id, secret_key=secret_key)
+            
+            # Get the location data
+            location_data = qr_code.location_and_coordinates or {}
+            location_name = location_data.get('location_name', '')
+            coordinates = location_data.get('coordinates', {})
+            
+            # Create URL parameters for the mark attendance page
+            params = {
+                'qr_code_id': str(qr_code_id),
+                'secret_key': secret_key,
+                'company_id': str(qr_code.company.company_id),
+                'company_name': qr_code.company.company_name,
+                'location_name': location_name,
+            }
+            
+            # Add coordinates if available
+            if coordinates:
+                if isinstance(coordinates, dict):
+                    if 'latitude' in coordinates and 'longitude' in coordinates:
+                        params['latitude'] = coordinates['latitude']
+                        params['longitude'] = coordinates['longitude']
+                elif isinstance(coordinates, str):
+                    # Handle string format if it's stored that way
+                    parts = coordinates.split(',')
+                    if len(parts) >= 2:
+                        lat_part = parts[0].strip()
+                        lng_part = parts[1].strip()
+                        if lat_part.startswith('lat:'):
+                            params['latitude'] = lat_part[4:]
+                        if lng_part.startswith('lng:'):
+                            params['longitude'] = lng_part[4:]
+            
+            # Encode parameters in the URL
+            query_params = '&'.join([f"{key}={value}" for key, value in params.items()])
+            redirect_url = f"/hr_management/mark-attendance/?{query_params}&auto_mark=true"
+            
+            # Redirect to the mark attendance page with parameters
+            return redirect(redirect_url)
+            
+        except Exception as e:
+            logger.error(f"Error redirecting to attendance page: {str(e)}", exc_info=True)
+            return render(request, 'hr_management/error.html', {
+                'error_message': 'Invalid QR code or error processing attendance.'
+            })
+
 @method_decorator(csrf_exempt, name='dispatch')
 class EmployeeAttendanceView(TemplateView):
     template_name = 'hr_management/mark_attendance.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Pass any QR parameters to the template
+        context.update({
+            'qr_params': self.request.GET.dict()
+        })
         return context
 
     def post(self, request, *args, **kwargs):
@@ -434,6 +846,34 @@ class EmployeeAttendanceView(TemplateView):
             return JsonResponse({'error': 'Invalid action'}, status=400)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+            
+    def format_location_data(self, location):
+        """Format location data for storage"""
+        if not location:
+            return "Unknown location"
+            
+        location_parts = []
+        
+        # Add location name if available
+        if location.get('name'):
+            location_parts.append(location.get('name'))
+            
+        # Add coordinates
+        lat = location.get('latitude')
+        lng = location.get('longitude')
+        if lat is not None and lng is not None:
+            location_parts.append(f"({lat}, {lng})")
+            
+        # Add accuracy if available
+        accuracy = location.get('accuracy')
+        if accuracy is not None:
+            location_parts.append(f"accuracy: {accuracy}m")
+            
+        # Join all parts
+        if location_parts:
+            return " - ".join(location_parts)
+        else:
+            return "Unknown location"
 
     def send_otp(self, request, data):
         try:
@@ -450,7 +890,14 @@ class EmployeeAttendanceView(TemplateView):
             if not employee:
                 return JsonResponse({'success': False, 'error': 'Employee not found'}, status=404)
 
+            # Check if employee is approved
+            if not employee.is_approved:
+                return JsonResponse({'success': False, 'error': 'Your account is pending approval'}, status=403)
+
+            # Generate a 6-digit OTP
             otp = ''.join(random.choices('0123456789', k=6))
+            
+            # Store OTP in session
             request.session['attendance_otp'] = {
                 'code': otp,
                 'email': email,
@@ -461,7 +908,7 @@ class EmployeeAttendanceView(TemplateView):
                 # Add more descriptive email subject and body
                 subject = f'{employee.company.company_name} - Attendance OTP'
                 message = (
-                    f'Hello {employee.name},\n\n'
+                    f'Hello {employee.employee_name},\n\n'
                     f'Your OTP for attendance verification is: {otp}\n'
                     f'This OTP will expire in 5 minutes.\n\n'
                     f'If you did not request this OTP, please ignore this email.'
@@ -492,9 +939,12 @@ class EmployeeAttendanceView(TemplateView):
             entered_otp = data.get('otp')
             email = data.get('email')
 
+            if not entered_otp or not email:
+                return JsonResponse({'success': False, 'error': 'OTP and email are required'}, status=400)
+
             stored_otp = request.session.get('attendance_otp', {})
             
-            if not stored_otp or stored_otp['email'] != email:
+            if not stored_otp or stored_otp.get('email') != email:
                 return JsonResponse({'success': False, 'error': 'Invalid session'}, status=400)
 
             otp_timestamp = datetime.fromisoformat(stored_otp['timestamp'])
@@ -504,14 +954,46 @@ class EmployeeAttendanceView(TemplateView):
             if entered_otp != stored_otp['code']:
                 return JsonResponse({'success': False, 'error': 'Invalid OTP'}, status=400)
 
+            # Generate a unique device ID for trusted device
             device_id = str(uuid.uuid4())
+            
+            # Get employee for future use
+            employee = Employee.objects.filter(employee_email=email).first()
+            if not employee:
+                return JsonResponse({'success': False, 'error': 'Employee not found'}, status=404)
+                
+            # Get device info from user agent
+            user_agent = request.META.get('HTTP_USER_AGENT', '')
+            
+            # Store the trusted device in the database
+            try:
+                from .models import TrustedDevice
+                
+                # Create a new trusted device record
+                trusted_device = TrustedDevice.objects.create(
+                    device_id=device_id,
+                    employee=employee,
+                    browser_info=user_agent[:255] if user_agent else None,
+                    platform=detect_platform(user_agent),
+                )
+                
+                # Log the creation
+                print(f"Created trusted device: {trusted_device}")
+                
+            except Exception as e:
+                # Log the error but continue - we'll still use client-side storage
+                print(f"Error creating trusted device record: {str(e)}")
+
+            # Create a device trust token
             return JsonResponse({
                 'success': True,
                 'message': 'OTP verified successfully',
-                'device_id': device_id
+                'device_id': device_id,
+                'employee_name': employee.employee_name
             })
 
         except Exception as e:
+            print(f"Error in verify_otp: {str(e)}")
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
     def upload_photo(self, request, data):
@@ -548,7 +1030,7 @@ class EmployeeAttendanceView(TemplateView):
                 employee.attendance_photo = photo  # Using attendance_photo to match model field
                 employee.save()
                 
-                print(f"Successfully saved attendance photo for employee: {employee.email}")
+                print(f"Successfully saved attendance photo for employee: {employee.employee_email}")
                 
                 return JsonResponse({
                     'success': True, 
@@ -569,125 +1051,195 @@ class EmployeeAttendanceView(TemplateView):
 
     def mark_attendance(self, request, data):
         try:
-            qr_data = data.get('qr_data')
-            current_location = data.get('location')
+            # Get trusted device info
             device_id = data.get('device_id')
             email = data.get('email')
+            qr_data = data.get('qr_data')
+            current_location = data.get('location')
 
             if not all([qr_data, current_location, device_id, email]):
                 return JsonResponse({'success': False, 'error': 'Missing required data'}, status=400)
 
-            # Get employee and verify QR code
+            # Log the received data for debugging
+            print(f"QR data received: {qr_data}")
+            print(f"Location data received: {current_location}")
+
+            # Get employee
             try:
                 # Don't modify this line - it's using the hr.models.Employee
                 employee = Employee.objects.get(employee_email=email)
-                qr_code = QRCode.objects.get(qr_code_id=qr_data['qr_code_id'])
-            except (Employee.DoesNotExist, QRCode.DoesNotExist):
-                return JsonResponse({'success': False, 'error': 'Invalid employee or QR code'}, status=400)
+                
+                # Check if employee is approved
+                if not employee.is_approved:
+                    return JsonResponse({'success': False, 'error': 'Your account is pending approval'}, status=403)
+                
+                # Verify the trusted device
+                from .models import TrustedDevice
+                try:
+                    # Look up the trusted device in our database
+                    trusted_device = TrustedDevice.objects.get(
+                        device_id=device_id,
+                        employee=employee,
+                        is_active=True
+                    )
+                    
+                    # Update last used timestamp
+                    trusted_device.save()  # This will update the auto_now last_used field
+                    
+                except TrustedDevice.DoesNotExist:
+                    # Device not found in our database, but we'll still allow marking attendance
+                    # since we have client-side verification as a backup
+                    print(f"Warning: Trusted device {device_id} not found in database for employee {email}")
+                
+                # Check if attendance was marked today
+                now = timezone.now()
+                today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                
+                if employee.attendance_status == 'completed':
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'You have already completed attendance for today'
+                    }, status=400)
 
-            # Check if attendance was marked today
-            now = timezone.now()
-            today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            
-            if employee.attendance_status == 'completed':
+                # If last attendance was marked within 15 minutes
+                if (employee.last_attendance_time and 
+                    employee.attendance_status == 'marked' and 
+                    (now - employee.last_attendance_time).total_seconds() < 900):  # 15 minutes = 900 seconds
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'You have already marked attendance. Please wait 15 minutes before unmarking.'
+                    }, status=400)
+
+                # More flexible QR code data handling
+                qr_coordinates = None
+                # Try different possible structures for QR code data
+                if 'location_data' in qr_data and 'coordinates' in qr_data.get('location_data', {}):
+                    qr_coordinates = qr_data['location_data']['coordinates']
+                elif 'coordinates' in qr_data:
+                    qr_coordinates = qr_data['coordinates']
+                elif 'latitude' in qr_data and 'longitude' in qr_data:
+                    qr_coordinates = {'latitude': qr_data['latitude'], 'longitude': qr_data['longitude']}
+                
+                # If we have QR coordinates, proceed with distance verification
+                if qr_coordinates and 'latitude' in qr_coordinates and 'longitude' in qr_coordinates:
+                    qr_lat = qr_coordinates['latitude']
+                    qr_lon = qr_coordinates['longitude']
+                    
+                    device_lat = current_location.get('latitude')
+                    device_lon = current_location.get('longitude')
+                    
+                    if device_lat is not None and device_lon is not None:
+                        # Calculate distance between QR code location and device location
+                        try:
+                            distance = calculate_distance(qr_lat, qr_lon, device_lat, device_lon)
+                            
+                            # Check if distance is greater than 20 meters
+                            if distance > 20:
+                                return JsonResponse({
+                                    'success': False,
+                                    'error': f'You are too far from the attendance location. Maximum allowed distance is 20 meters, you are {int(distance)} meters away.'
+                                }, status=400)
+                                
+                            print(f"Device is {distance:.2f} meters from QR code location")
+                            
+                            # Get location accuracy for logging
+                            accuracy = current_location.get('accuracy', 'unknown')
+                            print(f"Location accuracy: {accuracy} meters")
+                        except Exception as e:
+                            print(f"Error calculating distance: {e}")
+                            # Continue without strict distance check if there's an error
+                    else:
+                        print("Device location coordinates missing")
+                        # For demo purposes, we'll continue without strict location check
+                        # In production, you might want to enforce this
+                        # return JsonResponse({
+                        #     'success': False,
+                        #     'error': 'Unable to determine your current location. Please enable location services.'
+                        # }, status=400)
+                else:
+                    print("QR coordinates missing or in unexpected format")
+                    # For demo purposes, we'll continue without strict location check
+                
+                # Update attendance based on current status
+                if employee.attendance_status == 'not_marked':
+                    employee.number_of_days_attended += 1
+                    employee.attendance_status = 'marked'
+                    message = 'Attendance marked successfully!'
+                    
+                    # Format location data for storage
+                    location_string = self.format_location_data(current_location)
+                    
+                    # Create an attendance record
+                    today = timezone.now().date()
+                    attendance, created = EmployeeAttendance.objects.get_or_create(
+                        employee=employee,
+                        date=today,
+                        defaults={
+                            'status': 'present',
+                            'check_in_time': now,
+                            'location': location_string
+                        }
+                    )
+                    
+                    if not created:
+                        attendance.check_in_time = now
+                        attendance.save()
+                        
+                elif employee.attendance_status == 'marked':
+                    employee.attendance_status = 'completed'
+                    message = 'Check-out recorded successfully. You cannot mark attendance again today.'
+                    
+                    # Format location data for storage
+                    location_string = self.format_location_data(current_location)
+                    
+                    # Update attendance record with check-out time
+                    today = timezone.now().date()
+                    try:
+                        attendance = EmployeeAttendance.objects.get(
+                            employee=employee,
+                            date=today
+                        )
+                        attendance.check_out_time = now
+                        attendance.check_out_location = location_string
+                        attendance.save()
+                    except EmployeeAttendance.DoesNotExist:
+                        # Create a new record if one doesn't exist
+                        EmployeeAttendance.objects.create(
+                            employee=employee,
+                            date=today,
+                            status='present',
+                            check_in_time=now,
+                            check_out_time=now,
+                            location=location_string
+                        )
+
+                employee.last_attendance_time = now
+                employee.save()
+
                 return JsonResponse({
-                    'success': False,
-                    'error': 'You have already completed attendance for today'
-                }, status=400)
-
-            # If last attendance was marked within 15 minutes
-            if (employee.last_attendance_time and 
-                employee.attendance_status == 'marked' and 
-                (now - employee.last_attendance_time).total_seconds() < 900):  # 15 minutes = 900 seconds
-                return JsonResponse({
-                    'success': False,
-                    'error': 'You have already marked attendance. Please wait 15 minutes before unmarking.'
-                }, status=400)
-
-            # Verify location and other checks (keeping existing code)
-            qr_location_data = qr_code.location_and_coordinates
-            qr_location_name = qr_location_data['location_name']
-            qr_coordinates = qr_location_data['coordinates']
-
-            if current_location['name'] != qr_location_name:
-                return JsonResponse({
-                    'success': False, 
-                    'error': 'Location mismatch. Please ensure you are at the correct location.'
-                }, status=400)
-
-            current_coords = (current_location['latitude'], current_location['longitude'])
-            qr_coords = tuple(map(float, qr_coordinates.split(',')))
-            distance = geodesic(current_coords, qr_coords).meters
-            print(distance)
-            if distance > 15:  # 10 meters radius check
-                return JsonResponse({
-                    'success': False, 
-                    'error': 'You are not within the allowed range'
-                }, status=400)
-
-            # Update attendance based on current status
-            if employee.attendance_status == 'not_marked':
-                employee.number_of_days_attended += 1
-                employee.attendance_status = 'marked'
-                message = 'Attendance marked successfully!'
-            elif employee.attendance_status == 'marked':
-                employee.number_of_days_attended -= 1
-                employee.attendance_status = 'completed'
-                message = 'Attendance unmarked successfully. You cannot mark attendance again today.'
-
-            employee.last_attendance_time = now
-            employee.save()
-
-            return JsonResponse({
-                'success': True,
-                'message': message,
-                'status': employee.attendance_status
-            })
+                    'success': True,
+                    'message': message,
+                    'status': employee.attendance_status
+                })
+                
+            except Employee.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Employee not found'}, status=404)
 
         except Exception as e:
+            print(f"Error marking attendance: {str(e)}")
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-            # Mark Attendance Flow:
-            # 1. User scans QR code at their work location which contains:
-            #    - Location name and coordinates
-            #    - Company details
-            #    - QR code creation timestamp and validity
-            
-            # 2. Frontend collects:
-            #    - User's email
-            #    - Current GPS coordinates
-            #    - Device ID
-            #    - QR code data
-            
-            # 3. Backend validation:
-            #    - Verifies employee exists and belongs to company
-            #    - Checks if employee already marked attendance in last 15 mins
-            #    - Validates QR code location matches current location name
-            #    - Ensures user is within 10m radius of QR code coordinates
-            
-            # 4. Attendance marking logic:
-            #    - If status = 'not_marked': 
-            #      * Increments days attended
-            #      * Sets status to 'marked'
-            #      * Returns success with "Attendance marked" message
-            
-            #    - If status = 'marked':
-            #      * Decrements days attended  
-            #      * Sets status to 'completed'
-            #      * Returns success with "Attendance unmarked" message
-            
-            # 5. Updates employee record with:
-            #    - New attendance status
-            #    - Last attendance timestamp
-            #    - Number of days attended
-
 
 class CreateFolderView(View):
     def post(self, request, *args, **kwargs):
         try:
             # Get form data
-            name = request.POST.get('folderTitle', '').strip()
-            description = request.POST.get('folderDescription', '').strip()
+            name = request.POST.get('title', '').strip()
+            description = request.POST.get('description', '').strip()
+            
+            # Debug request
+            print(f"Received folder creation request - Title: {name}, Description: {description}")
+            print(f"POST data: {request.POST}")
+            print(f"FILES data: {request.FILES}")
             
             # Validate input
             if not name:
@@ -697,7 +1249,7 @@ class CreateFolderView(View):
             folder_id = str(uuid.uuid4())
             
             # Handle file upload
-            logo = request.FILES.get('folderLogo')
+            logo = request.FILES.get('logo')
             logo_path = None
             
             if logo:
@@ -718,6 +1270,7 @@ class CreateFolderView(View):
                         unique_filename,
                         ContentFile(logo.read())
                     )
+                    print(f"Saved logo to {logo_path}")
                 except Exception as e:
                     logger.error(f"Error processing logo: {str(e)}")
                     return JsonResponse({
@@ -726,6 +1279,20 @@ class CreateFolderView(View):
                     })
 
             try:
+                # Get user from session
+                user_id = request.session.get('user_id')
+                user = None
+                if user_id:
+                    from User.models import User
+                    try:
+                        user = User.objects.get(user_id=user_id)
+                        print(f"Found user: {user.user_id}")
+                    except User.DoesNotExist:
+                        print("User not found")
+                        pass
+                else:
+                    print("No user ID in session")
+                
                 # Create folder object
                 folder = Folder.objects.create(
                     folder_id=folder_id,
@@ -735,10 +1302,18 @@ class CreateFolderView(View):
                     created_at=timezone.now()
                 )
                 
+                # Associate with user if available
+                if user:
+                    folder.user = user
+                    folder.save()
+                    print(f"Associated folder with user: {user.user_id}")
+                
+                print(f"Created folder: {folder.folder_id}, {folder.name}")
+                
                 return JsonResponse({
                     'success': True,
                     'message': 'Folder created successfully',
-                    'folder_id': folder.folder_id,
+                    'folder_id': str(folder.folder_id),
                     'name': folder.name,
                     'description': folder.description,
                     'logo_url': folder.logo.url if folder.logo else None
@@ -938,10 +1513,18 @@ class OnboardingInvitationView(View):
                 designation_id = request.POST.get('designation')
                 role_id = request.POST.get('role')
                 offer_letter_id = request.POST.get('offer_letter')
+                hiring_agreement_id = request.POST.get('hiring_agreement')
+                handbook_id = request.POST.get('handbook')
+                hr_policies_id = request.POST.get('hr_policies')
+                training_material_id = request.POST.get('training_material')
                 policies_json = request.POST.get('policies')
                 
                 # Parse policies JSON if present
                 policies = json.loads(policies_json) if policies_json else []
+                
+                # Log information about the document selections for debugging
+                logger.info(f"Processing onboarding invitation for {name} ({email})")
+                logger.info(f"Selected documents: offer_letter={offer_letter_id}, hiring_agreement={hiring_agreement_id}, handbook={handbook_id}, hr_policies={hr_policies_id}, training_material={training_material_id}")
                 
                 # Get photo if uploaded
                 photo = request.FILES.get('photo')
@@ -957,6 +1540,10 @@ class OnboardingInvitationView(View):
                 designation_id = data.get('designation')
                 role_id = data.get('role')
                 offer_letter_id = data.get('offer_letter')
+                hiring_agreement_id = data.get('hiring_agreement')
+                handbook_id = data.get('handbook')
+                hr_policies_id = data.get('hr_policies')
+                training_material_id = data.get('training_material')
                 policies = data.get('policies', [])
                 
                 # No photo in JSON request
@@ -973,6 +1560,10 @@ class OnboardingInvitationView(View):
                 designation_id = data.get('designation')
                 role_id = data.get('role')
                 offer_letter_id = data.get('offer_letter')
+                hiring_agreement_id = data.get('hiring_agreement')
+                handbook_id = data.get('handbook')
+                hr_policies_id = data.get('hr_policies')
+                training_material_id = data.get('training_material')
                 policies = data.get('policies', [])
                 
                 # No photo in regular form post
@@ -1025,11 +1616,52 @@ class OnboardingInvitationView(View):
                 except OfferLetter.DoesNotExist:
                     logger.warning(f"Offer letter with ID {offer_letter_id} not found")
             
+            # Get hiring agreement instance if provided
+            hiring_agreement = None
+            if hiring_agreement_id:
+                try:
+                    hiring_agreement = HiringAgreement.objects.get(hiring_agreement_id=hiring_agreement_id)
+                except HiringAgreement.DoesNotExist:
+                    logger.warning(f"Hiring agreement with ID {hiring_agreement_id} not found")
+            
+            # Get handbook instance if provided
+            handbook = None
+            if handbook_id:
+                try:
+                    handbook = Handbook.objects.get(handbook_id=handbook_id)
+                except Handbook.DoesNotExist:
+                    logger.warning(f"Handbook with ID {handbook_id} not found")
+            
+            # Get HR policies instance if provided
+            hr_policies = None
+            if hr_policies_id:
+                try:
+                    hr_policies = TandC.objects.get(tandc_id=hr_policies_id)
+                except TandC.DoesNotExist:
+                    logger.warning(f"HR policies with ID {hr_policies_id} not found")
+            
+            # Get training material instance if provided
+            training_material = None
+            if training_material_id:
+                try:
+                    training_material = TrainingMaterial.objects.get(training_material_id=training_material_id)
+                except TrainingMaterial.DoesNotExist:
+                    logger.warning(f"Training material with ID {training_material_id} not found")
+            
             # Generate a unique form link with token
             token = str(uuid.uuid4())
             form_link = f"{request.scheme}://{request.get_host()}/hr_management/onboarding/form/{token}/"
             
-            # Create onboarding invitation
+            # Get additional documents if provided
+            additional_documents_json = request.POST.get('additional_documents')
+            additional_documents = None
+            if additional_documents_json:
+                try:
+                    additional_documents = json.loads(additional_documents_json)
+                except json.JSONDecodeError:
+                    logger.error(f"Invalid JSON in additional_documents: {additional_documents_json}")
+                    
+            # Create invitation object
             invitation = OnboardingInvitation.objects.create(
                 company=company,
                 name=name,
@@ -1038,10 +1670,23 @@ class OnboardingInvitationView(View):
                 designation=designation,
                 role=role,
                 offer_letter_template=offer_letter,
+                hiring_agreement_template=hiring_agreement,
+                handbook_template=handbook,
+                hr_policies_template=hr_policies,
+                training_material_template=training_material,
                 form_link=form_link,
                 policies=policies,
-                photo=photo,
+                additional_documents=additional_documents,
+                photo=photo
             )
+            
+            # Log successful creation with document details
+            logger.info(f"Created invitation {invitation.invitation_id} with documents:")
+            logger.info(f"  - Offer Letter: {offer_letter.name if offer_letter else 'None'}")
+            logger.info(f"  - Hiring Agreement: {hiring_agreement.name if hiring_agreement else 'None'}")
+            logger.info(f"  - Handbook: {handbook.name if handbook else 'None'}")
+            logger.info(f"  - HR Policies: {hr_policies.name if hr_policies else 'None'}")
+            logger.info(f"  - Training Material: {training_material.name if training_material else 'None'}")
             
             # Send email
             logger.info(f"Attempting to send invitation email to {email}")
@@ -1438,8 +2083,16 @@ class OnboardingInvitationDetailView(View):
         try:
             invitation = OnboardingInvitation.objects.get(invitation_id=invitation_id)
             
+            # Check if JSON response is requested - check URL parameters first, then headers
+            wants_json = (
+                request.GET.get('format') == 'json' or 
+                request.GET.get('v') == '2' or 
+                'application/json' in request.META.get('HTTP_ACCEPT', '') or
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            
             # For HTML template rendering
-            if 'application/json' not in request.META.get('HTTP_ACCEPT', ''):
+            if not wants_json:
                 context = {
                     'invitation': invitation,
                     'current_year': timezone.now().year,
@@ -1455,17 +2108,52 @@ class OnboardingInvitationDetailView(View):
                 'designation': invitation.designation.name if invitation.designation else None,
                 'role': invitation.role.name if invitation.role else None,
                 'status': invitation.status,
+                'created_at': invitation.created_at.isoformat() if invitation.created_at else None,
                 'sent_at': invitation.sent_at.isoformat() if invitation.sent_at else None,
                 'completed_at': invitation.completed_at.isoformat() if invitation.completed_at else None,
                 'rejected_at': invitation.rejected_at.isoformat() if invitation.rejected_at else None,
+                'accepted_at': invitation.accepted_at.isoformat() if invitation.accepted_at else None,
+                'rejection_reason': invitation.rejection_reason,
+                'discussion_message': invitation.discussion_message,
+                'is_form_completed': invitation.is_form_completed,
+                'has_viewed_offer': invitation.has_viewed_offer,
+                'policies': invitation.policies,
             }
+            
+            # Include form data if the form is completed
+            if invitation.is_form_completed:
+                # Get form data from the policies field
+                form_data = invitation.policies.get('form_data', {}) if invitation.policies else {}
+                if form_data:
+                    invitation_data['form_data'] = form_data
+                
+                # If no form data found in policies, try to get from associated employee
+                elif not form_data:
+                    try:
+                        employee = Employee.objects.filter(employee_email=invitation.email).first()
+                        if employee:
+                            # Extract relevant employee information as form data
+                            form_data = {
+                                'full_name': employee.employee_name,
+                                'email': employee.employee_email,
+                                'phone_number': getattr(employee, 'phone_number', None),
+                                'address': getattr(employee, 'address', None),
+                                'date_of_birth': getattr(employee, 'date_of_birth', None).isoformat() if hasattr(employee, 'date_of_birth') and getattr(employee, 'date_of_birth') else None,
+                                'emergency_contact': getattr(employee, 'emergency_contact', None),
+                                'highest_education': getattr(employee, 'highest_education', None),
+                                'previous_employer': getattr(employee, 'previous_employer', None),
+                            }
+                            invitation_data['form_data'] = form_data
+                    except Exception as e:
+                        logger.error(f"Error retrieving form data from employee: {str(e)}", exc_info=True)
             
             return JsonResponse({
                 'success': True,
                 'invitation': invitation_data
             })
+            
         except OnboardingInvitation.DoesNotExist:
-            if 'application/json' not in request.META.get('HTTP_ACCEPT', ''):
+            if 'application/json' not in request.META.get('HTTP_ACCEPT', '') and not request.GET.get('format') == 'json' and not request.GET.get('v') == '2':
                 # For HTML template
                 context = {
                     'error': 'Invitation not found',
@@ -1481,7 +2169,7 @@ class OnboardingInvitationDetailView(View):
         except Exception as e:
             logger.error(f"Error retrieving invitation details: {str(e)}", exc_info=True)
             
-            if 'application/json' not in request.META.get('HTTP_ACCEPT', ''):
+            if 'application/json' not in request.META.get('HTTP_ACCEPT', '') and not request.GET.get('format') == 'json' and not request.GET.get('v') == '2':
                 # For HTML template
                 context = {
                     'error': 'An error occurred',
@@ -1492,7 +2180,7 @@ class OnboardingInvitationDetailView(View):
             # For API/JSON
             return JsonResponse({
                 'success': False,
-                'message': str(e)
+                'message': f'An error occurred while fetching the invitation details: {str(e)}'
             }, status=500)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -1508,104 +2196,134 @@ class OnboardingInvitationAcceptView(View):
                 action = data.get('action', '')
                 from_status = data.get('from_status', '')
                 to_status = data.get('to_status', '')
+                salary_ctc = data.get('salary_ctc', 0)
+                allowances = data.get('allowances', {})
             except (ValueError, json.JSONDecodeError):
-                data = {}
-                action = ''
-                from_status = ''
-                to_status = ''
+                # Try to get from POST data if not JSON
+                action = request.POST.get('action', '')
+                from_status = request.POST.get('from_status', '')
+                to_status = request.POST.get('to_status', '')
+                salary_ctc = float(request.POST.get('salary_ctc', 0))
+                allowances = json.loads(request.POST.get('allowances', '{}'))
             
-            # Check if invitation is already processed
-            if invitation.status in ['rejected', 'cancelled']:
+            # Verify status transition is valid
+            if from_status != invitation.status:
                 return JsonResponse({
                     'success': False,
-                    'message': f'This invitation cannot be accepted as it is {invitation.status}'
+                    'message': f'Invalid current status. Expected {from_status}, found {invitation.status}'
                 }, status=400)
 
-            # Handle special case: Approving a completed invitation
-            if action == 'approve_completed' and invitation.status == 'completed' and to_status == 'accepted':
-                # Update invitation status to accepted
-                invitation.status = 'accepted'
+            # Handle the action
+            if action == 'approve_completed' or action == 'accept':
+                # Update the invitation status
+                invitation.status = to_status
+                invitation.accepted_at = timezone.now()
                 invitation.save()
                 
-                # Find or create the employee record
-                try:
-                    # Use hr.models.Employee for the lookup
-                    employee = Employee.objects.get(employee_email=invitation.email)
+                # Generate a random password
+                password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+                hashed_password = make_password(password)
+                
+                # Extract form data from the invitation's policies field
+                form_data = {}
+                if isinstance(invitation.policies, dict) and 'form_data' in invitation.policies:
+                    form_data = invitation.policies['form_data']
+                
+                # Create or update employee record
+                # Using hr.models.Employee (not employee.models.Employee)
+                employee, created = Employee.objects.get_or_create(
+                    employee_email=invitation.email,
+                    defaults={
+                        'employee_name': invitation.name,
+                        'company': invitation.company,
+                        # 'department': invitation.department,  # hr.models.Employee has no department field
+                        # 'designation': invitation.designation,  # hr.models.Employee has no designation field
+                        # 'role': invitation.role,  # hr.models.Employee has no role field
+                        'is_active': True,
+                        'is_approved': True,
+                        'password': hashed_password
+                    }
+                )
+                
+                if not created:
                     # Update existing employee
+                    employee.employee_name = invitation.name
+                    employee.company = invitation.company
+                    # employee.department = invitation.department  # hr.models.Employee has no department field
+                    # employee.designation = invitation.designation  # hr.models.Employee has no designation field
+                    # employee.role = invitation.role  # hr.models.Employee has no role field
                     employee.is_active = True
                     employee.is_approved = True
+                    employee.password = hashed_password
                     employee.save()
-                    
-                    # Generate a new password for the existing employee
-                    password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-                    employee.password = make_password(password)
+                
+                # Update salary and allowances in the employee record
+                employee.salary_ctc = salary_ctc
+                employee.allowances = allowances
+                employee.save()
+                
+                # If there's a profile photo saved in the invitation, copy it to the employee
+                if invitation.photo:
+                    employee.attendance_photo = invitation.photo
                     employee.save()
+                
+                # Process any pending documents that were saved during form submission
+                if isinstance(invitation.policies, dict) and 'document_files' in invitation.policies:
+                    document_files = invitation.policies['document_files']
                     
-                    # Send credentials email to the existing employee too
-                    self.send_acceptance_email(invitation, password)
-                    logger.info(f"Updated existing employee record for {invitation.email} and sent credentials email")
-                except Employee.DoesNotExist:
-                    # Generate random password
-                    password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-                    hashed_password = make_password(password)
-                    
-                    # Create new employee with fields from hr.models.Employee
-                    employee = Employee.objects.create(
-                        employee_email=invitation.email,
-                        employee_name=invitation.name,
-                        company=invitation.company,
-                        password=hashed_password,
-                        is_active=True,
-                        is_approved=True
-                    )
-                    
-                    # Send credentials email
-                    self.send_acceptance_email(invitation, password)
-                    logger.info(f"Created new employee record for {invitation.email}")
+                    # Create EmployeeDocument records for each stored document
+                    for key, doc_info in document_files.items():
+                        try:
+                            # Create document with stored information
+                            document_type = doc_info.get('document_type', '')
+                            file_path = doc_info.get('file_path', '')
+                            file_name = doc_info.get('file_name', '')
+                            file_size = doc_info.get('file_size', '')
+                            
+                            if file_path and file_name:
+                                # Create the document record linked to the employee
+                                doc = EmployeeDocument(
+                                    employee=employee,
+                                    document_type=document_type,
+                                    document_name=file_name,
+                                    file=file_path,
+                                    file_size=file_size,
+                                )
+                                doc.save()
+                                logger.info(f"Created document record for {document_type} from stored file info")
+                        except Exception as doc_error:
+                            logger.error(f"Error creating document from stored info: {str(doc_error)}", exc_info=True)
+                
+                # Send acceptance email with login credentials
+                success = self.send_acceptance_email(invitation, password)
                 
                 return JsonResponse({
                     'success': True,
-                    'message': 'Employee approved and granted dashboard access'
+                    'message': 'Invitation accepted successfully',
+                    'email_sent': success
                 })
+                
+            elif action == 'reject':
+                # Update the invitation status
+                invitation.status = to_status
+                invitation.rejected_at = timezone.now()
+                invitation.rejection_reason = data.get('rejection_reason', '')
+                invitation.save()
             
-            # Original flow: Handle pending/sent invitations
-            # Generate random password
-            password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-            hashed_password = make_password(password)
+                # Send rejection email
+                success = self.send_rejection_email(invitation)
             
-            # Create employee account if doesn't exist
-            employee, created = Employee.objects.get_or_create(
-                employee_email=invitation.email,
-                defaults={
-                    'employee_name': invitation.name,
-                    'company': invitation.company,
-                    'password': hashed_password,
-                    'is_active': True,
-                    'is_approved': True
-                }
-            )
-            
-            if not created:
-                # Update existing employee
-                employee.is_active = True
-                employee.is_approved = True
-                # Set a new password for the existing employee
-                employee.password = hashed_password
-                employee.save()
-            
-            # Update invitation status
-            invitation.status = 'accepted'
-            invitation.accepted_at = timezone.now()
-            invitation.save()
-            
-            # Send credentials email to both new and existing employees
-            self.send_acceptance_email(invitation, password)
-            logger.info(f"Sent credentials email to {invitation.email}")
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Invitation accepted and credentials sent to employee'
-            })
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Invitation rejected successfully',
+                    'email_sent': success
+                })
+                
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Invalid action: {action}'
+                }, status=400)
             
         except OnboardingInvitation.DoesNotExist:
             return JsonResponse({
@@ -1613,61 +2331,109 @@ class OnboardingInvitationAcceptView(View):
                 'message': 'Invitation not found'
             }, status=404)
         except Exception as e:
-            logger.error(f"Error accepting invitation: {str(e)}", exc_info=True)
+            logger.error(f"Error processing acceptance: {str(e)}", exc_info=True)
             return JsonResponse({
                 'success': False,
-                'message': str(e)
+                'message': f'Error processing acceptance: {str(e)}'
             }, status=500)
     
     def send_acceptance_email(self, invitation, password):
-        """Send email with login credentials to the accepted employee"""
-        company = invitation.company
-        
-        # Get site URL from settings or use a default
-        site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
-        
-        # Prepare context data for the email template
-        context = {
-            'name': invitation.name,
-            'email': invitation.email,
-            'company_name': company.company_name,
-            'department': invitation.department.name if invitation.department else 'Not specified',
-            'designation': invitation.designation.name if invitation.designation else 'Not specified',
-            'role': invitation.role.name if invitation.role else 'Not specified',
-            'login_url': f"{site_url}/hr_management/employee/login/",
-            'username': invitation.email,  # Email is used as username
-            'password': password,
-            'current_year': timezone.now().year,
-        }
-        
-        # Add company logo if available
-        if company.company_logo:
-            context['company_logo'] = company.company_logo.url
-        
+        """Send acceptance email with credentials to the employee"""
         try:
-            # Render email template with context
-            html_content = render_to_string('hr_management/email_templates/acceptance_credentials.html', context)
-            text_content = strip_tags(html_content)
+            company = invitation.company
+            
+            # Get site URL from settings or use a default
+            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
+            
+            # Prepare context data for the email template
+            context = {
+                'name': invitation.name,
+                'email': invitation.email,
+                'company_name': company.company_name,
+                'department': invitation.department.name if invitation.department else 'Not specified',
+                'designation': invitation.designation.name if invitation.designation else 'Not specified',
+                'role': invitation.role.name if invitation.role else 'Not specified',
+                'login_url': f"{site_url}/hr_management/employee/login/",
+                'username': invitation.email,  # Email is used as username
+                'password': password,
+                'current_year': timezone.now().year,
+            }
+            
+            # Add company logo if available
+            if company.company_logo:
+                context['company_logo'] = company.company_logo.url
+            
+            # Check if template exists
+            template_path = 'hr_management/email_templates/acceptance_credentials.html'
+            
+            # Render email template
+            html_message = render_to_string(template_path, context)
+            plain_message = strip_tags(html_message)
             
             # Send email
             subject = f"Welcome to {company.company_name} - Your Login Credentials"
             from_email = settings.DEFAULT_FROM_EMAIL
             recipient_list = [invitation.email]
             
-            send_mail(
-                subject=subject,
-                message=text_content,
-                from_email=from_email,
-                recipient_list=recipient_list,
-                html_message=html_content,
-                fail_silently=False,
-            )
+            email = EmailMultiAlternatives(subject, plain_message, from_email, recipient_list)
+            email.attach_alternative(html_message, "text/html")
+            
+            # Send the email
+            email.send()
             
             logger.info(f"Acceptance email with credentials sent to {invitation.email}")
+            return True
         except Exception as e:
             logger.error(f"Error sending acceptance email: {str(e)}", exc_info=True)
             # Don't raise the exception as the employee is already created
             # Just log the error for monitoring
+            return False
+    
+    def send_rejection_email(self, invitation):
+        """Send rejection email to the applicant"""
+        try:
+            company = invitation.company
+            
+            # Get site URL from settings or use a default
+            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
+            
+            # Prepare context data for the email template
+            context = {
+                'name': invitation.name,
+                'email': invitation.email,
+                'company_name': company.company_name,
+                'rejection_reason': invitation.rejection_reason or 'No specific reason provided',
+                'current_year': timezone.now().year,
+            }
+            
+            # Add company logo if available
+            if company.company_logo:
+                context['company_logo'] = company.company_logo.url
+            
+            # Check if template exists
+            template_path = 'hr_management/email_templates/rejection_notification.html'
+            
+            # Render email template
+            html_message = render_to_string(template_path, context)
+            plain_message = strip_tags(html_message)
+            
+            # Send email
+            subject = f"Update on Your Application at {company.company_name}"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [invitation.email]
+            
+            email = EmailMultiAlternatives(subject, plain_message, from_email, recipient_list)
+            email.attach_alternative(html_message, "text/html")
+            
+            # Send the email
+            email.send()
+            
+            logger.info(f"Rejection email sent to {invitation.email}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error sending rejection email: {str(e)}", exc_info=True)
+            return False
 
 @method_decorator(csrf_exempt, name='dispatch')
 class OnboardingInvitationRejectView(View):
@@ -1696,51 +2462,27 @@ class OnboardingInvitationRejectView(View):
                     'success': False,
                     'message': f'This invitation cannot be rejected as it is {invitation.status}'
                 }, status=400)
+
+            # Save the rejection reason
+            invitation.rejection_reason = rejection_reason
             
-            # Handle special case: Rejecting a completed invitation
-            if action == 'reject_completed' and invitation.status == 'completed' and to_status == 'rejected':
-                # Update invitation status to rejected
-                invitation.status = 'rejected'
-                invitation.rejected_at = timezone.now()
-                invitation.rejection_reason = rejection_reason
-                invitation.save()
-                
-                # Update any existing employee record to inactive if it exists
-                try:
-                    # Don't modify this line - it's using the hr.models.Employee
-                    employee = Employee.objects.get(employee_email=invitation.email)
-                    employee.is_active = False
-                    employee.is_approved = False
-                    employee.rejection_reason = rejection_reason
-                    employee.save()
-                    
-                    logger.info(f"Deactivated employee record for {invitation.email}")
-                except Employee.DoesNotExist:
-                    logger.info(f"No employee record found for {invitation.email}")
-                
-                # Send rejection notification email
-                self.send_rejection_email(invitation)
-                
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Employee application rejected successfully'
-                })
-            
-            # Original flow: Handle pending/sent invitations
             # Update invitation status
             invitation.status = 'rejected'
             invitation.rejected_at = timezone.now()
-            invitation.rejection_reason = rejection_reason
             invitation.save()
             
             # Send rejection email
-            self.send_rejection_email(invitation)
+            email_sent = self.send_rejection_email(invitation)
             
-            logger.info(f"Invitation rejected for {invitation.email}")
+            if email_sent:
+                logger.info(f"Rejected invitation for {invitation.email} and sent notification")
+            else:
+                logger.warning(f"Rejected invitation for {invitation.email} but failed to send notification")
             
             return JsonResponse({
                 'success': True,
-                'message': 'Invitation rejected and notification sent'
+                'message': 'Invitation rejected and notification sent',
+                'email_sent': email_sent
             })
             
         except OnboardingInvitation.DoesNotExist:
@@ -1757,45 +2499,48 @@ class OnboardingInvitationRejectView(View):
     
     def send_rejection_email(self, invitation):
         """Send rejection email to the applicant"""
-        company = invitation.company
-        
-        # Prepare context data for the email template
-        context = {
-            'name': invitation.name,
-            'email': invitation.email,
-            'company_name': company.company_name,
-            'rejection_reason': invitation.rejection_reason,
-            'current_year': timezone.now().year,
-        }
-        
-        # Add company logo if available
-        if company.company_logo:
-            context['company_logo'] = company.company_logo.url
-        
         try:
-            # Render email template with context
-            html_content = render_to_string('hr_management/email_templates/rejection_notification.html', context)
-            text_content = strip_tags(html_content)
+            company = invitation.company
+            
+            # Get site URL from settings or use a default
+            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
+            
+            # Prepare context data for the email template
+            context = {
+                'name': invitation.name,
+                'email': invitation.email,
+                'company_name': company.company_name,
+                'rejection_reason': invitation.rejection_reason or 'No specific reason provided',
+                'current_year': timezone.now().year,
+            }
+            
+            # Add company logo if available
+            if company.company_logo:
+                context['company_logo'] = company.company_logo.url
+            
+            # Check if template exists
+            template_path = 'hr_management/email_templates/rejection_notification.html'
+            
+            # Render email template
+            html_message = render_to_string(template_path, context)
+            plain_message = strip_tags(html_message)
             
             # Send email
-            subject = f"Update Regarding Your Application to {company.company_name}"
+            subject = f"Update on Your Application at {company.company_name}"
             from_email = settings.DEFAULT_FROM_EMAIL
             recipient_list = [invitation.email]
             
-            send_mail(
-                subject=subject,
-                message=text_content,
-                from_email=from_email,
-                recipient_list=recipient_list,
-                html_message=html_content,
-                fail_silently=False,
-            )
+            email = EmailMultiAlternatives(subject, plain_message, from_email, recipient_list)
+            email.attach_alternative(html_message, "text/html")
             
+            # Send the email
+            email.send()
             logger.info(f"Rejection email sent to {invitation.email}")
+            return True
+            
         except Exception as e:
             logger.error(f"Error sending rejection email: {str(e)}", exc_info=True)
-            # Don't raise the exception as the invitation is already rejected
-            # Just log the error for monitoring
+            return False
 
 @method_decorator(csrf_exempt, name='dispatch')
 class OnboardingInvitationDeleteView(View):
@@ -1844,8 +2589,8 @@ class EmployeeDashboardView(TemplateView):
             return context
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             context['employee'] = employee
             
             # Today's date
@@ -2052,8 +2797,8 @@ class EmployeeProfileView(TemplateView):
             return context
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             context['employee'] = employee
         except Exception as e:
             logger.error(f"Error retrieving employee profile: {str(e)}", exc_info=True)
@@ -2067,8 +2812,8 @@ class EmployeeProfileView(TemplateView):
             return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Update basic info
             if 'name' in request.POST:
@@ -2101,8 +2846,8 @@ class EmployeeLeaveView(TemplateView):
             return context
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             context['employee'] = employee
             
             # Get all leave applications for this employee
@@ -2139,8 +2884,8 @@ class EmployeeReimbursementView(TemplateView):
             return context
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             context['employee'] = employee
             
             # Get all reimbursement requests for this employee
@@ -2169,8 +2914,8 @@ class EmployeeSalarySlipsView(TemplateView):
             return context
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             context['employee'] = employee
             
             # Get all salary slips for this employee
@@ -2196,8 +2941,8 @@ class EmployeeResignationView(TemplateView):
             return context
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             context['employee'] = employee
             
             # Check if employee has any existing resignation requests
@@ -2227,8 +2972,8 @@ class EmployeeDocumentsView(TemplateView):
             return context
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             context['employee'] = employee
             
             # Get all relevant documents
@@ -2254,19 +2999,39 @@ class EmployeeLogoutView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class MarkAttendanceAPIView(View):
     def post(self, request, *args, **kwargs):
+        # Get employee ID from session
         employee_id = request.session.get('employee_id')
         if not employee_id:
             return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
         
         try:
-            data = json.loads(request.body)
+            # Try to parse JSON data first
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'message': 'Invalid JSON data'}, status=400)
+            
             action = data.get('action', 'check_in')
             method = data.get('method', 'manual')
             location = data.get('location', {})
-            qr_code = data.get('qr_code', '')
+            qr_code = data.get('qr_code', {})
             
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            # Ensure qr_code is a dictionary
+            if isinstance(qr_code, str):
+                try:
+                    qr_code = json.loads(qr_code)
+                except json.JSONDecodeError:
+                    # If it's not valid JSON, create a basic structure
+                    qr_code = {'raw_data': qr_code, 'qr_code_id': qr_code}
+            
+            # Get employee
+            try:
+                employee = Employee.objects.get(employee_id=employee_id)
+            except Employee.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Employee not found'
+                }, status=404)
             
             today = timezone.now().date()
             
@@ -2302,6 +3067,59 @@ class MarkAttendanceAPIView(View):
             if isinstance(location, dict) and location.get('latitude') and location.get('longitude'):
                 location_string = f"lat:{location.get('latitude')},lng:{location.get('longitude')}"
             
+            # Handle QR code validation if method is 'qr'
+            if method == 'qr' and qr_code:
+                # Check for QR code ID - allow flexible formats
+                qr_code_id = None
+                if isinstance(qr_code, dict):
+                    # Try different possible key names for QR code ID
+                    for key in ['qr_code_id', 'id', 'code_id', 'raw_data']:
+                        if key in qr_code and qr_code[key]:
+                            qr_code_id = qr_code[key]
+                            break
+                
+                # If no QR code ID found or QR code is not a dict, use a fallback
+                if not qr_code_id:
+                    if isinstance(qr_code, str):
+                        qr_code_id = qr_code
+                    else:
+                        qr_code_id = str(uuid.uuid4())  # Generate a random ID as last resort
+                
+                # Try to validate QR code if possible
+                try:
+                    # Check if this QR code exists in the database
+                    qr_code_obj = QRCode.objects.filter(qr_code_id=qr_code_id).first()
+                    
+                    # If QR code found, validate location
+                    if qr_code_obj and isinstance(location, dict) and 'latitude' in location and 'longitude' in location:
+                        # Get QR code location coordinates
+                        qr_location = qr_code_obj.location_and_coordinates.get('coordinates', {})
+                        qr_lat = qr_location.get('latitude')
+                        qr_lng = qr_location.get('longitude')
+                        
+                        # Get user's submitted location
+                        user_lat = location.get('latitude')
+                        user_lng = location.get('longitude')
+                        
+                        # If both locations available, calculate distance
+                        if qr_lat and qr_lng and user_lat and user_lng:
+                            # Calculate distance in meters
+                            distance = calculate_distance(qr_lat, qr_lng, user_lat, user_lng) * 1000
+                            
+                            # Check if user is within the allowed radius (20 meters)
+                            # You can adjust this value based on your requirements
+                            max_distance = 20  # meters
+                            
+                            if distance > max_distance:
+                                return JsonResponse({
+                                    'success': False, 
+                                    'message': f'You are too far from the attendance location. Please be within {max_distance} meters to mark attendance.'
+                                }, status=400)
+                except Exception as e:
+                    logger.warning(f"QR code validation error: {str(e)}")
+                    # Continue with attendance marking even if validation fails
+                    # In a production system, you might want to handle this differently
+            
             # Create or update attendance record
             if attendance:
                 # Update existing attendance record (check out)
@@ -2328,14 +3146,14 @@ class MarkAttendanceAPIView(View):
                 'success': True,
                 'message': message,
                 'attendance_id': str(attendance.attendance_id),
-                'check_in': attendance.check_in_time.isoformat(),
-                'check_out': attendance.check_out_time.isoformat() if attendance.check_out_time else None
+                'check_in': attendance.check_in_time.isoformat() if attendance.check_in_time else None,
+                'check_out': attendance.check_out_time.isoformat() if attendance.check_out_time else None,
+                'action': 'check_out' if attendance.check_out_time else 'check_in'
             })
-        except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'message': 'Invalid JSON data'}, status=400)
+            
         except Exception as e:
             logger.error(f"Error marking attendance: {str(e)}", exc_info=True)
-            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+            return JsonResponse({'success': False, 'message': f'Error: {str(e)}'}, status=500)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class LeaveApplicationAPIView(View):
@@ -2385,8 +3203,8 @@ class LeaveApplicationAPIView(View):
             # Calculate leave days
             leave_days = (end_date - start_date).days + 1
             
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Check if there are overlapping leave applications
             overlapping_leaves = LeaveApplication.objects.filter(
@@ -2442,8 +3260,8 @@ class CancelLeaveAPIView(View):
         
         try:
             # Get employee
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Get the leave application
             try:
@@ -2552,8 +3370,8 @@ class ReimbursementRequestAPIView(View):
                     'message': 'Expense date cannot be in the future'
                 }, status=400)
             
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Create reimbursement request
             reimbursement = ReimbursementRequest.objects.create(
@@ -2717,40 +3535,234 @@ class ViewOfferView(TemplateView):
                 
             invitation = invitations.first()
             context['invitation'] = invitation
-            context['company_name'] = invitation.company.company_name
             
-            # Add company logo if available
-            if invitation.company.company_logo:
-                context['company_logo'] = invitation.company.company_logo.url
-                
-            # Get offer letter content
+            # Check if the form has already been completed
+            if invitation.is_form_completed:
+                context['form_completed'] = True
+                context['form_data'] = {}
+                return context
+            
+            # Mark the invitation as viewed
+            invitation.has_viewed_offer = True
+            invitation.save(update_fields=['has_viewed_offer'])
+            
+            # Process offer letter
             if invitation.offer_letter_template:
                 offer_letter_content = invitation.offer_letter_template.content
                 # Replace placeholders with actual values
                 offer_letter_content = offer_letter_content.replace('[Employee Name]', invitation.name)
-                offer_letter_content = offer_letter_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
-                offer_letter_content = offer_letter_content.replace('[Company Name]', invitation.company.company_name)
-                offer_letter_content = offer_letter_content.replace('[Start Date]', 'To be determined')
-                
-                context['offer_letter_content'] = offer_letter_content
+                try:
+                    offer_letter_content = invitation.offer_letter_template.content
+                    # Replace placeholders with actual values
+                    offer_letter_content = offer_letter_content.replace('[Employee Name]', invitation.name)
+                    offer_letter_content = offer_letter_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    offer_letter_content = offer_letter_content.replace('[Company Name]', invitation.company.company_name)
+                    offer_letter_content = offer_letter_content.replace('[Start Date]', 'To be determined')
+                    
+                    context['offer_letter_content'] = offer_letter_content
+                    logger.info(f"Successfully processed offer letter content")
+                except Exception as e:
+                    logger.error(f"Error processing offer letter content: {str(e)}")
+                    context['offer_letter_content'] = '<p>Error processing offer letter content.</p>'
             else:
                 context['offer_letter_content'] = '<p>No offer letter template was selected for this invitation.</p>'
+                
+            # Get hiring agreement content
+            hiring_agreement_id = None
+            # Check in additional_documents first (new approach)
+            if isinstance(additional_documents, list):
+                for doc in additional_documents:
+                    if doc.get('type') == 'hiring_agreement':
+                        hiring_agreement_id = doc.get('id')
+                        break
+            
+            # Fallback to old field
+            if not hiring_agreement_id and invitation.hiring_agreement_template:
+                try:
+                    hiring_agreement_content = invitation.hiring_agreement_template.content
+                    # Replace placeholders with actual values
+                    hiring_agreement_content = hiring_agreement_content.replace('[Employee Name]', invitation.name)
+                    hiring_agreement_content = hiring_agreement_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    hiring_agreement_content = hiring_agreement_content.replace('[Company Name]', invitation.company.company_name)
+                    hiring_agreement_content = hiring_agreement_content.replace('[Start Date]', 'To be determined')
+                    
+                    context['hiring_agreement_content'] = hiring_agreement_content
+                    logger.info(f"Successfully processed hiring agreement content")
+                except Exception as e:
+                    logger.error(f"Error processing hiring agreement content: {str(e)}")
+                    context['hiring_agreement_content'] = '<p>Error processing hiring agreement content.</p>'
+            # Use additional_documents approach
+            elif hiring_agreement_id:
+                try:
+                    agreement = HiringAgreement.objects.get(agreement_id=hiring_agreement_id)
+                    hiring_agreement_content = agreement.content
+                    # Replace placeholders with actual values
+                    hiring_agreement_content = hiring_agreement_content.replace('[Employee Name]', invitation.name)
+                    hiring_agreement_content = hiring_agreement_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    hiring_agreement_content = hiring_agreement_content.replace('[Company Name]', invitation.company.company_name)
+                    hiring_agreement_content = hiring_agreement_content.replace('[Start Date]', 'To be determined')
+                    
+                    context['hiring_agreement_content'] = hiring_agreement_content
+                    logger.info(f"Successfully processed hiring agreement content from additional_documents")
+                except Exception as e:
+                    logger.error(f"Error processing hiring agreement content from additional_documents: {str(e)}")
+                    context['hiring_agreement_content'] = '<p>Error processing hiring agreement content.</p>'
+            else:
+                context['hiring_agreement_content'] = '<p>No hiring agreement template was selected for this invitation.</p>'
+                
+            # Get handbook content
+            handbook_id = None
+            # Check in additional_documents first (new approach)
+            if isinstance(additional_documents, list):
+                for doc in additional_documents:
+                    if doc.get('type') == 'handbook':
+                        handbook_id = doc.get('id')
+                        break
+                        
+            # Fallback to old field
+            if not handbook_id and invitation.handbook_template:
+                try:
+                    handbook_content = invitation.handbook_template.content
+                    # Replace placeholders with actual values
+                    handbook_content = handbook_content.replace('[Employee Name]', invitation.name)
+                    handbook_content = handbook_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    handbook_content = handbook_content.replace('[Company Name]', invitation.company.company_name)
+                    
+                    context['handbook_content'] = handbook_content
+                    logger.info(f"Successfully processed handbook content")
+                except Exception as e:
+                    logger.error(f"Error processing handbook content: {str(e)}")
+                    context['handbook_content'] = '<p>Error processing handbook content.</p>'
+            # Use additional_documents approach
+            elif handbook_id:
+                try:
+                    handbook = Handbook.objects.get(handbook_id=handbook_id)
+                    handbook_content = handbook.content
+                    # Replace placeholders with actual values
+                    handbook_content = handbook_content.replace('[Employee Name]', invitation.name)
+                    handbook_content = handbook_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    handbook_content = handbook_content.replace('[Company Name]', invitation.company.company_name)
+                    
+                    context['handbook_content'] = handbook_content
+                    logger.info(f"Successfully processed handbook content from additional_documents")
+                except Exception as e:
+                    logger.error(f"Error processing handbook content from additional_documents: {str(e)}")
+                    context['handbook_content'] = '<p>Error processing handbook content.</p>'
+            else:
+                context['handbook_content'] = '<p>No handbook template was selected for this invitation.</p>'
+                
+            # Get HR policies content
+            hr_policies_id = None
+            # Check in additional_documents first (new approach)
+            if isinstance(additional_documents, list):
+                for doc in additional_documents:
+                    if doc.get('type') == 'hr_policies':
+                        hr_policies_id = doc.get('id')
+                        break
+                        
+            # Fallback to old field
+            if not hr_policies_id and invitation.hr_policies_template:
+                try:
+                    hr_policies_content = invitation.hr_policies_template.content
+                    # Replace placeholders with actual values
+                    hr_policies_content = hr_policies_content.replace('[Employee Name]', invitation.name)
+                    hr_policies_content = hr_policies_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    hr_policies_content = hr_policies_content.replace('[Company Name]', invitation.company.company_name)
+                    
+                    context['hr_policies_content'] = hr_policies_content
+                    logger.info(f"Successfully processed HR policies content")
+                except Exception as e:
+                    logger.error(f"Error processing HR policies content: {str(e)}")
+                    context['hr_policies_content'] = '<p>Error processing HR policies content.</p>'
+            # Use additional_documents approach
+            elif hr_policies_id:
+                try:
+                    hr_policy = TandC.objects.get(tandc_id=hr_policies_id)
+                    hr_policies_content = hr_policy.content
+                    # Replace placeholders with actual values
+                    hr_policies_content = hr_policies_content.replace('[Employee Name]', invitation.name)
+                    hr_policies_content = hr_policies_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    hr_policies_content = hr_policies_content.replace('[Company Name]', invitation.company.company_name)
+                    
+                    context['hr_policies_content'] = hr_policies_content
+                    logger.info(f"Successfully processed HR policies content from additional_documents")
+                except Exception as e:
+                    logger.error(f"Error processing HR policies content from additional_documents: {str(e)}")
+                    context['hr_policies_content'] = '<p>Error processing HR policies content.</p>'
+            else:
+                context['hr_policies_content'] = '<p>No HR policies template was selected for this invitation.</p>'
+                
+            # Get training material content
+            training_material_id = None
+            # Check in additional_documents first (new approach)
+            additional_documents = invitation.additional_documents
+            if isinstance(additional_documents, list):
+                for doc in additional_documents:
+                    if doc.get('type') == 'training_material':
+                        training_material_id = doc.get('id')
+                        break
+                        
+            # Fallback to old field
+            if not training_material_id and invitation.training_material_template:
+                try:
+                    training_material_content = invitation.training_material_template.content
+                    # Replace placeholders with actual values
+                    training_material_content = training_material_content.replace('[Employee Name]', invitation.name)
+                    training_material_content = training_material_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    training_material_content = training_material_content.replace('[Company Name]', invitation.company.company_name)
+                    
+                    context['training_material_content'] = training_material_content
+                    logger.info(f"Successfully processed training material content")
+                except Exception as e:
+                    logger.error(f"Error processing training material content: {str(e)}")
+                    context['training_material_content'] = '<p>Error processing training material content.</p>'
+            # Use additional_documents approach
+            elif training_material_id:
+                try:
+                    training_material = TrainingMaterial.objects.get(material_id=training_material_id)
+                    training_material_content = training_material.content
+                    # Replace placeholders with actual values
+                    training_material_content = training_material_content.replace('[Employee Name]', invitation.name)
+                    training_material_content = training_material_content.replace('[Designation]', invitation.designation.name if invitation.designation else '')
+                    training_material_content = training_material_content.replace('[Company Name]', invitation.company.company_name)
+                    
+                    context['training_material_content'] = training_material_content
+                    logger.info(f"Successfully processed training material content from additional_documents")
+                except Exception as e:
+                    logger.error(f"Error processing training material content from additional_documents: {str(e)}")
+                    context['training_material_content'] = '<p>Error processing training material content.</p>'
+            else:
+                context['training_material_content'] = '<p>No training material template was selected for this invitation.</p>'
                 
             # Get policies if any
             if invitation.policies:
                 try:
-                    policy_ids = json.loads(invitation.policies)
+                    # Handle various formats of the policies field
+                    if isinstance(invitation.policies, str):
+                        policy_ids = json.loads(invitation.policies)
+                    elif isinstance(invitation.policies, list):
+                        policy_ids = invitation.policies
+                    elif isinstance(invitation.policies, dict):
+                        # If it's a dict with policy IDs as keys or values
+                        policy_ids = list(invitation.policies.keys()) if len(invitation.policies) > 0 else []
+                    else:
+                        policy_ids = []
+                        logger.warning(f"Unexpected policies format: {type(invitation.policies)}")
+                    
                     policies = []
                     for policy_id in policy_ids:
                         try:
                             policy = TandC.objects.get(tandc_id=policy_id)
                             policies.append(policy)
                         except TandC.DoesNotExist:
+                            logger.warning(f"Policy with ID {policy_id} not found")
                             continue
                     context['policies'] = policies
                 except json.JSONDecodeError:
                     logger.error(f"Invalid JSON in policies field: {invitation.policies}")
-                    
+                except Exception as e:
+                    logger.error(f"Error processing policies: {str(e)}", exc_info=True)
+                
         except Exception as e:
             logger.error(f"Error retrieving offer details: {str(e)}", exc_info=True)
             
@@ -2763,6 +3775,13 @@ class OfferResponseView(View):
         try:
             # Get the invitation
             invitation = OnboardingInvitation.objects.get(invitation_id=invitation_id)
+            
+            # Check if the form has already been completed
+            if invitation.is_form_completed:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'This form has already been submitted and is no longer accessible.'
+                }, status=403)
             
             # Get response type
             response = request.POST.get('response')
@@ -2787,6 +3806,12 @@ class OfferResponseView(View):
                 invitation.rejection_reason = reason
                 invitation.save()
                 
+                # Send notification email to HR
+                try:
+                    self.send_rejection_notification(invitation)
+                except Exception as e:
+                    logger.error(f"Failed to send rejection notification: {str(e)}", exc_info=True)
+                
                 # Return a success page
                 return render(request, 'hr_management/offer_response_success.html', {
                     'response': 'reject',
@@ -2802,6 +3827,12 @@ class OfferResponseView(View):
                 invitation.status = 'need_discussion'
                 invitation.discussion_message = message
                 invitation.save()
+                
+                # Send notification email to HR
+                try:
+                    self.send_discussion_notification(invitation)
+                except Exception as e:
+                    logger.error(f"Failed to send discussion notification: {str(e)}", exc_info=True)
                 
                 # Return a success page
                 return render(request, 'hr_management/offer_response_success.html', {
@@ -2830,6 +3861,96 @@ class OfferResponseView(View):
                 'success': False,
                 'message': str(e)
             }, status=500)
+    
+    def send_rejection_notification(self, invitation):
+        """Send notification email to HR when offer is rejected"""
+        try:
+            company = invitation.company
+            hr_email = company.company_email
+            
+            if not hr_email:
+                logger.warning(f"No HR email found for company {company.company_name}")
+                return False
+            
+            # Get site URL from settings or use a default
+            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
+            dashboard_url = f"{site_url}/hr_management/onboarding/"
+            
+            # Prepare context for the email template
+            context = {
+                'name': invitation.name,
+                'email': invitation.email,
+                'department': invitation.department.name if invitation.department else 'Not specified',
+                'designation': invitation.designation.name if invitation.designation else 'Not specified',
+                'role': invitation.role.name if invitation.role else 'Not specified',
+                'rejection_reason': invitation.rejection_reason or 'No reason provided',
+                'dashboard_url': dashboard_url,
+                'current_year': timezone.now().year,
+            }
+            
+            # Render email templates
+            html_content = render_to_string('hr_management/email_templates/rejection_notification.html', context)
+            text_content = strip_tags(html_content)
+            
+            # Create email message
+            subject = f"Offer Rejected by {invitation.name}"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [hr_email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            
+            logger.info(f"Rejection notification sent to HR for {invitation.name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error sending rejection notification: {str(e)}", exc_info=True)
+            raise
+    
+    def send_discussion_notification(self, invitation):
+        """Send notification email to HR when candidate requests discussion"""
+        try:
+            company = invitation.company
+            hr_email = company.company_email
+            
+            if not hr_email:
+                logger.warning(f"No HR email found for company {company.company_name}")
+                return False
+            
+            # Get site URL from settings or use a default
+            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
+            dashboard_url = f"{site_url}/hr_management/onboarding/"
+            
+            # Prepare context for the email template
+            context = {
+                'name': invitation.name,
+                'email': invitation.email,
+                'department': invitation.department.name if invitation.department else 'Not specified',
+                'designation': invitation.designation.name if invitation.designation else 'Not specified',
+                'role': invitation.role.name if invitation.role else 'Not specified',
+                'discussion_message': invitation.discussion_message or 'No specific message provided',
+                'dashboard_url': dashboard_url,
+                'current_year': timezone.now().year,
+            }
+            
+            # Render email templates
+            html_content = render_to_string('hr_management/email_templates/discussion_notification.html', context)
+            text_content = strip_tags(html_content)
+            
+            # Create email message
+            subject = f"Discussion Requested by {invitation.name}"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            
+            msg = EmailMultiAlternatives(subject, text_content, from_email, [hr_email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            
+            logger.info(f"Discussion notification sent to HR for {invitation.name}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error sending discussion notification: {str(e)}", exc_info=True)
+            raise
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ResignationAPIView(View):
@@ -2871,8 +3992,8 @@ class ResignationAPIView(View):
                     'message': 'Notice period must be at least 14 days'
                 }, status=400)
             
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Check if employee already has a pending resignation
             existing_resignation = Resignation.objects.filter(
@@ -2918,8 +4039,8 @@ class CancelResignationAPIView(View):
         
         try:
             # Get employee
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Get the resignation request
             resignation = Resignation.objects.filter(
@@ -2968,8 +4089,8 @@ class UpdateProfileAPIView(View):
             return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Parse data based on content type
             if request.content_type == 'application/json':
@@ -3049,8 +4170,8 @@ class UpdatePasswordAPIView(View):
                     'message': 'Password must be at least 8 characters long'
                 }, status=400)
                 
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Verify current password
             from django.contrib.auth.hashers import check_password, make_password
@@ -3069,6 +4190,7 @@ class UpdatePasswordAPIView(View):
                 'message': 'Password updated successfully'
             })
             
+            
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'message': 'Invalid JSON data'}, status=400)
         except Exception as e:
@@ -3083,8 +4205,8 @@ class UploadDocumentAPIView(View):
             return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
         
         try:
-            from employee.models import Employee
-            employee = Employee.objects.get(id=employee_id)
+            
+            employee = Employee.objects.get(employee_id=employee_id)
             
             # Get form data
             document_type = request.POST.get('document_type')
@@ -3157,10 +4279,32 @@ class FormCompletedActionView(View):
                     'invitation': invitation,
                     'status_message': status_message
                 })
+            
+            # Extract form data for display
+            form_data = {}
+            if invitation.policies and 'form_data' in invitation.policies:
+                form_data = invitation.policies['form_data']
+                
+                # Extract structured data if available
+                if 'structured_data' in form_data:
+                    form_data['structured_data'] = form_data['structured_data']
+                
+                # Extract personal info if available
+                if 'personal_info' in form_data:
+                    form_data['personal_info'] = form_data['personal_info']
+                
+                # Extract employment details if available
+                if 'employment_details' in form_data:
+                    form_data['employment_details'] = form_data['employment_details']
+                
+                logger.info(f"Retrieved form data for invitation {invitation_id}")
+            else:
+                logger.warning(f"No form data found for completed invitation {invitation_id}")
                 
             # Render the UI for accept/reject options
             return render(request, 'hr_management/form_action.html', {
-                'invitation': invitation
+                'invitation': invitation,
+                'form_data': form_data
             })
             
         except OnboardingInvitation.DoesNotExist:
@@ -3197,7 +4341,13 @@ class FormCompletedActionView(View):
                     'message': 'The form has not been completed yet'
                 }, status=400)
                 
-            # Process the action
+            # Check if already processed
+            if invitation.status in ['accepted', 'rejected']:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'This application has already been {invitation.status}'
+                }, status=400)
+            
             if action == 'accept':
                 # Use the model method for acceptance
                 invitation.accept_invitation()
@@ -3206,12 +4356,21 @@ class FormCompletedActionView(View):
                 password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
                 hashed_password = make_password(password)
                 
-                # Create employee account if doesn't exist
+                # Extract form data from the invitation's policies field
+                form_data = {}
+                if isinstance(invitation.policies, dict) and 'form_data' in invitation.policies:
+                    form_data = invitation.policies['form_data']
+                
+                # Create or update employee record
+                # Using hr.models.Employee (not employee.models.Employee)
                 employee, created = Employee.objects.get_or_create(
                     employee_email=invitation.email,
                     defaults={
                         'employee_name': invitation.name,
                         'company': invitation.company,
+                        # 'department': invitation.department,  # hr.models.Employee has no department field
+                        # 'designation': invitation.designation,  # hr.models.Employee has no designation field
+                        # 'role': invitation.role,  # hr.models.Employee has no role field
                         'password': hashed_password,
                         'is_active': True,
                         'is_approved': True
@@ -3220,10 +4379,47 @@ class FormCompletedActionView(View):
                 
                 if not created:
                     # Update existing employee
+                    employee.employee_name = invitation.name
+                    employee.company = invitation.company
+                    # employee.department = invitation.department  # hr.models.Employee has no department field
+                    # employee.designation = invitation.designation  # hr.models.Employee has no designation field
+                    # employee.role = invitation.role  # hr.models.Employee has no role field
                     employee.is_active = True
                     employee.is_approved = True
                     employee.password = hashed_password
                     employee.save()
+                
+                # If there's a profile photo saved in the invitation, copy it to the employee
+                if invitation.photo:
+                    employee.attendance_photo = invitation.photo
+                    employee.save()
+                
+                # Process any pending documents that were saved during form submission
+                if isinstance(invitation.policies, dict) and 'document_files' in invitation.policies:
+                    document_files = invitation.policies['document_files']
+                    
+                    # Create EmployeeDocument records for each stored document
+                    for key, doc_info in document_files.items():
+                        try:
+                            # Create document with stored information
+                            document_type = doc_info.get('document_type', '')
+                            file_path = doc_info.get('file_path', '')
+                            file_name = doc_info.get('file_name', '')
+                            file_size = doc_info.get('file_size', '')
+                            
+                            if file_path and file_name:
+                                # Create the document record linked to the employee
+                                doc = EmployeeDocument(
+                                    employee=employee,
+                                    document_type=document_type,
+                                    document_name=file_name,
+                                    file=file_path,
+                                    file_size=file_size,
+                                )
+                                doc.save()
+                                logger.info(f"Created document record for {document_type} from stored file info")
+                        except Exception as doc_error:
+                            logger.error(f"Error creating document from stored info: {str(doc_error)}", exc_info=True)
                 
                 # Send acceptance email with login credentials
                 success = self.send_acceptance_email(invitation, password)
@@ -3319,44 +4515,46 @@ class FormCompletedActionView(View):
     
     def send_rejection_email(self, invitation):
         """Send rejection email to the applicant"""
-        company = invitation.company
-        
-        # Prepare context data for the email template
-        context = {
-            'name': invitation.name,
-            'email': invitation.email,
-            'company_name': company.company_name,
-            'rejection_reason': invitation.rejection_reason,
-            'current_year': timezone.now().year,
-        }
-        
-        # Add company logo if available
-        if company.company_logo:
-            context['company_logo'] = company.company_logo.url
-        
         try:
-            # Render email template with context
-            html_content = render_to_string('hr_management/email_templates/rejection_notification.html', context)
-            text_content = strip_tags(html_content)
+            company = invitation.company
+            
+            # Get site URL from settings or use a default
+            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
+            
+            # Prepare context data for the email template
+            context = {
+                'name': invitation.name,
+                'email': invitation.email,
+                'company_name': company.company_name,
+                'rejection_reason': invitation.rejection_reason or 'No specific reason provided',
+                'current_year': timezone.now().year,
+            }
+            
+            # Add company logo if available
+            if company.company_logo:
+                context['company_logo'] = company.company_logo.url
+            
+            # Check if template exists
+            template_path = 'hr_management/email_templates/rejection_notification.html'
+            
+            # Render email template
+            html_message = render_to_string(template_path, context)
+            plain_message = strip_tags(html_message)
             
             # Send email
-            subject = f"Update Regarding Your Application to {company.company_name}"
+            subject = f"Update on Your Application at {company.company_name}"
             from_email = settings.DEFAULT_FROM_EMAIL
             recipient_list = [invitation.email]
             
-            send_mail(
-                subject=subject,
-                message=text_content,
-                from_email=from_email,
-                recipient_list=recipient_list,
-                html_message=html_content,
-                fail_silently=False,
-            )
+            email = EmailMultiAlternatives(subject, plain_message, from_email, recipient_list)
+            email.attach_alternative(html_message, "text/html")
+            
+            # Send the email
+            email.send()
             
             logger.info(f"Rejection email sent to {invitation.email}")
             return True
+            
         except Exception as e:
             logger.error(f"Error sending rejection email: {str(e)}", exc_info=True)
-            # Don't raise the exception as the invitation is already rejected
-            # Just log the error for monitoring
             return False

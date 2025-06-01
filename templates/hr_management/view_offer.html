@@ -123,6 +123,76 @@
                 </div>
             </div>
             
+            <!-- Hiring Agreement -->
+            {% if hiring_agreement_content and hiring_agreement_content != '<p>No hiring agreement template was selected for this invitation.</p>' %}
+            <div class="section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Hiring Agreement</h3>
+                <div class="offer-content prose prose-sm max-w-none">
+                    {{ hiring_agreement_content|safe }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Handbook -->
+            {% if handbook_content and handbook_content != '<p>No handbook template was selected for this invitation.</p>' %}
+            <div class="section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Handbook</h3>
+                <div class="offer-content prose prose-sm max-w-none">
+                    {{ handbook_content|safe }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- HR Policies -->
+            {% if hr_policies_content and hr_policies_content != '<p>No HR policies template was selected for this invitation.</p>' %}
+            <div class="section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">HR Policies</h3>
+                <div class="offer-content prose prose-sm max-w-none">
+                    {{ hr_policies_content|safe }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Training Material -->
+            {% if training_material_content and training_material_content != '<p>No training material template was selected for this invitation.</p>' %}
+            <div class="section">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Training Material</h3>
+                <div class="offer-content prose prose-sm max-w-none">
+                    {{ training_material_content|safe }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Document Debug Information (Remove this in production) -->
+            <div class="section bg-gray-100 p-4 border-l-4 border-yellow-400">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Document Debug Information</h3>
+                <div class="text-sm">
+                    <p><strong>Document Availability:</strong></p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>Hiring Agreement: {% if hiring_agreement_content %}Available{% else %}Not Available{% endif %}</li>
+                        <li>Handbook: {% if handbook_content %}Available{% else %}Not Available{% endif %}</li>
+                        <li>HR Policies: {% if hr_policies_content %}Available{% else %}Not Available{% endif %}</li>
+                        <li>Training Material: {% if training_material_content %}Available{% else %}Not Available{% endif %}</li>
+                    </ul>
+                    
+                    {% if additional_documents %}
+                    <p class="mt-3"><strong>Additional Documents Data:</strong></p>
+                    <div class="bg-white p-2 rounded mt-1 font-mono text-xs overflow-auto max-h-32">
+                        <pre>{{ additional_documents_debug }}</pre>
+                    </div>
+                    {% endif %}
+                    
+                    {% if debug_info %}
+                    <p class="mt-3"><strong>Debug Information:</strong></p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        {% for key, value in debug_info.items %}
+                        <li>{{ key }}: {{ value }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+            
             <!-- Company Policies -->
             {% if policies %}
             <div class="section">

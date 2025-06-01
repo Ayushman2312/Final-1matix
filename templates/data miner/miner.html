@@ -532,5 +532,122 @@
             cancelTask(taskId);
         });
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const miningForm = document.getElementById('miningForm');
+        const loadingEl = document.getElementById('loading');
+        const resultsEl = document.getElementById('results');
+        const statusMessageEl = document.getElementById('statusMessage');
+        const progressBarEl = document.getElementById('progressBar');
+        
+        // Function to handle form submission
+        miningForm.addEventListener('submit', function(e) {
+            // Show loading state
+            if (loadingEl) loadingEl.classList.remove('hidden');
+            if (resultsEl) resultsEl.classList.add('hidden');
+            
+            // Update status message
+            if (statusMessageEl) {
+                statusMessageEl.textContent = 'Starting data mining process...';
+            }
+            
+            // Set initial progress
+            if (progressBarEl) {
+                progressBarEl.style.width = '5%';
+                progressBarEl.textContent = '5%';
+            }
+            
+            // Continue with form submission (no need to prevent default)
+            // The server will handle the request and render the results
+        });
+        
+        // Handle task cancellation
+        const cancelBtns = document.querySelectorAll('.cancel-task-btn');
+        cancelBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const taskId = this.getAttribute('data-task-id');
+                if (!taskId) return;
+                
+                if (confirm('Are you sure you want to stop this task?')) {
+                    // Call the cancel endpoint
+                    fetch(`/data_miner/cancel_task/${taskId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update UI to show task was cancelled
+                            const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
+                            if (taskItem) {
+                                taskItem.querySelector('.task-progress-circle').setAttribute('stroke-dasharray', '0 100');
+                                taskItem.querySelector('.task-progress-text').textContent = 'Stopped';
+                            }
+                        } else {
+                            alert('Failed to stop task: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error cancelling task:', error);
+                        alert('Error stopping task. Please try again.');
+                    });
+                }
+            });
+        });
+        
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Update running tasks status periodically
+        function updateTaskStatus() {
+            document.querySelectorAll('.task-item').forEach(taskItem => {
+                const taskId = taskItem.getAttribute('data-task-id');
+                if (!taskId) return;
+                
+                fetch(`/data_miner/task_status/${taskId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'completed' || data.status === 'stopped' || data.status === 'error') {
+                            // Task is done, refresh the page to show results
+                            window.location.reload();
+                        } else if (data.status === 'processing') {
+                            // Update progress
+                            const progressCircle = taskItem.querySelector('.task-progress-circle');
+                            const progressText = taskItem.querySelector('.task-progress-text');
+                            
+                            if (progressCircle && progressText) {
+                                progressCircle.setAttribute('stroke-dasharray', `${data.progress} 100`);
+                                progressText.textContent = `${data.progress}%`;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating task status:', error);
+                    });
+            });
+        }
+        
+        // Start periodic task status updates
+        if (document.querySelectorAll('.task-item').length > 0) {
+            setInterval(updateTaskStatus, 3000);
+            updateTaskStatus(); // Initial update
+        }
+    });
 </script>
 {% endblock %}

@@ -168,6 +168,20 @@
                 </div>
             </button>
 
+            <!-- Debug Information -->
+            <div class="col-span-full bg-gray-200 p-4 rounded-lg mt-4">
+                <h3 class="text-lg font-bold">Debug Information</h3>
+                <p>Folder list exists: {% if folder_list %}Yes{% else %}No{% endif %}</p>
+                <p>Folder count: {{ folder_list|length|default:"0" }}</p>
+                {% if folder_list %}
+                <ul class="list-disc pl-5 mt-2">
+                    {% for folder in folder_list %}
+                    <li>Folder ID: {{ folder.folder_id }}, Name: {{ folder.name }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+
             <!-- Folder Creation Modal -->
             <div id="folderModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden overflow-y-auto h-full w-full transition-all duration-300" style="z-index: 20;">
                 <div class="relative top-20 mx-auto p-6 border w-[32rem] shadow-2xl rounded-2xl bg-white transform transition-all duration-300" id="modalContent">

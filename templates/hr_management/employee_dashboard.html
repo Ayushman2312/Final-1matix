@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.4/html5-qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
@@ -589,60 +590,60 @@
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
                 <!-- Mark Attendance -->
-                <button id="markAttendanceBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-indigo-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="{% url 'mark_attendance' %}" id="markAttendanceBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-indigo-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-indigo-100 transition-colors">
                         <i class="fas fa-qrcode text-indigo-600"></i>
                     </div>
-                    <span class="text-xs font-medium text-slate-700 group-hover:text-indigo-700">Attendance</span>
-                </button>
+                    <span class="text-slate-700 font-medium text-sm">Attendance</span>
+                </a>
                 
                 <!-- Apply for Leave -->
-                <button id="applyLeaveBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-purple-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="{% url 'employee_leave' %}" id="applyLeaveBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-purple-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-purple-100 transition-colors">
                         <i class="fas fa-calendar-plus text-purple-600"></i>
                     </div>
                     <span class="text-xs font-medium text-slate-700 group-hover:text-purple-700">Apply Leave</span>
-                </button>
+                </a>
                 
                 <!-- Submit Reimbursement -->
-                <button id="submitReimbursementBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="{% url 'employee_reimbursement' %}" id="submitReimbursementBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-blue-100 transition-colors">
                         <i class="fas fa-receipt text-blue-600"></i>
                     </div>
                     <span class="text-xs font-medium text-slate-700 group-hover:text-blue-700">Reimbursement</span>
-                </button>
+                </a>
                 
                 <!-- View Salary Slips -->
-                <button id="viewSalarySlipsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-emerald-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="{% url 'employee_salary_slips' %}" id="viewSalarySlipsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-emerald-200 transition-all flex flex-col items-center justify-center text-center hover-lift group {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-emerald-100 transition-colors">
                         <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
                     </div>
                     <span class="text-xs font-medium text-slate-700 group-hover:text-emerald-700">Salary Slips</span>
-                </button>
+                </a>
                 
                 <!-- View Profile -->
-                <button id="viewProfileBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                <a href="{% url 'employee_profile' %}" id="viewProfileBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
                     <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-slate-100 transition-colors">
                         <i class="fas fa-user text-slate-600"></i>
                     </div>
                     <span class="text-xs font-medium text-slate-700 group-hover:text-slate-800">My Profile</span>
-                </button>
+                </a>
                 
                 <!-- Documents -->
-                <button id="viewDocumentsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                <a href="{% url 'employee_documents' %}" id="viewDocumentsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
                     <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-slate-100 transition-colors">
                         <i class="fas fa-file-alt text-slate-600"></i>
                     </div>
                     <span class="text-xs font-medium text-slate-700 group-hover:text-slate-800">Documents</span>
-                </button>
+                </a>
                 
                 <!-- Submit Resignation -->
-                <button id="submitResignationBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-red-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                <a href="{% url 'employee_resignation' %}" id="submitResignationBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-red-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
                     <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-red-100 transition-colors">
                         <i class="fas fa-door-open text-red-600"></i>
                     </div>
                     <span class="text-xs font-medium text-slate-700 group-hover:text-red-700">Resignation</span>
-                </button>
+                </a>
                 
                 <!-- Logout -->
                 <form action="{% url 'employee_logout' %}" method="post" class="contents">
@@ -734,12 +735,7 @@
             
             <div id="qrScannerContainer" class="mb-5 overflow-hidden rounded-xl relative border border-slate-100">
                 <div id="qrScanner" class="w-full h-64 bg-slate-50 flex items-center justify-center">
-                    <div class="text-center">
-                        <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-3 pulse-animation">
-                            <i class="fas fa-camera text-indigo-600"></i>
-                        </div>
-                        <p class="text-xs text-slate-500">Loading camera...</p>
-                    </div>
+                    <!-- QR Scanner will be initialized here -->
                 </div>
                 <!-- Scanning animation overlay -->
                 <div class="absolute inset-0 pointer-events-none">
@@ -877,7 +873,7 @@
                     }
                     
                     qrScannerModal.classList.remove('hidden');
-                    // Initialize QR scanner (in a real app, this would initialize a QR code scanner)
+                    // Initialize QR scanner
                     initQRScanner();
                 });
             }
@@ -885,7 +881,7 @@
             if (closeQrScannerBtn && qrScannerModal) {
                 closeQrScannerBtn.addEventListener('click', function() {
                     qrScannerModal.classList.add('hidden');
-                    // Stop QR scanner (in a real app, this would release the camera and stop the scanner)
+                    // Stop QR scanner
                     stopQRScanner();
                 });
             }
@@ -1239,8 +1235,9 @@
                 });
             }
             
-            // QR scanner functions (simulation for demo)
+            // QR scanner functions (for real implementation with html5-qrcode)
             let qrScannerActive = false;
+            let html5QrCode;
             
             function initQRScanner() {
                 if (qrScannerActive) return;
@@ -1248,15 +1245,53 @@
                 qrScannerActive = true;
                 const qrScanStatus = document.getElementById('qrScanStatus');
                 const markAttendanceQrBtn = document.getElementById('markAttendanceQrBtn');
+                const qrScannerContainer = document.getElementById('qrScannerContainer');
                 
                 if (qrScanStatus) {
                     qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-indigo-600 rounded-full mr-2 animate-ping"></span>Initializing camera...';
                 }
                 
-                // Simulating camera activation and QR code scanning
-                // In a real implementation, you would use a library like instascan or html5-qrcode
-                setTimeout(() => {
-                    if (qrScanStatus && qrScannerActive) {
+                // Check if HTML5 QR Code library is available
+                if (typeof Html5Qrcode !== 'undefined') {
+                    html5QrCode = new Html5Qrcode("qrScanner");
+                    
+                    html5QrCode.start(
+                        { facingMode: "environment" }, // Use back camera
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 },
+                        },
+                        (decodedText, decodedResult) => {
+                            // QR Code detected!
+                            if (qrScanStatus && markAttendanceQrBtn) {
+                                qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>QR code detected successfully!';
+                                markAttendanceQrBtn.disabled = false;
+                            }
+                            
+                            // Store the scanned data for use when the user clicks "Mark Attendance"
+                            window.scannedQrData = decodedText;
+                            
+                            // Provide haptic feedback if available
+                            if (navigator.vibrate) {
+                                navigator.vibrate(200);
+                            }
+                            
+                            // Stop the scanner after successful scan
+                            html5QrCode.stop();
+                        },
+                        (errorMessage) => {
+                            // QR Code scan failed
+                            console.error(`QR scan error: ${errorMessage}`);
+                        }
+                    ).catch(err => {
+                        if (qrScanStatus) {
+                            qrScanStatus.innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>Camera error: ${err}`;
+                        }
+                        console.error("Error starting QR scanner:", err);
+                    });
+                } else {
+                    // Fallback to simulation if library is not available
+                    if (qrScanStatus) {
                         qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-indigo-600 rounded-full mr-2 animate-ping"></span>Scanning for QR code...';
                     }
                     
@@ -1265,14 +1300,20 @@
                         if (qrScanStatus && markAttendanceQrBtn && qrScannerActive) {
                             qrScanStatus.innerHTML = '<span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>QR code detected successfully!';
                             markAttendanceQrBtn.disabled = false;
+                            window.scannedQrData = 'SIMULATED_QR_CODE_DATA';
                         }
                     }, 3000);
-                }, 1000);
+                }
             }
             
             function stopQRScanner() {
                 qrScannerActive = false;
-                // In a real implementation, this would release the camera and stop the scanner
+                
+                // Stop the HTML5 QR scanner if active
+                if (typeof html5QrCode !== 'undefined' && html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().catch(err => console.error("Error stopping QR scanner:", err));
+                }
+                
                 const markAttendanceQrBtn = document.getElementById('markAttendanceQrBtn');
                 const qrScanStatus = document.getElementById('qrScanStatus');
                 
@@ -1307,7 +1348,7 @@
                 submitAttendance({
                     action: '{% if today_status == "present" and not checked_out %}check_out{% else %}check_in{% endif %}',
                     method: 'qr',
-                    qr_code: 'SIMULATED_QR_CODE_DATA' // This would be the actual QR code data in a real implementation
+                    qr_code: window.scannedQrData || 'SIMULATED_QR_CODE_DATA'
                 });
             }
             
@@ -1357,5 +1398,8 @@
             }
         });
     </script>
+    
+    <!-- Employee Dashboard JS -->
+    <script src="{% static 'js/hr/employee_dashboard.js' %}"></script>
 </body>
 </html>

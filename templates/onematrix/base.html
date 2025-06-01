@@ -1,10 +1,25 @@
 {% load static %}
+{% load pwa %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1Matrix</title>
+    {% progressive_web_app_meta %}
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="1Matrix">
+    <meta name="application-name" content="1Matrix">
+    <meta name="description" content="1Matrix Enterprise Solutions">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'icons/apple-icon-180x180.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-icon-180x180.png' %}">
+    <link rel="mask-icon" href="{% static 'icons/icon-512x512.png' %}" color="#000000">
+    <link rel="shortcut icon" href="{% static 'icons/icon-192x192.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -449,17 +464,18 @@
                                                     <input type="password" id="passcode" required
                                                         class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 text-gray-900 placeholder-gray-400 text-sm"
                                                         placeholder="Enter passcode">
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="flex justify-end space-x-3">
-                                                <button type="button" onclick="backToMobileStep()" 
-                                                    class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                                                    Back
-                                                </button>
-                                                <button type="button" onclick="verifyPasscode()" 
-                                                    class="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg transition-colors">
-                                                    Access
-                                                </button>
+                                                <div class="flex justify-end space-x-3">
+                                                    <button type="button" onclick="backToMobileStep()" 
+                                                        class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                                                        Back
+                                                    </button>
+                                                    <button type="button" onclick="verifyPasscode()" 
+                                                        class="px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg transition-colors">
+                                                        Access
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -529,5 +545,51 @@
         });
     </script>
     <script src="{% static 'js/onematrix/script.js' %}"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register("{% url 'serviceworker' %}")
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // Add to Home Screen Promotion
+        let deferredPrompt;
+        const addBtn = document.createElement('button');
+        addBtn.style.display = 'none';
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Update UI to notify the user they can add to home screen
+            console.log('App can be installed to home screen');
+            
+            // Show the install prompt to the user - you can customize this
+            // by adding an install button to your UI
+            document.addEventListener('click', (event) => {
+                // You can trigger the prompt on any user interaction
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        } else {
+                            console.log('User dismissed the install prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

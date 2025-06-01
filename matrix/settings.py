@@ -23,10 +23,10 @@ load_dotenv(env_path)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
-ALLOWED_HOSTS = ["195.35.20.151","1matrix.io","www.1matrix.io"]
+ALLOWED_HOSTS = ["195.35.20.151","1matrix.io","www.1matrix.io","*"]
 # =======
 # ALLOWED_HOSTS = ["89.116.20.128","1matrix.io", "www.1matrix.io"]
 # >>>>>>> ac94a6656f60d6c11fd129499c5e7675087f9e41
@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'website',
     'data_miner',
     'trends',
+    'pwa',  # Django PWA package
     # 'apps',
 ]
 
@@ -136,24 +137,24 @@ CORS_ALLOW_CREDENTIALS = True
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': '1matrix_db',
-        'USER': '1matrix_user',
-        'PASSWORD': 'Ayushman@23122003',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': '1matrix_db',
+#         'USER': '1matrix_user',
+#         'PASSWORD': 'Ayushman@23122003',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
 #     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation
@@ -346,3 +347,59 @@ CELERY_TASK_RETRY_POLICY = {
 
 # Data Mining Service Settings
 DATA_MINER_AUTOSTART_SERVICES = False  # Auto-start Redis and Celery when needed
+
+# PWA Configuration
+PWA_APP_NAME = '1Matrix'
+PWA_APP_DESCRIPTION = "1Matrix Enterprise Solutions"
+PWA_APP_THEME_COLOR = "#000000"
+PWA_APP_BACKGROUND_COLOR = "#ffffff"
+PWA_APP_DISPLAY = "standalone"
+PWA_APP_SCOPE = "/"
+PWA_APP_START_URL = "/"
+PWA_APP_STATUS_BAR_COLOR = "default"
+PWA_APP_ICONS = [
+    {
+        "src": "/static/icons/icon-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+    },
+    {
+        "src": "/static/icons/icon-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+    }
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        "src": "/static/icons/apple-icon-180x180.png",
+        "sizes": "180x180",
+        "type": "image/png"
+    }
+]
+PWA_APP_SPLASH_SCREEN = [
+    {
+        "src": "/static/icons/splash-640x1136.png",
+        "media": "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)"
+    },
+    {
+        "src": "/static/icons/splash-750x1334.png",
+        "media": "(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)"
+    },
+    {
+        "src": "/static/icons/splash-1242x2208.png",
+        "media": "(device-width: 621px) and (device-height: 1104px) and (-webkit-device-pixel-ratio: 3)"
+    }
+]
+PWA_APP_DIR = "ltr"
+PWA_APP_LANG = "en-US"
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static', 'js', 'serviceworker.js')
+
+# Add short_name for better mobile display
+PWA_APP_SHORT_NAME = "1Matrix"
+
+# These settings make the app more installable
+PWA_APP_ORIENTATION = "portrait"
+PWA_APP_CATEGORIES = ["business", "productivity"]
+PWA_APP_DEBUG_MODE = False
