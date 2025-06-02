@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap');
+        *{
+            font-family: 'Quicksand', sans-serif;
+        }
+        .quicksand {
+            font-family: "Quicksand", sans-serif;
+            font-optical-sizing: auto;
+        }
+        .lexend-1matrix {
+            font-family: "Lexend", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 700;
+            font-style: normal;
+        }
+        .montserrat-header {
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-size: 20px;
+            font-weight: 600;
+            font-style: normal;
+        }
+        .sidebar-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        .main-transition {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        /* Better responsive sidebar */
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                transform: translateX(-100%);
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                z-index: 50;
+                width: 256px !important;
+            }
+            .sidebar-mobile.open {
+                transform: translateX(0);
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+            }
+            .overlay.show {
+                display: block;
+            }
+            .main-content-mobile {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            .montserrat-header {
+                font-size: 18px;
+            }
+        }
+        
+        /* Medium screens (tablets, small laptops) - Specific for 1024x778 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar-mobile {
+                width: 220px !important;
+            }
+            .main-content-mobile {
+                margin-left: 220px !important;
+            }
+            .montserrat-header {
+                font-size: 22px;
+            }
+            .responsive-padding-md {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            .content-container {
+                padding: 1.5rem;
+            }
+            .md-reduced-padding {
+                padding: 1rem !important;
+            }
+            .md-chart-height {
+                height: 220px !important;
+            }
+            .md-grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            .md-text-sm {
+                font-size: 0.875rem !important;
+            }
+            .md-flex-wrap {
+                flex-wrap: wrap !important;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .sidebar-mobile {
+                transform: none !important;
+            }
+        }
+        /* For very small screens */
+        @media (max-width: 480px) {
+            .montserrat-header {
+                font-size: 16px;
+            }
+            .responsive-padding {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            .responsive-text {
+                font-size: 0.875rem !important;
+            }
+        }
+        /* Fix table overflow on small screens */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        /* Make sure all pages have consistent spacing */
+        .content-container {
+            padding: 1rem;
+        }
+        @media (min-width: 640px) {
+            .content-container {
+                padding: 1.5rem;
+            }
+        }
+        @media (min-width: 768px) {
+            .content-container {
+                padding: 2rem;
+            }
+        }
