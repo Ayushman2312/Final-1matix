@@ -236,7 +236,7 @@ class CustomDomainMiddleware:
                 
         # Skip for specific apps
         for app in ['masteradmin/', 'agents/', 'customersupport/', 'user/', 'employee/', 'fee_calculator/', 
-                    'listing_creater/', 'product_card/', 'invoicing/', 'hr_management/', 'blackbox/', 'trends/', 'data_miner/']:
+                    'listing_creater/', 'product_card/', 'invoicing/', 'hr_management/', 'blackbox/', 'trends/', 'data_miner/','']:
             if path.startswith(app):
                 return True
                 

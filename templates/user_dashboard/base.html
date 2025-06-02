@@ -18,10 +18,9 @@
             }
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{% static 'css/user.css' %}">
     <!-- Add CSRF Token meta tag -->
     {% csrf_token %}
@@ -181,6 +180,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <span class="ml-3 sidebar-text">TrendIQ</span>
+                </a>
+                <a href="/business_analytics/dashboard/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                    <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="ml-3 sidebar-text">Business Analytics</span>
                 </a>
             </div>
         </nav>
@@ -445,7 +450,7 @@
                             <div class="w-48 h-48 relative">
                               <canvas id="businessAnalyticsPieChart"></canvas>
                             </div>
-                            <button class="mt-6 px-6 py-2 bg-[#7B3DF3] text-white rounded-lg text-sm font-medium hover:bg-[#6931D3] transition-all duration-300 w-full sm:w-auto flex items-center justify-center gap-2 group relative overflow-hidden transform hover:scale-[1.02] active:scale-[0.98]">
+                            <button onclick="window.location.href='/business_analytics/dashboard/?openUploadModal=true'" class="mt-6 px-6 py-2 bg-[#7B3DF3] text-white rounded-lg text-sm font-medium hover:bg-[#6931D3] transition-all duration-300 w-full sm:w-auto flex items-center justify-center gap-2 group relative overflow-hidden transform hover:scale-[1.02] active:scale-[0.98]">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                                 </svg>
