@@ -265,7 +265,7 @@ def identify_columns_with_gemini(df, file_path=None):
         Return a JSON object mapping each category to the most likely column name in my dataset. 
         If a category doesn't have a matching column, use null.
         
-        Example response format:
+        Example response format:{
         
             "sales_amount": "Revenue",
             "order_date": "Date",
@@ -278,7 +278,7 @@ def identify_columns_with_gemini(df, file_path=None):
             "unit_price": "Price",
             "quantity": "Units",
             "transaction_type": "Order Status"
-        }}
+        }
         
         Include ONLY the JSON object in your response, no additional text.
         """
@@ -755,7 +755,7 @@ def identify_columns_heuristically(df):
             "return status", "return_status", "fulfillment status", "fulfillment_status",
             "shipment status", "shipment_status", "delivery status", "delivery_status", 
             "order type", "order_type", "payment status", "payment_status", "return", "refund", 
-            "cancel", "cancelled", "cancellation", "replace", "replacement"
+            "cancel", "cancelled", "cancellation", "replace", "replacement","Event Type",
         ],
     }
     

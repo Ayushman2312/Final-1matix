@@ -47,10 +47,13 @@
 
                                 <div id="coordinates-container" class="space-y-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Coordinates</label>
+                                    <div class="mb-2 text-sm text-gray-600">
+                                        Enter coordinates in latitude,longitude format (e.g., 12.9716,77.5946)
+                                    </div>
                                     <div class="coordinate-entry flex items-center mb-4">
                                         <div class="flex-1 grid grid-cols-2 gap-4">
                                             <input type="text" name="location_names[]" placeholder="Enter location name" class="border rounded-md px-4 py-3 text-base" required>
-                                            <input type="text" name="coordinates[]" placeholder="Enter coordinates" class="border rounded-md px-4 py-3 text-base" required>
+                                            <input type="text" name="coordinates[]" placeholder="e.g., 12.9716,77.5946" class="border rounded-md px-4 py-3 text-base" required>
                                         </div>
                                         <button type="button" onclick="addCoordinateField()" class="ml-4 text-blue-500 hover:text-blue-700">
                                             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -34,6 +34,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 import math
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -329,8 +330,8 @@ class OnboardingView(TemplateView):
             
             
             employee_data = {
-                'name': personal_info.get('full_name', invitation.name),
-                'email': invitation.email,
+                'employee_name': personal_info.get('full_name', invitation.name),
+                'employee_email': invitation.email,
                 'phone_number': personal_info.get('phone_number'),
                 'address': personal_info.get('address'),
                 'pan_number': personal_info.get('pan_number'),
@@ -342,7 +343,7 @@ class OnboardingView(TemplateView):
                 'bank_name': personal_info.get('bank_name'),
                 'branch_name': personal_info.get('branch_name'),
                 'bank_ifsc_code': personal_info.get('ifsc_code'),
-                'department': None,
+                'company': invitation.company,
                 'is_active': False,
                 'is_approved': False
             }
@@ -355,7 +356,7 @@ class OnboardingView(TemplateView):
             # employee_data['department'] = department_policy
             
             employee, created = Employee.objects.update_or_create(
-                email=invitation.email,
+                employee_email=invitation.email,
                 defaults=employee_data
             )
             
@@ -364,7 +365,7 @@ class OnboardingView(TemplateView):
                 try:
                     # Save profile photo if uploaded
                     if 'profile_photo' in request.FILES:
-                        employee.photo = request.FILES['profile_photo']
+                        employee.attendance_photo = request.FILES['profile_photo']
                         employee.save()
                     
                     # Handle document uploads
@@ -509,11 +510,154 @@ class AttendanceView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['employees'] = Employee.objects.all()
-        context['qr_codes'] = QRCode.objects.all()
+        
+        # Get filter parameters from request
+        company_filter = self.request.GET.get('company', None)
+        search_by = self.request.GET.get('search_by', 'name')
+        search_query = self.request.GET.get('search_query', '')
+        status_filter = self.request.GET.get('status', None)
+        
+        # Base queryset for approved employees
+        employees = Employee.objects.filter(is_approved=True)
+        
+        # Apply company filter if specified
+        if company_filter:
+            employees = employees.filter(company__company_id=company_filter)
+        
+        # Apply search if provided
+        if search_query:
+            if search_by == 'name':
+                employees = employees.filter(employee_name__icontains=search_query)
+            elif search_by == 'mobile':
+                employees = employees.filter(phone_number__icontains=search_query)
+            elif search_by == 'status':
+                if search_query.lower() in ['active', 'inactive']:
+                    is_active = search_query.lower() == 'active'
+                    employees = employees.filter(is_active=is_active)
+        
+        # Apply status filter if specified
+        if status_filter:
+            if status_filter == 'active':
+                employees = employees.filter(is_active=True)
+            elif status_filter == 'inactive':
+                employees = employees.filter(is_active=False)
+            elif status_filter == 'on_leave':
+                # Get employees currently on leave
+                today = timezone.now().date()
+                leave_employee_ids = LeaveApplication.objects.filter(
+                    status='approved',
+                    start_date__lte=today,
+                    end_date__gte=today
+                ).values_list('employee_id', flat=True)
+                employees = employees.filter(employee_id__in=leave_employee_ids)
+            elif status_filter == 'unassigned':
+                # Unassigned employees - filter based on what makes sense for your application
+                # For example, employees without location data
+                employees = employees.filter(location__isnull=True)
+        
+        # Calculate metrics
+        today = timezone.now().date()
+        
+        # 1. Total approved employees
+        total_employees = employees.count()
+        
+        # 2. Active employees (with attendance today)
+        active_employee_ids = EmployeeAttendance.objects.filter(
+            date=today, 
+            status='present'
+        ).values_list('employee_id', flat=True)
+        active_employees = employees.filter(employee_id__in=active_employee_ids).count()
+        
+        # 3. Non-attendees (employees who should have attendance but don't)
+        non_attendees = total_employees - active_employees
+        
+        # 4. Employees on leave
+        employees_on_leave = LeaveApplication.objects.filter(
+            employee_id__in=employees.values_list('employee_id', flat=True),
+            status='approved',
+            start_date__lte=today,
+            end_date__gte=today
+        ).count()
+        
+        # 5. Unassigned employees (without department or designation)
+        unassigned_employees = employees.filter(location__isnull=True).count()
+        
+        # Store metrics in context
+        context['metrics'] = {
+            'total_employees': total_employees,
+            'active_employees': active_employees,
+            'non_attendees': non_attendees,
+            'employees_on_leave': employees_on_leave,
+            'unassigned_employees': unassigned_employees
+        }
+        
+        # Get all employees for display
+        context['employees'] = employees
         context['companies'] = Company.objects.all()
+        context['qr_codes'] = QRCode.objects.all()
+        
+        # Pass filters to context for form persistence
+        context['filters'] = {
+            'company': company_filter,
+            'search_by': search_by,
+            'search_query': search_query,
+            'status': status_filter
+        }
+        
         return context
-    
+        
+    def get(self, request, *args, **kwargs):
+        # Check if this is an AJAX request for metrics only
+        if request.GET.get('fetch_metrics', False) and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            context = self.get_context_data(**kwargs)
+            return JsonResponse({'metrics': context['metrics']})
+        return super().get(request, *args, **kwargs)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class EmployeeStatusToggleAPIView(View):
+    def post(self, request, employee_id, *args, **kwargs):
+        try:
+            # Find the employee - import from correct location
+            employee = Employee.objects.get(employee_id=employee_id)
+            
+            # Get the action (activate or deactivate)
+            action = request.POST.get('action', '')
+            
+            if action == 'activate':
+                employee.is_active = True
+                employee.save()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Employee activated successfully',
+                    'status': 'active'
+                })
+            elif action == 'deactivate':
+                employee.is_active = False
+                employee.save()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Employee deactivated successfully',
+                    'status': 'inactive'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid action specified'
+                }, status=400)
+                
+        except Employee.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Employee not found'
+            }, status=404)
+        except Exception as e:
+            logger.error(f"Error toggling employee status: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'success': False,
+                'message': f'Error processing request: {str(e)}'
+            }, status=500)
+
 class CreateCompanyView(TemplateView):
     template_name = 'hr_management/create_hr_company.html'
 
@@ -588,21 +732,51 @@ class QRCodeView(View):
                     user = User.objects.get(user_id=user_id)
                 except User.DoesNotExist:
                     pass
+            
+            # Determine if we're getting data from JSON or form submission
+            if request.content_type and 'application/json' in request.content_type:
+                try:
+                    data = json.loads(request.body)
+                    logger.info(f"Received JSON data: {data}")
                     
-            # Parse JSON data if content type is application/json
-            if request.content_type == 'application/json':
-                data = json.loads(request.body)
+                    company_id = data.get('company')
+                    locations = data.get('locations', [])
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON parsing error: {e}")
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Invalid JSON data'
+                    }, status=400)
             else:
-                # Handle form data if not JSON
-                data = request.POST
+                # Handle standard form data
+                logger.info(f"Received form data: {request.POST}")
+                company_id = request.POST.get('company')
+                
+                # Get location names and coordinates from form data
+                location_names = request.POST.getlist('location_names[]', [])
+                coordinates_list = request.POST.getlist('coordinates[]', [])
+                
+                # Create locations array from form data
+                locations = []
+                for i in range(len(location_names)):
+                    if i < len(coordinates_list):
+                        locations.append({
+                            'name': location_names[i],
+                            'coordinates': coordinates_list[i]
+                        })
+                
+                logger.info(f"Processed form data into locations: {locations}")
 
-            company_id = data.get('company')
-            locations = data.get('locations', [])
-
-            if not company_id or not locations:
+            if not company_id:
                 return JsonResponse({
                     'success': False,
-                    'message': 'Missing required data'
+                    'message': 'Company ID is required'
+                }, status=400)
+                
+            if not locations or len(locations) == 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'At least one location with coordinates is required'
                 }, status=400)
 
             # Get company instance
@@ -611,11 +785,73 @@ class QRCodeView(View):
             created_qr_codes = []
 
             for location in locations:
-                # Handle both dictionary and string inputs
-                location_name = location.get('name') if isinstance(location, dict) else None
-                coordinates = location.get('coordinates') if isinstance(location, dict) else None
+                # Extract location name and coordinates
+                if isinstance(location, dict):
+                    location_name = location.get('name', '').strip()
+                    coordinates = location.get('coordinates', '')
+                    if isinstance(coordinates, str):
+                        coordinates = coordinates.strip()
+                else:
+                    # Skip if location is not a dict
+                    logger.warning(f"Skipping non-dict location: {location}")
+                    continue
 
-                if not location_name or not coordinates:
+                if not location_name:
+                    logger.warning(f"Skipping location with no name: {location}")
+                    continue
+                
+                # Validate and process coordinates format
+                if not coordinates:
+                    logger.warning(f"Skipping location with no coordinates: {location}")
+                    continue
+                
+                # Log coordinate format for debugging
+                logger.info(f"Processing coordinates format: {type(coordinates)}, value: {coordinates}")
+                
+                # Handle different coordinate formats
+                if isinstance(coordinates, str):
+                    # Try to parse coordinates string
+                    try:
+                        if ',' in coordinates:
+                            # Handle "lat,lng" format
+                            parts = coordinates.split(',')
+                            if len(parts) == 2:
+                                try:
+                                    lat = float(parts[0].strip())
+                                    lng = float(parts[1].strip())
+                                    coordinates = {'latitude': lat, 'longitude': lng}
+                                    valid_locations_found = True
+                                except ValueError:
+                                    logger.warning(f"Could not parse coordinates as float: {coordinates}")
+                                    continue
+                            else:
+                                logger.warning(f"Invalid coordinates format (needs exactly one comma): {coordinates}")
+                                continue
+                        else:
+                            try:
+                                # Try parsing as JSON string
+                                parsed_coords = json.loads(coordinates)
+                                if isinstance(parsed_coords, dict):
+                                    coordinates = parsed_coords
+                                    valid_locations_found = True
+                                else:
+                                    logger.warning(f"Parsed coordinates not a dict: {parsed_coords}")
+                                    continue
+                            except json.JSONDecodeError:
+                                logger.warning(f"Could not parse coordinates as JSON: {coordinates}")
+                                continue
+                    except Exception as e:
+                        logger.error(f"Error parsing coordinates string: {e}")
+                        continue
+                elif isinstance(coordinates, dict):
+                    # Already in dict format, validate it has required keys
+                    if 'latitude' in coordinates and 'longitude' in coordinates:
+                        valid_locations_found = True
+                    else:
+                        logger.warning(f"Coordinates dict missing latitude/longitude: {coordinates}")
+                        continue
+                else:
+                    logger.warning(f"Unsupported coordinates format: {type(coordinates)}")
                     continue
 
                 # Generate QR code and save it
@@ -676,6 +912,12 @@ class QRCodeView(View):
                     'location': location_name,
                     'image_url': qr_code.qr_code_image.url
                 })
+            
+            if not created_qr_codes or not valid_locations_found:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'No valid QR codes could be generated. Please check your location data.'
+                }, status=400)
 
             return JsonResponse({
                 'success': True,
@@ -690,6 +932,7 @@ class QRCodeView(View):
             }, status=404)
             
         except Exception as e:
+            logger.error(f"Error generating QR code: {str(e)}", exc_info=True)
             return JsonResponse({
                 'success': False,
                 'message': str(e)
@@ -2293,6 +2536,95 @@ class OnboardingInvitationAcceptView(View):
                                 logger.info(f"Created document record for {document_type} from stored file info")
                         except Exception as doc_error:
                             logger.error(f"Error creating document from stored info: {str(doc_error)}", exc_info=True)
+                
+                # Save employment configuration
+                try:
+                    # Add to policies JSON field
+                    if not isinstance(invitation.policies, dict):
+                        invitation.policies = {}
+                    
+                    # Add salary and benefits information
+                    employment_config = {
+                        'salary_ctc': float(salary_ctc),
+                        'leave_types': leave_types,
+                        'deductions': deductions,
+                        'allowances': allowances,
+                    }
+                    
+                    invitation.policies['employment_config'] = employment_config
+                    invitation.save()
+                    
+                    # Create a salary record if SalarySlip model is used
+                    try:
+                        # Create a salary record
+                        current_date = timezone.now()
+                        
+                        # Process allowances
+                        allowance_dict = {}
+                        total_allowances = 0
+                        
+                        for allowance_data in allowances:
+                            allowance_id = allowance_data.get('id')
+                            value = float(allowance_data.get('value', 0))
+                            
+                            if allowance_id and value > 0:
+                                try:
+                                    allowance = Allowance.objects.get(allowance_id=allowance_id)
+                                    allowance_dict[allowance.name] = value
+                                    total_allowances += value
+                                except Allowance.DoesNotExist:
+                                    continue
+                        
+                        # Process deductions
+                        deduction_dict = {}
+                        total_deductions = 0
+                        
+                        for deduction_data in deduction_dict:
+                            deduction_id = deduction_data.get('id')
+                            value = float(deduction_data.get('value', 0))
+                            
+                            if deduction_id and value > 0:
+                                try:
+                                    deduction = Deduction.objects.get(deduction_id=deduction_id)
+                                    deduction_dict[deduction.name] = value
+                                    total_deductions += value
+                                except Deduction.DoesNotExist:
+                                    continue
+                        
+                        # Calculate net salary
+                        basic_salary = float(salary_ctc)
+                        net_salary = basic_salary + total_allowances - total_deductions
+                        
+                        # Create or update salary slip
+                        salary_slip, created = SalarySlip.objects.get_or_create(
+                            employee=employee,
+                            month=current_date.month,
+                            year=current_date.year,
+                            defaults={
+                                'basic_salary': basic_salary,
+                                'allowances': allowance_dict,
+                                'deductions': deduction_dict,
+                                'net_salary': net_salary,
+                                'payment_date': current_date,
+                                'payment_method': 'Bank Transfer',
+                                'is_paid': False,
+                                'notes': 'Initial salary configuration',
+                            }
+                        )
+                        
+                        if not created:
+                            # Update existing salary slip
+                            salary_slip.basic_salary = basic_salary
+                            salary_slip.allowances = allowance_dict
+                            salary_slip.deductions = deduction_dict
+                            salary_slip.net_salary = net_salary
+                            salary_slip.save()
+                        
+                        logger.info(f"Created/updated salary configuration for employee {employee.employee_id}")
+                    except Exception as salary_error:
+                        logger.error(f"Error creating salary record: {str(salary_error)}", exc_info=True)
+                except Exception as config_error:
+                    logger.error(f"Error saving employment configuration: {str(config_error)}", exc_info=True)
                 
                 # Send acceptance email with login credentials
                 success = self.send_acceptance_email(invitation, password)
@@ -4300,11 +4632,20 @@ class FormCompletedActionView(View):
                 logger.info(f"Retrieved form data for invitation {invitation_id}")
             else:
                 logger.warning(f"No form data found for completed invitation {invitation_id}")
+            
+            # Get leave types, deductions and allowances for this company
+            company = invitation.company
+            leave_types = LeaveType.objects.filter(company=company, is_active=True)
+            deductions = Deduction.objects.filter(company=company, is_active=True)
+            allowances = Allowance.objects.filter(company=company, is_active=True)
                 
             # Render the UI for accept/reject options
             return render(request, 'hr_management/form_action.html', {
                 'invitation': invitation,
-                'form_data': form_data
+                'form_data': form_data,
+                'leave_types': leave_types,
+                'deductions': deductions,
+                'allowances': allowances
             })
             
         except OnboardingInvitation.DoesNotExist:
@@ -4329,10 +4670,19 @@ class FormCompletedActionView(View):
                 data = json.loads(request.body)
                 action = data.get('action', '')
                 rejection_reason = data.get('rejection_reason', '')
+                # Get the employment configuration parameters
+                salary_ctc = data.get('salary_ctc', 0)
+                leave_types = data.get('leave_types', [])
+                deductions = data.get('deductions', [])
+                allowances = data.get('allowances', [])
             except (ValueError, json.JSONDecodeError):
                 # Try to get from POST data if not JSON
                 action = request.POST.get('action', '')
                 rejection_reason = request.POST.get('rejection_reason', '')
+                salary_ctc = request.POST.get('salary_ctc', 0)
+                leave_types = request.POST.getlist('leave_types', [])
+                deductions = request.POST.getlist('deductions', [])
+                allowances = request.POST.getlist('allowances', [])
             
             # Check if the form is completed
             if not invitation.is_form_completed:
@@ -4349,6 +4699,13 @@ class FormCompletedActionView(View):
                 }, status=400)
             
             if action == 'accept':
+                # Validate required employment details
+                if not salary_ctc:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Salary CTC is required for accepting the application'
+                    }, status=400)
+                
                 # Use the model method for acceptance
                 invitation.accept_invitation()
                 
@@ -4371,9 +4728,9 @@ class FormCompletedActionView(View):
                         # 'department': invitation.department,  # hr.models.Employee has no department field
                         # 'designation': invitation.designation,  # hr.models.Employee has no designation field
                         # 'role': invitation.role,  # hr.models.Employee has no role field
-                        'password': hashed_password,
                         'is_active': True,
-                        'is_approved': True
+                        'is_approved': True,
+                        'password': hashed_password
                     }
                 )
                 
@@ -4388,6 +4745,11 @@ class FormCompletedActionView(View):
                     employee.is_approved = True
                     employee.password = hashed_password
                     employee.save()
+                
+                # Update salary and allowances in the employee record
+                employee.salary_ctc = salary_ctc
+                employee.allowances = allowances
+                employee.save()
                 
                 # If there's a profile photo saved in the invitation, copy it to the employee
                 if invitation.photo:
@@ -4421,34 +4783,126 @@ class FormCompletedActionView(View):
                         except Exception as doc_error:
                             logger.error(f"Error creating document from stored info: {str(doc_error)}", exc_info=True)
                 
+                # Save employment configuration
+                try:
+                    # Add to policies JSON field
+                    if not isinstance(invitation.policies, dict):
+                        invitation.policies = {}
+                    
+                    # Add salary and benefits information
+                    employment_config = {
+                        'salary_ctc': float(salary_ctc),
+                        'leave_types': leave_types,
+                        'deductions': deductions,
+                        'allowances': allowances,
+                    }
+                    
+                    invitation.policies['employment_config'] = employment_config
+                    invitation.save()
+                    
+                    # Create a salary record if SalarySlip model is used
+                    try:
+                        # Create a salary record
+                        current_date = timezone.now()
+                        
+                        # Process allowances
+                        allowance_dict = {}
+                        total_allowances = 0
+                        
+                        for allowance_data in allowances:
+                            allowance_id = allowance_data.get('id')
+                            value = float(allowance_data.get('value', 0))
+                            
+                            if allowance_id and value > 0:
+                                try:
+                                    allowance = Allowance.objects.get(allowance_id=allowance_id)
+                                    allowance_dict[allowance.name] = value
+                                    total_allowances += value
+                                except Allowance.DoesNotExist:
+                                    continue
+                        
+                        # Process deductions
+                        deduction_dict = {}
+                        total_deductions = 0
+                        
+                        for deduction_data in deductions:
+                            deduction_id = deduction_data.get('id')
+                            value = float(deduction_data.get('value', 0))
+                            
+                            if deduction_id and value > 0:
+                                try:
+                                    deduction = Deduction.objects.get(deduction_id=deduction_id)
+                                    deduction_dict[deduction.name] = value
+                                    total_deductions += value
+                                except Deduction.DoesNotExist:
+                                    continue
+                        
+                        # Calculate net salary
+                        basic_salary = float(salary_ctc)
+                        net_salary = basic_salary + total_allowances - total_deductions
+                        
+                        # Create or update salary slip
+                        salary_slip, created = SalarySlip.objects.get_or_create(
+                            employee=employee,
+                            month=current_date.month,
+                            year=current_date.year,
+                            defaults={
+                                'basic_salary': basic_salary,
+                                'allowances': allowance_dict,
+                                'deductions': deduction_dict,
+                                'net_salary': net_salary,
+                                'payment_date': current_date,
+                                'payment_method': 'Bank Transfer',
+                                'is_paid': False,
+                                'notes': 'Initial salary configuration',
+                            }
+                        )
+                        
+                        if not created:
+                            # Update existing salary slip
+                            salary_slip.basic_salary = basic_salary
+                            salary_slip.allowances = allowance_dict
+                            salary_slip.deductions = deduction_dict
+                            salary_slip.net_salary = net_salary
+                            salary_slip.save()
+                        
+                        logger.info(f"Created/updated salary configuration for employee {employee.employee_id}")
+                    except Exception as salary_error:
+                        logger.error(f"Error creating salary record: {str(salary_error)}", exc_info=True)
+                except Exception as config_error:
+                    logger.error(f"Error saving employment configuration: {str(config_error)}", exc_info=True)
+                
                 # Send acceptance email with login credentials
                 success = self.send_acceptance_email(invitation, password)
                 
                 return JsonResponse({
                     'success': True,
-                    'message': 'Application accepted and credentials sent to employee',
+                    'message': 'Invitation accepted successfully',
                     'email_sent': success
                 })
                 
             elif action == 'reject':
-                # Use the model method for rejection
-                invitation.reject_invitation(rejection_reason)
-                
+                # Update the invitation status
+                invitation.status = 'rejected'
+                invitation.rejected_at = timezone.now()
+                invitation.rejection_reason = rejection_reason
+                invitation.save()
+            
                 # Send rejection email
                 success = self.send_rejection_email(invitation)
-                
+            
                 return JsonResponse({
                     'success': True,
-                    'message': 'Application rejected and notification sent to applicant',
+                    'message': 'Invitation rejected successfully',
                     'email_sent': success
                 })
                 
             else:
                 return JsonResponse({
                     'success': False,
-                    'message': 'Invalid action specified'
+                    'message': f'Invalid action: {action}'
                 }, status=400)
-                
+            
         except OnboardingInvitation.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -4558,3 +5012,474 @@ class FormCompletedActionView(View):
         except Exception as e:
             logger.error(f"Error sending rejection email: {str(e)}", exc_info=True)
             return False
+
+# Preview view for Training Material
+class TrainingMaterialPreviewView(View):
+    def get(self, request, template_id):
+        try:
+            template = TrainingMaterial.objects.get(training_material_id=template_id)
+            return JsonResponse({
+                'success': True,
+                'content': template.content
+            })
+        except TrainingMaterial.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Update view for Training Material
+class TrainingMaterialUpdateView(View):
+    def post(self, request, template_id):
+        try:
+            template = TrainingMaterial.objects.get(training_material_id=template_id)
+            name = request.POST.get('material_name')
+            content = request.POST.get('material_content')
+            
+            if name and content:
+                template.name = name
+                template.content = content
+                template.updated_at = timezone.now()
+                template.save()
+                return JsonResponse({'success': True})
+            
+            return JsonResponse({'error': 'Name and content are required'}, status=400)
+        except TrainingMaterial.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Delete view for Training Material
+class TrainingMaterialDeleteView(View):
+    def post(self, request, template_id):
+        try:
+            template = TrainingMaterial.objects.get(training_material_id=template_id)
+            template.delete()
+            return JsonResponse({'success': True})
+        except TrainingMaterial.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Update view for OfferLetter
+class OfferLetterUpdateView(View):
+    def post(self, request, template_id):
+        try:
+            template = OfferLetter.objects.get(offer_letter_id=template_id)
+            name = request.POST.get('offer_letter_name')
+            content = request.POST.get('offer_letter_content')
+            
+            if name and content:
+                template.name = name
+                template.content = content
+                template.updated_at = timezone.now()
+                template.save()
+                return JsonResponse({'success': True})
+            
+            return JsonResponse({'error': 'Name and content are required'}, status=400)
+        except OfferLetter.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Delete view for OfferLetter
+class OfferLetterDeleteView(View):
+    def post(self, request, template_id):
+        try:
+            template = OfferLetter.objects.get(offer_letter_id=template_id)
+            template.delete()
+            return JsonResponse({'success': True})
+        except OfferLetter.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Preview view for Policy
+class PolicyPreviewView(View):
+    def get(self, request, template_id):
+        try:
+            template = TandC.objects.get(tandc_id=template_id)
+            return JsonResponse({
+                'success': True,
+                'content': template.description
+            })
+        except TandC.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Update view for Policy
+class PolicyUpdateView(View):
+    def post(self, request, template_id):
+        try:
+            template = TandC.objects.get(tandc_id=template_id)
+            name = request.POST.get('policy_name')
+            description = request.POST.get('policy_description')
+            
+            if name and description:
+                template.name = name
+                template.description = description
+                template.updated_at = timezone.now()
+                template.save()
+                return JsonResponse({'success': True})
+            
+            return JsonResponse({'error': 'Name and description are required'}, status=400)
+        except TandC.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Delete view for Policy
+class PolicyDeleteView(View):
+    def post(self, request, template_id):
+        try:
+            template = TandC.objects.get(tandc_id=template_id)
+            template.delete()
+            return JsonResponse({'success': True})
+        except TandC.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Update view for HiringAgreement
+class HiringAgreementUpdateView(View):
+    def post(self, request, template_id):
+        try:
+            template = HiringAgreement.objects.get(hiring_agreement_id=template_id)
+            name = request.POST.get('agreement_name')
+            content = request.POST.get('agreement_content')
+            
+            if name and content:
+                template.name = name
+                template.content = content
+                template.updated_at = timezone.now()
+                template.save()
+                return JsonResponse({'success': True})
+            
+            return JsonResponse({'error': 'Name and content are required'}, status=400)
+        except HiringAgreement.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Delete view for HiringAgreement
+class HiringAgreementDeleteView(View):
+    def post(self, request, template_id):
+        try:
+            template = HiringAgreement.objects.get(hiring_agreement_id=template_id)
+            template.delete()
+            return JsonResponse({'success': True})
+        except HiringAgreement.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Update view for Handbook
+class HandbookUpdateView(View):
+    def post(self, request, template_id):
+        try:
+            template = Handbook.objects.get(handbook_id=template_id)
+            name = request.POST.get('handbook_name')
+            content = request.POST.get('handbook_content')
+            
+            if name and content:
+                template.name = name
+                template.content = content
+                template.updated_at = timezone.now()
+                template.save()
+                return JsonResponse({'success': True})
+            
+            return JsonResponse({'error': 'Name and content are required'}, status=400)
+        except Handbook.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+# Delete view for Handbook
+class HandbookDeleteView(View):
+    def post(self, request, template_id):
+        try:
+            template = Handbook.objects.get(handbook_id=template_id)
+            template.delete()
+            return JsonResponse({'success': True})
+        except Handbook.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LeaveDetailsAPIView(View):
+    def get(self, request, leave_id, *args, **kwargs):
+        employee_id = request.session.get('employee_id')
+        if not employee_id:
+            return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
+        
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+            
+            try:
+                leave = LeaveApplication.objects.get(leave_id=leave_id, employee=employee)
+            except LeaveApplication.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Leave application not found'
+                }, status=404)
+            
+            # Format the leave application data
+            leave_data = {
+                'leave_id': str(leave.leave_id),
+                'leave_type': leave.leave_type,
+                'leave_type_display': leave.get_leave_type_display(),
+                'start_date': leave.start_date.strftime('%d %b %Y'),
+                'end_date': leave.end_date.strftime('%d %b %Y'),
+                'reason': leave.reason,
+                'status': leave.status,
+                'duration': leave.duration,
+                'created_at': leave.created_at.strftime('%d %b %Y'),
+                'updated_at': leave.updated_at.strftime('%d %b %Y'),
+            }
+            
+            # Add optional fields if they exist
+            if leave.document:
+                leave_data['document'] = leave.document.url
+            
+            if leave.reviewed_by:
+                leave_data['reviewed_by'] = leave.reviewed_by.name
+                leave_data['reviewed_at'] = leave.reviewed_at.strftime('%d %b %Y')
+            
+            if leave.review_notes:
+                leave_data['review_notes'] = leave.review_notes
+            
+            return JsonResponse({
+                'success': True,
+                'leave': leave_data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error retrieving leave details: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReimbursementDetailsAPIView(View):
+    def get(self, request, reimbursement_id, *args, **kwargs):
+        employee_id = request.session.get('employee_id')
+        if not employee_id:
+            return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
+        
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+            
+            try:
+                reimbursement = ReimbursementRequest.objects.get(reimbursement_id=reimbursement_id, employee=employee)
+            except ReimbursementRequest.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Reimbursement request not found'
+                }, status=404)
+            
+            # Format the reimbursement request data
+            reimbursement_data = {
+                'reimbursement_id': str(reimbursement.reimbursement_id),
+                'category': reimbursement.category,
+                'category_display': reimbursement.get_category_display(),
+                'amount': float(reimbursement.amount),
+                'currency': reimbursement.currency,
+                'expense_date': reimbursement.expense_date.strftime('%d %b %Y'),
+                'description': reimbursement.description,
+                'status': reimbursement.status,
+                'created_at': reimbursement.created_at.strftime('%d %b %Y'),
+                'updated_at': reimbursement.updated_at.strftime('%d %b %Y'),
+            }
+            
+            # Add optional fields if they exist
+            if reimbursement.receipt:
+                reimbursement_data['receipt'] = reimbursement.receipt.url
+            
+            if reimbursement.approved_by:
+                reimbursement_data['approved_by'] = reimbursement.approved_by.name
+                reimbursement_data['approved_at'] = reimbursement.approved_at.strftime('%d %b %Y')
+            
+            if reimbursement.approval_notes:
+                reimbursement_data['approval_notes'] = reimbursement.approval_notes
+            
+            if reimbursement.payment_date:
+                reimbursement_data['payment_date'] = reimbursement.payment_date.strftime('%d %b %Y')
+            
+            if reimbursement.payment_reference:
+                reimbursement_data['payment_reference'] = reimbursement.payment_reference
+            
+            return JsonResponse({
+                'success': True,
+                'reimbursement': reimbursement_data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error retrieving reimbursement details: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SalarySlipDetailsAPIView(View):
+    def get(self, request, salary_slip_id, *args, **kwargs):
+        employee_id = request.session.get('employee_id')
+        if not employee_id:
+            return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
+        
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+            
+            try:
+                salary_slip = SalarySlip.objects.get(salary_slip_id=salary_slip_id, employee=employee)
+            except SalarySlip.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Salary slip not found'
+                }, status=404)
+            
+            # Format the salary slip data
+            salary_slip_data = {
+                'salary_slip_id': str(salary_slip.salary_slip_id),
+                'month': salary_slip.month,
+                'year': salary_slip.year,
+                'period_display': salary_slip.period_display,
+                'basic_salary': float(salary_slip.basic_salary),
+                'net_salary': float(salary_slip.net_salary),
+                'payment_date': salary_slip.payment_date.strftime('%d %b %Y'),
+                'payment_method': salary_slip.payment_method,
+                'is_paid': salary_slip.is_paid,
+                'allowances': salary_slip.allowances,
+                'deductions': salary_slip.deductions,
+                'created_at': salary_slip.created_at.strftime('%d %b %Y'),
+                'employee_name': employee.name,
+                'employee_id': employee.employee_id,
+                'department': employee.department.name if hasattr(employee, 'department') and employee.department else None,
+                'designation': employee.designation.name if hasattr(employee, 'designation') and employee.designation else None,
+            }
+            
+            # Add optional fields if they exist
+            if salary_slip.pdf_file:
+                salary_slip_data['pdf_file'] = salary_slip.pdf_file.url
+            
+            if salary_slip.payment_reference:
+                salary_slip_data['payment_reference'] = salary_slip.payment_reference
+            
+            if salary_slip.notes:
+                salary_slip_data['notes'] = salary_slip.notes
+            
+            return JsonResponse({
+                'success': True,
+                'salary_slip': salary_slip_data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error retrieving salary slip details: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ReimbursementCancelAPIView(View):
+    def post(self, request, reimbursement_id, *args, **kwargs):
+        employee_id = request.session.get('employee_id')
+        if not employee_id:
+            return JsonResponse({'success': False, 'message': 'Not logged in'}, status=401)
+        
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+            
+            try:
+                reimbursement = ReimbursementRequest.objects.get(reimbursement_id=reimbursement_id, employee=employee)
+            except ReimbursementRequest.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Reimbursement request not found'
+                }, status=404)
+            
+            # Check if reimbursement can be cancelled
+            if reimbursement.status != 'pending':
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Cannot cancel reimbursement request in {reimbursement.status} status'
+                }, status=400)
+            
+            # Update reimbursement status to cancelled (or delete it)
+            reimbursement.status = 'cancelled'  # You may need to add 'cancelled' to the status choices
+            reimbursement.updated_at = timezone.now()
+            reimbursement.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Reimbursement request cancelled successfully'
+            })
+            
+        except Exception as e:
+            logger.error(f"Error cancelling reimbursement request: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)

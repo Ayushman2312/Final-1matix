@@ -80,6 +80,127 @@
                     </div>
                 </div>
 
+                <!-- Submitted Form Data Section -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Submitted Information</h2>
+                    
+                    {% if form_data.personal_info %}
+                    <div class="mb-6">
+                        <h3 class="text-gray-700 font-medium mb-2">Personal Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                            {% for key, value in form_data.personal_info.items %}
+                            <div>
+                                <p class="text-gray-600 text-sm">{{ key|title }}</p>
+                                <p class="text-gray-800 font-medium">{{ value }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if form_data.employment_details %}
+                    <div class="mb-6">
+                        <h3 class="text-gray-700 font-medium mb-2">Employment Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                            {% for key, value in form_data.employment_details.items %}
+                            <div>
+                                <p class="text-gray-600 text-sm">{{ key|title }}</p>
+                                <p class="text-gray-800 font-medium">{{ value }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if form_data.uploaded_files %}
+                    <div class="mb-6">
+                        <h3 class="text-gray-700 font-medium mb-2">Uploaded Documents</h3>
+                        <div class="grid grid-cols-1 gap-2 bg-gray-50 p-4 rounded-lg">
+                            {% for key, value in form_data.uploaded_files.items %}
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                                <span class="text-gray-800">{{ key|title }}: {{ value }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Employment Details Section -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Employment Configuration</h2>
+                    <p class="text-gray-600 mb-4">Configure the employment details before accepting this application.</p>
+                    
+                    <!-- Salary CTC -->
+                    <div class="mb-6">
+                        <label for="salary_ctc" class="block text-gray-700 font-medium mb-2">Salary CTC (₹) <span class="text-red-500">*</span></label>
+                        <input type="number" id="salary_ctc" class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Enter basic salary amount" required>
+                        <p class="text-sm text-gray-500 mt-1">This is the basic Cost to Company (CTC) amount without allowances or deductions.</p>
+                    </div>
+                    
+                    <!-- Leave Types -->
+                    <div class="mb-6">
+                        <h3 class="text-gray-700 font-medium mb-2">Leave Types</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            {% if leave_types %}
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {% for leave_type in leave_types %}
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="leave_{{ leave_type.leave_type_id }}" name="leave_types" value="{{ leave_type.leave_type_id }}" class="leave-type-checkbox mr-2">
+                                        <label for="leave_{{ leave_type.leave_type_id }}" class="text-gray-700">{{ leave_type.name }} ({{ leave_type.days_allowed }} days)</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-gray-600">No leave types configured for this company. <a href="/hr/templates/leave-types/" class="text-blue-500">Add leave types</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Deductions -->
+                    <div class="mb-6">
+                        <h3 class="text-gray-700 font-medium mb-2">Deductions</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            {% if deductions %}
+                                <div class="grid grid-cols-1 gap-4">
+                                    {% for deduction in deductions %}
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="deduction_{{ deduction.deduction_id }}" name="deductions" value="{{ deduction.deduction_id }}" class="deduction-checkbox mr-2">
+                                        <label for="deduction_{{ deduction.deduction_id }}" class="text-gray-700 flex-grow">{{ deduction.name }}</label>
+                                        <input type="number" id="deduction_value_{{ deduction.deduction_id }}" class="deduction-value ml-4 px-3 py-1 w-32 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Value" disabled>
+                                        <span class="ml-2">{% if deduction.is_percentage %}%{% else %}₹{% endif %}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-gray-600">No deductions configured for this company. <a href="/hr/templates/deductions/" class="text-blue-500">Add deductions</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Allowances -->
+                    <div class="mb-6">
+                        <h3 class="text-gray-700 font-medium mb-2">Allowances</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            {% if allowances %}
+                                <div class="grid grid-cols-1 gap-4">
+                                    {% for allowance in allowances %}
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="allowance_{{ allowance.allowance_id }}" name="allowances" value="{{ allowance.allowance_id }}" class="allowance-checkbox mr-2">
+                                        <label for="allowance_{{ allowance.allowance_id }}" class="text-gray-700 flex-grow">{{ allowance.name }}</label>
+                                        <input type="number" id="allowance_value_{{ allowance.allowance_id }}" class="allowance-value ml-4 px-3 py-1 w-32 text-gray-700 border rounded-lg focus:outline-none focus:shadow-outline" placeholder="Value" disabled>
+                                        <span class="ml-2">{% if allowance.is_percentage %}%{% else %}₹{% endif %}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-gray-600">No allowances configured for this company. <a href="/hr/templates/allowances/" class="text-blue-500">Add allowances</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
                 <div class="border-t pt-6 flex flex-col sm:flex-row justify-center gap-4">
                     <button id="acceptBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center">
@@ -180,15 +301,62 @@
         // Accept button functionality
         document.getElementById('acceptBtn').addEventListener('click', function() {
             const invitation_id = '{{ invitation.invitation_id }}';
+            const salary_ctc = document.getElementById('salary_ctc').value;
             
-            fetch(`/hr/onboarding/form-action/${invitation_id}/`, {
+            // Validate salary CTC
+            if (!salary_ctc || salary_ctc <= 0) {
+                alert('Please enter a valid Salary CTC amount');
+                return;
+            }
+            
+            // Collect selected leave types
+            const leave_types = [];
+            document.querySelectorAll('.leave-type-checkbox:checked').forEach(checkbox => {
+                leave_types.push(checkbox.value);
+            });
+            
+            // Collect selected deductions with values
+            const deductions = [];
+            document.querySelectorAll('.deduction-checkbox:checked').forEach(checkbox => {
+                const deduction_id = checkbox.value;
+                const value_input = document.getElementById('deduction_value_' + deduction_id);
+                const value = value_input ? value_input.value : 0;
+                
+                if (value > 0) {
+                    deductions.push({
+                        id: deduction_id,
+                        value: value
+                    });
+                }
+            });
+            
+            // Collect selected allowances with values
+            const allowances = [];
+            document.querySelectorAll('.allowance-checkbox:checked').forEach(checkbox => {
+                const allowance_id = checkbox.value;
+                const value_input = document.getElementById('allowance_value_' + allowance_id);
+                const value = value_input ? value_input.value : 0;
+                
+                if (value > 0) {
+                    allowances.push({
+                        id: allowance_id,
+                        value: value
+                    });
+                }
+            });
+            
+            fetch(`/hr_management/onboarding/form-action/${invitation_id}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken')
                 },
                 body: JSON.stringify({
-                    action: 'accept'
+                    action: 'accept',
+                    salary_ctc: salary_ctc,
+                    leave_types: leave_types,
+                    deductions: deductions,
+                    allowances: allowances
                 })
             })
             .then(response => response.json())
@@ -219,7 +387,7 @@
             const invitation_id = '{{ invitation.invitation_id }}';
             const rejectionReason = document.getElementById('rejectionReason').value;
             
-            fetch(`/hr/onboarding/form-action/${invitation_id}/`, {
+            fetch(`/hr_management/onboarding/form-action/${invitation_id}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -253,7 +421,7 @@
         // Success modal OK button
         document.getElementById('successOk').addEventListener('click', function() {
             closeModal('successModal');
-            window.location.href = '/hr/onboarding/'; // Redirect to onboarding page
+            window.location.href = '/hr_management/onboarding/'; // Redirect to onboarding page
         });
 
         // Get CSRF token from cookies
@@ -271,6 +439,39 @@
             }
             return cookieValue;
         }
+        
+        // Handle checkbox toggle for deductions and allowances
+        document.querySelectorAll('.deduction-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const deduction_id = this.value;
+                const value_input = document.getElementById('deduction_value_' + deduction_id);
+                
+                if (value_input) {
+                    value_input.disabled = !this.checked;
+                    if (this.checked) {
+                        value_input.focus();
+                    } else {
+                        value_input.value = '';
+                    }
+                }
+            });
+        });
+        
+        document.querySelectorAll('.allowance-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allowance_id = this.value;
+                const value_input = document.getElementById('allowance_value_' + allowance_id);
+                
+                if (value_input) {
+                    value_input.disabled = !this.checked;
+                    if (this.checked) {
+                        value_input.focus();
+                    } else {
+                        value_input.value = '';
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html> 

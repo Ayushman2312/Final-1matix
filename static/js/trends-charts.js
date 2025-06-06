@@ -33,7 +33,40 @@ const gradientPlugin = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM content loaded - initializing trends charts');
+    console.log('DOM content loaded, initializing Trends Chart functionality');
+    
+    // Get common elements used across functions
+    const keywordInput = document.getElementById('keywordInput');
+    const timeframeSelect = document.getElementById('timeframeSelect');
+    const regionSelect = document.getElementById('regionSelect');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const timeUnitButtons = document.querySelectorAll('.time-unit-btn');
+    const yearlyFilter = document.getElementById('yearlyFilter');
+    const yearlyFilterContainer = document.getElementById('yearlyFilterContainer');
+    
+    // Only set up the analyze button event listener if it's not already set up in the HTML
+    if (analyzeButton && !analyzeButton._hasClickListener) {
+        analyzeButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleFormSubmit(e);
+        });
+        analyzeButton._hasClickListener = true;
+    }
+    
+    // Add enter key event listener for keyword input
+    if (keywordInput) {
+        keywordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (analyzeButton) {
+                    // Trigger the click event on the analyze button to ensure validation runs
+                    analyzeButton.click();
+                } else {
+                    handleFormSubmit(e);
+                }
+            }
+        });
+    }
     
     // Register gradient plugin
     Chart.register(gradientPlugin);
@@ -44,36 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.originalChartData = null;
     window.originalRegionData = null;
     
-    // Get form and button elements
-    const analyzeButton = document.getElementById('analyzeButton');
-    const keywordInput = document.getElementById('keywordInput');
-    const timeframeSelect = document.getElementById('timeframeSelect');
-    const regionSelect = document.getElementById('regionSelect');
-    const analysisTypeSelect = document.getElementById('analysis_type');
-    
-    // Add direct click event listener to analyze button if it exists
-    if (analyzeButton) {
-        console.log('Adding click listener to analyze button');
-        analyzeButton.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent default button behavior
-            console.log('Analyze button clicked');
-            
-            // Explicitly check the analysis type value at click time
-            const analysisTypeDirect = document.getElementById('analysis_type');
-            if (analysisTypeDirect) {
-                console.log('analysis_type value at click time:', analysisTypeDirect.value);
-            } else {
-                console.warn('analysis_type element not found at click time');
-            }
-            
-            handleFormSubmit(e);
-        });
-    } else {
-        console.warn('Analyze button not found');
-    }
-    
     // Add event listeners to time unit buttons
-    const timeUnitButtons = document.querySelectorAll('.time-unit-btn');
     timeUnitButtons.forEach(button => {
         button.addEventListener('click', function() {
             const unit = this.getAttribute('data-unit');
@@ -93,7 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add event listener for year filter dropdown
-    const yearlyFilter = document.getElementById('yearlyFilter');
     if (yearlyFilter) {
         yearlyFilter.addEventListener('change', function() {
             const selectedYear = this.value;
@@ -201,6 +204,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const businessIntent = businessIntentElement ? businessIntentElement.value : '';
         console.log('Using business_intent value:', businessIntent);
         
+        // Check if business intent is required but not selected
+        if (businessIntentElement && businessIntentElement.hasAttribute('required') && !businessIntent) {
+            showError('Please select your business intent');
+            return;
+        }
+        
         // Default values for timeframe and geo that match backend expectations
         const timeframe = timeframeSelect ? timeframeSelect.value : 'today 5-y';
         const geo = regionSelect ? regionSelect.value : 'IN';
@@ -233,6 +242,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 geo: geo,
                 business_intent: businessIntent
             };
+            
+            // Add business details if business intent is 'no'
+            if (businessIntent === 'no') {
+                const brandName = document.getElementById('brandName').value;
+                const businessWebsite = document.getElementById('businessWebsite').value;
+                const marketplace = document.getElementById('marketplace').value;
+                
+                // Check if required business details are provided (website is optional)
+                if (!brandName || !marketplace) {
+                    showError('Please provide brand name and marketplace');
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
+                    return;
+                }
+                
+                // Add business details to request body
+                requestBody.brand_name = brandName;
+                requestBody.user_website = businessWebsite;
+                requestBody.marketplaces_selected = marketplace;
+            }
             
             console.log('API request full payload:', JSON.stringify(requestBody));
             

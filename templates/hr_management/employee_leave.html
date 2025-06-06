@@ -1,99 +1,405 @@
 {% load static %}
+{% load hr_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salary Slips</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.4/minified/html5-qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>HR Portal | Leave Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.4/minified/html5-qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary-color: #6366F1;
+            --primary-light: #818CF8;
+            --primary-dark: #4F46E5;
+            --secondary-color: #0F172A;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --light-bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --border-color: #E2E8F0;
+        }
+        body {
+            font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light-bg);
+            scroll-behavior: smooth;
+        }
+        .dashboard-card {
+            @apply bg-white rounded-xl border border-slate-100/80 transition-all duration-300;
+            background: linear-gradient(145deg, #FFFFFF, #F8FAFC);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+        .dashboard-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        .nav-header {
+            @apply text-white py-2 sticky top-0 z-50 backdrop-blur-lg;
+            background: rgba(79, 70, 229, 0.98);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .action-button {
+            @apply py-2.5 px-4 rounded-lg text-white text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center shadow-sm;
+        }
+        .action-button-primary {
+            @apply bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500;
+        }
+    </style>
 </head>
-<body>
-<div class="container mx-auto px-4 py-8">
-    <!-- Page Header -->
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800">Leave Management</h1>
-        <p class="text-gray-600">Apply for leave and view your leave history</p>
+<body class="bg-slate-50">
+    <!-- Navigation Header -->
+    <div class="nav-header relative">
+        <div class="absolute inset-0 bg-gradient-to-r from-indigo-700 to-indigo-500 opacity-95"></div>
+        <div class="container mx-auto px-4 md:px-6 flex justify-between items-center relative z-10">
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center">
+                    <div class="w-8 h-8 rounded-md bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <span class="text-lg font-semibold ml-2">HR Portal</span>
+                </div>
+                <div class="hidden md:flex space-x-1">
+                    <a href="{% url 'employee_dashboard' %}" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors flex items-center">
+                        <i class="fas fa-tachometer-alt mr-1.5 text-xs"></i>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'employee_profile' %}" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors flex items-center">
+                        <i class="fas fa-user-circle mr-1.5 text-xs"></i>
+                        Profile
+                    </a>
+                    <a href="{% url 'employee_leave' %}" class="px-3 py-2 text-sm rounded-md text-white hover:text-white bg-white/10 transition-colors flex items-center">
+                        <i class="fas fa-calendar-alt mr-1.5 text-xs"></i>
+                        Leave
+                    </a>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-sm">
+                            <i class="fas fa-bell text-xs"></i>
+                            <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center border border-white shadow-sm animate-pulse">2</span>
+                        </button>
+                    </div>
+                    <button class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-sm">
+                        <i class="fas fa-cog text-xs"></i>
+                    </button>
+                    <div class="h-5 w-[1px] bg-white/20 mx-1"></div>
+                </div>
+                <div class="hidden md:flex items-center space-x-3">
+                    <div class="text-right mr-2">
+                        <p class="text-xs text-white/80 font-light">Welcome</p>
+                        <p class="text-sm font-medium">{{ employee.name|slice:":15" }}</p>
+                    </div>
+                    {% if employee.profile_photo %}
+                        <img class="h-10 w-10 rounded-full border-2 border-white/50 object-cover shadow-md" src="{{ employee.profile_photo.url }}" alt="{{ employee.name }}">
+                    {% else %}
+                        <div class="h-10 w-10 rounded-full border-2 border-white/50 bg-white/20 flex items-center justify-center text-sm font-bold backdrop-blur-sm shadow-md">
+                            {{ employee.name|slice:":1" }}
+                        </div>
+                    {% endif %}
+                </div>
+                <form action="{% url 'employee_logout' %}" method="post" class="hidden md:block">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md text-xs transition-colors flex items-center space-x-2 backdrop-blur-sm shadow-sm">
+                        <span>Logout</span>
+                        <i class="fas fa-sign-out-alt text-xs"></i>
+                    </button>
+                </form>
+                <button id="mobileMenuBtn" class="md:hidden w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors backdrop-blur-sm">
+                    <i class="fas fa-bars text-xs"></i>
+                </button>
+            </div>
+        </div>
     </div>
     
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Mobile Menu (hidden by default) -->
+    <div id="mobileMenu" class="md:hidden bg-white shadow-xl rounded-b-xl mb-4 hidden animate__animated animate__fadeIn">
+        <div class="container mx-auto px-4 py-2 space-y-1">
+            <div class="flex items-center space-x-3 p-3 border-b border-slate-100">
+                {% if employee.profile_photo %}
+                    <img class="h-12 w-12 rounded-full border-2 border-indigo-200 object-cover shadow-md" src="{{ employee.profile_photo.url }}" alt="{{ employee.name }}">
+                {% else %}
+                    <div class="h-12 w-12 rounded-full border-2 border-indigo-200 bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700 shadow-md">
+                        {{ employee.name|slice:":1" }}
+                    </div>
+                {% endif %}
+                <div>
+                    <p class="font-medium text-slate-800 text-sm">{{ employee.name }}</p>
+                    <p class="text-xs text-slate-500">{{ employee.designation }}</p>
+                </div>
+            </div>
+            <a href="{% url 'employee_dashboard' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-home text-indigo-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Dashboard</span>
+            </a>
+            <a href="{% url 'employee_profile' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-user-circle text-indigo-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">My Profile</span>
+            </a>
+            <a href="{% url 'employee_leave' %}" class="flex items-center py-2.5 px-4 bg-indigo-50 text-indigo-600 rounded-lg transition-colors">
+                <i class="fas fa-calendar-alt text-indigo-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Apply Leave</span>
+            </a>
+            <a href="{% url 'employee_reimbursement' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-receipt text-indigo-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Reimbursement</span>
+            </a>
+            <a href="{% url 'employee_documents' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+                <i class="fas fa-file-alt text-indigo-500 w-5 text-center mr-3"></i>
+                <span class="text-sm">Documents</span>
+            </a>
+            <form action="{% url 'employee_logout' %}" method="post" class="border-t border-slate-100 pt-2 mt-2">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center py-2.5 px-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <i class="fas fa-sign-out-alt w-5 text-center mr-3"></i>
+                    <span class="text-sm">Logout</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 md:px-6 py-6 max-w-7xl">
+        <!-- Page Header -->
+        <div class="mb-6 fade-in">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div class="mb-4 md:mb-0">
+                    <h1 class="text-2xl font-bold text-slate-800 flex items-center">
+                        <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg mr-2 shadow-sm">
+                            <i class="fas fa-calendar-alt"></i>
+                        </span>
+                        Leave Management
+                    </h1>
+                    <p class="text-slate-500 mt-1">Apply for leave and view your leave history</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'employee_dashboard' %}" class="px-3 py-1.5 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-sm flex items-center">
+                        <i class="fas fa-arrow-left mr-1.5 text-xs"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         <!-- Leave Balance Card -->
         <div class="lg:col-span-1">
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Leave Balance</h2>
-                <div class="space-y-4">
+                <div class="dashboard-card p-6 mb-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-50/50 to-transparent rounded-bl-full pointer-events-none"></div>
+                    <h2 class="text-lg font-semibold text-slate-800 mb-5 flex items-center relative z-10">
+                        <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center mr-2 shadow-sm border border-indigo-100/50">
+                            <i class="fas fa-hourglass-half text-indigo-600 text-sm"></i>
+                        </div>
+                        Leave Balance
+                    </h2>
+                    <div class="space-y-5 relative z-10">
+                        <div class="p-3 rounded-lg hover:bg-slate-50 transition-all duration-300 border border-transparent hover:border-slate-100 hover:shadow-sm">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
-                            <div class="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
-                            <span class="text-sm text-gray-700">Casual Leave</span>
-                        </div>
-                        <span class="text-sm font-medium">{{ leave_balance.casual }}/{{ leave_policy.casual }}</span>
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center mr-3 shadow-sm group-hover:shadow-md transition-all duration-300 border border-indigo-100">
+                                        <i class="fas fa-coffee text-indigo-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-sm text-slate-700 font-medium">Casual Leave</span>
+                                </div>
+                                <div class="flex items-center bg-indigo-50 rounded-full px-2.5 py-1 text-sm font-medium text-indigo-700">
+                                    <span>{{ leave_balance.casual }}</span>
+                                    <span class="text-indigo-400 mx-1">/</span>
+                                    <span>{{ leave_policy.casual }}</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full" style="width: {% if leave_policy.casual %}{{ leave_balance.casual|floatformat:0|default:0|multiply:100|divide:leave_policy.casual }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
                     </div>
                     
+                        <div class="p-3 rounded-lg hover:bg-slate-50 transition-all duration-300 border border-transparent hover:border-slate-100 hover:shadow-sm">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
-                            <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                            <span class="text-sm text-gray-700">Sick Leave</span>
-                        </div>
-                        <span class="text-sm font-medium">{{ leave_balance.sick }}/{{ leave_policy.sick }}</span>
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center mr-3 shadow-sm group-hover:shadow-md transition-all duration-300 border border-blue-100">
+                                        <i class="fas fa-notes-medical text-blue-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-sm text-slate-700 font-medium">Sick Leave</span>
+                                </div>
+                                <div class="flex items-center bg-blue-50 rounded-full px-2.5 py-1 text-sm font-medium text-blue-700">
+                                    <span>{{ leave_balance.sick }}</span>
+                                    <span class="text-blue-400 mx-1">/</span>
+                                    <span>{{ leave_policy.sick }}</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full" style="width: {% if leave_policy.sick %}{{ leave_balance.sick|floatformat:0|default:0|multiply:100|divide:leave_policy.sick }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
                     </div>
                     
+                        <div class="p-3 rounded-lg hover:bg-slate-50 transition-all duration-300 border border-transparent hover:border-slate-100 hover:shadow-sm">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
-                            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                            <span class="text-sm text-gray-700">Annual Leave</span>
-                        </div>
-                        <span class="text-sm font-medium">{{ leave_balance.annual }}/{{ leave_policy.annual }}</span>
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center mr-3 shadow-sm group-hover:shadow-md transition-all duration-300 border border-emerald-100">
+                                        <i class="fas fa-plane-departure text-emerald-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-sm text-slate-700 font-medium">Annual Leave</span>
+                                </div>
+                                <div class="flex items-center bg-emerald-50 rounded-full px-2.5 py-1 text-sm font-medium text-emerald-700">
+                                    <span>{{ leave_balance.annual }}</span>
+                                    <span class="text-emerald-400 mx-1">/</span>
+                                    <span>{{ leave_policy.annual }}</span>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full" style="width: {% if leave_policy.annual %}{{ leave_balance.annual|floatformat:0|default:0|multiply:100|divide:leave_policy.annual }}%{% else %}0%{% endif %}"></div>
+                                </div>
+                            </div>
                     </div>
                     
-                    <div class="pt-2 border-t border-gray-200">
+                        <div class="pt-4 border-t border-slate-200">
+                            <div class="p-3 rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200/50 hover:shadow-md transition-all duration-300">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-medium text-gray-700">Total Available</span>
-                            <span class="text-sm font-bold text-gray-800">{{ leave_balance.total }}</span>
-                        </div>
+                                    <span class="text-sm font-medium text-slate-700 flex items-center">
+                                        <i class="fas fa-calculator text-indigo-500 mr-2"></i>
+                                        Total Available
+                                    </span>
+                                    <span class="text-lg font-bold text-indigo-700">{{ leave_balance.total }}</span>
+                                </div>
+                            </div>
                     </div>
                 </div>
             </div>
             
             <!-- Apply for Leave Form -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Apply for Leave</h2>
-                <form id="leaveApplicationForm" class="space-y-4">
+                <div class="dashboard-card p-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-50/50 to-transparent rounded-bl-full pointer-events-none"></div>
+                    <h2 class="text-lg font-semibold text-slate-800 mb-5 flex items-center relative z-10">
+                        <div class="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center mr-2 shadow-sm border border-purple-100/50">
+                            <i class="fas fa-calendar-plus text-purple-600 text-sm"></i>
+                        </div>
+                        Apply for Leave
+                    </h2>
+                    <form id="leaveApplicationForm" class="space-y-5 relative z-10">
                     {% csrf_token %}
                     <div>
-                        <label for="leaveType" class="block text-sm font-medium text-gray-700 mb-1">Leave Type</label>
-                        <select id="leaveType" name="leave_type" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <label for="leaveType" class="block text-sm font-medium text-slate-700 mb-2 flex items-center">
+                                <i class="fas fa-list-ul text-indigo-400 mr-1.5 text-[10px]"></i>
+                                Leave Type
+                            </label>
+                            <div class="relative">
+                                <select id="leaveType" name="leave_type" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm appearance-none bg-white pr-10">
                             <option value="">Select leave type</option>
                             {% for key, value in leave_types.items %}
                                 <option value="{{ key }}">{{ value }}</option>
                             {% endfor %}
                         </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                    <i class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                                </div>
+                            </div>
+                    </div>
+                    
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                                <label for="startDate" class="block text-sm font-medium text-slate-700 mb-2 flex items-center">
+                                    <i class="fas fa-calendar-day text-indigo-400 mr-1.5 text-[10px]"></i>
+                                    Start Date
+                                </label>
+                                <div class="relative">
+                                    <input type="date" id="startDate" name="start_date" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm">
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                        <i class="fas fa-calendar text-slate-400 text-xs"></i>
+                                    </div>
+                                </div>
                     </div>
                     
                     <div>
-                        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                        <input type="date" id="startDate" name="start_date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <label for="endDate" class="block text-sm font-medium text-slate-700 mb-2 flex items-center">
+                                    <i class="fas fa-calendar-day text-indigo-400 mr-1.5 text-[10px]"></i>
+                                    End Date
+                                </label>
+                                <div class="relative">
+                                    <input type="date" id="endDate" name="end_date" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm">
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                        <i class="fas fa-calendar text-slate-400 text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
                     </div>
                     
                     <div>
-                        <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                        <input type="date" id="endDate" name="end_date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <label for="reason" class="block text-sm font-medium text-slate-700 mb-2 flex items-center">
+                                <i class="fas fa-comment-alt text-indigo-400 mr-1.5 text-[10px]"></i>
+                                Reason
+                            </label>
+                            <textarea id="reason" name="reason" rows="3" class="w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm" placeholder="Please provide the reason for your leave request..."></textarea>
                     </div>
                     
                     <div>
-                        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                        <textarea id="reason" name="reason" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                            <label for="document" class="block text-sm font-medium text-slate-700 mb-2 flex items-center">
+                                <i class="fas fa-file-medical text-indigo-400 mr-1.5 text-[10px]"></i>
+                                Supporting Document (Optional)
+                            </label>
+                            <div class="relative border-2 border-dashed border-slate-200 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <input type="file" id="document" name="document" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                <div class="text-center py-3">
+                                    <i class="fas fa-cloud-upload-alt text-2xl text-indigo-400 mb-2"></i>
+                                    <p class="text-sm text-slate-600">Drag & drop a file here or click to browse</p>
+                                    <p class="text-xs text-slate-500 mt-1">Upload a medical certificate or other supporting document (PDF, JPG, PNG)</p>
+                                </div>
+                            </div>
+                            <div id="filePreview" class="mt-2 hidden">
+                                <div class="p-2 bg-indigo-50 rounded-lg border border-indigo-100 flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-file-alt text-indigo-500 mr-2"></i>
+                                        <span class="text-sm text-slate-700 truncate" id="fileName">document.pdf</span>
+                                    </div>
+                                    <button type="button" id="removeFile" class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
                     </div>
                     
                     <div>
-                        <label for="document" class="block text-sm font-medium text-gray-700 mb-1">Supporting Document (Optional)</label>
-                        <input type="file" id="document" name="document" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <p class="text-xs text-gray-500 mt-1">Upload a medical certificate or other supporting document (PDF, JPG, PNG)</p>
-                    </div>
-                    
-                    <div>
-                        <button type="submit" class="w-full bg-[#7B3DF3] hover:bg-[#6935D3] text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7B3DF3]">
+                            <button type="submit" class="w-full action-button action-button-primary bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 py-3 flex items-center justify-center transform hover:-translate-y-0.5 active:translate-y-0">
+                                <i class="fas fa-paper-plane mr-2"></i>
                             Submit Leave Application
                         </button>
                     </div>
@@ -103,79 +409,118 @@
         
         <!-- Leave History -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Leave History</h2>
+                <div class="dashboard-card p-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-indigo-50/30 to-transparent rounded-bl-full pointer-events-none"></div>
+                    <h2 class="text-lg font-semibold text-slate-800 mb-5 flex items-center relative z-10">
+                        <div class="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center mr-2 shadow-sm border border-indigo-100/50">
+                            <i class="fas fa-history text-indigo-600 text-sm"></i>
+                        </div>
+                        Leave History
+                    </h2>
                 
                 {% if leave_applications %}
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Days</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied On</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <div class="overflow-x-auto relative z-10">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100">
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Type</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Duration</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Days</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Applied On</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-slate-100">
                             {% for leave in leave_applications %}
-                            <tr>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {{ leave.get_leave_type_display }}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            {% if leave.get_leave_type_display == 'Casual Leave' %}
+                                            <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center mr-3 shadow-sm border border-indigo-100/50">
+                                                <i class="fas fa-coffee text-indigo-600 text-xs"></i>
+                                            </div>
+                                            {% elif leave.get_leave_type_display == 'Sick Leave' %}
+                                            <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 shadow-sm border border-blue-100/50">
+                                                <i class="fas fa-notes-medical text-blue-600 text-xs"></i>
+                                            </div>
+                                            {% elif leave.get_leave_type_display == 'Annual Leave' %}
+                                            <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3 shadow-sm border border-emerald-100/50">
+                                                <i class="fas fa-plane-departure text-emerald-600 text-xs"></i>
+                                            </div>
+                                            {% else %}
+                                            <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center mr-3 shadow-sm border border-purple-100/50">
+                                                <i class="fas fa-calendar-day text-purple-600 text-xs"></i>
+                                            </div>
+                                            {% endif %}
+                                            <span class="text-sm font-medium text-slate-800">{{ leave.get_leave_type_display }}</span>
+                                        </div>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                    {{ leave.start_date|date:"d M Y" }} - {{ leave.end_date|date:"d M Y" }}
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-slate-600">
+                                            <div class="flex items-center space-x-1">
+                                                <i class="fas fa-calendar-alt text-indigo-400 text-xs"></i>
+                                                <span>{{ leave.start_date|date:"d M Y" }}</span>
+                                            </div>
+                                            <div class="flex items-center space-x-1 mt-1">
+                                                <i class="fas fa-calendar-alt text-indigo-400 text-xs"></i>
+                                                <span>{{ leave.end_date|date:"d M Y" }}</span>
+                                            </div>
+                                        </div>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                    {{ leave.duration }}
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full font-medium">{{ leave.duration }} days</span>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <td class="px-4 py-4 whitespace-nowrap">
                                     {% if leave.status == 'pending' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        <div class="flex items-center">
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100">
+                                                <i class="fas fa-clock mr-1.5 text-[10px]"></i>
                                         Pending
                                     </span>
+                                        </div>
                                     {% elif leave.status == 'approved' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <div class="flex items-center">
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                                <i class="fas fa-check-circle mr-1.5 text-[10px]"></i>
                                         Approved
                                     </span>
+                                        </div>
                                     {% elif leave.status == 'rejected' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <div class="flex items-center">
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-50 text-red-700 border border-red-100">
+                                                <i class="fas fa-times-circle mr-1.5 text-[10px]"></i>
                                         Rejected
                                     </span>
+                                        </div>
                                     {% elif leave.status == 'cancelled' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <div class="flex items-center">
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-slate-50 text-slate-700 border border-slate-100">
+                                                <i class="fas fa-ban mr-1.5 text-[10px]"></i>
                                         Cancelled
                                     </span>
+                                        </div>
                                     {% endif %}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                    {{ leave.created_at|date:"d M Y" }}
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <span class="text-sm text-slate-600">{{ leave.created_at|date:"d M Y" }}</span>
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                    <button 
-                                        class="text-blue-600 hover:text-blue-800 mr-2" 
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <div class="flex space-x-2">
+                                            <button class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-colors"
                                         onclick="viewLeaveDetails('{{ leave.leave_id }}')"
-                                        title="View Details"
-                                    >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
+                                                title="View Details">
+                                                <i class="fas fa-eye text-xs"></i>
                                     </button>
                                     
                                     {% if leave.status == 'pending' %}
-                                    <button 
-                                        class="text-red-600 hover:text-red-800" 
+                                            <button class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600 hover:bg-red-100 transition-colors"
                                         onclick="cancelLeave('{{ leave.leave_id }}')"
-                                        title="Cancel Application"
-                                    >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
+                                                title="Cancel Application">
+                                                <i class="fas fa-times text-xs"></i>
                                     </button>
                                     {% endif %}
+                                        </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -183,23 +528,189 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-4">
-                    <p class="text-gray-500">No leave applications found</p>
+                    <div class="text-center py-12 bg-slate-50/50 rounded-xl border border-dashed border-slate-200 relative z-10">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 mb-4 border border-indigo-100">
+                            <i class="fas fa-calendar-times text-indigo-400 text-xl"></i>
+                        </div>
+                        <p class="text-slate-600 mb-1">No leave applications found</p>
+                        <p class="text-slate-400 text-sm">Your leave history will appear here once you apply for leave</p>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+    
+    <!-- Leave Details Modal -->
+    <div id="leaveDetailsModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-lg flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 mx-4 fade-in relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-indigo-50/30 to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="flex justify-between items-center mb-5 relative z-10">
+                <h3 class="text-lg font-semibold text-slate-800 flex items-center">
+                    <span class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-2 rounded-lg mr-2.5 shadow-md">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                    Leave Details
+                </h3>
+                <button id="closeLeaveDetailsBtn" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors transform hover:rotate-90 duration-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-5 relative z-10" id="leaveDetailsContent">
+                <!-- Content will be dynamically populated -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-8 mt-8 text-sm relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-white to-slate-50/50 pointer-events-none"></div>
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600"></div>
+        <div class="container mx-auto px-4 md:px-6 max-w-7xl relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0 flex flex-col md:flex-row items-center md:space-x-8">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center mr-2 shadow-md">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-base font-medium text-slate-800">HR Portal</p>
+                            <p class="text-xs text-slate-500">Employee Dashboard</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 transition-colors text-xs flex items-center px-3 py-1.5 rounded-lg hover:bg-slate-50">
+                            <i class="fas fa-info-circle mr-1.5 text-slate-400"></i>
+                            About
+                        </a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 transition-colors text-xs flex items-center px-3 py-1.5 rounded-lg hover:bg-slate-50">
+                            <i class="fas fa-envelope mr-1.5 text-slate-400"></i>
+                            Contact HR
+                        </a>
+                        <a href="#" class="text-slate-500 hover:text-indigo-600 transition-colors text-xs flex items-center px-3 py-1.5 rounded-lg hover:bg-slate-50">
+                            <i class="fas fa-question-circle mr-1.5 text-slate-400"></i>
+                            Help Center
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center md:items-end">
+                    <div class="flex items-center space-x-4 mb-3">
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-md">
+                            <i class="fab fa-linkedin-in text-sm"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-md">
+                            <i class="fab fa-twitter text-sm"></i>
+                        </a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-indigo-100 hover:text-indigo-600 transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-md">
+                            <i class="fab fa-instagram text-sm"></i>
+                        </a>
+                    </div>
+                    <p class="text-xs text-slate-500">&copy; 2023 Company Name. All rights reserved.</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap justify-center md:justify-between gap-4 text-xs text-slate-500">
+                <div class="flex flex-wrap gap-4">
+                    <a href="#" class="hover:text-indigo-600 transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-indigo-600 transition-colors">Terms of Service</a>
+                    <a href="#" class="hover:text-indigo-600 transition-colors">Cookie Policy</a>
+                </div>
+                <div>
+                    <span class="bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">Version 1.2.0</span>
+                </div>
+            </div>
+        </div>
+    </footer>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const leaveForm = document.getElementById('leaveApplicationForm');
-        
-        if (leaveForm) {
-            leaveForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitLeaveApplication();
+            const documentInput = document.getElementById('document');
+            const filePreview = document.getElementById('filePreview');
+            const fileName = document.getElementById('fileName');
+            const removeFileBtn = document.getElementById('removeFile');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const leaveDetailsModal = document.getElementById('leaveDetailsModal');
+            const closeLeaveDetailsBtn = document.getElementById('closeLeaveDetailsBtn');
+            
+            // Mobile menu toggle
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    if (mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.remove('hidden');
+                        mobileMenu.classList.add('animate__fadeIn');
+                    } else {
+                        mobileMenu.classList.add('animate__fadeOut');
+                        setTimeout(() => {
+                            mobileMenu.classList.add('hidden');
+                            mobileMenu.classList.remove('animate__fadeOut');
+                        }, 300);
+                    }
+                });
+            }
+            
+            // Handle file upload
+            if (documentInput) {
+                documentInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        
+                        // Check file size (max 2MB)
+                        if (file.size > 2 * 1024 * 1024) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'File Too Large',
+                                text: 'The file size exceeds the 2MB limit. Please choose a smaller file.',
+                                confirmButtonColor: '#6366F1',
+                                customClass: {
+                                    popup: 'rounded-xl shadow-xl'
+                                }
+                            });
+                            this.value = '';
+                            return;
+                        }
+                        
+                        // Check file type
+                        const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+                        if (!validTypes.includes(file.type)) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Invalid File Type',
+                                text: 'Please upload a PDF, JPG, or PNG file.',
+                                confirmButtonColor: '#6366F1',
+                                customClass: {
+                                    popup: 'rounded-xl shadow-xl'
+                                }
+                            });
+                            this.value = '';
+                            return;
+                        }
+                        
+                        // Show file preview
+                        fileName.textContent = file.name;
+                        filePreview.classList.remove('hidden');
+                    }
+                });
+            }
+            
+            // Remove file
+            if (removeFileBtn) {
+                removeFileBtn.addEventListener('click', function() {
+                    documentInput.value = '';
+                    filePreview.classList.add('hidden');
+                });
+            }
+            
+            // Close leave details modal
+            if (closeLeaveDetailsBtn && leaveDetailsModal) {
+                closeLeaveDetailsBtn.addEventListener('click', function() {
+                    leaveDetailsModal.classList.add('hidden');
             });
         }
         
@@ -211,170 +722,383 @@
         // Set end date min value based on start date
         document.getElementById('startDate').addEventListener('change', function() {
             document.getElementById('endDate').setAttribute('min', this.value);
-            if (document.getElementById('endDate').value < this.value) {
+                if (document.getElementById('endDate').value && document.getElementById('endDate').value < this.value) {
                 document.getElementById('endDate').value = this.value;
+                }
+            });
+            
+            // Handle leave application form submission
+            if (leaveForm) {
+                leaveForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitLeaveApplication();
+                });
             }
         });
-    });
-    
+        
+        // Function to view leave details
+        function viewLeaveDetails(leaveId) {
+            // Show loading state
+            const leaveDetailsModal = document.getElementById('leaveDetailsModal');
+            const leaveDetailsContent = document.getElementById('leaveDetailsContent');
+            
+            if (leaveDetailsModal && leaveDetailsContent) {
+                leaveDetailsModal.classList.remove('hidden');
+                
+                // Add loading indicator
+                leaveDetailsContent.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-8">
+                        <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+                        <p class="text-slate-600">Loading leave details...</p>
+                    </div>
+                `;
+                
+                // Fetch leave details from the server
+                fetch(`/hr_management/employee/leave/${leaveId}/details/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Determine status color class
+                            let statusColorClass = 'bg-yellow-50 text-yellow-700 border-yellow-100';
+                            let statusIcon = 'fas fa-clock';
+                            
+                            if (data.leave.status === 'approved') {
+                                statusColorClass = 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                                statusIcon = 'fas fa-check-circle';
+                            } else if (data.leave.status === 'rejected') {
+                                statusColorClass = 'bg-red-50 text-red-700 border-red-100';
+                                statusIcon = 'fas fa-times-circle';
+                            } else if (data.leave.status === 'cancelled') {
+                                statusColorClass = 'bg-slate-50 text-slate-700 border-slate-100';
+                                statusIcon = 'fas fa-ban';
+                            }
+                            
+                            // Format dates
+                            const startDate = new Date(data.leave.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                            const endDate = new Date(data.leave.end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                            const createdAt = new Date(data.leave.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                            const updatedAt = data.leave.updated_at ? new Date(data.leave.updated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+                            
+                            // Populate the modal with leave details
+                            leaveDetailsContent.innerHTML = `
+                                <div class="bg-slate-50 rounded-lg p-4 mb-4">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-sm font-medium text-slate-700">Leave ID</span>
+                                        <span class="text-sm text-slate-900 font-medium">#${data.leave.leave_id}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-slate-700">Status</span>
+                                        <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColorClass} border">
+                                            <i class="${statusIcon} mr-1.5 text-[10px]"></i>
+                                            ${data.leave.status.charAt(0).toUpperCase() + data.leave.status.slice(1)}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="flex items-center p-3 rounded-lg bg-slate-50/50 border border-slate-100 hover:bg-slate-50 transition-all">
+                                        <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center mr-3 shadow-sm border border-indigo-100/50">
+                                            <i class="fas fa-tag text-indigo-600 text-xs"></i>
+                                        </div>
+                                        <div class="flex-grow">
+                                            <span class="text-xs text-slate-500">Leave Type</span>
+                                            <p class="text-sm font-medium text-slate-800">${data.leave.leave_type}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center p-3 rounded-lg bg-slate-50/50 border border-slate-100 hover:bg-slate-50 transition-all">
+                                        <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center mr-3 shadow-sm border border-blue-100/50">
+                                            <i class="fas fa-calendar-day text-blue-600 text-xs"></i>
+                                        </div>
+                                        <div class="flex-grow">
+                                            <span class="text-xs text-slate-500">Duration</span>
+                                            <p class="text-sm font-medium text-slate-800">${startDate} to ${endDate} (${data.leave.duration} days)</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start p-3 rounded-lg bg-slate-50/50 border border-slate-100 hover:bg-slate-50 transition-all">
+                                        <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center mr-3 shadow-sm border border-amber-100/50 mt-0.5">
+                                            <i class="fas fa-comment-alt text-amber-600 text-xs"></i>
+                                        </div>
+                                        <div class="flex-grow">
+                                            <span class="text-xs text-slate-500">Reason</span>
+                                            <p class="text-sm text-slate-800 whitespace-pre-line">${data.leave.reason || 'No reason provided'}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center p-3 rounded-lg bg-slate-50/50 border border-slate-100 hover:bg-slate-50 transition-all">
+                                        <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3 shadow-sm border border-emerald-100/50">
+                                            <i class="fas fa-history text-emerald-600 text-xs"></i>
+                                        </div>
+                                        <div class="flex-grow">
+                                            <span class="text-xs text-slate-500">Timeline</span>
+                                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                                <div>
+                                                    <span class="text-xs text-slate-500">Applied On</span>
+                                                    <p class="text-sm font-medium text-slate-800">${createdAt}</p>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-slate-500">Last Updated</span>
+                                                    <p class="text-sm font-medium text-slate-800">${updatedAt}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    ${data.leave.status === 'pending' ? `
+                                    <div class="flex justify-end pt-3">
+                                        <button type="button" onclick="cancelLeave('${data.leave.leave_id}')" class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-4 rounded-lg transition-colors duration-300 flex items-center">
+                                            <i class="fas fa-times mr-1.5 text-xs"></i>
+                                            Cancel Request
+                                        </button>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        } else {
+                            leaveDetailsContent.innerHTML = `
+                                <div class="text-center py-8">
+                                    <i class="fas fa-exclamation-circle text-red-500 text-3xl mb-3"></i>
+                                    <p class="text-slate-800 font-medium">Failed to load leave details</p>
+                                    <p class="text-slate-600 text-sm mt-1">${data.message || 'An error occurred. Please try again.'}</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        leaveDetailsContent.innerHTML = `
+                            <div class="text-center py-8">
+                                <i class="fas fa-exclamation-circle text-red-500 text-3xl mb-3"></i>
+                                <p class="text-slate-800 font-medium">Failed to load leave details</p>
+                                <p class="text-slate-600 text-sm mt-1">An unexpected error occurred. Please try again.</p>
+                            </div>
+                        `;
+                    });
+            }
+        }
+        
+        // Function to cancel a leave application
+        function cancelLeave(leaveId) {
+            Swal.fire({
+                title: 'Cancel Leave Request?',
+                text: 'Are you sure you want to cancel this leave request? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#64748B',
+                confirmButtonText: 'Yes, cancel it!',
+                cancelButtonText: 'No, keep it',
+                customClass: {
+                    popup: 'rounded-xl shadow-xl'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading indicator
+                    Swal.fire({
+                        title: 'Processing',
+                        text: 'Cancelling your leave request...',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        willOpen: () => {
+                            Swal.showLoading();
+                        },
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    });
+                    
+                    // Send cancel request
+                    fetch(`/hr_management/employee/leave/${leaveId}/cancel/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Leave Cancelled',
+                                text: data.message || 'Your leave request has been successfully cancelled.',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                customClass: {
+                                    popup: 'rounded-xl shadow-xl'
+                                }
+                            }).then(() => {
+                                // Reload page to reflect changes
+                                window.location.reload();
+                            });
+                            
+                            // If leave details modal is open, close it
+                            const leaveDetailsModal = document.getElementById('leaveDetailsModal');
+                            if (leaveDetailsModal && !leaveDetailsModal.classList.contains('hidden')) {
+                                leaveDetailsModal.classList.add('hidden');
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Failed to Cancel',
+                                text: data.message || 'Failed to cancel leave request.',
+                                confirmButtonColor: '#6366F1',
+                                customClass: {
+                                    popup: 'rounded-xl shadow-xl'
+                                }
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred. Please try again.',
+                            confirmButtonColor: '#6366F1',
+                            customClass: {
+                                popup: 'rounded-xl shadow-xl'
+                            }
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Function to submit leave application
     function submitLeaveApplication() {
         const form = document.getElementById('leaveApplicationForm');
-        const formData = {
-            leave_type: form.querySelector('[name="leave_type"]').value,
-            start_date: form.querySelector('[name="start_date"]').value,
-            end_date: form.querySelector('[name="end_date"]').value,
-            reason: form.querySelector('[name="reason"]').value
-        };
+        const formData = new FormData(form);
+        
+        // Get form values
+        const leaveType = formData.get('leave_type');
+        const startDate = formData.get('start_date');
+        const endDate = formData.get('end_date');
+        const reason = formData.get('reason');
         
         // Validate inputs
-        if (!formData.leave_type) {
-            showNotification('Please select a leave type', 'error');
+        if (!leaveType) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Information',
+                    text: 'Please select a leave type',
+                    confirmButtonColor: '#6366F1',
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    }
+                });
             return;
         }
         
-        if (!formData.start_date) {
-            showNotification('Please select a start date', 'error');
+        if (!startDate) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Information',
+                    text: 'Please select a start date',
+                    confirmButtonColor: '#6366F1',
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    }
+                });
             return;
         }
         
-        if (!formData.end_date) {
-            showNotification('Please select an end date', 'error');
+        if (!endDate) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Information',
+                    text: 'Please select an end date',
+                    confirmButtonColor: '#6366F1',
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    }
+                });
             return;
         }
         
-        if (!formData.reason) {
-            showNotification('Please provide a reason for your leave', 'error');
-            return;
-        }
-        
-        // Check if document is uploaded
-        const documentFile = form.querySelector('[name="document"]').files[0];
-        
-        if (documentFile) {
-            // Handle file upload separately
-            const fileFormData = new FormData();
-            fileFormData.append('document', documentFile);
-            // Additional fields can be added here
-        }
-        
-        // Submit API request
-        fetch('/hr_management/api/leave/apply/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
-            },
-            body: JSON.stringify(formData)
+        if (!reason) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Information',
+                    text: 'Please provide a reason for your leave',
+                    confirmButtonColor: '#6366F1',
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    }
+                });
+                return;
+            }
+            
+            // Calculate the duration (in days)
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1; // Including both start and end days
+            
+            // Show loading indicator
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...';
+            submitBtn.disabled = true;
+            
+            // Submit the form via AJAX
+            fetch('/hr_management/employee/leave/apply/', {
+                method: 'POST',
+                body: formData
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                showNotification('Leave application submitted successfully', 'success');
-                // Reset form
-                form.reset();
-                // Reload page after 2 seconds to show updated list
-                setTimeout(function() {
-                    window.location.reload();
-                }, 2000);
+                // Reset button state
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                if (data.success) {
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Leave Applied',
+                        text: data.message || 'Your leave application has been submitted successfully.',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                    }).then(() => {
+                        // Reload page to reflect changes
+                        window.location.reload();
+                });
             } else {
-                showNotification(data.message || 'Failed to submit leave application', 'error');
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Application Failed',
+                        text: data.message || 'Failed to submit leave application.',
+                        confirmButtonColor: '#6366F1',
+                        customClass: {
+                            popup: 'rounded-xl shadow-xl'
+                        }
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('An error occurred. Please try again.', 'error');
-        });
-    }
-    
-    function viewLeaveDetails(leaveId) {
-        // Fetch leave details and show in modal
+                
+                // Reset button state
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                // Show error message
         Swal.fire({
-            title: 'Leave Details',
-            html: '<div class="text-center py-4"><p class="text-gray-500">Loading details...</p></div>',
-            showConfirmButton: false,
-            showCloseButton: true,
-            width: '32rem'
-        });
-        
-        // This would typically fetch details from the server
-        // For now, just show a placeholder
-        setTimeout(() => {
-            Swal.update({
-                html: `
-                    <div class="text-left px-4">
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Leave Type</p>
-                            <p class="font-medium">Annual Leave</p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Duration</p>
-                            <p class="font-medium">5 days (Aug 15, 2023 - Aug 19, 2023)</p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Status</p>
-                            <p class="font-medium">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Pending
-                                </span>
-                            </p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Reason</p>
-                            <p class="font-medium">Family vacation</p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Applied On</p>
-                            <p class="font-medium">Aug 1, 2023</p>
-                        </div>
-                    </div>
-                `,
-                showConfirmButton: true,
-                confirmButtonText: 'Close',
-                confirmButtonColor: '#7B3DF3'
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again.',
+                    confirmButtonColor: '#6366F1',
+                    customClass: {
+                        popup: 'rounded-xl shadow-xl'
+                    }
+                });
             });
-        }, 1000);
-    }
-    
-    function cancelLeave(leaveId) {
-        Swal.fire({
-            title: 'Cancel Leave Application',
-            text: 'Are you sure you want to cancel this leave application?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, cancel it',
-            cancelButtonText: 'No, keep it',
-            confirmButtonColor: '#EF4444',
-            cancelButtonColor: '#6B7280',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Handle leave cancellation
-                showNotification('Leave application cancelled successfully', 'success');
-                // Reload page after 2 seconds
-                setTimeout(function() {
-                    window.location.reload();
-                }, 2000);
-            }
-        });
-    }
-    
-    function showNotification(message, type = 'success') {
-        const bgColor = type === 'success' ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800';
-        
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-4 py-2 border-l-4 rounded shadow-md ${bgColor} transition-opacity duration-300`;
-        notification.style.zIndex = '9999';
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 3000);
-    }
+        }
 </script>
 </body>
 </html>

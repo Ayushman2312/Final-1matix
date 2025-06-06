@@ -1457,7 +1457,12 @@ def ai_analysis_api(request):
         trend_data = data.get('data')
         business_intent = data.get('business_intent', '')  # Get the business_intent value
         
-        logger.info(f"Received AI analysis request for keyword: {keyword} with business_intent: {business_intent}")
+        # Extract additional variables from the request
+        brand_name = data.get('brand_name', '')
+        user_website = data.get('user_website', '')
+        marketplaces_selected = data.get('marketplaces_selected', '')
+        
+        logger.info(f"Received AI analysis request for keyword: {keyword} with business_intent: {business_intent}, brand_name: {brand_name}, website: {user_website}")
 
         if not keyword:
             logger.warning("Missing keyword in AI analysis API request")
@@ -1483,8 +1488,16 @@ def ai_analysis_api(request):
             # Use Google Generative AI for analysis when API key is available
             if GOOGLE_API_KEY:
                 try:
-                    # Generate analysis using AI, including business_intent
-                    analysis, recommendations = analyze_with_generative_ai(keyword, metrics, trend_data, business_intent)
+                    # Generate analysis using AI, including business_intent and additional variables
+                    analysis, recommendations = analyze_with_generative_ai(
+                        keyword, 
+                        metrics, 
+                        trend_data, 
+                        business_intent,
+                        brand_name,
+                        user_website,
+                        marketplaces_selected
+                    )
                     
                     return JsonResponse({
                         'status': 'success',
@@ -1531,7 +1544,7 @@ def ai_analysis_api(request):
             'message': str(e)
         }, status=500)
 
-def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent=''):
+def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent='', brand_name='', user_website='', marketplaces_selected=''):
     """
     Use Google's Generative AI model to analyze trends data and provide recommendations.
     
@@ -1540,6 +1553,9 @@ def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent='')
         metrics: Dictionary of metrics extracted from trend data
         trend_data: The original trend data
         business_intent: Optional string indicating if user wants to start a business ('yes', 'no', 'not_sure')
+        brand_name: Optional string indicating the brand name
+        user_website: Optional string indicating the user's website
+        marketplaces_selected: Optional string indicating the marketplaces selected
         
     Returns:
         Tuple of (analysis, recommendations) strings
@@ -1589,7 +1605,10 @@ def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent='')
             "trough_periods": [{"date": p["date"], "value": p["value"]} for p in metrics["trough_periods"]],
             "seasonal": metrics["seasonal"],
             "recent_direction": metrics["recent_direction"],
-            "business_intent": business_intent  # Add business intent to metrics
+            "business_intent": business_intent,  # Add business intent to metrics
+            "brand_name": brand_name,
+            "user_website": user_website,
+            "marketplaces_selected": marketplaces_selected
         }
         
         # Create a concise data summary to send to the API
@@ -1630,44 +1649,129 @@ def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent='')
         business_context = ""
         if business_intent == 'yes':
             business_context = "The user wants to START a new business related to this keyword."
-            recommendations_section = """
-            # Since the user wants to START a new business:
-            
-            - Give a **simple plan** to enter this market step by step.
-            - Mention if it's a good idea to enter now or wait.
-            - Help them avoid big mistakes (if the trend looks risky).
-            - Tell them what content or campaign will help them start visibility.
-            - Suggest **3–5 keywords** that are low-competition but related.
-            - Suggest **5 blog/video ideas** to get early attention and trust.
-            - Use bullet points. Write like a friend giving a plan. Be honest and sharp.
-            """
+            recommendations_section = f"""
+You are a search trend analyst and expert digital marketer working for TrendIQ. You are analyzing market demand data for the keyword: "{keyword}"
+
+Here is the raw data and pattern summary:
+{data_summary}
+
+The user wants to start a business in this category. Your job is to explain clearly how the trend is behaving.
+
+Start by giving a clean, honest, easy-to-understand **analysis** using the following format:
+
+1. Is the trend growing, falling, or staying flat over the last 5 years?
+2. How many strong spikes (peaks) are there? When did the last big peak happen?
+3. Do the spikes follow a pattern (seasonal) or are they random?
+4. Are there months with very low or zero interest (dead periods)?
+5. Is the trend stable or unstable (volatility)?
+6. In the last 3 months, is interest rising, dropping, or staying flat?
+
+Rules:
+- Use **simple and clean English** (like explaining to a 5th grade Indian student).
+- Use bullet points for 60–70% of the answer.
+- Do **not** give any opinions, suggestions, or emotional lines in this part.
+- Do **not mention TikTok** at all. Never include it.
+- Do **not say Google Trends** or mention any data sources.
+- Just describe what the trend is doing. That's it.
+
+---
+
+Now give a **Recommendation Plan** for someone who wants to start:
+
+- Give a simple, clear step-by-step plan to enter this market.
+- Based on the niche, decide smartly:
+  - If they should focus on YouTube, Instagram Reels, YouTube Shorts, Blogs — or a mix
+  - If this niche suits ecommerce, marketplace selling, brand-building, or local promotion
+- Use your intelligence to guide which formats are suitable:
+  - Example: Fashion/Lifestyle = All content types
+  - Example: Car/Industrial products = Long-form YouTube + Blog only
+- Suggest **10–15 low-competition keywords** that are easy to rank
+- Suggest **25 blog or video content topics** that can drive traffic and attention
+
+Rules:
+- Be specific to this category
+- No bookish theory. No emotional talk. No fluff.
+- Use bullet points
+- Keep it honest, practical, and sharp
+"""
         elif business_intent == 'no':
             business_context = "The user is ALREADY IN BUSINESS related to this keyword."
-            recommendations_section = """
-            # Since the user is ALREADY IN BUSINESS:
             
-            - Give 4–6 solid action steps to grow their business using this trend.
-            - Mention the best months to focus ads and promotions (if any peak time exists).
-            - If the trend is flat, suggest stable growth strategies.
-            - Suggest **3–5 keywords** that are easier to rank based on current search pattern.
-            - Suggest **5 blog/video topics** that can help them go viral or get attention on Google or social media.
-            - Make sure every point is useful, not bookish.
-            - Do not use any fancy English or deep theory.
-            """
-        else:
-            # Default or 'not_sure' case
-            business_context = "The user is interested in business opportunities related to this keyword."
-            recommendations_section = """
-            # General business recommendations:
+            # Prepare business details section with conditional formatting for optional fields
+            business_details = f"- Brand Name: {brand_name}\n"
             
-            - Explain if there is a business opportunity for this keyword based on the trend data.
-            - Give 3-4 ways to monetize or build business around this keyword.
-            - Mention the best months to focus efforts (if any peak time exists).
-            - If the trend is flat, suggest stable growth strategies.
-            - Suggest **3–5 related keywords** that might be worthwhile.
-            - Suggest **5 content ideas** that can help build authority in this space.
-            - Keep it practical and actionable for someone new to this area.
-            """
+            if user_website:
+                business_details += f"- Website: {user_website}\n"
+                
+            business_details += f"- Marketplaces Selected: {marketplaces_selected} (Amazon, Flipkart, Meesho, IndiaMART, JioMart, etc.)"
+            
+            recommendations_section = f"""
+You are a search trend analyst and expert digital marketer working for TrendIQ. You are analyzing market demand data for the keyword: "{keyword}"
+
+Here is the raw data and pattern summary:
+{data_summary}
+
+The user is already in this business. They also shared:
+{business_details}
+
+Your job is to explain the trend in a clean and simple way, then generate a smart action plan tailored to this user.
+
+---
+
+Start with the **Search Trend Analysis** using this structure:
+
+1. Is the trend growing, falling, or staying flat over the last 5 years?
+2. How many strong spikes (peaks) are there? When was the last big peak?
+3. Are the spikes seasonal or random?
+4. Are there months with very low or zero interest (dead periods)?
+5. Is the graph stable or unpredictable (volatility)?
+6. What happened in the last 3 months — going up, down, or flat?
+
+**Rules:**
+- Use **simple English** (like talking to a 5th grade Indian student).
+- Use bullet points for most of your answer.
+- Do **not mention TikTok** at all. It is banned in India and not relevant.
+- Do **not mention Google Trends** or where this data came from.
+- No opinions, no theory, no emotion — just tell what the graph is showing.
+
+---
+
+Now give a sharp **6-Month Business Action Plan** based on all inputs:
+
+1. ✅ **Website Audit**:
+   - Check SEO-friendliness, mobile speed, core web vitals, keyword structure
+   - See if the site is optimized for AI Overview (FAQ blocks, schema, blog relevance)
+   - Point out if the website lacks content or keyword depth
+
+2. 🛒 **Marketplace & Brand Presence Audit**:
+   - Check visibility and quality on selected marketplaces
+   - Spot issues like: low reviews, poor images, wrong titles, missing A+ content
+   - Mention if brand lacks presence in SERP or platform search
+
+3. 🎯 **Platform Strategy (Use Intelligence Based on Niche)**:
+   - Suggest content platforms wisely: YouTube, Reels, Shorts, Blog – not all fit every niche
+   - Example: Fashion, Food, Beauty → All platforms
+   - Example: Car parts, Machinery, B2B → YouTube + Blogs only
+   - Suggest ecommerce, marketplace, or direct funnel – only if it fits their business
+   - NEVER mention TikTok. Do not suggest it.
+
+4. 🔍 **Keyword Suggestions**:
+   - Give **10–15 low-competition keywords** relevant to this category
+
+5. 🧠 **Content Calendar**:
+   - Suggest **25 blog/video topic ideas** tailored to their niche
+   - Topics should help them gain organic traffic, authority, and brand trust
+
+6. 📰 **Bonus PR & Influencer Suggestions** (Only if relevant):
+   - Suggest the best blogs, media sites, influencer pages, or content partners specific to their industry
+   - Mention if a competitor was featured somewhere — and if this brand should aim for it too
+
+**Final Rules:**
+- No emotional tone, no fancy language
+- Use bullet points for 70%+ of your output
+- Everything must be practical, niche-specific, and based on actual search + brand input
+"""
+
         
         # Create the recommendations prompt
         recommendations_prompt = f"""
@@ -1701,7 +1805,6 @@ def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent='')
     except Exception as e:
         logger.error(f"Error in analyze_with_generative_ai: {str(e)}", exc_info=True)
         raise
-
 def extract_trend_metrics(trend_data, keyword):
     """
     Extract key metrics from trend data for analysis.
@@ -2047,3 +2150,48 @@ def generate_trend_recommendations(keyword, metrics):
         recommendations += "7. Incremental Improvement: With stable recent performance, focus on incremental improvements to gradually enhance engagement and interest.\n\n"
     
     return recommendations 
+
+
+
+    # Prompt used for Analysis:
+    """
+    Analyze the following Google Trends data for [keyword]:
+    - Overall trend direction and strength over the full time period
+    - Volatility levels and pattern changes
+    - Presence of seasonal patterns or cycles
+    - Recent trend direction (last 3 months)
+    - Key spikes or drops and potential causes
+    - Geographic distribution of interest
+    - Related topics and queries
+    
+    Provide a detailed analysis covering:
+    1. Overall trend assessment
+    2. Pattern identification
+    3. Geographic insights
+    4. Related topics analysis
+    5. Key events correlation
+    6. Future trajectory prediction
+    """
+
+    # Prompt used for Recommendations:
+    """
+    Based on the trends analysis for [keyword], provide strategic recommendations covering:
+    1. Growth/Maintenance Strategy based on overall trend
+    2. Resource allocation and investment priorities
+    3. Risk management approach based on volatility
+    4. Event response planning
+    5. Seasonal planning if applicable
+    6. Geographic targeting suggestions
+    7. Content/Product development direction
+    8. Marketing and positioning strategy
+    
+    Consider:
+    - Overall trend direction (increasing/stable/decreasing)
+    - Volatility levels
+    - Seasonal patterns
+    - Recent direction changes
+    - Geographic opportunities
+    - Related topics potential
+    
+    Provide actionable recommendations with clear rationale and implementation guidance.
+    """

@@ -4,39 +4,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salary Slips</title>
+    <title>Reimbursement Requests</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.4/minified/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafb;
+        }
+        
+        .page-transition {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
-<body>
-<div class="container mx-auto px-4 py-8">
+<body class="bg-gray-50">
+<div class="container mx-auto px-4 py-8 page-transition">
     <!-- Page Header -->
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800">Reimbursement Requests</h1>
-        <p class="text-gray-600">Submit and track your expense reimbursements</p>
+    <div class="mb-8 bg-gradient-to-r from-purple-700 to-indigo-800 rounded-xl shadow-lg p-6 text-white">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">Reimbursement Requests</h1>
+                <p class="mt-2 text-purple-100">Submit and track your expense reimbursements</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <div class="flex items-center bg-white/20 rounded-lg px-3 py-2">
+                    <svg class="w-5 h-5 mr-2 text-purple-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-sm text-purple-100">Processing time: 5-7 business days</span>
+                </div>
+            </div>
+        </div>
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Submit Reimbursement Form -->
         <div class="lg:col-span-1">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Submit New Request</h2>
+            <div class="bg-white rounded-xl shadow-md p-6 hover-scale">
+                <div class="flex items-center mb-6">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                        <svg class="w-6 h-6 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Submit New Request</h2>
+                </div>
+                
                 <form id="reimbursementForm" class="space-y-4" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div>
                         <label for="expenseDate" class="block text-sm font-medium text-gray-700 mb-1">Expense Date</label>
-                        <input type="date" id="expenseDate" name="expense_date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <input type="date" id="expenseDate" name="expense_date" class="w-full pl-10 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors">
+                        </div>
                     </div>
                     
                     <div>
                         <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Expense Category</label>
-                        <select id="category" name="category" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option value="">Select category</option>
-                            {% for key, value in expense_categories.items %}
-                                <option value="{{ key }}">{{ value }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                            </div>
+                            <select id="category" name="category" class="w-full pl-10 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white transition-colors">
+                                <option value="">Select category</option>
+                                {% for key, value in expense_categories.items %}
+                                    <option value="{{ key }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                     
                     <div>
@@ -45,33 +109,54 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <span class="text-gray-500">₹</span>
                             </div>
-                            <input type="number" id="amount" name="amount" step="0.01" min="0" class="w-full pl-8 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <input type="number" id="amount" name="amount" step="0.01" min="0" class="w-full pl-8 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors">
                         </div>
                     </div>
                     
                     <div>
                         <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
-                        <select id="currency" name="currency" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option value="INR" selected>Indian Rupee (INR)</option>
-                            <option value="USD">US Dollar (USD)</option>
-                            <option value="EUR">Euro (EUR)</option>
-                            <option value="GBP">British Pound (GBP)</option>
-                        </select>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <select id="currency" name="currency" class="w-full pl-10 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white transition-colors">
+                                <option value="INR" selected>Indian Rupee (INR)</option>
+                                <option value="USD">US Dollar (USD)</option>
+                                <option value="EUR">Euro (EUR)</option>
+                                <option value="GBP">British Pound (GBP)</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                     
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea id="description" name="description" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        <textarea id="description" name="description" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"></textarea>
                     </div>
                     
                     <div>
                         <label for="receipt" class="block text-sm font-medium text-gray-700 mb-1">Receipt Image</label>
-                        <input type="file" id="receipt" name="receipt" accept="image/*,.pdf" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <p class="text-xs text-gray-500 mt-1">Upload receipt image or PDF (Max 2MB)</p>
+                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                            <input type="file" id="receipt" name="receipt" accept="image/*,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-600" id="file-name">Drag & drop or click to upload</p>
+                            <p class="mt-1 text-xs text-gray-500">Upload receipt image or PDF (Max 2MB)</p>
+                        </div>
                     </div>
                     
-                    <div>
-                        <button type="submit" class="w-full bg-[#7B3DF3] hover:bg-[#6935D3] text-white font-medium py-2 px-4 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7B3DF3]">
+                    <div class="pt-4">
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
                             Submit Reimbursement Request
                         </button>
                     </div>
@@ -79,107 +164,215 @@
             </div>
             
             <!-- Instructions Card -->
-            <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Reimbursement Guidelines</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-600">
-                    <li>Submit receipts within 30 days of expense</li>
-                    <li>Ensure receipt images are clearly legible</li>
-                    <li>Include all mandatory details (date, amount, vendor)</li>
-                    <li>For meals, list attendees if for business meetings</li>
-                    <li>International expenses should have exchange rate proof</li>
-                    <li>Processing typically takes 5-7 business days</li>
+            <div class="bg-white rounded-xl shadow-md p-6 mt-6 hover-scale">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800">Reimbursement Guidelines</h3>
+                </div>
+                <ul class="space-y-3 text-sm text-gray-600">
+                    <li class="flex items-start">
+                        <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Submit receipts within 30 days of expense</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Ensure receipt images are clearly legible</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Include all mandatory details (date, amount, vendor)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>For meals, list attendees if for business meetings</span>
+                    </li>
+                    <li class="flex items-start">
+                        <svg class="h-5 w-5 text-green-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>International expenses should have exchange rate proof</span>
+                    </li>
                 </ul>
             </div>
         </div>
         
         <!-- Reimbursement History -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Request History</h2>
+            <div class="bg-white rounded-xl shadow-md p-6 hover-scale">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Request History</h2>
+                    </div>
+                    
+                    <div class="hidden md:flex items-center space-x-2">
+                        <div class="flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                            <div class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></div>
+                            <span class="text-xs font-medium">Pending</span>
+                        </div>
+                        <div class="flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800">
+                            <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                            <span class="text-xs font-medium">Approved</span>
+                        </div>
+                        <div class="flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800">
+                            <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
+                            <span class="text-xs font-medium">Paid</span>
+                        </div>
+                    </div>
+                </div>
                 
                 {% if reimbursement_requests %}
-                <div class="overflow-x-auto">
+                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg mb-4 overflow-hidden shadow-inner">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between text-sm">
+                        <div class="flex items-center mb-2 md:mb-0">
+                            <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                            <span class="text-gray-700 font-medium">Total Requests: <span class="text-indigo-700">{{ reimbursement_requests|length }}</span></span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-yellow-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-gray-700">Pending: 
+                                    <span class="text-yellow-700 font-medium">
+                                        {% with pending_count=0 %}
+                                            {% for request in reimbursement_requests %}
+                                                {% if request.status == 'pending' %}
+                                                    {% with pending_count=pending_count|add:1 %}{% endwith %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ pending_count }}
+                                        {% endwith %}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-gray-700">Approved: 
+                                    <span class="text-green-700 font-medium">
+                                        {% with approved_count=0 %}
+                                            {% for request in reimbursement_requests %}
+                                                {% if request.status == 'approved' %}
+                                                    {% with approved_count=approved_count|add:1 %}{% endwith %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ approved_count }}
+                                        {% endwith %}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto rounded-xl shadow-inner bg-gray-50">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Submitted On</th>
-                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        <thead>
+                            <tr class="bg-gradient-to-r from-purple-700 to-indigo-800 text-white">
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Category</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider hidden md:table-cell">Submitted On</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             {% for request in reimbursement_requests %}
-                            <tr>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                                     {{ request.expense_date|date:"d M Y" }}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">
                                     {{ request.get_category_display }}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                    {{ request.currency }} {{ request.amount|floatformat:2 }}
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 font-medium">
+                                    <span class="text-indigo-700">{{ request.currency }}</span> {{ request.amount|floatformat:2 }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     {% if request.status == 'pending' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 items-center">
+                                        <span class="w-1.5 h-1.5 bg-yellow-600 rounded-full mr-1"></span>
                                         Pending
                                     </span>
                                     {% elif request.status == 'approved' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 items-center">
+                                        <span class="w-1.5 h-1.5 bg-green-600 rounded-full mr-1"></span>
                                         Approved
                                     </span>
                                     {% elif request.status == 'rejected' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 items-center">
+                                        <span class="w-1.5 h-1.5 bg-red-600 rounded-full mr-1"></span>
                                         Rejected
                                     </span>
                                     {% elif request.status == 'paid' %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 items-center">
+                                        <span class="w-1.5 h-1.5 bg-blue-600 rounded-full mr-1"></span>
                                         Paid
                                     </span>
                                     {% endif %}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
                                     {{ request.created_at|date:"d M Y" }}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                    <button 
-                                        class="text-blue-600 hover:text-blue-800 mr-2" 
-                                        onclick="viewRequestDetails('{{ request.reimbursement_id }}')"
-                                        title="View Details"
-                                    >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </button>
-                                    
-                                    {% if request.receipt %}
-                                    <a 
-                                        href="{{ request.receipt.url }}" 
-                                        class="text-green-600 hover:text-green-800 mr-2"
-                                        target="_blank"
-                                        title="View Receipt"
-                                    >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </a>
-                                    {% endif %}
-                                    
-                                    {% if request.status == 'pending' %}
-                                    <button 
-                                        class="text-red-600 hover:text-red-800" 
-                                        onclick="cancelRequest('{{ request.reimbursement_id }}')"
-                                        title="Cancel Request"
-                                    >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                    {% endif %}
+                                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                    <div class="flex items-center space-x-3">
+                                        <button 
+                                            class="text-indigo-600 hover:text-indigo-800 transition-colors" 
+                                            onclick="viewRequestDetails('{{ request.reimbursement_id }}')"
+                                            title="View Details"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </button>
+                                        
+                                        {% if request.receipt %}
+                                        <a 
+                                            href="{{ request.receipt.url }}" 
+                                            class="text-green-600 hover:text-green-800 transition-colors"
+                                            target="_blank"
+                                            title="View Receipt"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </a>
+                                        {% endif %}
+                                        
+                                        {% if request.status == 'pending' %}
+                                        <button 
+                                            class="text-red-600 hover:text-red-800 transition-colors" 
+                                            onclick="cancelRequest('{{ request.reimbursement_id }}')"
+                                            title="Cancel Request"
+                                        >
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                        {% endif %}
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -187,8 +380,15 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-4">
-                    <p class="text-gray-500">No reimbursement requests found</p>
+                <div class="text-center py-16 bg-gray-50 rounded-xl border border-gray-200">
+                    <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">No reimbursement requests</h3>
+                    <p class="mt-1 text-sm text-gray-500">Submit your first reimbursement request to get started.</p>
+                    <button class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors" onclick="document.getElementById('expenseDate').focus()">
+                        Create New Request
+                    </button>
                 </div>
                 {% endif %}
             </div>
@@ -199,6 +399,16 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const reimbursementForm = document.getElementById('reimbursementForm');
+        const fileInput = document.getElementById('receipt');
+        const fileName = document.getElementById('file-name');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    fileName.textContent = this.files[0].name;
+                }
+            });
+        }
         
         if (reimbursementForm) {
             reimbursementForm.addEventListener('submit', function(e) {
@@ -251,135 +461,237 @@
             return;
         }
         
-        // Check file size (max 2MB)
-        if (receipt.size > 2 * 1024 * 1024) {
-            showNotification('Receipt file size must be less than 2MB', 'error');
-            return;
-        }
+        // Show loading
+        Swal.fire({
+            title: 'Submitting Request',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
         
-        // Submit API request
-        fetch('/hr_management/api/reimbursement/submit/', {
+        // Submit form data via AJAX
+        fetch('/hr/api/reimbursement/submit/', {
             method: 'POST',
             body: formData,
-            // No need to set Content-Type header, browser will set it with boundary for FormData
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showNotification('Reimbursement request submitted successfully', 'success');
-                // Reset form
-                form.reset();
-                // Set default date to today
-                document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
-                // Reload page after 2 seconds to show updated list
-                setTimeout(function() {
+                // Show success message
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Your reimbursement request has been submitted.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#7B3DF3'
+                }).then((result) => {
+                    // Reload page to show the new request
                     window.location.reload();
-                }, 2000);
+                });
             } else {
-                showNotification(data.message || 'Failed to submit reimbursement request', 'error');
+                // Show error message
+                showNotification(data.message || 'An error occurred while submitting your request.', 'error');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showNotification('An error occurred. Please try again.', 'error');
+            showNotification('An error occurred while submitting your request.', 'error');
         });
     }
     
     function viewRequestDetails(requestId) {
-        // Fetch request details and show in modal
+        // Show loading state
         Swal.fire({
-            title: 'Reimbursement Details',
-            html: '<div class="text-center py-4"><p class="text-gray-500">Loading details...</p></div>',
-            showConfirmButton: false,
-            showCloseButton: true,
-            width: '32rem'
+            title: 'Loading Request Details',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
         
-        // This would typically fetch details from the server
-        // For now, just show a placeholder
-        setTimeout(() => {
-            Swal.update({
-                html: `
-                    <div class="text-left px-4">
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Category</p>
-                            <p class="font-medium">Travel</p>
+        // Fetch request details from server
+        fetch(`/hr/api/reimbursement/${requestId}/details/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const request = data.reimbursement;
+                
+                // Format status with colored badge
+                let statusBadge = '';
+                if (request.status === 'pending') {
+                    statusBadge = '<span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">Pending</span>';
+                } else if (request.status === 'approved') {
+                    statusBadge = '<span class="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">Approved</span>';
+                } else if (request.status === 'rejected') {
+                    statusBadge = '<span class="px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">Rejected</span>';
+                } else if (request.status === 'paid') {
+                    statusBadge = '<span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold">Paid</span>';
+                }
+                
+                // Build receipt image preview
+                let receiptPreview = '';
+                if (request.receipt_url) {
+                    if (request.receipt_url.endsWith('.pdf')) {
+                        receiptPreview = `
+                            <div class="mt-4 border rounded-lg p-4 bg-gray-50 text-center">
+                                <svg class="w-10 h-10 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-600">PDF Receipt</p>
+                                <a href="${request.receipt_url}" target="_blank" class="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    View PDF
+                                </a>
+                            </div>
+                        `;
+                    } else {
+                        receiptPreview = `
+                            <div class="mt-4">
+                                <p class="text-sm font-medium text-gray-700 mb-2">Receipt</p>
+                                <img src="${request.receipt_url}" alt="Receipt" class="rounded-lg max-h-48 mx-auto border shadow-sm">
+                                <div class="text-center mt-2">
+                                    <a href="${request.receipt_url}" target="_blank" class="text-sm text-indigo-600 hover:text-indigo-800">View Full Size</a>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Show request details
+                Swal.fire({
+                    title: 'Reimbursement Details',
+                    width: '36rem',
+                    html: `
+                        <div class="text-left">
+                            <div class="flex justify-between items-center mb-4">
+                                <p class="text-sm text-gray-500">ID: ${request.reimbursement_id}</p>
+                                ${statusBadge}
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">Expense Date</p>
+                                    <p class="text-sm text-gray-900">${request.expense_date}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">Category</p>
+                                    <p class="text-sm text-gray-900">${request.category_display}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">Amount</p>
+                                    <p class="text-sm text-gray-900">${request.currency} ${request.amount}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">Submitted On</p>
+                                    <p class="text-sm text-gray-900">${request.created_at}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <p class="text-sm font-medium text-gray-700">Description</p>
+                                <p class="text-sm text-gray-900">${request.description}</p>
+                            </div>
+                            
+                            ${receiptPreview}
+                            
+                            ${request.reviewer_comments ? `
+                                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-sm font-medium text-gray-700">Reviewer Comments</p>
+                                    <p class="text-sm text-gray-900">${request.reviewer_comments}</p>
+                                </div>
+                            ` : ''}
                         </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Amount</p>
-                            <p class="font-medium">₹ 2,500.00</p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Expense Date</p>
-                            <p class="font-medium">15 Aug 2023</p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Status</p>
-                            <p class="font-medium">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Pending
-                                </span>
-                            </p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Description</p>
-                            <p class="font-medium">Taxi fare for client meeting</p>
-                        </div>
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500">Submitted On</p>
-                            <p class="font-medium">16 Aug 2023</p>
-                        </div>
-                        <div class="mb-3 text-center">
-                            <a href="#" class="text-blue-600 hover:text-blue-800">View Receipt</a>
-                        </div>
-                    </div>
-                `,
-                showConfirmButton: true,
-                confirmButtonText: 'Close',
-                confirmButtonColor: '#7B3DF3'
-            });
-        }, 1000);
+                    `,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#7B3DF3',
+                    showCloseButton: true
+                });
+            } else {
+                showNotification('Failed to load request details.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred while loading request details.', 'error');
+        });
     }
     
     function cancelRequest(requestId) {
+        // Confirm cancellation
         Swal.fire({
-            title: 'Cancel Reimbursement Request',
+            title: 'Cancel Request?',
             text: 'Are you sure you want to cancel this reimbursement request?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Yes, cancel it',
             cancelButtonText: 'No, keep it',
-            confirmButtonColor: '#EF4444',
-            cancelButtonColor: '#6B7280',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
         }).then((result) => {
             if (result.isConfirmed) {
-                // Handle request cancellation
-                showNotification('Reimbursement request cancelled successfully', 'success');
-                // Reload page after 2 seconds
-                setTimeout(function() {
-                    window.location.reload();
-                }, 2000);
+                // Proceed with cancellation
+                Swal.fire({
+                    title: 'Cancelling Request',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Send cancellation request
+                fetch(`/hr/api/reimbursement/${requestId}/cancel/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Cancelled!',
+                            text: 'Your reimbursement request has been cancelled.',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#7B3DF3'
+                        }).then((result) => {
+                            // Reload page to update status
+                            window.location.reload();
+                        });
+                    } else {
+                        showNotification(data.message || 'Failed to cancel request.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred while cancelling the request.', 'error');
+                });
             }
         });
     }
     
-    function showNotification(message, type = 'success') {
-        const bgColor = type === 'success' ? 'bg-green-100 border-green-500 text-green-800' : 'bg-red-100 border-red-500 text-red-800';
-        
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-4 py-2 border-l-4 rounded shadow-md ${bgColor} transition-opacity duration-300`;
-        notification.style.zIndex = '9999';
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 3000);
+    function showNotification(message, type) {
+        Swal.fire({
+            text: message,
+            icon: type,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
     }
 </script>
 </body>

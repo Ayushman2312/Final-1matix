@@ -352,6 +352,7 @@ class ReimbursementRequest(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('paid', 'Paid'),
+        ('cancelled', 'Cancelled'),
     ]
     
     EXPENSE_CATEGORIES = [
@@ -493,6 +494,66 @@ class TrustedDevice(models.Model):
     class Meta:
         unique_together = ['device_id', 'employee']
         ordering = ['-last_used']
+
+class LeaveType(models.Model):
+    leave_type_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='leave_types')
+    days_allowed = models.PositiveIntegerField(default=0)
+    description = models.TextField(null=True, blank=True)
+    color_code = models.CharField(max_length=20, default="#4F46E5", help_text="HEX color code for UI representation")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='leave_types')
+    
+    def __str__(self):
+        return f"{self.name} ({self.days_allowed} days)"
+    
+    class Meta:
+        ordering = ['name']
+
+class Deduction(models.Model):
+    deduction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='deductions')
+    description = models.TextField(null=True, blank=True)
+    is_percentage = models.BooleanField(default=False, help_text="If True, the value is a percentage of salary; otherwise, it's a fixed amount")
+    default_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_tax_exempt = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='deductions')
+    
+    def __str__(self):
+        if self.is_percentage:
+            return f"{self.name} ({self.default_value}%)"
+        return f"{self.name} (₹{self.default_value})"
+    
+    class Meta:
+        ordering = ['name']
+
+class Allowance(models.Model):
+    allowance_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='allowances')
+    description = models.TextField(null=True, blank=True)
+    is_percentage = models.BooleanField(default=False, help_text="If True, the value is a percentage of salary; otherwise, it's a fixed amount")
+    default_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    is_taxable = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='allowances')
+    
+    def __str__(self):
+        if self.is_percentage:
+            return f"{self.name} ({self.default_value}%)"
+        return f"{self.name} (₹{self.default_value})"
+    
+    class Meta:
+        ordering = ['name']
 
 # Add a pre-save signal handler for OnboardingInvitation
 @receiver(pre_save, sender='hr.OnboardingInvitation')

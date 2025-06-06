@@ -1,0 +1,25 @@
+delivered_keywords = [
+    "Delivered", "Order Delivered", "Item Delivered", "Successfully Delivered",
+    "Delivered to Customer", "Delivered - OTP Confirmed", "Completed"
+]
+
+cancelled_keywords = [
+    "Cancelled", "Order Cancelled", "Cancelled by Buyer", "Cancelled by Seller",
+    "Auto Cancelled", "Customer Cancelled", "Seller Cancelled", 
+    "Payment Failed", "Order Rejected"
+]
+
+return_keywords = [
+    "Returned", "Return Initiated", "Item Returned", "Return Picked Up",
+    "Return Completed", "Return Approved", "Customer Returned", "Return in Transit"
+]
+
+refund_keywords = [
+    "Refunded", "Refund Initiated", "Refund Completed", "Money Refunded", 
+    "Payment Refunded", "Refund Success", "Refund Processed", "Refund Approved"
+]
+
+replacement_keywords = [
+    "Replacement", "Replaced", "Replacement Initiated", "Replacement Completed",
+    "Exchange Processed", "Item Exchanged", "Replacement Delivered", "Exchange Delivered"
+]

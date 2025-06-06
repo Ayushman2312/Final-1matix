@@ -54,6 +54,30 @@ document.addEventListener('DOMContentLoaded', function() {
             const businessIntent = businessIntentElement ? businessIntentElement.value : '';
             console.log('Using business_intent for AI analysis:', businessIntent);
             
+            // Prepare request payload
+            const requestPayload = {
+                keyword: keyword,
+                data: processedData,
+                business_intent: businessIntent
+            };
+            
+            // Add business details if business intent is 'no'
+            if (businessIntent === 'no') {
+                const brandName = document.getElementById('brandName').value;
+                const businessWebsite = document.getElementById('businessWebsite').value;
+                const marketplace = document.getElementById('marketplace').value;
+                
+                console.log('Adding business details to AI request:', {
+                    brand_name: brandName,
+                    user_website: businessWebsite,
+                    marketplaces_selected: marketplace
+                });
+                
+                requestPayload.brand_name = brandName;
+                requestPayload.user_website = businessWebsite;
+                requestPayload.marketplaces_selected = marketplace;
+            }
+            
             // Make API request to backend for AI analysis
             const response = await fetch('/trends/ai-analysis/', {
                 method: 'POST',
@@ -61,11 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken')
                 },
-                body: JSON.stringify({
-                    keyword: keyword,
-                    data: processedData,
-                    business_intent: businessIntent
-                }),
+                body: JSON.stringify(requestPayload),
                 // Add timeout to prevent long waiting times
                 signal: AbortSignal.timeout(30000) // 30 seconds timeout
             });

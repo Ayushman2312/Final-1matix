@@ -33,16 +33,47 @@
                         </select>
                     </div>
                     <div class="neumorphic-select-container relative w-full">
-                        <select id="business_intent" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500">
-                            <option value="" class="text-gray-500">Business intent</option>
-                            <option value="yes">Yes, want to start</option>
+                        <select id="business_intent" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="" class="text-gray-500">Business intent (required)</option>
+                            <option value="yes">Yes, I want to start a business</option>
                             <option value="no">No, already in business</option>
-                            <option value="not_sure">Not sure</option>
                         </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
                     </div>
                     <button id="analyzeButton" class="neumorphic-button px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-xl hover:shadow-blue-500/20 hover:shadow-lg transition-all w-full sm:w-auto">
                         Submit
                     </button>
+                </div>
+            </div>
+            
+            <!-- Business Details Fields (initially hidden) -->
+            <div id="businessDetailsContainer" class="mt-4 hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="neumorphic-input-container">
+                        <input type="text" id="brandName" class="w-full pl-4 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Brand Name" required>
+                    </div>
+                    <div class="neumorphic-input-container">
+                        <input type="text" id="businessWebsite" class="w-full pl-4 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Business Website (optional)">
+                    </div>
+                    <div class="neumorphic-select-container relative w-full">
+                        <select id="marketplace" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500" required>
+                            <option value="" class="text-gray-500">Choose Your Marketplace</option>
+                            <option value="amazon">Amazon</option>
+                            <option value="meesho">Meesho</option>
+                            <option value="shopify">Shopify</option>
+                            <option value="flipkart">Flipkart</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -191,7 +222,7 @@
         </div>
         
         <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 mb-8 neumorphic-card rounded-2xl" style="display: none;">
+        <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12 mb-8 rounded-2xl" style="display: none;">
             <div class="relative w-24 h-24 mb-4">
                 <!-- Matrix-like digit animation container -->
                 <div class="absolute inset-0 overflow-hidden rounded-full neumorphic-circle border-2 border-blue-400">
@@ -1122,12 +1153,29 @@
 
         // Add selected class when dropdown has a selection
         const businessIntentSelect = document.getElementById('business_intent');
+        const businessDetailsContainer = document.getElementById('businessDetailsContainer');
+        
         if (businessIntentSelect) {
             businessIntentSelect.addEventListener('change', function() {
                 if (this.value) {
                     this.classList.add('selected');
                 } else {
                     this.classList.remove('selected');
+                }
+                
+                // Show/hide business details based on selection
+                if (this.value === 'no') {
+                    businessDetailsContainer.classList.remove('hidden');
+                    // Make the fields required
+                    document.getElementById('brandName').setAttribute('required', 'required');
+                    document.getElementById('marketplace').setAttribute('required', 'required');
+                    // Website is optional, don't set required
+                } else {
+                    businessDetailsContainer.classList.add('hidden');
+                    // Remove required attribute when hidden
+                    document.getElementById('brandName').removeAttribute('required');
+                    document.getElementById('businessWebsite').removeAttribute('required');
+                    document.getElementById('marketplace').removeAttribute('required');
                 }
             });
         }
@@ -1175,6 +1223,53 @@
         // Variables for PDF download
         const downloadReportBtn = document.getElementById('downloadReportBtn');
         const downloadButtonContainer = document.getElementById('downloadButtonContainer');
+        
+        // Form validation
+        const analyzeButton = document.getElementById('analyzeButton');
+        if (analyzeButton) {
+            analyzeButton.addEventListener('click', function(e) {
+                // Prevent default form submission
+                e.preventDefault();
+                
+                // Check if business intent is selected
+                const businessIntent = document.getElementById('business_intent').value;
+                if (!businessIntent) {
+                    showError('Please select your business intent');
+                    return false;
+                }
+                
+                // If business intent is "no", validate additional fields
+                if (businessIntent === 'no') {
+                    const brandName = document.getElementById('brandName').value;
+                    const marketplace = document.getElementById('marketplace').value;
+                    
+                    // Only check for brand name and marketplace, website is optional
+                    if (!brandName || !marketplace) {
+                        showError('Please provide brand name and marketplace');
+                        return false;
+                    }
+                }
+                
+                // If validation passes, proceed with form submission
+                if (typeof handleFormSubmit === 'function') {
+                    handleFormSubmit(e);
+                }
+            });
+        }
+        
+        // Function to show error message
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (errorContainer && errorMessage) {
+                errorMessage.textContent = message;
+                errorContainer.style.display = 'flex';
+                
+                // Scroll to error message
+                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
         
         // Show download button when AI content is loaded
         document.addEventListener('aiAnalysisComplete', function(e) {
@@ -1252,7 +1347,7 @@
                 
                 // Create a temporary container for capturing PDF content
                 const pdfContainer = document.createElement('div');
-                pdfContainer.style.padding = '40px';
+                pdfContainer.style.padding = '5px';
                 pdfContainer.style.background = 'white';
                 pdfContainer.style.width = '800px';
                 pdfContainer.style.position = 'absolute';
@@ -1260,28 +1355,28 @@
                 
                 // Create PDF content with professional styling
                 pdfContainer.innerHTML = `
-                    <div style="padding-bottom: 30px; border-bottom: 2px solid #e5e7eb;">
-                        <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 8px;">TrendIQ Analysis Report</h1>
-                        <p style="color: #6b7280; font-size: 14px;">Generated on ${new Date().toLocaleDateString()} for search query: "${searchQuery}"</p>
+                    <div style="padding: 5px; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb;">
+                        <h1 style="color: #2563eb; font-size: 24px; margin-bottom: 8px; padding: 5px;">TrendIQ Analysis Report</h1>
+                        <p style="color: #6b7280; font-size: 14px; padding: 5px;">Generated on ${new Date().toLocaleDateString()} for search query: "${searchQuery}"</p>
                     </div>
                     
-                    <div style="margin-top: 30px; margin-bottom: 40px;">
-                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px;">Trend Visualization</h2>
-                        <div id="pdfChart" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; background: #f9fafb;"></div>
+                    <div style="margin-top: 20px; margin-bottom: 30px; padding: 5px;">
+                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; padding: 5px;">Trend Visualization</h2>
+                        <div id="pdfChart" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 5px; background: #f9fafb;"></div>
                     </div>
                     
-                    <div style="margin-bottom: 40px;">
-                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px;">Analysis</h2>
-                        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; background: #f9fafb;">${analysisContent.innerHTML}</div>
+                    <div style="margin-bottom: 30px; padding: 5px;">
+                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; padding: 5px;">Analysis</h2>
+                        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 5px; background: #f9fafb;">${analysisContent.innerHTML}</div>
                     </div>
                     
-                    <div style="margin-bottom: 40px;">
-                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px;">Recommendations</h2>
-                        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; background: #f9fafb;">${recommendationContent.innerHTML}</div>
+                    <div style="margin-bottom: 30px; padding: 5px;">
+                        <h2 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; padding: 5px;">Recommendations</h2>
+                        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 5px; background: #f9fafb;">${recommendationContent.innerHTML}</div>
                     </div>
                     
-                    <div style="margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
-                        <p style="color: #6b7280; font-size: 12px;">© ${new Date().getFullYear()} 1Matrix TrendIQ. All rights reserved.</p>
+                    <div style="margin-top: 20px; border-top: 1px solid #e5e7eb; padding: 5px; text-align: center;">
+                        <p style="color: #6b7280; font-size: 12px; padding: 5px;">© ${new Date().getFullYear()} 1Matrix TrendIQ. All rights reserved.</p>
                     </div>
                 `;
                 
@@ -1307,22 +1402,26 @@
                             const { jsPDF } = window.jspdf;
                             const pdf = new jsPDF('p', 'mm', 'a4');
                             
+                            // Define PDF margins (5px converted to mm)
+                            const margin = 1.89; // 5px converted to mm (approx)
+                            
                             // Canvas dimensions
                             const imgData = canvas.toDataURL('image/png');
-                            const imgWidth = 210; // A4 width in mm
-                            const pageHeight = 295; // A4 height in mm
+                            const imgWidth = 210 - (margin * 2); // A4 width in mm minus margins
+                            const pageHeight = 295 - (margin * 2); // A4 height in mm minus margins
                             const imgHeight = canvas.height * imgWidth / canvas.width;
                             let heightLeft = imgHeight;
                             
-                            let position = 0;
-                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            // Add content to first page with margins
+                            let position = margin;
+                            pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                             heightLeft -= pageHeight;
                             
                             // Add new pages if content is larger than one page
                             while (heightLeft >= 0) {
-                                position = heightLeft - imgHeight;
+                                position = heightLeft - imgHeight + margin;
                                 pdf.addPage();
-                                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                                pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
                                 heightLeft -= pageHeight;
                             }
                             

@@ -8,138 +8,276 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.4/minified/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafb;
+        }
+        
+        .page-transition {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        
+        .salary-card {
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
 </head>
-<body>
-<div class="container mx-auto px-4 py-8">
+<body class="bg-gray-50">
+<div class="container mx-auto px-4 py-8 page-transition">
     <!-- Page Header -->
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-800">Salary Slips</h1>
-        <p class="text-gray-600">View and download your salary statements</p>
+    <div class="mb-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl shadow-lg p-6 text-white">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">Salary Slips</h1>
+                <p class="mt-2 text-blue-100">View and download your salary statements</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <div class="flex items-center bg-white/20 rounded-lg px-3 py-2">
+                    <svg class="w-5 h-5 mr-2 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span class="text-sm text-blue-100">Payment processed on the last day of each month</span>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Latest Salary Card -->
     {% if salary_slips %}
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <div class="flex justify-between items-start mb-6">
-            <h2 class="text-lg font-semibold text-gray-800">Latest Salary Details</h2>
-            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                {{ salary_slips.0.period_display }}
-            </span>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="p-4 bg-purple-50 rounded-lg">
-                <p class="text-sm font-medium text-purple-800 mb-1">Basic Salary</p>
-                <p class="text-xl font-bold text-purple-900">₹ {{ salary_slips.0.basic_salary|floatformat:2 }}</p>
-            </div>
-            
-            <div class="p-4 bg-blue-50 rounded-lg">
-                <p class="text-sm font-medium text-blue-800 mb-1">Net Salary</p>
-                <p class="text-xl font-bold text-blue-900">₹ {{ salary_slips.0.net_salary|floatformat:2 }}</p>
-            </div>
-            
-            <div class="p-4 bg-green-50 rounded-lg">
-                <p class="text-sm font-medium text-green-800 mb-1">Payment Date</p>
-                <p class="text-xl font-bold text-green-900">{{ salary_slips.0.payment_date|date:"d M Y" }}</p>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Allowances -->
-            <div>
-                <h3 class="text-md font-semibold text-gray-700 mb-3">Allowances</h3>
-                <div class="space-y-2">
-                    {% for key, value in salary_slips.0.allowances.items %}
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">{{ key }}</span>
-                        <span class="text-sm font-medium text-gray-800">₹ {{ value|floatformat:2 }}</span>
+    <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8 hover-scale">
+        <div class="flex flex-col md:flex-row">
+            <!-- Left side with gradient background -->
+            <div class="salary-card text-white p-6 md:w-1/3">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
                     </div>
-                    {% empty %}
-                    <p class="text-sm text-gray-500">No allowances</p>
-                    {% endfor %}
+                    <h2 class="text-xl font-semibold">Latest Salary</h2>
+                </div>
+                
+                <div class="bg-white/10 rounded-lg p-4 mb-6">
+                    <p class="text-sm font-medium text-white/80 mb-1">Net Salary</p>
+                    <p class="text-3xl font-bold">₹ {{ salary_slips.0.net_salary|floatformat:2 }}</p>
+                    <div class="flex items-center mt-2">
+                        <span class="px-2 py-1 bg-white/20 text-white text-xs font-medium rounded-full">
+                            {{ salary_slips.0.period_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-white/80">Basic Salary</span>
+                        <span class="text-sm font-medium">₹ {{ salary_slips.0.basic_salary|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-white/80">Payment Date</span>
+                        <span class="text-sm font-medium">{{ salary_slips.0.payment_date|date:"d M Y" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-white/80">Payment Method</span>
+                        <span class="text-sm font-medium">{{ salary_slips.0.payment_method }}</span>
+                    </div>
+                </div>
+                
+                {% if salary_slips.0.pdf_file %}
+                <div class="mt-6">
+                    <a href="{{ salary_slips.0.pdf_file.url }}" target="_blank" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white">
+                        <svg class="mr-2 -ml-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download Latest Slip
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Right side with breakdown -->
+            <div class="p-6 md:w-2/3">
+                <div class="flex flex-col md:flex-row justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Salary Breakdown</h3>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full bg-green-500 mr-1.5"></div>
+                        <span class="text-sm text-gray-600 mr-4">Earnings</span>
+                        
+                        <div class="w-3 h-3 rounded-full bg-red-500 mr-1.5"></div>
+                        <span class="text-sm text-gray-600">Deductions</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Allowances -->
+                    <div>
+                        <h4 class="text-md font-medium text-gray-700 mb-3 flex items-center">
+                            <div class="w-2 h-6 bg-green-500 rounded-full mr-2"></div>
+                            Allowances
+                        </h4>
+                        <div class="space-y-3">
+                            {% for key, value in salary_slips.0.allowances.items %}
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-sm text-gray-600">{{ key }}</span>
+                                <span class="text-sm font-medium text-gray-800">₹ {{ value|floatformat:2 }}</span>
+                            </div>
+                            {% empty %}
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <p class="text-sm text-gray-500">No allowances</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Deductions -->
+                    <div>
+                        <h4 class="text-md font-medium text-gray-700 mb-3 flex items-center">
+                            <div class="w-2 h-6 bg-red-500 rounded-full mr-2"></div>
+                            Deductions
+                        </h4>
+                        <div class="space-y-3">
+                            {% for key, value in salary_slips.0.deductions.items %}
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-sm text-gray-600">{{ key }}</span>
+                                <span class="text-sm font-medium text-red-600">- ₹ {{ value|floatformat:2 }}</span>
+                            </div>
+                            {% empty %}
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <p class="text-sm text-gray-500">No deductions</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-gray-700">Total Earnings</span>
+                        <span class="text-sm font-bold text-green-600">₹ {{ salary_slips.0.total_earnings|default:"0.00"|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-sm font-medium text-gray-700">Total Deductions</span>
+                        <span class="text-sm font-bold text-red-600">₹ {{ salary_slips.0.total_deductions|default:"0.00"|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+                        <span class="text-base font-bold text-gray-800">Net Pay</span>
+                        <span class="text-base font-bold text-blue-700">₹ {{ salary_slips.0.net_salary|floatformat:2 }}</span>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Deductions -->
-            <div>
-                <h3 class="text-md font-semibold text-gray-700 mb-3">Deductions</h3>
-                <div class="space-y-2">
-                    {% for key, value in salary_slips.0.deductions.items %}
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">{{ key }}</span>
-                        <span class="text-sm font-medium text-red-600">- ₹ {{ value|floatformat:2 }}</span>
-                    </div>
-                    {% empty %}
-                    <p class="text-sm text-gray-500">No deductions</p>
-                    {% endfor %}
-                </div>
-            </div>
         </div>
-        
-        {% if salary_slips.0.pdf_file %}
-        <div class="mt-6 flex justify-end">
-            <a href="{{ salary_slips.0.pdf_file.url }}" target="_blank" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#7B3DF3] hover:bg-[#6935D3] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7B3DF3]">
-                <svg class="mr-2 -ml-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Download Latest Slip
-            </a>
-        </div>
-        {% endif %}
     </div>
     {% endif %}
     
     <!-- Salary History -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Salary History</h2>
+    <div class="bg-white rounded-xl shadow-md p-6 hover-scale">
+        <div class="flex items-center mb-6">
+            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-800">Salary History</h2>
+        </div>
         
         {% if salary_slips %}
-        <div class="overflow-x-auto">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg mb-6 overflow-hidden shadow-inner">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between text-sm">
+                <div class="flex items-center mb-2 md:mb-0">
+                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <span class="text-gray-700 font-medium">Total Slips: <span class="text-blue-700">{{ salary_slips|length }}</span></span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-gray-700">Paid: 
+                            <span class="text-green-700 font-medium">
+                                {{ salary_slips|selectattr:"is_paid", equalto:True|list|length }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-yellow-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-gray-700">Pending: 
+                            <span class="text-yellow-700 font-medium">
+                                {{ salary_slips|selectattr:"is_paid", equalto:False|list|length }}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto rounded-xl shadow-inner bg-gray-50">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Basic Salary</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Net Salary</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Date</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Method</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <thead>
+                    <tr class="bg-gradient-to-r from-blue-700 to-blue-800 text-white">
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Period</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Net Salary</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider hidden md:table-cell">Basic Salary</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider hidden md:table-cell">Payment Date</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider hidden md:table-cell">Payment Method</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for slip in salary_slips %}
-                    <tr>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">
                             {{ slip.period_display }}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 font-medium">
+                            <span class="text-blue-700">₹</span> {{ slip.net_salary|floatformat:2 }}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
                             ₹ {{ slip.basic_salary|floatformat:2 }}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            ₹ {{ slip.net_salary|floatformat:2 }}
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
                             {{ slip.payment_date|date:"d M Y" }}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
                             {{ slip.payment_method }}
                         </td>
                         <td class="px-4 py-3 whitespace-nowrap">
                             {% if slip.is_paid %}
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 items-center">
+                                <span class="w-1.5 h-1.5 bg-green-600 rounded-full mr-1"></span>
                                 Paid
                             </span>
                             {% else %}
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 items-center">
+                                <span class="w-1.5 h-1.5 bg-yellow-600 rounded-full mr-1"></span>
                                 Pending
                             </span>
                             {% endif %}
                         </td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            <div class="flex items-center space-x-2">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm">
+                            <div class="flex items-center space-x-3">
                                 <button 
-                                    class="text-blue-600 hover:text-blue-800" 
+                                    class="text-blue-600 hover:text-blue-800 transition-colors" 
                                     onclick="viewSlipDetails('{{ slip.salary_slip_id }}')"
                                     title="View Details"
                                 >
@@ -152,7 +290,7 @@
                                 {% if slip.pdf_file %}
                                 <a 
                                     href="{{ slip.pdf_file.url }}" 
-                                    class="text-green-600 hover:text-green-800"
+                                    class="text-green-600 hover:text-green-800 transition-colors"
                                     target="_blank"
                                     title="Download PDF"
                                 >
@@ -169,158 +307,308 @@
             </table>
         </div>
         {% else %}
-        <div class="text-center py-4">
-            <p class="text-gray-500">No salary slips found</p>
+        <div class="text-center py-16 bg-gray-50 rounded-xl border border-gray-200">
+            <svg class="w-20 h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">No salary slips found</h3>
+            <p class="mt-1 text-sm text-gray-500">Your salary slips will appear here once processed.</p>
         </div>
         {% endif %}
     </div>
     
     <!-- Salary Information -->
-    <div class="mt-8 bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">Understanding Your Salary Slip</h2>
+    <div class="mt-8 bg-white rounded-xl shadow-md p-6 hover-scale">
+        <div class="flex items-center mb-6">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-800">Understanding Your Salary Slip</h2>
+        </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <h3 class="text-md font-medium text-gray-700 mb-2">Common Terms</h3>
-                <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
-                    <li><span class="font-medium">Basic Salary:</span> The fixed part of your remuneration</li>
-                    <li><span class="font-medium">HRA:</span> House Rent Allowance</li>
-                    <li><span class="font-medium">DA:</span> Dearness Allowance</li>
-                    <li><span class="font-medium">TA:</span> Transport Allowance</li>
-                    <li><span class="font-medium">Special Allowance:</span> Additional allowance as per company policy</li>
-                    <li><span class="font-medium">PF:</span> Provident Fund contribution</li>
-                    <li><span class="font-medium">ESI:</span> Employee State Insurance</li>
-                    <li><span class="font-medium">TDS:</span> Tax Deducted at Source</li>
-                </ul>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-6 shadow-inner">
+                <h3 class="text-md font-semibold text-indigo-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Common Terms
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <span class="font-medium text-gray-900">Basic Salary:</span>
+                            <p class="text-sm text-gray-600">The fixed part of your remuneration</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <span class="font-medium text-gray-900">HRA:</span>
+                            <p class="text-sm text-gray-600">House Rent Allowance - Tax-exempt allowance for rental expenses</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <span class="font-medium text-gray-900">DA:</span>
+                            <p class="text-sm text-gray-600">Dearness Allowance - Compensation for inflation</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <span class="font-medium text-gray-900">TA:</span>
+                            <p class="text-sm text-gray-600">Transport Allowance - For commuting expenses</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-red-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <span class="font-medium text-gray-900">PF:</span>
+                            <p class="text-sm text-gray-600">Provident Fund contribution - Retirement savings</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-red-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <div>
+                            <span class="font-medium text-gray-900">TDS:</span>
+                            <p class="text-sm text-gray-600">Tax Deducted at Source - Income tax deduction</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div>
-                <h3 class="text-md font-medium text-gray-700 mb-2">Important Notes</h3>
-                <ul class="list-disc list-inside space-y-1 text-sm text-gray-600">
-                    <li>Salary slips are typically generated on the last day of each month</li>
-                    <li>Payment is processed within 5 working days of the new month</li>
-                    <li>Tax calculations are based on the current financial year</li>
-                    <li>Any discrepancy should be reported to HR within 7 days</li>
-                    <li>For tax-related queries, please contact the finance department</li>
-                </ul>
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 shadow-inner">
+                <h3 class="text-md font-semibold text-blue-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Important Notes
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <p class="text-sm text-gray-600">Salary slips are typically generated on the last day of each month</p>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <p class="text-sm text-gray-600">Payment is processed within 5 working days of the new month</p>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <p class="text-sm text-gray-600">Tax calculations are based on the current financial year</p>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <p class="text-sm text-gray-600">Any discrepancy should be reported to HR within 7 days</p>
+                    </div>
+                    <div class="flex">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0"></div>
+                        <p class="text-sm text-gray-600">For tax-related queries, please contact the finance department</p>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="mt-4 p-4 bg-gray-50 rounded-md">
-            <p class="text-sm text-gray-700">
-                <span class="font-medium">Need Help?</span> For any salary-related queries, please contact the HR department at <a href="mailto:hr@company.com" class="text-[#7B3DF3] hover:underline">hr@company.com</a> or submit a support ticket through the employee portal.
-            </p>
+        <div class="mt-6 p-5 bg-blue-600 text-white rounded-xl shadow-md">
+            <div class="flex items-center">
+                <div class="hidden md:block mr-4">
+                    <svg class="w-12 h-12 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-1">Need Help?</h4>
+                    <p class="text-sm text-blue-100">
+                        For any salary-related queries, please contact the HR department at 
+                        <a href="mailto:hr@company.com" class="text-white underline hover:text-blue-200 transition-colors">hr@company.com</a> 
+                        or submit a support ticket through the employee portal.
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     function viewSlipDetails(slipId) {
-        // Fetch salary slip details and show in modal
+        // Show loading state
         Swal.fire({
-            title: 'Salary Slip Details',
-            html: '<div class="text-center py-4"><p class="text-gray-500">Loading details...</p></div>',
-            showConfirmButton: false,
-            showCloseButton: true,
-            width: '36rem'
+            title: 'Loading...',
+            text: 'Fetching salary details',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
         });
         
-        // This would typically fetch details from the server
-        // For now, just show a placeholder
-        setTimeout(() => {
-            Swal.update({
-                html: `
-                    <div class="text-left px-4">
-                        <div class="mb-4 text-center">
-                            <h3 class="text-lg font-bold text-gray-900">Salary Slip - March 2023</h3>
-                            <p class="text-sm text-gray-600">Payment Date: April 5, 2023</p>
+        // Fetch salary slip details from server
+        fetch(`/hr/api/salary-slip/${slipId}/details/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name="csrfmiddlewaretoken"]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const slip = data.salary_slip;
+                
+                // Format the allowances and deductions
+                let allowancesHtml = '';
+                if (slip.allowances && Object.keys(slip.allowances).length > 0) {
+                    for (const [key, value] of Object.entries(slip.allowances)) {
+                        allowancesHtml += `
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-sm text-gray-600">${key}</span>
+                                <span class="text-sm font-medium text-gray-800">${slip.currency || '₹'} ${parseFloat(value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    allowancesHtml = '<p class="text-sm text-gray-500 italic">No allowances</p>';
+                }
+                
+                let deductionsHtml = '';
+                if (slip.deductions && Object.keys(slip.deductions).length > 0) {
+                    for (const [key, value] of Object.entries(slip.deductions)) {
+                        deductionsHtml += `
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-sm text-gray-600">${key}</span>
+                                <span class="text-sm font-medium text-red-600">- ${slip.currency || '₹'} ${parseFloat(value).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                        `;
+                    }
+                } else {
+                    deductionsHtml = '<p class="text-sm text-gray-500 italic">No deductions</p>';
+                }
+                
+                // Format status with appropriate color
+                let statusBadge = '';
+                if (slip.is_paid) {
+                    statusBadge = '<span class="px-2 py-1 inline-flex items-center text-xs font-medium rounded-full bg-green-100 text-green-800"><span class="w-1.5 h-1.5 bg-green-600 rounded-full mr-1"></span>Paid</span>';
+                } else {
+                    statusBadge = '<span class="px-2 py-1 inline-flex items-center text-xs font-medium rounded-full bg-yellow-100 text-yellow-800"><span class="w-1.5 h-1.5 bg-yellow-600 rounded-full mr-1"></span>Pending</span>';
+                }
+                
+                // Create modal content
+                Swal.fire({
+                    title: `Salary Details: ${slip.period_display}`,
+                    html: `
+                        <div class="text-left max-h-[70vh] overflow-y-auto px-1">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm text-gray-500">ID: ${slip.salary_slip_id}</span>
+                                    ${statusBadge}
+                                </div>
+                                <span class="text-sm text-gray-500">Payment Date: ${slip.payment_date}</span>
+                            </div>
+                            
+                            <!-- Summary Card -->
+                            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg p-4 mb-6">
+                                <div class="grid grid-cols-2 gap-4 mb-2">
+                                    <div>
+                                        <p class="text-xs text-blue-200">Basic Salary</p>
+                                        <p class="text-lg font-bold">${slip.currency || '₹'} ${parseFloat(slip.basic_salary).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-blue-200">Net Salary</p>
+                                        <p class="text-lg font-bold">${slip.currency || '₹'} ${parseFloat(slip.net_salary).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center text-xs text-blue-200">
+                                    <span>Payment Method: ${slip.payment_method}</span>
+                                    <span>Period: ${slip.period_display}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Allowances -->
+                                <div>
+                                    <h4 class="text-md font-medium text-gray-700 mb-3 flex items-center">
+                                        <div class="w-2 h-6 bg-green-500 rounded-full mr-2"></div>
+                                        Allowances
+                                    </h4>
+                                    <div class="space-y-1">
+                                        ${allowancesHtml}
+                                    </div>
+                                </div>
+                                
+                                <!-- Deductions -->
+                                <div>
+                                    <h4 class="text-md font-medium text-gray-700 mb-3 flex items-center">
+                                        <div class="w-2 h-6 bg-red-500 rounded-full mr-2"></div>
+                                        Deductions
+                                    </h4>
+                                    <div class="space-y-1">
+                                        ${deductionsHtml}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 pt-4 border-t border-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium text-gray-700">Total Earnings</span>
+                                    <span class="text-sm font-bold text-green-600">${slip.currency || '₹'} ${parseFloat(slip.total_earnings || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                </div>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="text-sm font-medium text-gray-700">Total Deductions</span>
+                                    <span class="text-sm font-bold text-red-600">${slip.currency || '₹'} ${parseFloat(slip.total_deductions || 0).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                </div>
+                                <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+                                    <span class="text-base font-bold text-gray-800">Net Pay</span>
+                                    <span class="text-base font-bold text-blue-700">${slip.currency || '₹'} ${parseFloat(slip.net_salary).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                </div>
+                            </div>
+                            
+                            ${slip.pdf_url ? `
+                                <div class="mt-6 text-center">
+                                    <a href="${slip.pdf_url}" target="_blank" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <svg class="mr-2 -ml-1 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Download PDF
+                                    </a>
+                                </div>
+                            ` : ''}
+                            
+                            ${slip.notes ? `
+                                <div class="mt-6 p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-sm font-medium text-gray-700 mb-1">Additional Notes</p>
+                                    <p class="text-sm text-gray-600">${slip.notes}</p>
+                                </div>
+                            ` : ''}
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">Employee Name</p>
-                                <p class="text-sm">John Doe</p>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">Employee ID</p>
-                                <p class="text-sm">EMP001</p>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">Department</p>
-                                <p class="text-sm">Engineering</p>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">Designation</p>
-                                <p class="text-sm">Senior Developer</p>
-                            </div>
-                        </div>
-                        
-                        <div class="border-t border-gray-200 pt-4 mb-4">
-                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Earnings</h4>
-                            <div class="space-y-1">
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Basic Salary</span>
-                                    <span class="text-sm">₹ 50,000.00</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">HRA</span>
-                                    <span class="text-sm">₹ 20,000.00</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Transport Allowance</span>
-                                    <span class="text-sm">₹ 3,000.00</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Special Allowance</span>
-                                    <span class="text-sm">₹ 7,000.00</span>
-                                </div>
-                                <div class="flex justify-between font-medium">
-                                    <span class="text-sm text-gray-800">Total Earnings</span>
-                                    <span class="text-sm">₹ 80,000.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="border-t border-gray-200 pt-4 mb-4">
-                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Deductions</h4>
-                            <div class="space-y-1">
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Provident Fund</span>
-                                    <span class="text-sm">₹ 6,000.00</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Professional Tax</span>
-                                    <span class="text-sm">₹ 200.00</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Income Tax (TDS)</span>
-                                    <span class="text-sm">₹ 8,000.00</span>
-                                </div>
-                                <div class="flex justify-between font-medium">
-                                    <span class="text-sm text-gray-800">Total Deductions</span>
-                                    <span class="text-sm">₹ 14,200.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="border-t border-gray-200 pt-4 mb-4">
-                            <div class="flex justify-between font-bold">
-                                <span class="text-sm text-gray-900">Net Pay</span>
-                                <span class="text-sm">₹ 65,800.00</span>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1">Rupees Sixty-Five Thousand Eight Hundred Only</p>
-                        </div>
-                        
-                        <div class="mt-4 text-center">
-                            <a href="#" class="text-[#7B3DF3] hover:underline text-sm">Download Full Slip</a>
-                        </div>
-                    </div>
-                `,
-                showConfirmButton: true,
-                confirmButtonText: 'Close',
-                confirmButtonColor: '#7B3DF3'
+                    `,
+                    width: '42rem',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#3B82F6',
+                    showCloseButton: true
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to load salary slip details',
+                    confirmButtonColor: '#3B82F6'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while loading salary slip details',
+                confirmButtonColor: '#3B82F6'
             });
-        }, 1000);
+        });
     }
 </script>
 

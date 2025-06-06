@@ -13,7 +13,7 @@ function addCoordinateField() {
     newEntry.innerHTML = `
         <div class="flex-1 grid grid-cols-2 gap-4">
             <input type="text" name="location_names[]" placeholder="Enter location name" class="border rounded-md px-4 py-3 text-base" required>
-            <input type="text" name="coordinates[]" placeholder="Enter coordinates" class="border rounded-md px-4 py-3 text-base" required>
+            <input type="text" name="coordinates[]" placeholder="e.g., 12.9716,77.5946" class="border rounded-md px-4 py-3 text-base" required>
         </div>
         <button type="button" onclick="removeCoordinateField(this)" class="ml-4 text-red-500 hover:text-red-700">
             <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,46 +31,52 @@ function removeCoordinateField(button) {
 document.getElementById('qrCodeForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    // Get CSRF token from the form
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Create FormData object directly from the form
+    const formData = new FormData(this);
     
-    // Collect all location names and coordinates
-    const locationNames = Array.from(document.getElementsByName('location_names[]')).map(input => input.value);
-    const coordinates = Array.from(document.getElementsByName('coordinates[]')).map(input => input.value);
+    // Check if we have at least one valid location with coordinates
+    const locationNames = Array.from(document.getElementsByName('location_names[]'));
+    const coordinatesInputs = Array.from(document.getElementsByName('coordinates[]'));
     
-    // Create the data object
-    const formData = {
-        company: document.querySelector('select[name="company"]').value,
-        locations: locationNames.map((name, index) => ({
-            name: name,
-            coordinates: coordinates[index]
-        }))
-    };
-
-    // Send the data to the server
+    // Validate that we have at least one location with coordinates
+    let hasValidLocation = false;
+    for (let i = 0; i < locationNames.length; i++) {
+        if (locationNames[i].value.trim() && coordinatesInputs[i].value.trim()) {
+            hasValidLocation = true;
+            break;
+        }
+    }
+    
+    if (!hasValidLocation) {
+        alert('Please provide at least one valid location with coordinates.');
+        return;
+    }
+    
+    // Use fetch API to submit the form
     fetch('/hr_management/generate-qr-code/', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,  // Use the token from the form
-            'Accept': 'application/json'
-        },
-        credentials: 'include',  // Important for CSRF
-        body: JSON.stringify(formData)
+        body: formData,
+        credentials: 'include'
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Server response was not ok: ' + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Close modal and refresh the page to show new QR code
             closeQRModal();
             window.location.reload();
         } else {
-            alert(data.error || 'Error creating QR code');
+            alert(data.message || 'Error creating QR code');
+            console.error('Server returned error:', data);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error creating QR code');
+        alert('Error creating QR code: ' + error.message);
     });
 });
 

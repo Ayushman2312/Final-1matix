@@ -751,6 +751,152 @@ function viewInvitationDetails(invitationId) {
         });
 }
 
+// Function to accept an invitation
+function acceptInvitation(invitationId) {
+    // Show confirmation dialog
+    Swal.fire({
+        title: 'Accept Invitation',
+        text: 'Are you sure you want to accept this invitation? This will generate employee credentials.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Yes, accept it',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading indicator
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Accepting invitation',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Send the acceptance request
+            fetch(`/hr_management/onboarding/invitation/${invitationId}/accept/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'accept',
+                    from_status: 'completed',
+                    to_status: 'accepted'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Invitation accepted successfully. The applicant will be notified via email.',
+                        icon: 'success',
+                        confirmButtonColor: '#10B981'
+                    }).then(() => {
+                        // Refresh the invitations table
+                        populateEmployeesTable();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'An error occurred while accepting the invitation',
+                        icon: 'error',
+                        confirmButtonColor: '#EF4444'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while accepting the invitation. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#EF4444'
+                });
+            });
+        }
+    });
+}
+
+// Function to reject an invitation
+function rejectInvitation(invitationId) {
+    // Show confirmation dialog
+    Swal.fire({
+        title: 'Reject Invitation',
+        text: 'Are you sure you want to reject this invitation? This will mark the invitation as rejected.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Yes, reject it',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading indicator
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Rejecting invitation',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Send the rejection request
+            fetch(`/hr_management/onboarding/invitation/${invitationId}/reject/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    action: 'reject',
+                    from_status: 'completed',
+                    to_status: 'rejected'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close();
+                
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Invitation rejected successfully. The applicant will be notified via email.',
+                        icon: 'success',
+                        confirmButtonColor: '#EF4444'
+                    }).then(() => {
+                        // Refresh the invitations table
+                        populateEmployeesTable();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message || 'An error occurred while rejecting the invitation',
+                        icon: 'error',
+                        confirmButtonColor: '#EF4444'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while rejecting the invitation. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#EF4444'
+                });
+            });
+        }
+    });
+}
+
 // Function to setup offer letter preview
 function setupOfferLetterPreview() {
     const select = document.getElementById('offerLetterSelect');
@@ -842,4 +988,93 @@ function setupOfferLetterPreview() {
     previewButton.addEventListener('click', function() {
         fetchOfferLetterPreview(select.value);
     });
+}
+
+// Function to delete an invitation
+function deleteInvitation(invitationId) {
+    // Show confirmation dialog
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This invitation will be permanently deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#7B3DF3',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading state
+            Swal.fire({
+                title: 'Deleting...',
+                text: 'Processing your request',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Get CSRF token
+            const csrftoken = getCookie('csrftoken');
+            
+            // Send delete request
+            fetch(`/hr_management/onboarding/invitation/${invitationId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'The invitation has been deleted.',
+                        confirmButtonColor: '#7B3DF3'
+                    }).then(() => {
+                        // Refresh the table to reflect the change
+                        populateEmployeesTable();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to delete the invitation.',
+                        confirmButtonColor: '#7B3DF3'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'There was an error deleting the invitation. Please try again.',
+                    confirmButtonColor: '#7B3DF3'
+                });
+            });
+        }
+    });
+}
+
+// Helper function to get cookies (needed for CSRF token)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
