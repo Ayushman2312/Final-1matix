@@ -1747,10 +1747,10 @@ Rules:
 **6-Month Business Action Plan**
 
 1. Website Audit
-- Perform a full SEO review (meta tags, headings, schema, crawlability)
-- Check mobile-friendliness, speed (Core Web Vitals), and index coverage
-- Evaluate blog quality, content depth, and keyword targeting
-- Check if the site is AI Overview-friendly (FAQs, schema.org types, review signals)
+- Perform a full crawl over the website and do a SEO review (meta tags, headings, schema, crawlability) for the website {user_website}
+- Check mobile-friendliness, speed (Core Web Vitals), and index coverage for the website {user_website}
+- Evaluate blog quality, content depth, and keyword targeting for the website {user_website}
+- Check if the site is AI Overview-friendly (FAQs, schema.org types, review signals) for the website {user_website}
 
 2. Marketplace & Brand Audit
 - Review listings on the selected marketplaces: Titles, reviews, bullet structure, A+ content
