@@ -16,19 +16,47 @@ import csv
 import tempfile
 import io
 import sys
+from django.conf import settings
 
 from .models import SalesDataFile, SalesAnalysisResult
 from .serializers import SalesDataFileSerializer, SalesAnalysisResultSerializer
-from .analysis_helper import identify_columns_with_gemini, analyze_sales_data
+from .analysis_helper import identify_columns_with_gemini, analyze_sales_data, compute_sales_metrics
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Print to terminal function for debugging
 def debug_print(message):
-    """Print debug message to terminal"""
-    print(f"\n[DEBUG] {message}\n", file=sys.stderr)
-    sys.stderr.flush()
+    """
+    Enhanced debug print function that logs messages to the console and collects them for frontend display
+    
+    This function ensures that debug logs are:
+    1. Printed to the terminal for backend monitoring
+    2. Collected in a list for potential inclusion in API responses
+    3. Properly formatted for readability
+    
+    Args:
+        message: The debug message to log
+    """
+    # Always print to terminal regardless of DEBUG setting for critical metrics data
+    print(f"[ANALYTICS_DEBUG] {message}")
+    
+    # Log to Django logger
+    logger.debug(message)
+    
+    # In DEBUG mode, also add to a session-based debug log collection
+    # (The frontend can retrieve these logs via the debug info in the response)
+    if settings.DEBUG:
+        if not hasattr(debug_print, 'log_collection'):
+            debug_print.log_collection = []
+        
+        # Add timestamp to log message
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+        debug_print.log_collection.append(f"[{timestamp}] {message}")
+        
+        # Keep only the last 100 messages to avoid memory issues
+        if len(debug_print.log_collection) > 100:
+            debug_print.log_collection = debug_print.log_collection[-100:]
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SalesDataUploadView(APIView):
@@ -700,3 +728,419 @@ class AnalysisResultView(APIView):
                 {"error": f"Error retrieving analysis: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SalesMetricsView(APIView):
+    """
+    API view for computing specific sales metrics from an uploaded file
+    """
+    parser_classes = (MultiPartParser, FormParser)
+    
+    def post(self, request, format=None):
+        """Handle file upload and compute metrics"""
+        try:
+            # Check platform type for special handling
+            platform_type = request.data.get('platform_type', '').lower()
+            
+            # Special handling for Meesho platform (dual file upload)
+            if platform_type == 'meesho':
+                return self.handle_meesho_files(request)
+            
+            # Standard handling for other platforms (single file)
+            # Check if file was uploaded
+            if 'file' not in request.FILES:
+                debug_print("No file uploaded in request")
+                return Response({"error": "No file was uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get the uploaded file
+            file_obj = request.FILES['file']
+            file_name = file_obj.name
+            
+            # Get manual column mapping if provided
+            manual_column_mapping = None
+            manual_mapping_param = request.data.get('manual_column_mapping', None)
+            if manual_mapping_param:
+                try:
+                    manual_column_mapping = json.loads(manual_mapping_param)
+                    logger.info(f"Manual column mapping provided: {manual_column_mapping}")
+                    debug_print(f"Manual column mapping provided: {manual_column_mapping}")
+                except json.JSONDecodeError:
+                    logger.warning(f"Invalid manual column mapping format: {manual_mapping_param}")
+            
+            logger.info(f"Computing sales metrics for file: {file_name}, size: {file_obj.size} bytes")
+            debug_print(f"Computing sales metrics for file: {file_name}, size: {file_obj.size} bytes")
+            
+            # Check file extension
+            file_extension = os.path.splitext(file_name)[1].lower()
+            if file_extension not in ['.csv', '.xlsx', '.xls']:
+                debug_print(f"Unsupported file format: {file_extension}")
+                return Response({"error": "Unsupported file format. Please upload CSV or Excel files."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Process the file and read it into a pandas DataFrame
+            try:
+                # Save the file to a temporary location
+                with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                    for chunk in file_obj.chunks():
+                        temp_file.write(chunk)
+                    temp_file_path = temp_file.name
+                
+                logger.info(f"Saved file temporarily to: {temp_file_path}")
+                
+                # Determine the file type and read accordingly
+                df = None
+                if file_extension == '.csv':
+                    # Use the same CSV reading logic from the upload view
+                    with open(temp_file_path, 'r', encoding='utf-8', errors='replace') as f:
+                        sample = f.read(4096)
+                    
+                    sniffer = csv.Sniffer()
+                    try:
+                        dialect = sniffer.sniff(sample)
+                        detected_delimiter = dialect.delimiter
+                        logger.info(f"Detected delimiter: '{detected_delimiter}'")
+                    except:
+                        detected_delimiter = ','
+                        logger.warning("Failed to detect delimiter, defaulting to comma")
+                    
+                    try:
+                        has_header = sniffer.has_header(sample)
+                    except:
+                        has_header = True
+                    
+                    # Try with detected settings
+                    try:
+                        df = pd.read_csv(
+                            temp_file_path, 
+                            delimiter=detected_delimiter,
+                            header=0 if has_header else None,
+                            encoding='utf-8',
+                            low_memory=False,
+                            on_bad_lines='skip'
+                        )
+                    except Exception as e:
+                        logger.error(f"First attempt to read CSV failed: {e}")
+                        
+                        # Try with different encoding
+                        df = pd.read_csv(
+                            temp_file_path,
+                            delimiter=detected_delimiter,
+                            header=0 if has_header else None,
+                            encoding='latin1',
+                            low_memory=False,
+                            on_bad_lines='skip'
+                        )
+                    
+                    # Try alternative delimiters if needed
+                    if df.shape[1] == 1:
+                        for delimiter in [';', '\t', '|']:
+                            try:
+                                temp_df = pd.read_csv(
+                                    temp_file_path,
+                                    delimiter=delimiter,
+                                    header=0 if has_header else None,
+                                    encoding='utf-8',
+                                    low_memory=False,
+                                    on_bad_lines='skip'
+                                )
+                                if temp_df.shape[1] > 1:
+                                    df = temp_df
+                                    break
+                            except:
+                                pass
+                
+                elif file_extension in ['.xlsx', '.xls']:
+                    # Read Excel file
+                    try:
+                        df = pd.read_excel(temp_file_path, engine='openpyxl')
+                    except:
+                        # Fallback to xlrd for older Excel files
+                        df = pd.read_excel(temp_file_path, engine='xlrd')
+                
+                # Clean up the temp file
+                try:
+                    os.unlink(temp_file_path)
+                except:
+                    logger.warning(f"Failed to delete temporary file: {temp_file_path}")
+                
+                # Validate the DataFrame
+                if df is None or df.empty:
+                    logger.error("File resulted in empty DataFrame")
+                    return Response({"error": "File contains no data or is in an unsupported format."}, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Identify columns
+                if manual_column_mapping:
+                    column_mapping = manual_column_mapping
+                else:
+                    # Use AI or heuristic column identification
+                    column_mapping = identify_columns_with_gemini(df)
+                
+                # Compute the sales metrics
+                metrics = compute_sales_metrics(df, column_mapping)
+                
+                # Return ONLY the metrics object as requested, with no additional fields
+                return Response(metrics, status=status.HTTP_200_OK)
+                
+            except Exception as e:
+                logger.error(f"Error processing file: {str(e)}")
+                logger.error(traceback.format_exc())
+                return Response({"error": f"Error processing file: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            logger.error(traceback.format_exc())
+            return Response({"error": f"Unexpected error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def handle_meesho_files(self, request):
+        """
+        Special handler for Meesho platform that requires two files:
+        1. Sales data file
+        2. Returns/cancellations data file
+        
+        This method processes both files, merges them, and then performs the analysis.
+        """
+        try:
+            debug_print("🟢 Meesho platform selected")
+            
+            # Validate that both files are present
+            if 'sales_file' not in request.FILES or 'returns_file' not in request.FILES:
+                debug_print("❌ Missing required files for Meesho analysis")
+                return Response({
+                    "error": "Please upload two files – (1) Sales Data, and (2) Sales Return/Cancellation Data."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get both uploaded files
+            sales_file = request.FILES['sales_file']
+            returns_file = request.FILES['returns_file']
+            
+            # Log file information
+            debug_print(f"Uploaded Meesho sales file: {sales_file.name}, size: {sales_file.size}")
+            debug_print(f"Uploaded Meesho returns file: {returns_file.name}, size: {returns_file.size}")
+            
+            # Check file extensions
+            sales_ext = os.path.splitext(sales_file.name)[1].lower()
+            returns_ext = os.path.splitext(returns_file.name)[1].lower()
+            
+            if sales_ext not in ['.csv', '.xlsx', '.xls'] or returns_ext not in ['.csv', '.xlsx', '.xls']:
+                debug_print(f"❌ Unsupported file format: {sales_ext} or {returns_ext}")
+                return Response({
+                    "error": "Unsupported file format. Please upload CSV or Excel files for both sales and returns data."
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Process both files
+            try:
+                # Read sales file
+                df_sales = self._read_file_to_dataframe(sales_file)
+                if df_sales is None or df_sales.empty:
+                    return Response({
+                        "error": "Sales file contains no data or is in an unsupported format."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                # Read returns file
+                df_returns = self._read_file_to_dataframe(returns_file)
+                if df_returns is None or df_returns.empty:
+                    return Response({
+                        "error": "Returns file contains no data or is in an unsupported format."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                
+                debug_print(f"Sales file shape: {df_sales.shape}")
+                debug_print(f"Returns file shape: {df_returns.shape}")
+                
+                # Map columns for both files
+                sales_mapping = identify_columns_with_gemini(df_sales)
+                returns_mapping = identify_columns_with_gemini(df_returns)
+                
+                # Debug column mappings
+                debug_print("Column mapping (sales file):\n" + json.dumps(
+                    {k: v for k, v in sales_mapping.items() if not k.startswith('_')}, 
+                    indent=2
+                ))
+                debug_print("Column mapping (returns file):\n" + json.dumps(
+                    {k: v for k, v in returns_mapping.items() if not k.startswith('_')}, 
+                    indent=2
+                ))
+                
+                # Validate column mappings compatibility
+                diff_columns = []
+                for key in sales_mapping:
+                    if key.startswith('_'):  # Skip metadata fields
+                        continue
+                    
+                    # Transaction type can differ between files (and should)
+                    if key == 'transaction_type':
+                        continue
+                    
+                    # Compare mapping values
+                    if sales_mapping.get(key) != returns_mapping.get(key):
+                        diff_columns.append(key)
+                
+                if diff_columns:
+                    logger.warning(f"Column mapping differences detected in {len(diff_columns)} columns: {diff_columns}")
+                    debug_print(f"⚠️ Different column mappings detected between files: {', '.join(diff_columns)}")
+                
+                # Add source type column to both dataframes
+                df_sales['__source_type__'] = 'sale'
+                df_returns['__source_type__'] = 'return'
+                
+                # Merge dataframes
+                df_merged = pd.concat([df_sales, df_returns], ignore_index=True)
+                
+                # Debug merged dataframe
+                debug_print(f"Merged dataframe shape: {df_merged.shape}")
+                debug_print(f"Sample merged data:\n{df_merged.head().to_string()}")
+                
+                # Create merged column mapping (prefer sales mapping but include both transaction types)
+                merged_mapping = sales_mapping.copy()
+                
+                # Debug column mapping for final analysis
+                debug_print(f"Column mapping:\n{json.dumps({k: v for k, v in merged_mapping.items() if not k.startswith('_')}, indent=2)}")
+                
+                # Compute metrics on merged data
+                metrics = compute_sales_metrics(df_merged, merged_mapping)
+                
+                # Prepare final response with debug information
+                debug_print(f"✅ Final metrics calculation complete")
+                
+                # Include debug logs in the response
+                debug_info = {
+                    "platform": "meesho",
+                    "merged_rows": len(df_merged),
+                    "sales_rows": len(df_sales),
+                    "returns_rows": len(df_returns),
+                    "columns_mapped": {
+                        k: v for k, v in merged_mapping.items() 
+                        if not k.startswith('_') and v is not None
+                    }
+                }
+                
+                # Get collected debug logs if available
+                if hasattr(debug_print, 'log_collection'):
+                    debug_info['logs'] = debug_print.log_collection
+                
+                # Final metrics object with exactly the required 8 metrics
+                final_metrics = {
+                    "total_sales": metrics.get("total_sales", 0),
+                    "average_sales": metrics.get("average_sales", 0),
+                    "return_rate": metrics.get("return_rate", 0),
+                    "cancellation_rate": metrics.get("cancellation_rate", 0),
+                    "total_return_amount": metrics.get("total_return_amount", 0),
+                    "total_replacements": metrics.get("total_replacements", 0),
+                    "total_regions": metrics.get("total_regions", 0),
+                    "total_products": metrics.get("total_products", 0),
+                    "debug": debug_info  # Always include debug info for Meesho analysis
+                }
+                
+                debug_print(f"Final metrics: {json.dumps(final_metrics, indent=2)}")
+                return Response(final_metrics, status=status.HTTP_200_OK)
+                
+            except Exception as e:
+                logger.error(f"Error processing Meesho files: {str(e)}")
+                logger.error(traceback.format_exc())
+                debug_print(f"❌ Error processing Meesho files: {str(e)}")
+                return Response({
+                    "error": f"Error processing Meesho files: {str(e)}"
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        except Exception as e:
+            logger.error(f"Unexpected error in Meesho handler: {str(e)}")
+            logger.error(traceback.format_exc())
+            debug_print(f"❌ Unexpected error in Meesho handler: {str(e)}")
+            return Response({
+                "error": f"Unexpected error in Meesho handler: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    def _read_file_to_dataframe(self, file_obj):
+        """Helper method to read a file into a pandas DataFrame"""
+        try:
+            file_name = file_obj.name
+            file_extension = os.path.splitext(file_name)[1].lower()
+            
+            # Save the file to a temporary location
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                for chunk in file_obj.chunks():
+                    temp_file.write(chunk)
+                temp_file_path = temp_file.name
+            
+            logger.info(f"Saved file temporarily to: {temp_file_path}")
+            
+            # Determine the file type and read accordingly
+            df = None
+            if file_extension == '.csv':
+                # Use the same CSV reading logic from the upload view
+                with open(temp_file_path, 'r', encoding='utf-8', errors='replace') as f:
+                    sample = f.read(4096)
+                
+                sniffer = csv.Sniffer()
+                try:
+                    dialect = sniffer.sniff(sample)
+                    detected_delimiter = dialect.delimiter
+                    logger.info(f"Detected delimiter: '{detected_delimiter}'")
+                except:
+                    detected_delimiter = ','
+                    logger.warning("Failed to detect delimiter, defaulting to comma")
+                
+                try:
+                    has_header = sniffer.has_header(sample)
+                except:
+                    has_header = True
+                
+                # Try with detected settings
+                try:
+                    df = pd.read_csv(
+                        temp_file_path, 
+                        delimiter=detected_delimiter,
+                        header=0 if has_header else None,
+                        encoding='utf-8',
+                        low_memory=False,
+                        on_bad_lines='skip'
+                    )
+                except Exception as e:
+                    logger.error(f"First attempt to read CSV failed: {e}")
+                    
+                    # Try with different encoding
+                    df = pd.read_csv(
+                        temp_file_path,
+                        delimiter=detected_delimiter,
+                        header=0 if has_header else None,
+                        encoding='latin1',
+                        low_memory=False,
+                        on_bad_lines='skip'
+                    )
+                
+                # Try alternative delimiters if needed
+                if df.shape[1] == 1:
+                    for delimiter in [';', '\t', '|']:
+                        try:
+                            temp_df = pd.read_csv(
+                                temp_file_path,
+                                delimiter=delimiter,
+                                header=0 if has_header else None,
+                                encoding='utf-8',
+                                low_memory=False,
+                                on_bad_lines='skip'
+                            )
+                            if temp_df.shape[1] > 1:
+                                df = temp_df
+                                break
+                        except:
+                            pass
+            
+            elif file_extension in ['.xlsx', '.xls']:
+                # Read Excel file
+                try:
+                    df = pd.read_excel(temp_file_path, engine='openpyxl')
+                except:
+                    # Fallback to xlrd for older Excel files
+                    df = pd.read_excel(temp_file_path, engine='xlrd')
+            
+            # Clean up the temp file
+            try:
+                os.unlink(temp_file_path)
+            except:
+                logger.warning(f"Failed to delete temporary file: {temp_file_path}")
+            
+            return df
+            
+        except Exception as e:
+            logger.error(f"Error reading file to DataFrame: {str(e)}")
+            logger.error(traceback.format_exc())
+            return None

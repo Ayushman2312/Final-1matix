@@ -1,4 +1,6 @@
 from ast import arg
+from doctest import Example
+from string import digits
 from django.http import JsonResponse
 from django.views.generic import TemplateView
 import logging
@@ -1649,51 +1651,54 @@ def analyze_with_generative_ai(keyword, metrics, trend_data, business_intent='',
         business_context = ""
         if business_intent == 'yes':
             business_context = "The user wants to START a new business related to this keyword."
-            recommendations_section = f"""
-You are a search trend analyst and expert digital marketer working for TrendIQ. You are analyzing market demand data for the keyword: "{keyword}"
+            recommendations_section = f"""You are a search trend analyst and expert digital marketer working for TrendIQ. You are analyzing market demand data for the keyword: "{keyword}"
 
 Here is the raw data and pattern summary:
 {data_summary}
 
-The user wants to start a business in this category. Your job is to explain clearly how the trend is behaving.
-
-Start by giving a clean, honest, easy-to-understand **analysis** using the following format:
-
-1. Is the trend growing, falling, or staying flat over the last 5 years?
-2. How many strong spikes (peaks) are there? When did the last big peak happen?
-3. Do the spikes follow a pattern (seasonal) or are they random?
-4. Are there months with very low or zero interest (dead periods)?
-5. Is the trend stable or unstable (volatility)?
-6. In the last 3 months, is interest rising, dropping, or staying flat?
-
-Rules:
-- Use **simple and clean English** (like explaining to a 5th grade Indian student).
-- Use bullet points for 60–70% of the answer.
-- Do **not** give any opinions, suggestions, or emotional lines in this part.
-- Do **not mention TikTok** at all. Never include it.
-- Do **not say Google Trends** or mention any data sources.
-- Just describe what the trend is doing. That's it.
+The user is np.hanning to start a business in this space. Your job is to analyze the trend clearly, then give them a step-by-step action plan — simple, practical, and based on actual data.
 
 ---
 
-Now give a **Recommendation Plan** for someone who wants to start:
-
-- Give a simple, clear step-by-step plan to enter this market.
-- Based on the niche, decide smartly:
-  - If they should focus on YouTube, Instagram Reels, YouTube Shorts, Blogs — or a mix
-  - If this niche suits ecommerce, marketplace selling, brand-building, or local promotion
-- Use your intelligence to guide which formats are suitable:
-  - Example: Fashion/Lifestyle = All content types
-  - Example: Car/Industrial products = Long-form YouTube + Blog only
-- Suggest **10–15 low-competition keywords** that are easy to rank
-- Suggest **25 blog or video content topics** that can drive traffic and attention
+**Search Trend Analysis**
+1. Is the trend growing, falling, or staying flat over the last 5 years?
+2. How many strong spikes (peaks) are there? When was the last big peak?
+3. Are the spikes seasonal or random?
+4. Are there months with very low or zero interest (dead periods)?
+5. Is the graph stable or unpredictable (volatility)?
+6. What happened in the last 3 months — going up, down, or flat?
 
 Rules:
-- Be specific to this category
-- No bookish theory. No emotional talk. No fluff.
-- Use bullet points
-- Keep it honest, practical, and sharp
-"""
+- Use very simple English (talk like a beginner Indian seller)
+- Bullet points for most of your answer
+- No mention of Google Trends or TikTok
+- Never tailor analysis based on marketplaces selected unless clearly visible in trend
+
+---
+
+**Startup Action Plan**
+
+1. Is this the right time to enter?
+- Based on trend strength, recent rise/fall, and seasonality
+- Mention if competition looks high or low
+
+2. Step-by-Step Market Entry Plan
+- Based on niche: suggest content-first, marketplace-first, or direct funnel
+- Choose YouTube / Reels / Blogs based on category needs (not blindly all)
+
+3. Mistakes to Avoid
+- Say what the user should not do, based on timing or saturation
+
+4. Keyword Suggestions
+- Give 10–15 low competition, relevant keywords to start with
+
+5. Content Strategy Plan
+- Give 25 blog/video topics
+- Must be specific to the niche and mix educational, SEO and trust-building content
+
+6. Bonus: Awareness Building
+- Suggest PR, guest blogs, influencers only if they make sense
+- Mention Example (if you know any legit ones in this space)"""
         elif business_intent == 'no':
             business_context = "The user is ALREADY IN BUSINESS related to this keyword."
             
@@ -1703,10 +1708,13 @@ Rules:
             if user_website:
                 business_details += f"- Website: {user_website}\n"
                 
-            business_details += f"- Marketplaces Selected: {marketplaces_selected} (Amazon, Flipkart, Meesho, IndiaMART, JioMart, etc.)"
+            # Format marketplaces more clearly for multiple selections
+            if marketplaces_selected:
+                business_details += f"- Marketplaces Selected: {marketplaces_selected}"
+            else:
+                business_details += "- No marketplaces specified"
             
-            recommendations_section = f"""
-You are a search trend analyst and expert digital marketer working for TrendIQ. You are analyzing market demand data for the keyword: "{keyword}"
+            recommendations_section = f"""You are a search trend analyst and expert digital marketer working for TrendIQ. You are analyzing market demand data for the keyword: "{keyword}"
 
 Here is the raw data and pattern summary:
 {data_summary}
@@ -1718,8 +1726,7 @@ Your job is to explain the trend in a clean and simple way, then generate a smar
 
 ---
 
-Start with the **Search Trend Analysis** using this structure:
-
+**Search Trend Analysis**
 1. Is the trend growing, falling, or staying flat over the last 5 years?
 2. How many strong spikes (peaks) are there? When was the last big peak?
 3. Are the spikes seasonal or random?
@@ -1727,50 +1734,48 @@ Start with the **Search Trend Analysis** using this structure:
 5. Is the graph stable or unpredictable (volatility)?
 6. What happened in the last 3 months — going up, down, or flat?
 
-**Rules:**
-- Use **simple English** (like talking to a 5th grade Indian student).
-- Use bullet points for most of your answer.
-- Do **not mention TikTok** at all. It is banned in India and not relevant.
-- Do **not mention Google Trends** or where this data came from.
-- No opinions, no theory, no emotion — just tell what the graph is showing.
+Rules:
+- Use simple, clean English
+- Bullet points for most of your response
+- No mention of TikTok or Google Trends
+- Never give opinions — just state facts
+- Do **not tailor trend results based on marketplaces selected**
+- Mention a platform **only if the trend clearly shows platform-specific behavior**
 
 ---
 
-Now give a sharp **6-Month Business Action Plan** based on all inputs:
+**6-Month Business Action Plan**
 
-1. ✅ **Website Audit**:
-   - Check SEO-friendliness, mobile speed, core web vitals, keyword structure
-   - See if the site is optimized for AI Overview (FAQ blocks, schema, blog relevance)
-   - Point out if the website lacks content or keyword depth
+1. Website Audit
+- Perform a full SEO review (meta tags, headings, schema, crawlability)
+- Check mobile-friendliness, speed (Core Web Vitals), and index coverage
+- Evaluate blog quality, content depth, and keyword targeting
+- Check if the site is AI Overview-friendly (FAQs, schema.org types, review signals)
 
-2. 🛒 **Marketplace & Brand Presence Audit**:
-   - Check visibility and quality on selected marketplaces
-   - Spot issues like: low reviews, poor images, wrong titles, missing A+ content
-   - Mention if brand lacks presence in SERP or platform search
+2. Marketplace & Brand Audit
+- Review listings on the selected marketplaces: Titles, reviews, bullet structure, A+ content
+- Create specific optimization strategies for each marketplace the user sells on
+- Identify missing keywords, wrong categories, poor product images
+- Benchmark against top 3 category competitors per platform
 
-3. 🎯 **Platform Strategy (Use Intelligence Based on Niche)**:
-   - Suggest content platforms wisely: YouTube, Reels, Shorts, Blog – not all fit every niche
-   - Example: Fashion, Food, Beauty → All platforms
-   - Example: Car parts, Machinery, B2B → YouTube + Blogs only
-   - Suggest ecommerce, marketplace, or direct funnel – only if it fits their business
-   - NEVER mention TikTok. Do not suggest it.
+3. Channel Strategy (Use Niche Intelligence)
+- Suggest only platforms that work for this niche (e.g., YouTube + Blogs for B2B)
+- If fashion, food, beauty → YouTube, Instagram Reels, Shorts, Blog
+- If tools, parts, industrial → Only YouTube + Blog
+- Suggest direct funnel, ecommerce, or marketplaces only where relevant
 
-4. 🔍 **Keyword Suggestions**:
-   - Give **10–15 low-competition keywords** relevant to this category
+4. Keyword Suggestions
+- Suggest 10–15 low competition, high intent keywords specific to this niche
+- Include keywords relevant to the specific marketplaces they're selling on
 
-5. 🧠 **Content Calendar**:
-   - Suggest **25 blog/video topic ideas** tailored to their niche
-   - Topics should help them gain organic traffic, authority, and brand trust
+5. Content Calendar
+- Suggest 25 blog/video topics that help rank organically and build brand trust
+- Include a mix of how-to, myth-busting, listicles, and niche authority-building content
 
-6. 📰 **Bonus PR & Influencer Suggestions** (Only if relevant):
-   - Suggest the best blogs, media sites, influencer pages, or content partners specific to their industry
-   - Mention if a competitor was featured somewhere — and if this brand should aim for it too
-
-**Final Rules:**
-- No emotional tone, no fancy language
-- Use bullet points for 70%+ of your output
-- Everything must be practical, niche-specific, and based on actual search + brand input
-"""
+6. Bonus: PR & Influencer Outreach
+- Research top influencers or content creators in this category (YouTube, Instagram, blogs)
+- Suggest 3–5 guest post or PR websites that publish in this space (India-specific preferred)
+- Mention if any competitors were featured — and where"""
 
         
         # Create the recommendations prompt

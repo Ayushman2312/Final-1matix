@@ -228,9 +228,15 @@ def identify_columns_with_gemini(df, file_path=None):
            - Usually text columns with product names or IDs
            - May contain terms like: product, item, sku, name, title, description
            
-        4. Customer Location/Region (location information for customer)
-           - Text columns with location data
-           - May contain terms like: location, region, country, state, city, address
+        4. Customer Location/Region (specifically STATE-level location information)
+           - HIGHEST PRIORITY: Identify column containing STATE-level geographical information
+           - The system MUST prioritize columns with state names or codes over other location data
+           - If a column has "state" in its name, it should be selected with highest confidence
+           - If no specific "state" column exists, use any column labeled as "region" or that contains region-level data
+           - Look for text columns with unique values matching common state names or abbreviations
+           - May contain terms like: state, region, province, location, territory, area
+           - IMPORTANT: Prefer STATE information over city, country, or full address data
+           - If full addresses, check if they contain extractable state information
            
         5. Sales Channel/Platform (marketplace or platform where sale occurred)
            - Text column with limited unique values representing sales channels
@@ -943,7 +949,7 @@ def identify_columns_heuristically(df):
             if qty_scores:
                 best_qty_col = max(qty_scores.items(), key=lambda x: x[1])[0]
                 column_mapping["quantity"] = best_qty_col
-                logger.info(f"Identified quantity based on integer values: '{best_qty_col}'")
+                logger.info(f"Identified quantity column from generic columns: '{best_qty_col}' with score {qty_scores[best_qty_col]}")
         
         # For product_name, look for text columns with longer values and more words
         if not column_mapping["product_name"]:
@@ -1353,6 +1359,38 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                 analysis["summary"]["cancellation_rate"] = analysis["order_metrics"]["cancellation_rate"]
             if "issue_rate" in analysis["order_metrics"]:
                 analysis["summary"]["issue_rate"] = analysis["order_metrics"]["issue_rate"]
+                
+            # Calculate total return amount and add to summary
+            if transaction_type_col and transaction_type_col in df_analysis.columns and sales_col and sales_col in df_analysis.columns:
+                try:
+                    # Convert to string and lowercase for consistent analysis
+                    status_values = df_analysis[transaction_type_col].astype(str).str.lower()
+                    
+                    # Identify returned transactions (match: return, refunded, returned)
+                    returned_mask = status_values.apply(lambda x: any(kw in x for kw in ['return', 'refund', 'refunded']))
+                    
+                    # Calculate return amount
+                    return_amount = df_analysis.loc[returned_mask, sales_col].sum()
+                    analysis["summary"]["total_return_amount"] = float(return_amount) if not pd.isna(return_amount) else 0
+                    
+                    logger.info(f"Total return amount: {analysis['summary']['total_return_amount']}")
+                except Exception as e:
+                    logger.error(f"Error calculating total return amount: {e}")
+                    analysis["summary"]["total_return_amount"] = 0
+                
+                # Also calculate total replacements
+                try:
+                    # Identify replaced transactions (match: replacement, replaced, exchange)
+                    replacement_mask = status_values.apply(lambda x: any(kw in x for kw in ['replace', 'replaced', 'replacement', 'exchange']))
+                    
+                    # Count replacements
+                    replacement_count = replacement_mask.sum()
+                    analysis["summary"]["total_replacements"] = int(replacement_count)
+                    
+                    logger.info(f"Total replacements: {analysis['summary']['total_replacements']}")
+                except Exception as e:
+                    logger.error(f"Error calculating total replacements: {e}")
+                    analysis["summary"]["total_replacements"] = 0
         
         # Calculate total units if quantity column is available
         if qty_col and qty_col in df_analysis.columns:
@@ -1385,7 +1423,7 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                     logger.info(f"Sales analysis: Total={total_sales}, Avg={avg_sale}, Max={max_sale}, Min={min_sale}, Median={median_sale}")
                     
                     analysis["summary"]["total_sales"] = float(total_sales)
-                    analysis["summary"]["average_sale"] = float(avg_sale)
+                    analysis["summary"]["average_sales"] = float(avg_sale)
                     analysis["summary"]["max_sale"] = float(max_sale)
                     analysis["summary"]["min_sale"] = float(min_sale)
                     analysis["summary"]["median_sale"] = float(median_sale)
@@ -1885,7 +1923,7 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
         
         # Sales metrics
         key_metrics["total_sales"] = analysis["summary"].get("total_sales", 0)
-        key_metrics["average_sale"] = analysis["summary"].get("average_sale", 0)
+        key_metrics["average_sales"] = analysis["summary"].get("average_sales", 0)
         
         # Regional metrics
         if "top_selling_state" in analysis["order_metrics"]:
@@ -1915,7 +1953,7 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                 {"label": "Total Orders", "value": key_metrics["total_orders"], "category": "orders"},
                 {"label": "Total Units", "value": key_metrics["total_units"], "category": "orders"},
                 {"label": "Total Sales", "value": key_metrics["total_sales"], "category": "sales", "format": "currency"},
-                {"label": "Average Sale", "value": key_metrics["average_sale"], "category": "sales", "format": "currency"}
+                {"label": "Average Sale", "value": key_metrics["average_sales"], "category": "sales", "format": "currency"}
             ],
             "issue_metrics": [
                 {"label": "Cancelled Orders", "value": key_metrics["total_cancelled_orders"], "category": "issues"},
@@ -2785,3 +2823,279 @@ def map_meesho_columns(df, column_mapping):
     column_mapping['_detected_format'] = 'meesho'
     
     return column_mapping
+
+def compute_sales_metrics(df, column_mapping):
+    """
+    Compute specific sales metrics as requested:
+    - Total Sales
+    - Average Sales
+    - Return Rate (%)
+    - Cancellation Rate (%)
+    - Total Return Amount
+    - Total Number of Replacements
+    - Total Unique Regions (States Only)
+    - Total Number of Products
+    
+    Args:
+        df: pandas DataFrame containing the sales data
+        column_mapping: dictionary mapping column types to actual column names
+        
+    Returns:
+        dict: Dictionary containing the computed metrics in the requested format
+    """
+    # Initialize results dictionary with default values
+    metrics = {
+        "total_sales": 0,
+        "average_sales": 0,
+        "return_rate": 0,
+        "cancellation_rate": 0,
+        "total_return_amount": 0,
+        "total_replacements": 0,
+        "total_regions": 0,
+        "total_products": 0
+    }
+    
+    # Handle empty dataframe or invalid column mapping
+    if df.empty or not column_mapping:
+        logger.warning("Empty dataframe or invalid column mapping provided")
+        return metrics
+    
+    try:
+        # Create a clean copy of the dataframe for analysis
+        df_analysis = df.copy()
+        
+        # 1. Total Sales & Average Sales - Sum of all numeric sales_amount values
+        sales_col = column_mapping.get('sales_amount')
+        if sales_col and sales_col in df_analysis.columns:
+            # Convert sales column to numeric, coercing errors to NaN
+            if not pd.api.types.is_numeric_dtype(df_analysis[sales_col]):
+                df_analysis[sales_col] = pd.to_numeric(df_analysis[sales_col], errors='coerce')
+            
+            # Calculate total sales (sum of all valid sales amounts)
+            valid_sales = df_analysis[sales_col].dropna()
+            metrics["total_sales"] = float(valid_sales.sum()) if len(valid_sales) > 0 else 0
+            
+            # Calculate average sales (mean of all valid, non-zero sales amounts)
+            non_zero_sales = valid_sales[valid_sales > 0]
+            metrics["average_sales"] = float(non_zero_sales.mean()) if len(non_zero_sales) > 0 else 0
+            
+            logger.info(f"Total sales: {metrics['total_sales']}, Average sales: {metrics['average_sales']}")
+        
+        # 2. Return & Cancellation Rates, Total Return Amount, Total Replacements
+        transaction_col = column_mapping.get('transaction_type')
+        total_orders = len(df_analysis)
+        
+        if transaction_col and transaction_col in df_analysis.columns and total_orders > 0:
+            # Convert to string and lowercase for consistent analysis
+            status_values = df_analysis[transaction_col].astype(str).str.lower()
+            
+            # Identify returned transactions (match: return, refunded, returned)
+            returned_mask = status_values.apply(lambda x: any(kw in x for kw in ['return', 'refund', 'refunded']))
+            returned_count = returned_mask.sum()
+            
+            # Identify cancelled transactions (match: cancelled, canceled, cxl)
+            cancelled_mask = status_values.apply(lambda x: any(kw in x for kw in ['cancel', 'cancelled', 'canceled', 'cxl']))
+            cancelled_count = cancelled_mask.sum()
+            
+            # Calculate replacement count (match: replacement, replaced, exchange)
+            replacement_mask = status_values.apply(lambda x: any(kw in x for kw in ['replace', 'replaced', 'replacement', 'exchange']))
+            metrics["total_replacements"] = int(replacement_mask.sum())
+            
+            # Calculate return amount if sales column exists
+            if sales_col and sales_col in df_analysis.columns:
+                return_amount = df_analysis.loc[returned_mask, sales_col].sum()
+                metrics["total_return_amount"] = float(return_amount) if not pd.isna(return_amount) else 0
+            
+            # Improve return rate calculation by using successful orders as denominator
+            # Successful orders = total orders - cancelled orders
+            successful_orders = total_orders - cancelled_count
+            
+            # Calculate improved return rate (returns / successful orders)
+            if successful_orders > 0:
+                metrics["return_rate"] = round((returned_count / successful_orders) * 100, 1)
+            else:
+                metrics["return_rate"] = 0
+                
+            # Cancellation rate remains the same (cancellations / total orders)
+            metrics["cancellation_rate"] = round((cancelled_count / total_orders) * 100, 1) if total_orders > 0 else 0
+            
+            logger.info(f"Return rate: {metrics['return_rate']}%, Cancellation rate: {metrics['cancellation_rate']}%")
+            logger.info(f"Total return amount: {metrics['total_return_amount']}, Total replacements: {metrics['total_replacements']}")
+            logger.info(f"Calculation details: Returns={returned_count}, Cancellations={cancelled_count}, Successful orders={successful_orders}, Total orders={total_orders}")
+        
+        # 3. Total Regions (States only) - Enhanced state column detection
+        location_col = column_mapping.get('customer_location')
+        
+        # If no location column is found, implement a multi-level fallback strategy
+        if not location_col or location_col not in df_analysis.columns:
+            # Priority 1: Find columns explicitly named with 'state'
+            state_columns = [col for col in df_analysis.columns if 'state' in str(col).lower()]
+            
+            if state_columns:
+                # Prefer 'state' over anything containing 'state' as substring
+                exact_state_columns = [col for col in state_columns if str(col).lower() == 'state']
+                if exact_state_columns:
+                    location_col = exact_state_columns[0]
+                    logger.info(f"Found explicit state column: '{location_col}'")
+                else:
+                    # Next best: columns with 'state' in the name
+                    location_col = state_columns[0]
+                    logger.info(f"Using column '{location_col}' with 'state' in name as fallback")
+            else:
+                # Priority 2: Look for region, province, or territory columns
+                for keyword in ['region', 'province', 'territory']:
+                    region_columns = [col for col in df_analysis.columns if keyword in str(col).lower()]
+                    if region_columns:
+                        location_col = region_columns[0]
+                        logger.info(f"Using column '{location_col}' with '{keyword}' in name as fallback")
+                        break
+                
+                # Priority 3: Look for address or location columns that might contain state info
+                if not location_col:
+                    for keyword in ['address', 'location', 'place', 'area']:
+                        addr_columns = [col for col in df_analysis.columns if keyword in str(col).lower()]
+                        if addr_columns:
+                            # Sample the first few values to see if they might contain state information
+                            for addr_col in addr_columns:
+                                sample_values = df_analysis[addr_col].dropna().astype(str).head(5)
+                                # Check if any value potentially contains a state
+                                for val in sample_values:
+                                    state = extract_state(val)
+                                    if state:
+                                        location_col = addr_col
+                                        logger.info(f"Using address column '{location_col}' that contains state information")
+                                        break
+                                if location_col:
+                                    break
+                        if location_col:
+                            break
+        
+        if location_col and location_col in df_analysis.columns:
+            # Extract state information from location column
+            locations = df_analysis[location_col].astype(str)
+            
+            # Helper function to extract state from various formats
+            def extract_state(location_str):
+                # Skip empty or short values
+                if pd.isna(location_str) or len(location_str) < 2:
+                    return None
+                
+                location_str = str(location_str).strip()
+                
+                # Common Indian and US state abbreviations to help with detection
+                us_state_codes = {"AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", 
+                                 "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", 
+                                 "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", 
+                                 "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "DC"}
+                
+                indian_state_codes = {"AP", "AR", "AS", "BR", "CG", "GA", "GJ", "HR", "HP", "JH", "KA", "KL", "MP", 
+                                     "MH", "MN", "ML", "MZ", "NL", "OD", "PB", "RJ", "SK", "TN", "TS", "TR", "UP", 
+                                     "UK", "WB", "AN", "CH", "DN", "DD", "DL", "JK", "LA", "LD", "PY"}
+                
+                # Direct match - If it's already a state code
+                if len(location_str) == 2:
+                    if location_str.upper() in us_state_codes or location_str.upper() in indian_state_codes:
+                        return location_str.upper()
+                
+                # Direct state name check for common names
+                import re
+                
+                # Check for common state format in addresses (City, STATE zip)
+                # US format: City, ST 12345
+                us_address_pattern = re.compile(r'[,\s]+([A-Z]{2})\s+\d{5}(?:-\d{4})?')
+                match = us_address_pattern.search(location_str)
+                if match and match.group(1) in us_state_codes:
+                    return match.group(1)
+                
+                # Indian format: often has state name followed by PIN code
+                indian_pin_pattern = re.compile(r'([a-zA-Z\s]+)[\s,-]+\d{6}')
+                match = indian_pin_pattern.search(location_str)
+                if match:
+                    state_part = match.group(1).strip()
+                    if len(state_part) > 2 and len(state_part) < 30:  # Reasonable length for state name
+                        return state_part
+                
+                # Try to extract state from comma-separated address
+                parts = location_str.split(',')
+                if len(parts) > 1:
+                    # For US addresses, state is typically second-to-last part
+                    # For Indian addresses, state might appear in various positions
+                    for part in reversed(parts):  # Check from end to beginning
+                        clean_part = re.sub(r'\d{5,6}(?:-\d{4})?', '', part).strip()
+                        if 2 <= len(clean_part) <= 30:  # Reasonable length for state name/code
+                            # Check if it looks like a state code
+                            if len(clean_part) == 2 and clean_part.upper() in (us_state_codes | indian_state_codes):
+                                return clean_part.upper()
+                            # Otherwise return the potential state name
+                            if not any(char.isdigit() for char in clean_part):
+                                return clean_part
+                
+                # If it's a single word and looks like a state name (no numbers, reasonable length)
+                if " " not in location_str and not any(char.isdigit() for char in location_str) and len(location_str) <= 30:
+                    return location_str
+                
+                # Last resort - if it contains a recognizable state name somewhere in the string
+                common_state_names = ["alabama", "alaska", "arizona", "arkansas", "california", "colorado", 
+                                     "connecticut", "delaware", "florida", "georgia", "hawaii", "idaho", 
+                                     "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", 
+                                     "maine", "maryland", "massachusetts", "michigan", "minnesota", 
+                                     "mississippi", "missouri", "montana", "nebraska", "nevada", 
+                                     "hampshire", "jersey", "mexico", "york", "carolina", "dakota", 
+                                     "ohio", "oklahoma", "oregon", "pennsylvania", "rhode", "tennessee", 
+                                     "texas", "utah", "vermont", "virginia", "washington", "wisconsin", "wyoming",
+                                     # Indian states
+                                     "andhra", "arunachal", "assam", "bihar", "chhattisgarh", "goa", "gujarat", 
+                                     "haryana", "himachal", "jharkhand", "karnataka", "kerala", "madhya", 
+                                     "maharashtra", "manipur", "meghalaya", "mizoram", "nagaland", "odisha", 
+                                     "punjab", "rajasthan", "sikkim", "tamil", "telangana", "tripura", "uttar", 
+                                     "uttarakhand", "bengal", "delhi"]
+                
+                location_lower = location_str.lower()
+                for state in common_state_names:
+                    if state in location_lower:
+                        # Find the full word containing this state name
+                        words = re.findall(r'\b\w*' + state + r'\w*\b', location_lower)
+                        if words:
+                            return words[0].capitalize()
+                
+                return None
+            
+            # Try to extract states from location data
+            states = []
+            for loc in locations:
+                state = extract_state(loc)
+                if state:
+                    states.append(state)
+            
+            # Count unique states after normalization
+            if states:
+                # Normalize state names (remove extra spaces, lowercase)
+                normalized_states = [s.lower().strip() for s in states if s]
+                metrics["total_regions"] = len(set(normalized_states))
+                logger.info(f"Found {metrics['total_regions']} unique regions/states")
+        
+        # 4. Total Number of Products
+        product_col = column_mapping.get('product_name')
+        if product_col and product_col in df_analysis.columns:
+            # Count unique non-empty product values
+            unique_products = df_analysis[product_col].dropna().astype(str)
+            # Filter out empty strings
+            unique_products = unique_products[unique_products.str.strip() != '']
+            metrics["total_products"] = len(unique_products.unique())
+            logger.info(f"Found {metrics['total_products']} unique products")
+        
+        # Ensure all values are properly formatted
+        for key in metrics:
+            if isinstance(metrics[key], float):
+                # Round all floats to 2 decimal places
+                metrics[key] = round(metrics[key], 2)
+            # Ensure no None values in output
+            if metrics[key] is None:
+                metrics[key] = 0
+        
+        return metrics
+        
+    except Exception as e:
+        logger.error(f"Error computing sales metrics: {e}")
+        logger.error(traceback.format_exc())
+        return metrics

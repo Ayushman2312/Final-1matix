@@ -3,77 +3,198 @@
 {% block title %}TrendIQ Analysis{% endblock %}
 
 {% block content %}
-<h1 class="ml-4 text-2xl bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent" style="font-weight:800;">Welcome to the TrendIQ</h1>
-<div class="mx-auto p-4">
-    <div class="mx-auto">
+<h1 class="text-2xl bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent" style="font-weight:800;">Welcome to the TrendIQ</h1>
+<div class="py-4">
+    <div>
         <!-- Top Search Section -->
-        <div class="p-3 mb-6 rounded-2xl shadow-[0_0_7px_rgba(0,0,0,0.1)]">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-3 gap-4 items-center">
-                
-                <!-- Search Input -->
-                <div class="relative col-span-1 sm:col-span-2 md:col-span-2">
-                    <div class="neumorphic-input-container">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <input type="text" id="keywordInput" class="w-full pl-10 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Search Query">
-                    </div>
-                </div>
-                
-                <!-- Options and Submit -->
-                <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-4 col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2">
-                    <div class="neumorphic-select-container relative w-full">
-                        <select id="analysis_type" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500">
-                            <option value="1">Time Trends Analysis</option>
-                            {% comment %} <option value="2">Regional Analysis</option>
-                            <option value="6">City-Level Analysis</option>
-                            <option value="7">Complete Analysis</option> {% endcomment %}
-                        </select>
-                    </div>
-                    <div class="neumorphic-select-container relative w-full">
-                        <select id="business_intent" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500" required>
-                            <option value="" class="text-gray-500">Business intent (required)</option>
-                            <option value="yes">Yes, I want to start a business</option>
-                            <option value="no">No, already in business</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+        <div class="m-2 bg-white p-3 rounded-2xl shadow-[0_0_7px_rgba(0,0,0,0.1)]">
+            <div class="w-full">
+                <!-- Main Search Container -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-3 gap-4 lg:gap-6 items-stretch">
+                    
+                    <!-- Search Input Container - Takes full width on mobile, half on larger screens -->
+                    <div class="relative col-span-1 sm:col-span-2 md:col-span-2 transition-all duration-300">
+                        <div class="neumorphic-input-container h-full">
+                            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="keywordInput" 
+                                   class="w-full m-2 pl-10 pr-4 py-2.5 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500 transition-all duration-300 hover:shadow-sm" 
+                                   placeholder="Enter your search query">
                         </div>
                     </div>
-                    <button id="analyzeButton" class="neumorphic-button px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-xl hover:shadow-blue-500/20 hover:shadow-lg transition-all w-full sm:w-auto">
-                        Submit
-                    </button>
+                    
+                    <!-- Options and Submit Container -->
+                    <div class="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-3 col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-2 h-full">
+                        <!-- Business Intent Select -->
+                        <div class="neumorphic-select-container m-2 relative flex-1 min-w-[200px]">
+                            <select id="business_intent" 
+                                    class="neumorphic-select w-full pl-4 pr-10 py-2.5 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500 transition-all duration-300" 
+                                    required>
+                                <option value="" class="text-gray-500">Select your intent</option>
+                                <option value="yes">I want to start a business</option>
+                                <option value="no">I'm already in business</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button id="analyzeButton" 
+                                class="neumorphic-button m-2 flex-1 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-xl hover:shadow-blue-500/20 hover:shadow-lg active:scale-[0.98] transition-all duration-300 min-w-[140px]">
+                            <span class="flex items-center justify-center gap-2">
+                                Submit & Analyze
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <!-- Business Details Fields (initially hidden) -->
-            <div id="businessDetailsContainer" class="mt-4 hidden">
+            <div id="businessDetailsContainer" class=" hidden">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="neumorphic-input-container">
-                        <input type="text" id="brandName" class="w-full pl-4 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Brand Name" required>
+                        <input type="text" id="brandName" class="w-full m-2 pl-4 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Brand Name" required>
                     </div>
                     <div class="neumorphic-input-container">
-                        <input type="text" id="businessWebsite" class="w-full pl-4 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="Business Website (optional)">
+                        <input type="text" id="businessWebsite" class="w-full m-2 pl-4 pr-4 py-3 bg-gray-50 border-[3px] border-light-blue rounded-xl focus:ring-2 focus:ring-blue-500" placeholder="https://www.example.com">
                     </div>
                     <div class="neumorphic-select-container relative w-full">
-                        <select id="marketplace" class="neumorphic-select w-full pl-4 pr-10 py-3 bg-gray-50 border-0 rounded-xl appearance-none focus:ring-2 focus:ring-blue-500" required>
-                            <option value="" class="text-gray-500">Choose Your Marketplace</option>
-                            <option value="amazon">Amazon</option>
-                            <option value="meesho">Meesho</option>
-                            <option value="shopify">Shopify</option>
-                            <option value="flipkart">Flipkart</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                        {% comment %} <label class="block text-gray-700 mb-2">Choose Your Marketplaces (select multiple)</label> {% endcomment %}
+                        <div class="relative m-2">
+                            <button id="marketplaceDropdownBtn" class="w-full bg-gray-50 p-3 rounded-xl border-[3px] border-light-blue flex justify-between items-center">
+                                <span class="selected-count">Choose Your Marketplaces</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div id="marketplaceDropdown" class="absolute z-50 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 hidden transform transition-all duration-300 ease-in-out">
+                                <div class="p-3 grid grid-cols-1 gap-2 max-h-60 overflow-y-auto scrollbar-hide">
+                                    <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                                        <input type="checkbox" id="marketplace-amazon" name="marketplace" value="amazon" class="marketplace-checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        <label for="marketplace-amazon" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer select-none w-full">Amazon</label>
+                                    </div>
+                                    <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                                        <input type="checkbox" id="marketplace-meesho" name="marketplace" value="meesho" class="marketplace-checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        <label for="marketplace-meesho" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer select-none w-full">Meesho</label>
+                                    </div>
+                                    <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                                        <input type="checkbox" id="marketplace-shopify" name="marketplace" value="shopify" class="marketplace-checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        <label for="marketplace-shopify" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer select-none w-full">Shopify</label>
+                                    </div>
+                                    <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                                        <input type="checkbox" id="marketplace-flipkart" name="marketplace" value="flipkart" class="marketplace-checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        <label for="marketplace-flipkart" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer select-none w-full">Flipkart</label>
+                                    </div>
+                                    <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                                        <input type="checkbox" id="marketplace-indiamart" name="marketplace" value="indiamart" class="marketplace-checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        <label for="marketplace-indiamart" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer select-none w-full">IndiaMART</label>
+                                    </div>
+                                    <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                                        <input type="checkbox" id="marketplace-jiomart" name="marketplace" value="jiomart" class="marketplace-checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        <label for="marketplace-jiomart" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer select-none w-full">JioMart</label>
+                                    </div>
+                                    <div class="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                                        <input type="checkbox" id="marketplace-other" name="marketplace" value="other" class="marketplace-checkbox w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 cursor-pointer">
+                                        <label for="marketplace-other" class="ml-2 text-sm font-medium text-gray-700 cursor-pointer select-none w-full">Other</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Hidden input to store selected values -->
+                        <input type="hidden" id="marketplace" value="">
+                        <style>
+                            .scrollbar-hide::-webkit-scrollbar {
+                                display: none;
+                            }
+                            .scrollbar-hide {
+                                -ms-overflow-style: none;
+                                scrollbar-width: none;
+                            }
+                        </style>
                     </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const dropdownBtn = document.getElementById('marketplaceDropdownBtn');
+                            const dropdown = document.getElementById('marketplaceDropdown');
+                            const checkboxes = document.querySelectorAll('.marketplace-checkbox');
+                            const selectedCountSpan = document.querySelector('.selected-count');
+                            
+                            // Toggle dropdown visibility
+                            dropdownBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                dropdown.classList.toggle('hidden');
+                                const isOpen = !dropdown.classList.contains('hidden');
+                                dropdownBtn.querySelector('svg').style.transform = isOpen ? 'rotate(180deg)' : '';
+                                
+                                if(isOpen) {
+                                    dropdown.style.opacity = '1';
+                                    dropdown.style.transform = 'scale(1)';
+                                } else {
+                                    dropdown.style.opacity = '0';
+                                    dropdown.style.transform = 'scale(0.95)';
+                                }
+                            });
+                            
+                            function updateSelectedCount() {
+                                const selectedCount = [...checkboxes].filter(cb => cb.checked).length;
+                                selectedCountSpan.textContent = selectedCount === 0 ? 'No marketplaces selected' : 
+                                                              `${selectedCount} marketplace${selectedCount > 1 ? 's' : ''} selected`;
+                            }
+                            
+                            checkboxes.forEach(checkbox => {
+                                checkbox.addEventListener('change', function(e) {
+                                    e.stopPropagation();
+                                    updateSelectedCount();
+                                });
+                                
+                                // Make the entire div clickable for checkbox
+                                checkbox.parentElement.addEventListener('click', function(e) {
+                                    if (e.target !== checkbox) {
+                                        checkbox.checked = !checkbox.checked;
+                                        updateSelectedCount();
+                                    }
+                                });
+                            });
+                            
+                            // Close dropdown when clicking outside
+                            document.addEventListener('click', function(e) {
+                                if (!dropdownBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                                    dropdown.classList.add('hidden');
+                                    dropdownBtn.querySelector('svg').style.transform = '';
+                                    dropdown.style.opacity = '0';
+                                    dropdown.style.transform = 'scale(0.95)';
+                                }
+                            });
+                            
+                            // Handle responsive behavior
+                            function adjustDropdownPosition() {
+                                const btnRect = dropdownBtn.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                
+                                if (btnRect.bottom + dropdown.offsetHeight > viewportHeight) {
+                                    dropdown.style.top = 'auto';
+                                    dropdown.style.bottom = '100%';
+                                    dropdown.style.marginTop = '0';
+                                    dropdown.style.marginBottom = '8px';
+                                } else {
+                                    dropdown.style.top = '100%';
+                                    dropdown.style.bottom = 'auto';
+                                    dropdown.style.marginTop = '8px';
+                                    dropdown.style.marginBottom = '0';
+                                }
+                            }
+                            
+                            window.addEventListener('resize', adjustDropdownPosition);
+                            dropdownBtn.addEventListener('click', adjustDropdownPosition);
+                        });
+                    </script>
                 </div>
             </div>
             
@@ -236,7 +357,7 @@
                 <div class="absolute inset-2 rounded-full border-t-4 border-blue-500 animate-spin"></div>
                 <!-- 1Matrix logo/text in center -->
                 <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-blue-600 font-bold text-xl">1M</span>
+                    <span class="text-blue-600 font-bold text-xl"></span>
                 </div>
             </div>
             <p class="text-blue-500 font-medium text-center">Analyzing trends data<span class="dots-animation">...</span></p>
@@ -954,6 +1075,56 @@
         opacity: 1;
         visibility: visible;
     }
+    
+    /* Enhanced styling for multiple select */
+    select[multiple] {
+        height: auto;
+        min-height: 100px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+    
+    select[multiple] option {
+        padding: 8px 12px;
+        margin: 3px 0;
+        border-radius: 4px;
+        background-color: #f8fafc;
+        transition: all 0.2s ease;
+    }
+    
+    select[multiple] option:checked {
+        background-color: rgba(59, 130, 246, 0.15);
+        color: #1d4ed8;
+        font-weight: 500;
+    }
+    
+    select[multiple] option:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+    
+    /* Style for the multiple select container */
+    .neumorphic-select-container select[multiple] {
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+    }
+    
+    .neumorphic-select-container select[multiple]::-webkit-scrollbar {
+        width: 5px;
+    }
+    
+    .neumorphic-select-container select[multiple]::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .neumorphic-select-container select[multiple]::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.5);
+        border-radius: 9999px;
+    }
+    
+    .neumorphic-select-container select[multiple]::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(156, 163, 175, 0.7);
+    }
 </style>
 
 <!-- Include Chart.js and its date adapter -->
@@ -1224,6 +1395,25 @@
         const downloadReportBtn = document.getElementById('downloadReportBtn');
         const downloadButtonContainer = document.getElementById('downloadButtonContainer');
         
+        // Function to check if at least one marketplace is selected
+        function isAtLeastOneMarketplaceSelected() {
+            const checkboxes = document.querySelectorAll('.marketplace-checkbox:checked');
+            return checkboxes.length > 0;
+        }
+        
+        // Function to update the hidden input with selected marketplace values
+        function updateMarketplaceValues() {
+            const checkboxes = document.querySelectorAll('.marketplace-checkbox:checked');
+            const selectedValues = Array.from(checkboxes).map(checkbox => checkbox.value);
+            document.getElementById('marketplace').value = selectedValues.join(', ');
+            console.log('Updated marketplace values:', document.getElementById('marketplace').value);
+        }
+        
+        // Add event listeners to marketplace checkboxes
+        document.querySelectorAll('.marketplace-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateMarketplaceValues);
+        });
+        
         // Form validation
         const analyzeButton = document.getElementById('analyzeButton');
         if (analyzeButton) {
@@ -1241,11 +1431,13 @@
                 // If business intent is "no", validate additional fields
                 if (businessIntent === 'no') {
                     const brandName = document.getElementById('brandName').value;
-                    const marketplace = document.getElementById('marketplace').value;
+                    
+                    // Check if at least one marketplace checkbox is selected
+                    const hasSelectedMarketplace = isAtLeastOneMarketplaceSelected();
                     
                     // Only check for brand name and marketplace, website is optional
-                    if (!brandName || !marketplace) {
-                        showError('Please provide brand name and marketplace');
+                    if (!brandName || !hasSelectedMarketplace) {
+                        showError('Please provide brand name and select at least one marketplace');
                         return false;
                     }
                 }

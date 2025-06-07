@@ -1,0 +1,102 @@
+# Specific project folders to ignore
+gst_381299_4_2025/
+b2bReport_April_2025/
+
+# Database files
+*.sqlite
+*.sqlite3
+db.sqlite3
+celery-broker.sqlite
+celery-results.sqlite
+dump.rdb
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Log files
+*.log
+scraper.log
+scraper_log.txt
+listing_creator.log
+debug.log
+rainforest_api.log
+masteradmin.log
+logs/
+log/
+validation_logs/
+scraper_logs/
+
+# Media and output files
+media/
+static/collected/
+*.csv
+*.xlsx
+*.xls
+*.pdf
+*.zip
+*.tar
+*.gz
+
+# Debug and test files
+debug_html/
+debug_screenshots/
+captcha_screenshots/
+cache/
+test_output.txt
+final_test_output*.txt
+scraped_data/
+test_qr_codes/
+trend_charts/
+
+# IDE and editor specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.cursor/
+
+# Virtual environment
+venv/
+env/
+ENV/
+.env
+.venv
+
+# Temporary files
+tmp/
+temp/
+
+# Redis related
+dump.rdb
+
+# Batch and script files - uncomment if you want to ignore them
+# *.bat
+# *.sh
+
+# Local configuration
+local_settings.py
+
+# Backup files
+*.bak
+*.backup 

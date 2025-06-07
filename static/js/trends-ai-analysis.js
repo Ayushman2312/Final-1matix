@@ -65,14 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (businessIntent === 'no') {
                 const brandName = document.getElementById('brandName').value;
                 const businessWebsite = document.getElementById('businessWebsite').value;
-                const marketplace = document.getElementById('marketplace').value;
                 
-                console.log('Adding business details to AI request:', {
-                    brand_name: brandName,
-                    user_website: businessWebsite,
-                    marketplaces_selected: marketplace
-                });
+                // Get all selected marketplace options from checkboxes
+                const marketplaceCheckboxes = document.querySelectorAll('.marketplace-checkbox:checked');
+                const selectedMarketplaces = Array.from(marketplaceCheckboxes).map(checkbox => checkbox.value);
+                const marketplace = selectedMarketplaces.join(', ');
                 
+                // Add business details to the request payload
                 requestPayload.brand_name = brandName;
                 requestPayload.user_website = businessWebsite;
                 requestPayload.marketplaces_selected = marketplace;

@@ -243,15 +243,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 business_intent: businessIntent
             };
             
-            // Add business details if business intent is 'no'
+            // If business intent is "no", validate additional fields
             if (businessIntent === 'no') {
                 const brandName = document.getElementById('brandName').value;
                 const businessWebsite = document.getElementById('businessWebsite').value;
-                const marketplace = document.getElementById('marketplace').value;
+                
+                // Get all selected marketplace options from checkboxes
+                const marketplaceCheckboxes = document.querySelectorAll('.marketplace-checkbox:checked');
+                const selectedMarketplaces = Array.from(marketplaceCheckboxes).map(checkbox => checkbox.value);
+                const marketplace = selectedMarketplaces.join(', ');
                 
                 // Check if required business details are provided (website is optional)
-                if (!brandName || !marketplace) {
-                    showError('Please provide brand name and marketplace');
+                if (!brandName || selectedMarketplaces.length === 0) {
+                    showError('Please provide brand name and select at least one marketplace');
                     if (loadingIndicator) loadingIndicator.style.display = 'none';
                     return;
                 }
