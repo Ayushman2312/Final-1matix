@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Buttons and modals
+    // Buttons and modals - with null checks
     const uploadAnalyticsBtn = document.getElementById('uploadAnalyticsBtn');
     const uploadEmptyBtn = document.getElementById('uploadEmptyBtn');
     const calculateMetricsBtn = document.getElementById('calculateMetricsBtn');
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadForm = document.getElementById('uploadForm');
     const platformType = document.getElementById('platformType');
     const uploadButton = document.getElementById('uploadButton');
-    const uploadButtonText = document.getElementById('uploadButtonText');
+    const uploadButtonText = uploadButton ? document.getElementById('uploadButtonText') : null;
     const uploadSpinner = document.getElementById('uploadSpinner');
     const uploadStatus = document.getElementById('uploadStatus');
     
@@ -53,11 +53,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const dashboardSummaryCards = document.getElementById('dashboardSummaryCards');
     const dashboardTopProductsList = document.getElementById('dashboardTopProductsList');
     const dashboardTopRegionsList = document.getElementById('dashboardTopRegionsList');
-    const platformSpecificResults = document.getElementById('platformSpecificResults');
     
     // Debug elements
     const requestStatus = document.getElementById('requestStatus');
     const rawResponseDebug = document.getElementById('rawResponseDebug');
+    
+    // Create any missing container elements
+    function ensureContainersExist() {
+        // This function can be used for creating other containers if needed in the future
+    }
+    
+    // Ensure all necessary containers exist
+    ensureContainersExist();
     
     // Only initialize event listeners if elements exist
     if (toggleDebugBtn) {
@@ -336,10 +343,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 'product_name', 'product_title'
             ],
             customer_location: [
-                'location', 'region', 'country', 'state', 'city', 'address', 'ship', 'destination',
-                'delivery', 'postal', 'zip', 'pincode', 'territory', 'area', 'province', 'district',
-                'county', 'town', 'place', 'billing', 'shipping', 'customer location', 'place', 
-                'geo', 'location', 'loc', 'zone', 'pin', 'address'
+                'state', 'region', 'province', 'territory', 'state_name', 'state_code', 
+                'shipping_state', 'billing_state', 'delivery_state', 'customer_state',
+                'buyer_state', 'order_state', 'state_of_delivery', 'destination_state',
+                'ship_to_state', 'recipient_state', 'delivery_region', 'regional_zone',
+                'zone', 'state_location', 'state_region', 'regional_state'
             ],
             quantity: [
                 'quantity', 'qty', 'units', 'count', 'pcs', 'pieces', 'number', 'volume', 'amount',
@@ -854,159 +862,326 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to update the dashboard with new analysis data
+    /**
+     * Main function to update the dashboard with analysis data
+     */
     function updateDashboard(analysisData) {
-        if (!analysisData) return;
+        console.log('Updating dashboard with analysis data:', analysisData);
         
-        // Make sure required elements exist
-        if (!noAnalysisMessage || !analysisContent) return;
+        // Store the analysis data globally for other scripts to access
+        window.lastAnalysisData = analysisData;
         
-        // Show the analysis content and hide the empty state
-        noAnalysisMessage.classList.add('hidden');
-        analysisContent.classList.remove('hidden');
+        // Check if we have valid data
+        if (!analysisData) {
+            console.error('No analysis data provided to updateDashboard');
+            return;
+        }
         
-        // Update summary cards
+        // First, hide the 'no analysis' message and show the analysis content
+        if (noAnalysisMessage && analysisContent) {
+            noAnalysisMessage.classList.add('hidden');
+            analysisContent.classList.remove('hidden');
+        }
+        
+        // Clear existing content
         if (dashboardSummaryCards) {
-            updateSummaryCards(analysisData.summary);
+            dashboardSummaryCards.innerHTML = '';
         }
         
-        // Track which visualizations have data
-        const visualizationsWithData = [];
-        
-        // Try to update sales trend chart
-        const hasSalesTrend = analysisData.time_series && 
-                             analysisData.time_series.labels && 
-                             analysisData.time_series.data && 
-                             analysisData.time_series.labels.length > 0 && 
-                             typeof Chart !== 'undefined';
-        
-        // Try to update sales channel chart
-        const hasSalesChannels = analysisData.sales_channels && 
-                                analysisData.sales_channels.length > 0 && 
-                                typeof Chart !== 'undefined';
-        
-        // Try to update top products list
-        const hasTopProducts = analysisData.top_products && 
-                              analysisData.top_products.length > 0 && 
-                              dashboardTopProductsList;
-        
-        // Try to update top regions list
-        const hasTopRegions = analysisData.top_regions && 
-                             analysisData.top_regions.length > 0 && 
-                             dashboardTopRegionsList;
-                             
-        // Check for transaction types data
-        const hasTransactionTypes = analysisData.transaction_types && 
-                                  analysisData.transaction_types.length > 0 && 
-                                  typeof Chart !== 'undefined';
-        
-        // Get references to all containers
-        const salesTrendContainer = document.getElementById('salesTrendContainer');
-        const salesChannelContainer = document.getElementById('salesChannelContainer');
-        const topProductsContainer = document.getElementById('topProductsContainer');
-        const topRegionsContainer = document.getElementById('topRegionsContainer');
-        const fallbackChartContainer = document.getElementById('fallbackChartContainer');
-        const fallbackListContainer = document.getElementById('fallbackListContainer');
-        const dataQualityContainer = document.getElementById('dataQualityContainer');
-        
-        // Hide all containers initially
-        if (salesTrendContainer) salesTrendContainer.classList.add('hidden');
-        if (salesChannelContainer) salesChannelContainer.classList.add('hidden');
-        if (topProductsContainer) topProductsContainer.classList.add('hidden');
-        if (topRegionsContainer) topRegionsContainer.classList.add('hidden');
-        if (fallbackChartContainer) fallbackChartContainer.classList.add('hidden');
-        if (fallbackListContainer) fallbackListContainer.classList.add('hidden');
-        if (dataQualityContainer) dataQualityContainer.classList.add('hidden');
-        
-        // Update sales trend chart if data exists
-        if (hasSalesTrend) {
-            if (salesTrendContainer) salesTrendContainer.classList.remove('hidden');
-            updateSalesTrendChart(analysisData.time_series);
-            visualizationsWithData.push('salesTrend');
+        // Ensure Chart.js is available
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded. Attempting to load it dynamically.');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js';
+            script.async = true;
+            script.onload = function() {
+                console.log('Chart.js loaded successfully, proceeding with dashboard update.');
+                continueUpdateDashboard();
+            };
+            script.onerror = function() {
+                console.error('Failed to load Chart.js. Charts will not be displayed.');
+            };
+            document.head.appendChild(script);
+            return;
         }
         
-        // Update sales channel chart if data exists
-        if (hasSalesChannels) {
-            if (salesChannelContainer) salesChannelContainer.classList.remove('hidden');
-            updateSalesChannelChart(analysisData.sales_channels);
-            visualizationsWithData.push('salesChannels');
-        }
+        // Continue with the dashboard update
+        continueUpdateDashboard();
         
-        // Update top products list if data exists
-        if (hasTopProducts) {
-            if (topProductsContainer) topProductsContainer.classList.remove('hidden');
-            updateTopProductsList(analysisData.top_products);
-            visualizationsWithData.push('topProducts');
-        }
-        
-        // Update top regions list if data exists
-        if (hasTopRegions) {
-            if (topRegionsContainer) topRegionsContainer.classList.remove('hidden');
-            updateTopRegionsList(analysisData.top_regions);
-            visualizationsWithData.push('topRegions');
-        }
-        
-        // Create fallback visualizations if needed
-        if (!hasSalesTrend && !hasSalesChannels) {
-            // If neither chart has data, check for alternative data to display
-            let fallbackChartCreated = false;
-            
-            // First check if we have transaction_types to display
-            if (hasTransactionTypes) {
-                if (fallbackChartContainer) {
-                    fallbackChartContainer.classList.remove('hidden');
-                    createTransactionTypesChart(analysisData.transaction_types);
-                    fallbackChartCreated = true;
-                }
-            }
-            // Then try with summary data
-            else if (analysisData.summary && Object.keys(analysisData.summary).length > 0) {
-                if (fallbackChartContainer) {
-                    fallbackChartContainer.classList.remove('hidden');
-                    createSummaryFallbackChart(analysisData.summary);
-                    fallbackChartCreated = true;
+        // Inner function to continue dashboard update after ensuring Chart.js is loaded
+        function continueUpdateDashboard() {
+            // Update summary cards
+            if (analysisData.summary && dashboardSummaryCards) {
+                try {
+                    updateSummaryCards(analysisData.summary);
+                } catch (error) {
+                    console.error('Error updating summary cards:', error);
                 }
             }
             
-            // If even fallback chart can't be created, show data quality info
-            if (!fallbackChartCreated && dataQualityContainer) {
-                dataQualityContainer.classList.remove('hidden');
-                updateDataQualityInfo(analysisData);
-            }
-        }
-        
-        // Create fallback list if needed
-        if (!hasTopProducts && !hasTopRegions) {
-            // If neither list has data, look for alternative data to display
-            let fallbackListCreated = false;
-            
-            // Try with platform specific data
-            if (analysisData.platform_specific && Object.keys(analysisData.platform_specific).length > 0) {
-                if (fallbackListContainer) {
-                    fallbackListContainer.classList.remove('hidden');
-                    createPlatformSpecificList(analysisData.platform_specific);
-                    fallbackListCreated = true;
+            // Update sales trend chart
+            if (analysisData.time_series) {
+                try {
+                    // Make sure the container is visible and positioned at the top
+                    const salesTrendContainer = document.getElementById('salesTrendContainer');
+                    if (salesTrendContainer) {
+                        salesTrendContainer.classList.remove('hidden');
+                        
+                        // Move the sales trend container to the top of the charts section
+                        const chartsContainer = document.getElementById('dashboardChartsContainer');
+                        if (chartsContainer && chartsContainer.firstChild) {
+                            chartsContainer.insertBefore(salesTrendContainer, chartsContainer.firstChild);
+                        }
+                        
+                        // Set a larger height for better visualization
+                        const chartDiv = salesTrendContainer.querySelector('div');
+                        if (chartDiv) {
+                            chartDiv.classList.remove('h-60');
+                            chartDiv.classList.add('h-80');
+                        }
+                    }
+                    
+                    // Try to use consolidated time series chart if available (includes returns data)
+                    if (typeof createConsolidatedTimeSeriesChart === 'function') {
+                        console.log('Creating consolidated time series chart with returns data');
+                        createConsolidatedTimeSeriesChart(analysisData);
+                    } else {
+                        // Fallback to standard chart
+                        console.log('Using standard time series chart');
+                        updateSalesTrendChart(analysisData.time_series);
+                    }
+                } catch (error) {
+                    console.error('Error updating sales trend chart:', error);
+                    // Try fallback method if primary fails
+                    try {
+                        updateSalesTrendChart(analysisData.time_series);
+                    } catch (secondError) {
+                        console.error('Both chart methods failed:', secondError);
+                    }
                 }
             }
-            // Or try with column mapping info
-            else if (analysisData.summary && analysisData.summary.column_mapping) {
-                if (fallbackListContainer) {
-                    fallbackListContainer.classList.remove('hidden');
-                    createColumnMappingList(analysisData.summary.column_mapping);
-                    fallbackListCreated = true;
+            
+            // Update top products list (text based list)
+            if (dashboardTopProductsList && analysisData.top_products && analysisData.top_products.length > 0) {
+                try {
+                    updateTopProductsList(analysisData.top_products);
+                } catch (error) {
+                    console.error('Error updating top products list:', error);
                 }
             }
             
-            // If no fallback list could be created, show data quality info
-            if (!fallbackListCreated && !dataQualityContainer.classList.contains('hidden') && dataQualityContainer) {
-                dataQualityContainer.classList.remove('hidden');
-                updateDataQualityInfo(analysisData);
+            // Update top regions list (text based list)
+            if (dashboardTopRegionsList && analysisData.top_regions && analysisData.top_regions.length > 0) {
+                try {
+                    updateTopRegionsList(analysisData.top_regions);
+                } catch (error) {
+                    console.error('Error updating top regions list:', error);
+                }
             }
-        }
-        
-        // Update platform-specific results if available
-        if (analysisData.platform_specific && Object.keys(analysisData.platform_specific).length > 0 && platformSpecificResults) {
-            updatePlatformSpecificResults(analysisData.platform_specific);
+            
+            // Update sales channel chart
+            if (analysisData.sales_channels) {
+                try {
+                    updateSalesChannelChart(analysisData.sales_channels);
+                } catch (error) {
+                    console.error('Error updating sales channel chart:', error);
+                }
+            }
+            
+            // Update bottom regions chart and list
+            if (analysisData.bottom_regions && analysisData.bottom_regions.length > 0) {
+                try {
+                    // First check if the container exists
+                    const bottomRegionsContainer = document.getElementById('bottomRegionsContainer');
+                    if (bottomRegionsContainer) {
+                        // Make sure the container is visible
+                        bottomRegionsContainer.classList.remove('hidden');
+                        console.log('Bottom regions container found and made visible');
+                        
+                        // Check if chart function exists and call it
+                        if (typeof window.createBottomSellingStatesChart === 'function') {
+                            console.log('Calling createBottomSellingStatesChart function');
+                            window.createBottomSellingStatesChart(analysisData, analysisData.bottom_regions);
+                        } else if (typeof createBottomSellingStatesChart === 'function') {
+                            console.log('Calling local createBottomSellingStatesChart function');
+                            createBottomSellingStatesChart(analysisData, analysisData.bottom_regions);
+                        } else {
+                            console.error('createBottomSellingStatesChart function not found');
+                            
+                            // Fallback: check if enhancedCharts object has the function
+                            if (window.enhancedCharts && typeof window.enhancedCharts.createBottomSellingStatesChart === 'function') {
+                                console.log('Calling enhancedCharts.createBottomSellingStatesChart');
+                                window.enhancedCharts.createBottomSellingStatesChart(analysisData, analysisData.bottom_regions);
+                            }
+                        }
+                        
+                        // Update the list as well
+                        const bottomRegionsList = document.getElementById('dashboardBottomRegionsList');
+                        if (bottomRegionsList) {
+                            bottomRegionsList.innerHTML = '';
+                            
+                            // Populate the list
+                            analysisData.bottom_regions.slice(0, 5).forEach((region, index) => {
+                                const item = document.createElement('div');
+                                item.className = 'flex items-center justify-between';
+                                
+                                const percentage = analysisData.top_regions && analysisData.top_regions.length > 0 ? 
+                                    (region.value / analysisData.top_regions[0].value) * 100 : 100;
+                                
+                                item.innerHTML = `
+                                    <div class="flex items-center">
+                                        <div class="text-sm font-medium text-gray-700 mr-2">${index + 1}.</div>
+                                        <div class="text-sm text-gray-600 truncate max-w-[150px]">${region.name}</div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="text-sm font-medium text-gray-700 mr-2">${formatCurrency(region.value)}</div>
+                                        <div class="w-20 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-red-400 h-2 rounded-full" style="width: ${percentage}%"></div>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                bottomRegionsList.appendChild(item);
+                            });
+                        }
+                    } else {
+                        console.error('Bottom regions container not found');
+                    }
+                } catch (error) {
+                    console.error('Error updating bottom regions:', error);
+                }
+            }
+            
+            // Update bottom products chart and list
+            if (analysisData.bottom_products && analysisData.bottom_products.length > 0) {
+                try {
+                    // First check if the container exists
+                    const bottomProductsContainer = document.getElementById('bottomProductsContainer');
+                    if (bottomProductsContainer) {
+                        // Make sure the container is visible
+                        bottomProductsContainer.classList.remove('hidden');
+                        console.log('Bottom products container found and made visible');
+                        
+                        // Check if chart function exists and call it
+                        if (typeof window.createBottomSellingProductsChart === 'function') {
+                            console.log('Calling createBottomSellingProductsChart function');
+                            window.createBottomSellingProductsChart(analysisData, analysisData.bottom_products);
+                        } else if (typeof createBottomSellingProductsChart === 'function') {
+                            console.log('Calling local createBottomSellingProductsChart function');
+                            createBottomSellingProductsChart(analysisData, analysisData.bottom_products);
+                        } else {
+                            console.error('createBottomSellingProductsChart function not found');
+                            
+                            // Fallback: check if enhancedCharts object has the function
+                            if (window.enhancedCharts && typeof window.enhancedCharts.createBottomSellingProductsChart === 'function') {
+                                console.log('Calling enhancedCharts.createBottomSellingProductsChart');
+                                window.enhancedCharts.createBottomSellingProductsChart(analysisData, analysisData.bottom_products);
+                            }
+                        }
+                        
+                        // Update the list as well
+                        const bottomProductsList = document.getElementById('dashboardBottomProductsList');
+                        if (bottomProductsList) {
+                            bottomProductsList.innerHTML = '';
+                            
+                            // Populate the list
+                            analysisData.bottom_products.slice(0, 5).forEach((product, index) => {
+                                const item = document.createElement('div');
+                                item.className = 'flex items-center justify-between';
+                                
+                                const percentage = analysisData.top_products && analysisData.top_products.length > 0 ? 
+                                    (product.value / analysisData.top_products[0].value) * 100 : 100;
+                                
+                                item.innerHTML = `
+                                    <div class="flex items-center">
+                                        <div class="text-sm font-medium text-gray-700 mr-2">${index + 1}.</div>
+                                        <div class="text-sm text-gray-600 truncate max-w-[150px]">${product.name}</div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="text-sm font-medium text-gray-700 mr-2">${formatCurrency(product.value)}</div>
+                                        <div class="w-20 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-red-400 h-2 rounded-full" style="width: ${percentage}%"></div>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                bottomProductsList.appendChild(item);
+                            });
+                        }
+                    } else {
+                        console.error('Bottom products container not found');
+                    }
+                } catch (error) {
+                    console.error('Error updating bottom products:', error);
+                }
+            }
+            
+            // Create returns vs cancellations chart if data is available
+            if (typeof createReturnsVsCancellationsChart === 'function' && analysisData.summary) {
+                try {
+                    createReturnsVsCancellationsChart(analysisData.summary);
+                } catch (error) {
+                    console.error('Error creating returns vs cancellations chart:', error);
+                }
+            }
+            
+            // Create top products list with enhanced visualization
+            if (typeof createTopProductsChart === 'function' && analysisData.top_products && analysisData.top_products.length > 0) {
+                try {
+                    createTopProductsChart(analysisData.summary, analysisData.top_products);
+                } catch (error) {
+                    console.error('Error creating top products chart:', error);
+                }
+            }
+            
+            // Create high returns products list
+            if (typeof createHighReturnsProductsList === 'function' && analysisData.high_returns_products && analysisData.high_returns_products.length > 0) {
+                try {
+                    createHighReturnsProductsList(analysisData.summary, analysisData.high_returns_products);
+                } catch (error) {
+                    console.error('Error creating high returns products list:', error);
+                }
+            }
+            
+            // Create top selling states bar chart
+            if (typeof createTopSellingStatesChart === 'function' && analysisData.top_regions && analysisData.top_regions.length > 0) {
+                try {
+                    console.log('Creating top selling states chart with data:', analysisData.top_regions);
+                    createTopSellingStatesChart(analysisData.summary, analysisData.top_regions);
+                } catch (error) {
+                    console.error('Error while creating top selling states chart:', error);
+                }
+            } else {
+                console.warn('Cannot create top selling states chart: function not available or no data');
+                console.log('createTopSellingStatesChart exists:', typeof createTopSellingStatesChart === 'function');
+                console.log('top_regions data:', analysisData.top_regions);
+            }
+            
+            // Create top selling products bar chart
+            if (typeof createTopSellingProductsChart === 'function' && analysisData.top_products && analysisData.top_products.length > 0) {
+                try {
+                    console.log('Creating top selling products chart with data:', analysisData.top_products);
+                    createTopSellingProductsChart(analysisData.summary, analysisData.top_products);
+                } catch (error) {
+                    console.error('Error while creating top selling products chart:', error);
+                }
+            } else {
+                console.warn('Cannot create top selling products chart: function not available or no data');
+                console.log('createTopSellingProductsChart exists:', typeof createTopSellingProductsChart === 'function');
+                console.log('top_products data:', analysisData.top_products);
+            }
+            
+            // Update data quality information
+            if (analysisData.data_quality) {
+                try {
+                    updateDataQualityInfo(analysisData.data_quality);
+                } catch (error) {
+                    console.error('Error updating data quality info:', error);
+                }
+            }
+            
+            // Log the completion of dashboard update
+            console.log('Dashboard update completed');
         }
     }
     
@@ -1215,66 +1390,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Helper function to create a platform-specific list
-    function createPlatformSpecificList(platformData) {
-        const fallbackList = document.getElementById('fallbackList');
-        const fallbackListTitle = document.getElementById('fallbackListTitle');
-        
-        if (!fallbackList || !fallbackListTitle) return;
-        
-        // Clear previous content
-        fallbackList.innerHTML = '';
-        
-        // Set the title based on data
-        let platformType = 'Platform';
-        if (platformData._detected_format) {
-            platformType = platformData._detected_format.charAt(0).toUpperCase() + platformData._detected_format.slice(1);
-        }
-        fallbackListTitle.textContent = `${platformType} Metrics`;
-        
-        // Create list items from platform data
-        Object.entries(platformData).forEach(([key, value]) => {
-            // Skip metadata keys
-            if (key.startsWith('_') || key === 'error') return;
-            
-            // Format the key for display
-            const formattedKey = key
-                .split('_')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
-            
-            // Format value based on key name
-            let formattedValue = value;
-            if (typeof value === 'number') {
-                if (key.includes('rate') || key.includes('percentage')) {
-                    formattedValue = `${value.toFixed(1)}%`;
-                } else if (key.includes('sales') || key.includes('revenue') || key.includes('fee')) {
-                    formattedValue = formatCurrency(value);
-                } else {
-                    formattedValue = formatNumber(value);
-                }
-            }
-            
-            // Create the list item
-            const item = document.createElement('div');
-            item.className = 'flex items-center justify-between';
-            item.innerHTML = `
-                <div class="text-sm text-gray-600">${formattedKey}</div>
-                <div class="text-sm font-medium text-gray-700">${formattedValue}</div>
-            `;
-            
-            fallbackList.appendChild(item);
-        });
-        
-        // If no items were added, show a message
-        if (fallbackList.children.length === 0) {
-            fallbackList.innerHTML = `
-                <div class="text-sm text-gray-500 text-center py-2">
-                    No platform-specific data available
-                </div>
-            `;
-        }
-    }
-    
     // Helper function to create a column mapping list
     function createColumnMappingList(columnMapping) {
         const fallbackList = document.getElementById('fallbackList');
@@ -1546,7 +1661,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateSalesTrendChart(timeSeriesData) {
-        const ctx = document.getElementById('dashboardSalesTrendChart').getContext('2d');
+        // Get canvas element - create it if it doesn't exist
+        let canvas = document.getElementById('dashboardSalesTrendChart');
+        if (!canvas) {
+            console.warn('Sales trend chart canvas not found, attempting to create it');
+            
+            // Find the container
+            const container = document.getElementById('salesTrendContainer');
+            if (container) {
+                const chartContainer = container.querySelector('div');
+                if (chartContainer) {
+                    canvas = document.createElement('canvas');
+                    canvas.id = 'dashboardSalesTrendChart';
+                    chartContainer.appendChild(canvas);
+                    console.log('Created sales trend chart canvas');
+                } else {
+                    console.error('Could not find chart container for sales trend chart');
+                    return;
+                }
+            } else {
+                console.error('Could not find container for sales trend chart');
+                return;
+            }
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get 2D context for sales trend chart');
+            return;
+        }
         
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
@@ -1556,109 +1699,206 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Destroy existing chart if it exists
         if (window.salesTrendChart) {
-            window.salesTrendChart.destroy();
+            try {
+                // Check if it's a valid Chart.js instance with a destroy method
+                if (typeof window.salesTrendChart === 'object' && 
+                    window.salesTrendChart !== null && 
+                    typeof window.salesTrendChart.destroy === 'function') {
+                    window.salesTrendChart.destroy();
+                } else {
+                    console.warn('Existing salesTrendChart is not a valid Chart.js instance');
+                    // Just delete the reference if it's not a valid chart
+                    window.salesTrendChart = null;
+                }
+            } catch (error) {
+                console.error('Error destroying existing sales trend chart:', error);
+                window.salesTrendChart = null;
+            }
         }
         
         // Handle very small datasets (fewer than 3 data points)
         if (timeSeriesData.labels.length < 3) {
-            // Create a very simple display for limited data
-            const placeholderData = {
-                labels: timeSeriesData.labels.length > 0 ? timeSeriesData.labels : ['No Data'],
-                datasets: [{
-                    label: 'Sales',
-                    data: timeSeriesData.data.length > 0 ? timeSeriesData.data : [0],
-                    backgroundColor: 'rgba(123, 61, 243, 0.1)',
-                    borderColor: 'rgba(123, 61, 243, 1)',
-                    borderWidth: 2,
-                    tension: 0,
-                    fill: true
-                }]
-            };
+            try {
+                // Clear existing chart reference
+                window.salesTrendChart = null;
+                
+                // Create a very simple display for limited data
+                const placeholderData = {
+                    labels: timeSeriesData.labels.length > 0 ? timeSeriesData.labels : ['No Data'],
+                    datasets: [{
+                        label: 'Sales',
+                        data: timeSeriesData.data.length > 0 ? timeSeriesData.data : [0],
+                        backgroundColor: 'rgba(123, 61, 243, 0.1)',
+                        borderColor: 'rgba(123, 61, 243, 1)',
+                        borderWidth: 2,
+                        tension: 0,
+                        fill: true
+                    }]
+                };
+                
+                // Create chart with limited data message
+                window.salesTrendChart = new Chart(ctx, {
+                    type: 'bar',  // Use bar chart for few data points
+                    data: placeholderData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return formatCurrency(context.raw);
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Limited Data Available',
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrencyShort(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Verify we have a valid chart instance
+                if (!window.salesTrendChart || typeof window.salesTrendChart.destroy !== 'function') {
+                    console.error('Failed to create a valid Chart.js instance for sales trend chart');
+                    window.salesTrendChart = null;
+                } else {
+                    console.log('Sales trend chart created successfully (limited data)');
+                }
+                
+                return;
+            } catch (error) {
+                console.error('Error creating sales trend chart with limited data:', error);
+                window.salesTrendChart = null;
+                return;
+            }
+        }
+        
+        // Create new chart for normal datasets
+        try {
+            // Clear existing chart reference
+            window.salesTrendChart = null;
             
-            // Create chart with limited data message
             window.salesTrendChart = new Chart(ctx, {
-                type: 'bar',  // Use bar chart for few data points
-                data: placeholderData,
+                type: 'line',
+                data: {
+                    labels: timeSeriesData.labels,
+                    datasets: [{
+                        label: 'Sales',
+                        data: timeSeriesData.data,
+                        backgroundColor: 'rgba(123, 61, 243, 0.1)',
+                        borderColor: 'rgba(123, 61, 243, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(123, 61, 243, 1)',
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    }]
+                },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return formatCurrency(context.raw);
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                font: {
+                                    size: 11
                                 }
                             }
                         },
-                        title: {
-                            display: true,
-                            text: 'Limited Data Available',
-                            color: '#666',
-                            font: {
-                                size: 12
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#333',
+                            bodyColor: '#333',
+                            borderColor: 'rgba(123, 61, 243, 0.2)',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return tooltipItems[0].label;
+                                },
+                                label: function(context) {
+                                    return 'Sales: ' + formatCurrency(context.raw);
+                                }
                             }
                         }
                     },
                     scales: {
+                        x: {
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 0,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
                             ticks: {
                                 callback: function(value) {
                                     return formatCurrencyShort(value);
+                                },
+                                font: {
+                                    size: 10
                                 }
                             }
                         }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false
                     }
                 }
             });
-            return;
-        }
-        
-        // Create new chart for normal datasets
-        window.salesTrendChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: timeSeriesData.labels,
-                datasets: [{
-                    label: 'Sales',
-                    data: timeSeriesData.data,
-                    backgroundColor: 'rgba(123, 61, 243, 0.1)',
-                    borderColor: 'rgba(123, 61, 243, 1)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return formatCurrency(context.raw);
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return formatCurrencyShort(value);
-                            }
-                        }
-                    }
-                }
+            
+            // Verify we have a valid chart instance
+            if (!window.salesTrendChart || typeof window.salesTrendChart.destroy !== 'function') {
+                console.error('Failed to create a valid Chart.js instance for sales trend chart');
+                window.salesTrendChart = null;
+            } else {
+                console.log('Sales trend chart created successfully');
             }
-        });
+        } catch (error) {
+            console.error('Error creating sales trend chart:', error);
+            window.salesTrendChart = null;
+        }
     }
 
     function updateTopProductsList(productsData) {
@@ -1715,8 +1955,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function updateSalesChannelChart(channelsData) {
-        const ctx = document.getElementById('dashboardSalesChannelChart').getContext('2d');
+    function updateSalesChannelChart(channelData) {
+        // Get canvas element - create it if it doesn't exist
+        let canvas = document.getElementById('dashboardSalesChannelChart');
+        if (!canvas) {
+            console.warn('Sales channel chart canvas not found, attempting to create it');
+            
+            // Find the container
+            const container = document.getElementById('salesChannelContainer');
+            if (container) {
+                const chartContainer = container.querySelector('div');
+                if (chartContainer) {
+                    canvas = document.createElement('canvas');
+                    canvas.id = 'dashboardSalesChannelChart';
+                    chartContainer.appendChild(canvas);
+                    console.log('Created sales channel chart canvas');
+                } else {
+                    console.error('Could not find chart container for sales channel chart');
+                    return;
+                }
+            } else {
+                console.error('Could not find container for sales channel chart');
+                return;
+            }
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get 2D context for sales channel chart');
+            return;
+        }
         
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
@@ -1726,112 +1994,140 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Destroy existing chart if it exists
         if (window.salesChannelChart) {
-            window.salesChannelChart.destroy();
+            try {
+                // Check if it's a valid Chart.js instance with a destroy method
+                if (typeof window.salesChannelChart === 'object' && 
+                    window.salesChannelChart !== null && 
+                    typeof window.salesChannelChart.destroy === 'function') {
+                    window.salesChannelChart.destroy();
+                } else {
+                    console.warn('Existing salesChannelChart is not a valid Chart.js instance');
+                    // Just delete the reference if it's not a valid chart
+                    window.salesChannelChart = null;
+                }
+            } catch (error) {
+                console.error('Error destroying existing sales channel chart:', error);
+                window.salesChannelChart = null;
+            }
         }
         
-        // Prepare data for chart
-        const labels = channelsData.map(channel => channel.name);
-        const data = channelsData.map(channel => channel.value);
-        const backgroundColors = [
-            'rgba(123, 61, 243, 0.8)',
-            'rgba(123, 61, 243, 0.6)',
-            'rgba(123, 61, 243, 0.4)',
-            'rgba(123, 61, 243, 0.2)',
-            'rgba(123, 61, 243, 0.1)'
-        ];
-        
-        // Create new chart
-        window.salesChannelChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: backgroundColors.slice(0, data.length),
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 10,
-                            font: {
-                                size: 10
+        // If we have no data, display a placeholder
+        if (!channelData || !channelData.labels || channelData.labels.length === 0) {
+            try {
+                // Clear existing chart reference
+                window.salesChannelChart = null;
+                
+                // Create a placeholder message
+                window.salesChannelChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['No Data Available'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['rgba(200, 200, 200, 0.5)'],
+                            borderColor: ['rgba(200, 200, 200, 1)'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: true,
+                                text: 'No Sales Channel Data',
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
                             }
                         }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = formatCurrency(context.raw);
-                                const percentage = Math.round((context.raw / data.reduce((a, b) => a + b, 0)) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
+                    }
+                });
+                
+                // Verify we have a valid chart instance
+                if (!window.salesChannelChart || typeof window.salesChannelChart.destroy !== 'function') {
+                    console.error('Failed to create a valid Chart.js instance for sales channel chart');
+                    window.salesChannelChart = null;
+                } else {
+                    console.log('Sales channel chart created successfully (placeholder)');
+                }
+                
+                return;
+            } catch (error) {
+                console.error('Error creating sales channel chart placeholder:', error);
+                window.salesChannelChart = null;
+                return;
+            }
+        }
+        
+        // Create an array of colors for each channel
+        const colors = [
+            'rgba(123, 61, 243, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(199, 199, 199, 0.7)'
+        ];
+        
+        // Create border colors (slightly darker)
+        const borderColors = colors.map(c => c.replace('0.7', '1'));
+        
+        // Create chart with real data
+        try {
+            // Clear existing chart reference
+            window.salesChannelChart = null;
+            
+            window.salesChannelChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: channelData.labels,
+                    datasets: [{
+                        data: channelData.data,
+                        backgroundColor: colors.slice(0, channelData.labels.length),
+                        borderColor: borderColors.slice(0, channelData.labels.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                                }
                             }
                         }
                     }
                 }
+            });
+            
+            // Verify we have a valid chart instance
+            if (!window.salesChannelChart || typeof window.salesChannelChart.destroy !== 'function') {
+                console.error('Failed to create a valid Chart.js instance for sales channel chart');
+                window.salesChannelChart = null;
+            } else {
+                console.log('Sales channel chart created successfully');
             }
-        });
-    }
-
-    function updatePlatformSpecificResults(platformData) {
-        platformSpecificResults.innerHTML = '';
-        platformSpecificResults.classList.remove('hidden');
-        
-        // Create header
-        const header = document.createElement('div');
-        header.className = 'flex items-center justify-between mb-4';
-        header.innerHTML = `
-            <h3 class="text-lg font-semibold text-gray-800">Platform-Specific Insights</h3>
-        `;
-        platformSpecificResults.appendChild(header);
-        
-        // Create grid for platform metrics
-        const grid = document.createElement('div');
-        grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4';
-        
-        // Add each metric as a card
-        Object.entries(platformData).forEach(([key, value]) => {
-            // Skip error entries and metadata keys
-            if (key === 'error' || key.startsWith('_')) return;
-            
-            // Format the key for display
-            const formattedKey = key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-            
-            // Format the value based on its type
-            let formattedValue = value;
-            if (typeof value === 'number') {
-                // Format as percentage if the key suggests it
-                if (key.includes('rate') || key.includes('percentage')) {
-                    formattedValue = `${value.toFixed(1)}%`;
-                } 
-                // Format as currency if it looks like a monetary value
-                else if (key.includes('sales') || key.includes('revenue') || key.includes('fee')) {
-                    formattedValue = formatCurrency(value);
-                }
-                // Format as number otherwise
-                else {
-                    formattedValue = formatNumber(value);
-                }
-            }
-            
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow p-4 border border-gray-100';
-            card.innerHTML = `
-                <div class="text-xs text-gray-500">${formattedKey}</div>
-                <div class="text-lg font-semibold mt-1 text-gray-800">${formattedValue}</div>
-            `;
-            
-            grid.appendChild(card);
-        });
-        
-        platformSpecificResults.appendChild(grid);
+        } catch (error) {
+            console.error('Error creating sales channel chart:', error);
+            window.salesChannelChart = null;
+        }
     }
 
     // Utility functions for formatting
@@ -2093,6 +2389,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error calculating metrics:', error);
             showUploadStatus('Error: ' + error.message, 'error');
             
+            
             // Update request status
             if (requestStatus) {
                 requestStatus.innerHTML = '<span class="text-red-600">✗ Error: ' + error.message + '</span>';
@@ -2103,6 +2400,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to display calculated sales metrics
     function displaySalesMetrics(metrics) {
         console.log('📊 Displaying metrics:', metrics);
+        
+        // Store metrics globally for other scripts to access
+        window.lastAnalysisData = metrics;
         
         // Create or get metrics container
         let metricsContainer = document.getElementById('salesMetricsContainer');
@@ -2124,6 +2424,58 @@ document.addEventListener('DOMContentLoaded', function() {
             metricsGrid.id = 'metricsGrid';
             metricsGrid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4';
             metricsContainer.appendChild(metricsGrid);
+
+            // Create performance analysis section
+            const performanceSection = document.createElement('div');
+            performanceSection.className = 'mt-8 grid grid-cols-1 md:grid-cols-2 gap-6';
+            
+            // Top and Bottom Products
+            const productsSection = document.createElement('div');
+            productsSection.className = 'space-y-6';
+            
+            // Top Products
+            const topProductsDiv = document.createElement('div');
+            topProductsDiv.className = 'bg-white rounded-lg shadow p-4 border border-gray-100';
+            topProductsDiv.innerHTML = `
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Top Performing Products</h3>
+                <div id="dashboardTopProductsList" class="space-y-3"></div>
+            `;
+            productsSection.appendChild(topProductsDiv);
+            
+            // Bottom Products
+            const bottomProductsDiv = document.createElement('div');
+            bottomProductsDiv.className = 'bg-white rounded-lg shadow p-4 border border-gray-100';
+            bottomProductsDiv.innerHTML = `
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Lowest Performing Products</h3>
+                <div id="dashboardBottomProductsList" class="space-y-3"></div>
+            `;
+            productsSection.appendChild(bottomProductsDiv);
+            
+            // Top and Bottom Regions
+            const regionsSection = document.createElement('div');
+            regionsSection.className = 'space-y-6';
+            
+            // Top Regions
+            const topRegionsDiv = document.createElement('div');
+            topRegionsDiv.className = 'bg-white rounded-lg shadow p-4 border border-gray-100';
+            topRegionsDiv.innerHTML = `
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Top Performing States</h3>
+                <div id="dashboardTopRegionsList" class="space-y-3"></div>
+            `;
+            regionsSection.appendChild(topRegionsDiv);
+            
+            // Bottom Regions
+            const bottomRegionsDiv = document.createElement('div');
+            bottomRegionsDiv.className = 'bg-white rounded-lg shadow p-4 border border-gray-100';
+            bottomRegionsDiv.innerHTML = `
+                <h3 class="text-sm font-semibold text-gray-800 mb-3">Lowest Performing States</h3>
+                <div id="dashboardBottomRegionsList" class="space-y-3"></div>
+            `;
+            regionsSection.appendChild(bottomRegionsDiv);
+            
+            performanceSection.appendChild(productsSection);
+            performanceSection.appendChild(regionsSection);
+            metricsContainer.appendChild(performanceSection);
             
             // Add container to the page
             document.querySelector('.w-full.sm\\:py-6.md\\:py-2').appendChild(metricsContainer);
@@ -2247,17 +2599,30 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show bottom products list if available
         if (metrics.bottom_products && metrics.bottom_products.length > 0) {
-            const bottomProductsContainer = document.getElementById('bottomProductsContainer');
-            if (bottomProductsContainer) {
-                bottomProductsContainer.classList.remove('hidden');
-                // Use the dashboardBottomProductsList container
-                const bottomProductsList = document.getElementById('dashboardBottomProductsList');
-                if (bottomProductsList) {
-                    bottomProductsList.innerHTML = '';
-                    if (typeof createBottomProductsList === 'function') {
-                        createBottomProductsList(metrics, metrics.bottom_products);
-                    }
-                }
+            const bottomProductsList = document.getElementById('dashboardBottomProductsList');
+            if (bottomProductsList) {
+                bottomProductsList.innerHTML = '';
+                metrics.bottom_products.slice(0, 5).forEach((product, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between';
+                    
+                    const percentage = (product.value / metrics.top_products[0].value) * 100;
+                    
+                    item.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="text-sm font-medium text-gray-700 mr-2">${index + 1}.</div>
+                            <div class="text-sm text-gray-600 truncate max-w-[150px]">${product.name}</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="text-sm font-medium text-gray-700 mr-2">${formatCurrency(product.value)}</div>
+                            <div class="w-20 bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-400 h-2 rounded-full" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    bottomProductsList.appendChild(item);
+                });
             }
         }
         
@@ -2280,18 +2645,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const bottomRegionsContainer = document.getElementById('bottomRegionsContainer');
             if (bottomRegionsContainer) {
                 bottomRegionsContainer.classList.remove('hidden');
-                // Use the dashboardBottomRegionsList container
+                
+                // First, create the bar chart if the function exists
+                if (typeof createBottomSellingStatesChart === 'function') {
+                    createBottomSellingStatesChart(metrics, metrics.bottom_regions);
+                }
+                
+                // Then, populate the list as well
                 const bottomRegionsList = document.getElementById('dashboardBottomRegionsList');
                 if (bottomRegionsList) {
                     bottomRegionsList.innerHTML = '';
-                    // Similar implementation to top regions
                     metrics.bottom_regions.slice(0, 5).forEach((region, index) => {
                         const item = document.createElement('div');
                         item.className = 'flex items-center justify-between';
                         
-                        const percentage = metrics.bottom_regions[0].value > 0 
-                            ? (region.value / metrics.bottom_regions[0].value) * 100 
-                            : 0;
+                        const percentage = (region.value / metrics.top_regions[0].value) * 100;
                         
                         item.innerHTML = `
                             <div class="flex items-center">
@@ -2301,7 +2669,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="flex items-center">
                                 <div class="text-sm font-medium text-gray-700 mr-2">${formatCurrency(region.value)}</div>
                                 <div class="w-20 bg-gray-200 rounded-full h-2">
-                                    <div class="bg-[#7B3DF3] h-2 rounded-full" style="width: ${percentage}%"></div>
+                                    <div class="bg-red-400 h-2 rounded-full" style="width: ${percentage}%"></div>
                                 </div>
                             </div>
                         `;
@@ -2349,6 +2717,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // Show bottom products list if available
+        if (metrics.bottom_products && metrics.bottom_products.length > 0) {
+            const bottomProductsContainer = document.getElementById('bottomProductsContainer');
+            if (bottomProductsContainer) {
+                bottomProductsContainer.classList.remove('hidden');
+                
+                // First, create the bar chart if the function exists
+                if (typeof createBottomSellingProductsChart === 'function') {
+                    createBottomSellingProductsChart(metrics, metrics.bottom_products);
+                }
+                
+                // Then, populate the list as well
+                const bottomProductsList = document.getElementById('dashboardBottomProductsList');
+                if (bottomProductsList) {
+                    bottomProductsList.innerHTML = '';
+                    metrics.bottom_products.slice(0, 5).forEach((product, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'flex items-center justify-between';
+                        
+                        const percentage = (product.value / metrics.top_products[0].value) * 100;
+                        
+                        item.innerHTML = `
+                            <div class="flex items-center">
+                                <div class="text-sm font-medium text-gray-700 mr-2">${index + 1}.</div>
+                                <div class="text-sm text-gray-600 truncate max-w-[150px]">${product.name}</div>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="text-sm font-medium text-gray-700 mr-2">${formatCurrency(product.value)}</div>
+                                <div class="w-20 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-red-400 h-2 rounded-full" style="width: ${percentage}%"></div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        bottomProductsList.appendChild(item);
+                    });
+                }
+            }
+        }
+        
         // Show the analysis content
         document.getElementById('analysisContent').classList.remove('hidden');
         document.getElementById('noAnalysisMessage').classList.add('hidden');
@@ -2367,10 +2775,26 @@ document.addEventListener('DOMContentLoaded', function() {
         container.classList.remove('hidden');
         
         // Get the canvas
-        const canvas = document.getElementById('returnsVsCancellationsChart');
-        if (!canvas) return;
+        let canvas = document.getElementById('returnsVsCancellationsChart');
+        if (!canvas) {
+            console.log('Canvas not found, creating it');
+            canvas = document.createElement('canvas');
+            canvas.id = 'returnsVsCancellationsChart';
+            
+            // Find the chart container
+            const chartContainer = container.querySelector('div');
+            if (chartContainer) {
+                chartContainer.appendChild(canvas);
+            } else {
+                container.appendChild(canvas);
+            }
+        }
         
         const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get 2D context for Returns vs Cancellations chart');
+            return;
+        }
         
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
@@ -2380,7 +2804,21 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Destroy existing chart if it exists
         if (window.returnsVsCancellationsChart) {
-            window.returnsVsCancellationsChart.destroy();
+            try {
+                // Check if it's a valid Chart.js instance with a destroy method
+                if (typeof window.returnsVsCancellationsChart === 'object' && 
+                    window.returnsVsCancellationsChart !== null && 
+                    typeof window.returnsVsCancellationsChart.destroy === 'function') {
+                    window.returnsVsCancellationsChart.destroy();
+                } else {
+                    console.warn('Existing returnsVsCancellationsChart is not a valid Chart.js instance');
+                    // Just delete the reference if it's not a valid chart
+                    window.returnsVsCancellationsChart = null;
+                }
+            } catch (error) {
+                console.error('Error destroying existing Returns vs Cancellations chart:', error);
+                window.returnsVsCancellationsChart = null;
+            }
         }
         
         // Create data for the chart
@@ -2407,28 +2845,45 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         // Create the chart
-        window.returnsVsCancellationsChart = new Chart(ctx, {
-            type: 'pie',
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                return `${label}: ${value.toFixed(1)}%`;
+        try {
+            // Clear any existing chart reference
+            window.returnsVsCancellationsChart = null;
+            
+            // Create new chart instance
+            window.returnsVsCancellationsChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value.toFixed(1)}%`;
+                                }
                             }
                         }
                     }
                 }
+            });
+            
+            // Verify we have a valid chart instance
+            if (!window.returnsVsCancellationsChart || typeof window.returnsVsCancellationsChart.destroy !== 'function') {
+                console.error('Failed to create a valid Chart.js instance for Returns vs Cancellations');
+                window.returnsVsCancellationsChart = null;
+            } else {
+                console.log('Returns vs Cancellations chart created successfully');
             }
-        });
+        } catch (error) {
+            console.error('Error creating Returns vs Cancellations chart:', error);
+            window.returnsVsCancellationsChart = null;
+        }
     }
     
     // ... existing code ...
@@ -2682,4 +3137,193 @@ document.addEventListener('DOMContentLoaded', function() {
             statusElement.classList.remove('hidden');
         }
     }
+
+    function updateSalesByCategoryChart(categoryData) {
+        // Get canvas element - create it if it doesn't exist
+        let canvas = document.getElementById('salesByCategoryChart');
+        if (!canvas) {
+            console.warn('Sales by category chart canvas not found, attempting to create it');
+            
+            // Find the container
+            const container = document.getElementById('salesByCategoryContainer');
+            if (container) {
+                const chartContainer = container.querySelector('div');
+                if (chartContainer) {
+                    canvas = document.createElement('canvas');
+                    canvas.id = 'salesByCategoryChart';
+                    chartContainer.appendChild(canvas);
+                    console.log('Created sales by category chart canvas');
+                } else {
+                    console.error('Could not find chart container for sales by category chart');
+                    return;
+                }
+            } else {
+                console.error('Could not find container for sales by category chart');
+                return;
+            }
+        }
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            console.error('Could not get 2D context for sales by category chart');
+            return;
+        }
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded');
+            return;
+        }
+        
+        // Destroy existing chart if it exists
+        if (window.salesByCategoryChart) {
+            try {
+                // Check if it's a valid Chart.js instance with a destroy method
+                if (typeof window.salesByCategoryChart === 'object' && 
+                    window.salesByCategoryChart !== null && 
+                    typeof window.salesByCategoryChart.destroy === 'function') {
+                    window.salesByCategoryChart.destroy();
+                } else {
+                    console.warn('Existing salesByCategoryChart is not a valid Chart.js instance');
+                    // Just delete the reference if it's not a valid chart
+                    window.salesByCategoryChart = null;
+                }
+            } catch (error) {
+                console.error('Error destroying existing sales by category chart:', error);
+                window.salesByCategoryChart = null;
+            }
+        }
+        
+        // If we have no data, display a placeholder
+        if (!categoryData || !categoryData.categories || categoryData.categories.length === 0) {
+            try {
+                // Clear existing chart reference
+                window.salesByCategoryChart = null;
+                
+                // Create a placeholder message
+                window.salesByCategoryChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['No Data Available'],
+                        datasets: [{
+                            data: [0],
+                            backgroundColor: ['rgba(200, 200, 200, 0.5)'],
+                            borderColor: ['rgba(200, 200, 200, 1)'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'No Category Data',
+                                color: '#666',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                // Verify we have a valid chart instance
+                if (!window.salesByCategoryChart || typeof window.salesByCategoryChart.destroy !== 'function') {
+                    console.error('Failed to create a valid Chart.js instance for sales by category chart');
+                    window.salesByCategoryChart = null;
+                } else {
+                    console.log('Sales by category chart created successfully (placeholder)');
+                }
+                
+                return;
+            } catch (error) {
+                console.error('Error creating sales by category chart placeholder:', error);
+                window.salesByCategoryChart = null;
+                return;
+            }
+        }
+        
+        // Prepare data for chart
+        const labels = categoryData.categories || [];
+        const data = categoryData.values || [];
+        
+        // Create a color array with a gradient 
+        const colors = [];
+        for (let i = 0; i < labels.length; i++) {
+            // Calculate color - going from purple to lighter purple
+            const opacity = 0.9 - (i * 0.6 / labels.length);
+            colors.push(`rgba(123, 61, 243, ${opacity > 0.2 ? opacity : 0.2})`);
+        }
+        
+        // Create chart
+        try {
+            // Clear existing chart reference
+            window.salesByCategoryChart = null;
+            
+            window.salesByCategoryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales by Category',
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: 'rgba(123, 61, 243, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        maxBarThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrencyShort(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Verify we have a valid chart instance
+            if (!window.salesByCategoryChart || typeof window.salesByCategoryChart.destroy !== 'function') {
+                console.error('Failed to create a valid Chart.js instance for sales by category chart');
+                window.salesByCategoryChart = null;
+            } else {
+                console.log('Sales by category chart created successfully');
+            }
+        } catch (error) {
+            console.error('Error creating sales by category chart:', error);
+            window.salesByCategoryChart = null;
+        }
+    }
 });
+
+
+

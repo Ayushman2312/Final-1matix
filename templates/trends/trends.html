@@ -201,6 +201,11 @@
             <!-- Hidden fields with default values -->
             <input type="hidden" id="timeframeSelect" name="timeframe" value="today 5-y">
             <input type="hidden" id="regionSelect" name="geo" value="IN">
+            <!-- Hidden field to store PageSpeed Insights data -->
+            <input type="hidden" id="pagespeedData" name="pagespeed_data" value="">
+            
+            <!-- PageSpeed Preview Container -->
+            <div id="pagespeed-preview" class="mt-4 hidden"></div>
         </div>
         
         <!-- Results Section -->
@@ -1627,6 +1632,898 @@
                     }, 500);
                 });
             }, 100);
+        }
+    });
+
+    // Add PageSpeed Insights API Integration
+    const businessWebsiteInput = document.getElementById('businessWebsite');
+    const pagespeedDataInput = document.getElementById('pagespeedData');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const businessIntentSelect = document.getElementById('business_intent');
+    
+    // Function to analyze website with PageSpeed Insights API
+    async function analyzeWebsiteWithPageSpeed(targetUrl) {
+        if (!targetUrl || targetUrl.trim() === '') {
+            console.log('No website URL provided for analysis');
+            return null;
+        }
+        
+        // Validate and normalize URL format
+        try {
+            // Ensure URL has proper format with protocol
+            if (!targetUrl.startsWith('http')) {
+                targetUrl = 'https://' + targetUrl;
+            }
+            
+            // Use URL constructor to validate and normalize
+            const urlObj = new URL(targetUrl);
+            
+            // Ensure we have a valid hostname
+            if (!urlObj.hostname || urlObj.hostname.length < 3) {
+                console.error('Invalid hostname in URL:', targetUrl);
+                return { 
+                    error: 'Invalid website URL: hostname is missing or too short',
+                    status: 'error',
+                    url: targetUrl
+                };
+            }
+            
+            // Normalize URL by removing trailing slashes
+            targetUrl = urlObj.toString().replace(/\/+$/, '');
+            
+            console.log(`Starting PageSpeed analysis for: ${targetUrl}`);
+        } catch (urlError) {
+            console.error('Invalid URL format:', urlError);
+            return { 
+                error: `Invalid URL format: ${urlError.message}`,
+                status: 'error',
+                url: targetUrl
+            };
+        }
+        
+        const apiEndpoint = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
+        const apiKey = "AIzaSyCtlv3d3rD8C2E5YDDJl1ozNWwcNyrcTYE";
+        
+        // Implement progressive retry with increasing timeouts
+        const timeouts = [20000, 40000, 60000]; // 20s, 40s, 60s
+        let lastError = null;
+        
+        for (let attempt = 0; attempt < timeouts.length; attempt++) {
+            try {
+                const timeout = timeouts[attempt];
+                console.log(`Attempt ${attempt + 1} with timeout ${timeout}ms for ${targetUrl}`);
+                
+                const url = new URL(apiEndpoint);
+                
+                // Set required and optional parameters
+                url.searchParams.set('url', targetUrl);
+                url.searchParams.set('key', apiKey);
+                url.searchParams.set('strategy', 'mobile'); // Explicitly use mobile strategy
+                
+                // Add all categories to ensure comprehensive results
+                url.searchParams.append('category', 'performance');
+                url.searchParams.append('category', 'accessibility');
+                url.searchParams.append('category', 'best-practices');
+                url.searchParams.append('category', 'seo');
+                
+                // Add locale for consistent results
+                url.searchParams.set('locale', 'en');
+                
+                // Request full reports to get all details
+                url.searchParams.set('utm_source', 'lighthouse');
+                
+                console.log(`Sending API request to: ${url.toString()}`);
+                
+                // Create an AbortController with the current timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    signal: controller.signal
+                });
+                
+                // Clear the timeout as request completed
+                clearTimeout(timeoutId);
+                
+                console.log(`Received response with status: ${response.status}`);
+                
+                // Handle quota exceeded errors (429)
+                if (response.status === 429) {
+                    console.warn('PageSpeed API quota exceeded');
+                    return { 
+                        error: 'API quota exceeded. Please try again later.',
+                        status: 429,
+                        url: targetUrl
+                    };
+                }
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`PageSpeed API error: ${errorText}`);
+                    throw new Error(`API request failed with status: ${response.status}, ${errorText}`);
+                }
+                
+                const json = await response.json();
+                console.log('PageSpeed API raw response received successfully');
+                
+                // Process the response to extract the most important information
+                const lighthouse = json.lighthouseResult;
+                if (!lighthouse) {
+                    console.error('Missing lighthouse result in API response');
+                    return { 
+                        error: 'Invalid API response: missing lighthouse result',
+                        url: targetUrl
+                    };
+                }
+                
+                // Extract all available information
+                const result = {
+                    url: targetUrl,
+                    analyzed_at: new Date().toISOString(),
+                    captchaResult: json.captchaResult,
+                    kind: json.kind,
+                    id: json.id,
+                    loadingExperience: json.loadingExperience || {},
+                    originLoadingExperience: json.originLoadingExperience || {},
+                    version: lighthouse.lighthouseVersion,
+                    userAgent: lighthouse.userAgent,
+                    environment: lighthouse.environment || {},
+                    fetchTime: lighthouse.fetchTime,
+                    runWarnings: lighthouse.runWarnings || [],
+                    configSettings: lighthouse.configSettings || {},
+                    attempt: attempt + 1,
+                    full_report_url: `https://pagespeed.web.dev/report?url=${encodeURIComponent(targetUrl)}`
+                };
+                
+                // Extract all categories and scores
+                result.categories = {};
+                result.scores = {};
+                
+                if (lighthouse.categories) {
+                    Object.keys(lighthouse.categories).forEach(categoryKey => {
+                        const category = lighthouse.categories[categoryKey];
+                        result.categories[categoryKey] = {
+                            id: category.id,
+                            title: category.title,
+                            description: category.description,
+                            score: category.score,
+                            manualDescription: category.manualDescription,
+                            auditRefs: category.auditRefs
+                        };
+                        
+                        // Add to scores for backward compatibility
+                        result.scores[categoryKey] = category.score * 100 || 0;
+                    });
+                }
+                
+                // Extract all audits with complete details
+                result.audits = {};
+                
+                if (lighthouse.audits) {
+                    Object.keys(lighthouse.audits).forEach(auditKey => {
+                        const audit = lighthouse.audits[auditKey];
+                        result.audits[auditKey] = {
+                            id: audit.id,
+                            title: audit.title,
+                            description: audit.description,
+                            score: audit.score,
+                            scoreDisplayMode: audit.scoreDisplayMode,
+                            displayValue: audit.displayValue,
+                            numericValue: audit.numericValue,
+                            warnings: audit.warnings || [],
+                            errorMessage: audit.errorMessage,
+                            details: audit.details
+                        };
+                    });
+                }
+                
+                // Extract key metrics (for backward compatibility)
+                result.metrics = {
+                    'first-contentful-paint': {
+                        display_value: lighthouse.audits['first-contentful-paint']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['first-contentful-paint']?.numericValue 
+                            ? Math.round(lighthouse.audits['first-contentful-paint'].numericValue) : null
+                    },
+                    'largest-contentful-paint': {
+                        display_value: lighthouse.audits['largest-contentful-paint']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['largest-contentful-paint']?.numericValue 
+                            ? Math.round(lighthouse.audits['largest-contentful-paint'].numericValue) : null
+                    },
+                    'cumulative-layout-shift': {
+                        display_value: lighthouse.audits['cumulative-layout-shift']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['cumulative-layout-shift']?.numericValue 
+                            ? parseFloat(lighthouse.audits['cumulative-layout-shift'].numericValue.toFixed(3)) : null
+                    },
+                    'total-blocking-time': {
+                        display_value: lighthouse.audits['total-blocking-time']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['total-blocking-time']?.numericValue 
+                            ? Math.round(lighthouse.audits['total-blocking-time'].numericValue) : null
+                    },
+                    'speed-index': {
+                        display_value: lighthouse.audits['speed-index']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['speed-index']?.numericValue 
+                            ? Math.round(lighthouse.audits['speed-index'].numericValue) : null
+                    },
+                    'interactive': {
+                        display_value: lighthouse.audits['interactive']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['interactive']?.numericValue 
+                            ? Math.round(lighthouse.audits['interactive'].numericValue) : null
+                    },
+                    'server-response-time': {
+                        display_value: lighthouse.audits['server-response-time']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['server-response-time']?.numericValue 
+                            ? Math.round(lighthouse.audits['server-response-time'].numericValue) : null
+                    },
+                    'max-potential-fid': {
+                        display_value: lighthouse.audits['max-potential-fid']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['max-potential-fid']?.numericValue 
+                            ? Math.round(lighthouse.audits['max-potential-fid'].numericValue) : null
+                    },
+                    'first-meaningful-paint': {
+                        display_value: lighthouse.audits['first-meaningful-paint']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['first-meaningful-paint']?.numericValue 
+                            ? Math.round(lighthouse.audits['first-meaningful-paint'].numericValue) : null
+                    },
+                    'mainthread-work-breakdown': {
+                        display_value: lighthouse.audits['mainthread-work-breakdown']?.displayValue || 'N/A',
+                        numeric_value: lighthouse.audits['mainthread-work-breakdown']?.numericValue
+                            ? Math.round(lighthouse.audits['mainthread-work-breakdown'].numericValue) : null
+                    }
+                };
+                
+                // Extract opportunities and passed audits (for backward compatibility)
+                result.opportunities = [];
+                result.passed_audits = [];
+                
+                for (const auditId in lighthouse.audits) {
+                    const audit = lighthouse.audits[auditId];
+                    
+                    if (audit.details && audit.details.type === 'opportunity' && audit.score < 1) {
+                        result.opportunities.push({
+                            id: auditId,
+                            title: audit.title,
+                            description: audit.description || '',
+                            score: audit.score,
+                            numericValue: audit.numericValue,
+                            displayValue: audit.displayValue,
+                            details: audit.details
+                        });
+                    } else if (audit.score === 1) {
+                        result.passed_audits.push({
+                            id: auditId,
+                            title: audit.title,
+                            description: audit.description || ''
+                        });
+                    }
+                }
+                
+                // Add full stack packs information (for framework-specific advice)
+                result.stackPacks = lighthouse.stackPacks || [];
+                
+                // Add timing information
+                result.timing = lighthouse.timing || {};
+                
+                // Add I18n information
+                result.i18n = lighthouse.i18n || {};
+                
+                // Add entity information
+                result.entities = lighthouse.entities || [];
+                
+                // Format summary for backward compatibility
+                const performanceScore = result.scores.performance ? result.scores.performance.toFixed(0) : 'N/A';
+                const seoScore = result.scores.seo ? result.scores.seo.toFixed(0) : 'N/A';
+                const accessibilityScore = result.scores.accessibility ? result.scores.accessibility.toFixed(0) : 'N/A';
+                const bestPracticesScore = result.scores['best-practices'] ? result.scores['best-practices'].toFixed(0) : 'N/A';
+                
+                result.summary = `Performance: ${performanceScore}%, SEO: ${seoScore}%, Accessibility: ${accessibilityScore}%, Best Practices: ${bestPracticesScore}%`;
+                
+                console.log('PageSpeed analysis completed successfully with comprehensive data extraction');
+                
+                // Return the complete result
+                return result;
+                
+            } catch (error) {
+                console.error(`Attempt ${attempt + 1} failed:`, error);
+                lastError = error;
+                
+                // If it's not a timeout error, don't retry
+                if (error.name !== 'AbortError' && !error.message.includes('timed out')) {
+                    break;
+                }
+                
+                // If this was the last attempt, don't wait
+                if (attempt < timeouts.length - 1) {
+                    console.log(`Waiting before retry ${attempt + 2}...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s between attempts
+                }
+            }
+        }
+        
+        // All attempts failed
+        console.error('All PageSpeed API attempts failed:', lastError);
+        return {
+            error: `PageSpeed API request failed: ${lastError ? (lastError.message || 'The operation timed out.') : 'Unknown error'}`,
+            status: 'error',
+            url: targetUrl
+        };
+    }
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Add event listener to business website input for analysis when submitting
+    if (businessWebsiteInput && analyzeButton && businessIntentSelect) {
+        analyzeButton.addEventListener('click', async function(event) {
+            // Only analyze if business intent is "no" (already in business)
+            if (businessIntentSelect.value === 'no') {
+                const websiteUrl = businessWebsiteInput.value.trim();
+                
+                if (websiteUrl) {
+                    try {
+                        // Show loading indicator or some feedback
+                        const loadingIndicator = document.getElementById('loadingIndicator');
+                        if (loadingIndicator) loadingIndicator.style.display = 'flex';
+                        
+                        console.log('Analyzing website before form submission:', websiteUrl);
+                        
+                        // Analyze the website
+                        const pagespeedResults = await analyzeWebsiteWithPageSpeed(websiteUrl);
+                        
+                        // Store results in both places to ensure redundancy
+                        if (pagespeedResults) {
+                            // Show the preview of the data
+                            showPageSpeedPreview(pagespeedResults);
+                            
+                            // Store as both string and object to ensure compatibility
+                            const jsonString = JSON.stringify(pagespeedResults);
+                            pagespeedDataInput.value = jsonString;
+                            window.pagespeedInsightsData = pagespeedResults; // Store as object
+                            
+                            console.log('PageSpeed data stored for submission:', {
+                                asString: jsonString.substring(0, 100) + '...',
+                                asObject: pagespeedResults
+                            });
+                            
+                            // Create a DOM event to notify that PageSpeed data is ready
+                            const event = new CustomEvent('pagespeedDataReady', {
+                                detail: { pagespeedData: pagespeedResults }
+                            });
+                            document.dispatchEvent(event);
+                        }
+                        
+                        // Debug check to make sure data is properly stored
+                        setTimeout(() => {
+                            console.log('Verifying stored PageSpeed data:', {
+                                inputValue: pagespeedDataInput.value ? 'Set (length: ' + pagespeedDataInput.value.length + ')' : 'Empty',
+                                windowValue: window.pagespeedInsightsData ? 'Set (object)' : 'Not set',
+                                hasData: !!pagespeedDataInput.value
+                            });
+                        }, 100);
+                        
+                    } catch (error) {
+                        console.error('Error during website analysis:', error);
+                        // Continue with form submission even if analysis fails
+                    }
+                }
+            }
+        });
+        
+        // Add an event listener to the business intent dropdown to clear PageSpeed data when changed
+        businessIntentSelect.addEventListener('change', function() {
+            if (this.value !== 'no') {
+                // Clear PageSpeed data if not "already in business"
+                pagespeedDataInput.value = '';
+                window.pagespeedInsightsData = null;
+                console.log('PageSpeed data cleared due to business intent change');
+            }
+        });
+    }
+
+    // Add Website PageSpeed Preview Modal functionality
+    const businessWebsitePreviewBtn = document.createElement('button');
+    businessWebsitePreviewBtn.type = 'button';
+    businessWebsitePreviewBtn.className = 'text-blue-500 text-sm absolute right-3 top-3 hover:text-blue-600';
+    businessWebsitePreviewBtn.innerHTML = 'Preview Analysis';
+    businessWebsitePreviewBtn.style.display = 'none';
+    
+    // Insert the button after the business website input
+    if (businessWebsiteInput && businessWebsiteInput.parentNode) {
+        businessWebsiteInput.parentNode.style.position = 'relative';
+        businessWebsiteInput.parentNode.appendChild(businessWebsitePreviewBtn);
+        
+        // Show/hide preview button based on input value
+        businessWebsiteInput.addEventListener('input', function() {
+            businessWebsitePreviewBtn.style.display = this.value.trim() ? 'block' : 'none';
+        });
+        
+        // Preview button click handler
+        businessWebsitePreviewBtn.addEventListener('click', async function() {
+            const websiteUrl = businessWebsiteInput.value.trim();
+            
+            if (websiteUrl) {
+                // Create or get preview modal
+                let previewModal = document.getElementById('websitePreviewModal');
+                
+                if (!previewModal) {
+                    // Create modal if it doesn't exist
+                    previewModal = document.createElement('div');
+                    previewModal.id = 'websitePreviewModal';
+                    previewModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden';
+                    
+                    previewModal.innerHTML = `
+                        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all">
+                            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                                <h3 id="previewModalTitle" class="text-xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text">Website Analysis Preview</h3>
+                                <button id="closePreviewModal" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div id="previewModalContent" class="p-6 overflow-y-auto flex-grow">
+                                <div class="flex items-center justify-center py-10">
+                                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                                    <span class="ml-3 text-gray-600">Analyzing website...</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(previewModal);
+                    
+                    // Close button functionality
+                    document.getElementById('closePreviewModal').addEventListener('click', function() {
+                        previewModal.classList.add('hidden');
+                    });
+                    
+                    // Close when clicking outside
+                    previewModal.addEventListener('click', function(e) {
+                        if (e.target === previewModal) {
+                            previewModal.classList.add('hidden');
+                        }
+                    });
+                }
+                
+                // Show modal
+                previewModal.classList.remove('hidden');
+                
+                // Analyze website
+                try {
+                    const results = await analyzeWebsiteWithPageSpeed(websiteUrl);
+                    const modalContent = document.getElementById('previewModalContent');
+                    
+                    // Use our comprehensive display function
+                    displayComprehensivePageSpeedResults(modalContent, results);
+                    
+                } catch (error) {
+                    console.error('Error in website preview:', error);
+                    document.getElementById('previewModalContent').innerHTML = `
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Exception occurred</h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        <p>Error analyzing website: ${error.message}</p>
+                                        <p class="mt-2">Stack trace: ${error.stack ? error.stack.split('\n')[0] : 'Not available'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        });
+    }
+    
+    // Helper function to create score cards
+    function createScoreCard(label, score) {
+        let colorClass = 'bg-red-500';
+        if (score >= 90) {
+            colorClass = 'bg-green-500';
+        } else if (score >= 50) {
+            colorClass = 'bg-yellow-500';
+        }
+        
+        return `
+            <div class="bg-gray-50 p-3 rounded-lg text-center">
+                <div class="w-16 h-16 rounded-full ${colorClass} flex items-center justify-center mx-auto mb-2 text-white font-bold">
+                    ${Math.round(score)}
+                </div>
+                <span class="text-sm font-medium text-gray-700">${label}</span>
+            </div>
+        `;
+    }
+    
+    // Modify existing handleFormSubmit function to include PageSpeed data
+    const originalHandleFormSubmit = window.handleFormSubmit;
+    
+    if (typeof originalHandleFormSubmit === 'function') {
+        window.handleFormSubmit = async function(event) {
+            event.preventDefault();
+            
+            // Check if we need to analyze a website
+            const businessIntent = document.getElementById('business_intent').value;
+            const websiteUrl = document.getElementById('businessWebsite')?.value?.trim();
+            
+            if (businessIntent === 'no' && websiteUrl && !window.pagespeedInsightsData) {
+                // Show loading indicator
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                if (loadingIndicator) loadingIndicator.style.display = 'flex';
+                
+                console.log('Analyzing website before form submission:', websiteUrl);
+                
+                try {
+                    // Analyze the website
+                    const pagespeedResults = await analyzeWebsiteWithPageSpeed(websiteUrl);
+                    
+                    if (pagespeedResults) {
+                        // Show preview
+                        showPageSpeedPreview(pagespeedResults);
+                        
+                        // Store results in both hidden input and window object
+                        const jsonString = JSON.stringify(pagespeedResults);
+                        document.getElementById('pagespeedData').value = jsonString;
+                        window.pagespeedInsightsData = pagespeedResults;
+                        
+                        console.log('PageSpeed data obtained and stored:', {
+                            isObject: typeof pagespeedResults === 'object',
+                            isMockData: pagespeedResults.is_mock_data || false
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error analyzing website:', error);
+                }
+            }
+            
+            // Now continue with the original form submission
+            return originalHandleFormSubmit.call(this, event);
+        };
+    }
+
+    // Existing code continues below
+    // ...
+
+    // Function to show PageSpeed data preview
+    function showPageSpeedPreview(data) {
+        const previewElem = document.getElementById('pagespeed-preview');
+        if (!previewElem) return;
+        
+        // Check if this is an error response
+        if (data.error) {
+            let previewHTML = `
+                <div class="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-red-700">Website Analysis Error: ${data.url}</h3>
+                        <span class="text-xs px-2 py-1 bg-red-100 text-red-800 rounded">Status: ${data.status || 'Error'}</span>
+                    </div>
+                    <div class="text-sm text-red-700 mb-3">
+                        <p>${data.error}</p>
+                        ${data.details ? `<p class="mt-2 text-xs">${data.details}</p>` : ''}
+                    </div>
+                    <div class="text-sm bg-white p-3 rounded border border-red-100">
+                        <p class="text-gray-700">
+                            Unable to analyze your website. Please check the URL and try again later. 
+                            You can still proceed with the analysis without website performance data.
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            previewElem.innerHTML = previewHTML;
+            previewElem.classList.remove('hidden');
+            return;
+        }
+        
+        // Build the preview HTML for successful response
+        let previewHTML = `
+            <div class="p-4 mb-4 bg-gray-50 border rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-semibold">Website Analysis: ${data.url}</h3>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                    <div class="p-2 bg-white rounded border text-center">
+                        <div class="font-semibold mb-1">Performance</div>
+                        <div class="text-xl ${getScoreColorClass(data.scores.performance)}">${Math.round(data.scores.performance)}%</div>
+                    </div>
+                    <div class="p-2 bg-white rounded border text-center">
+                        <div class="font-semibold mb-1">SEO</div>
+                        <div class="text-xl ${getScoreColorClass(data.scores.seo)}">${Math.round(data.scores.seo)}%</div>
+                    </div>
+                    <div class="p-2 bg-white rounded border text-center">
+                        <div class="font-semibold mb-1">Accessibility</div>
+                        <div class="text-xl ${getScoreColorClass(data.scores.accessibility)}">${Math.round(data.scores.accessibility)}%</div>
+                    </div>
+                    <div class="p-2 bg-white rounded border text-center">
+                        <div class="font-semibold mb-1">Best Practices</div>
+                        <div class="text-xl ${getScoreColorClass(data.scores['best-practices'])}">${Math.round(data.scores['best-practices'])}%</div>
+                    </div>
+                </div>
+                
+                <div class="text-sm">
+                    <p class="mb-2 text-gray-600">
+                        This data will be included in the AI analysis to provide website optimization recommendations.
+                    </p>
+                </div>
+            </div>
+        `;
+        
+        // Display the preview
+        previewElem.innerHTML = previewHTML;
+        previewElem.classList.remove('hidden');
+    }
+
+    // Helper function to get color class based on score
+    function getScoreColorClass(score) {
+        if (score >= 90) return 'text-green-600';
+        if (score >= 70) return 'text-yellow-600';
+        if (score >= 50) return 'text-orange-500';
+        return 'text-red-600';
+    }
+    
+    // Helper function to get color for metric values
+    function getMetricColorClass(metric) {
+        if (!metric || !metric.display_value || metric.display_value === 'N/A') return 'text-gray-500';
+        
+        // For metrics where lower is better (most timing metrics)
+        if (metric.display_value.includes('ms') || metric.display_value.includes('s')) {
+            const value = parseFloat(metric.display_value);
+            if (value < 1000) return 'text-green-600';
+            if (value < 2500) return 'text-yellow-600';
+            if (value < 4000) return 'text-orange-500';
+            return 'text-red-600';
+        }
+        
+        // For CLS specific handling
+        if (metric.numeric_value !== undefined && metric.display_value.length < 5) {
+            const value = parseFloat(metric.numeric_value);
+            if (value < 0.1) return 'text-green-600';
+            if (value < 0.25) return 'text-yellow-600';
+            return 'text-red-600';
+        }
+        
+        return 'text-gray-700';
+    }
+
+    // Function to display comprehensive PageSpeed Insights data preview
+    function displayComprehensivePageSpeedResults(modalContent, results) {
+        if (!results || !modalContent) return;
+        
+        // Handle error response
+        if (results.error) {
+            modalContent.innerHTML = `
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Error analyzing website</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>${results.error}</p>
+                                ${results.details ? `<p class="mt-2 text-xs text-red-600">${results.details}</p>` : ''}
+                                <p class="mt-2">Status: ${results.status || 'Error'}</p>
+                                <p class="mt-2">Make sure the URL is correct and the website is accessible.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <span class="font-medium">Note:</span> You can still proceed with the trend analysis without website data.
+                        The recommendations will be based solely on trend data.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Format the results nicely in the modal with comprehensive data
+        modalContent.innerHTML = `
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-lg font-semibold text-gray-800">Performance Scores</h4>
+                    <a href="${results.full_report_url}" target="_blank" class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition-colors">
+                        View Full Report ↗
+                    </a>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    ${createScoreCard('Performance', results.scores.performance)}
+                    ${createScoreCard('SEO', results.scores.seo)}
+                    ${createScoreCard('Accessibility', results.scores.accessibility)}
+                    ${createScoreCard('Best Practices', results.scores['best-practices'])}
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold mb-2 text-gray-800">Core Web Vitals</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm font-medium text-gray-500">Largest Contentful Paint (LCP)</span>
+                        <p class="text-lg font-semibold ${getMetricColorClass(results.metrics['largest-contentful-paint'])}">${results.metrics['largest-contentful-paint'].display_value}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm font-medium text-gray-500">Cumulative Layout Shift (CLS)</span>
+                        <p class="text-lg font-semibold ${getMetricColorClass(results.metrics['cumulative-layout-shift'])}">${results.metrics['cumulative-layout-shift'].display_value}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm font-medium text-gray-500">First Contentful Paint (FCP)</span>
+                        <p class="text-lg font-semibold ${getMetricColorClass(results.metrics['first-contentful-paint'])}">${results.metrics['first-contentful-paint'].display_value}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm font-medium text-gray-500">Speed Index</span>
+                        <p class="text-lg font-semibold ${getMetricColorClass(results.metrics['speed-index'])}">${results.metrics['speed-index'].display_value}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm font-medium text-gray-500">Time to Interactive (TTI)</span>
+                        <p class="text-lg font-semibold ${getMetricColorClass(results.metrics['interactive'])}">${results.metrics['interactive'].display_value}</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm font-medium text-gray-500">Total Blocking Time (TBT)</span>
+                        <p class="text-lg font-semibold ${getMetricColorClass(results.metrics['total-blocking-time'])}">${results.metrics['total-blocking-time'].display_value}</p>
+                    </div>
+                </div>
+            </div>
+            
+            ${results.opportunities && results.opportunities.length > 0 ? `
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold mb-3 text-gray-800">Improvement Opportunities</h4>
+                <div class="bg-white border border-gray-200 rounded-lg">
+                    ${results.opportunities.slice(0, 5).map((opp, index) => `
+                        <div class="p-3 ${index < Math.min(results.opportunities.length, 5) - 1 ? 'border-b border-gray-200' : ''}">
+                            <div class="flex items-start">
+                                <span class="inline-block w-2 h-2 rounded-full bg-yellow-400 mt-1.5 mr-2 flex-shrink-0"></span>
+                                <div>
+                                    <p class="font-medium text-gray-800">${opp.title} ${opp.displayValue ? `<span class="font-normal text-gray-600">(${opp.displayValue})</span>` : ''}</p>
+                                    <p class="text-sm text-gray-600 mt-1">${opp.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${results.opportunities.length > 5 ? `
+                        <div class="p-3 bg-gray-50 text-center">
+                            <span class="text-sm text-blue-600">+ ${results.opportunities.length - 5} more opportunities</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${results.stackPacks && results.stackPacks.length > 0 ? `
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold mb-2 text-gray-800">Framework-Specific Advice</h4>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-800 mb-2">
+                        <span class="font-medium">Detected frameworks:</span> ${results.stackPacks.map(stack => stack.title).join(', ')}
+                    </p>
+                </div>
+            </div>
+            ` : ''}
+            
+            ${results.runWarnings && results.runWarnings.length > 0 ? `
+            <div class="mb-6">
+                <h4 class="text-lg font-semibold mb-2 text-gray-800">Warnings</h4>
+                <div class="bg-yellow-50 p-3 rounded-lg">
+                    <ul class="list-disc pl-5 text-sm text-yellow-800">
+                        ${results.runWarnings.map(warning => `<li>${warning}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+            ` : ''}
+            
+            <div class="mt-4 bg-blue-50 p-4 rounded-lg">
+                <p class="text-sm text-blue-800">
+                    <span class="font-medium">Note:</span> This comprehensive analysis will be included in your recommendations
+                    when you submit the form. The AI will use this data to provide tailored advice for your website.
+                </p>
+            </div>
+        `;
+    }
+</script>
+
+<!-- Include existing script for trends-ai-analysis.js with modification to use PageSpeed data -->
+<script>
+    // This script will check if window.pagespeedInsightsData exists and pass it to the backend
+    document.addEventListener('DOMContentLoaded', function() {
+        // Override the original sendAiAnalysisRequest function if it exists
+        if (typeof window.sendAiAnalysisRequest === 'function') {
+            const originalSendAiAnalysisRequest = window.sendAiAnalysisRequest;
+            
+            window.sendAiAnalysisRequest = function(keyword, data, business_intent, brand_name, website_url, marketplaces) {
+                // Create a new request payload object with the base data
+                const requestPayload = {
+                    keyword: keyword,
+                    data: data,
+                    business_intent: business_intent,
+                    brand_name: brand_name,
+                    user_website: website_url,
+                    marketplaces_selected: marketplaces
+                };
+                
+                // Add PageSpeed data if available
+                if (window.pagespeedInsightsData) {
+                    try {
+                        // Parse PageSpeed data and add it directly to the request
+                        const pagespeedData = typeof window.pagespeedInsightsData === 'string' 
+                            ? JSON.parse(window.pagespeedInsightsData) 
+                            : window.pagespeedInsightsData;
+                            
+                        requestPayload.pagespeed_insights = pagespeedData;
+                        console.log('Added PageSpeed data to AI analysis request', pagespeedData);
+                    } catch (error) {
+                        console.error('Error parsing PageSpeed data:', error);
+                    }
+                } else {
+                    // Check if PageSpeed data is in the hidden input field
+                    const pagespeedDataInput = document.getElementById('pagespeedData');
+                    if (pagespeedDataInput && pagespeedDataInput.value) {
+                        try {
+                            const pagespeedData = JSON.parse(pagespeedDataInput.value);
+                            requestPayload.pagespeed_insights = pagespeedData;
+                            console.log('Added PageSpeed data from input field to AI analysis request', pagespeedData);
+                        } catch (error) {
+                            console.error('Error parsing PageSpeed data from input:', error);
+                        }
+                    }
+                }
+                
+                // Debug output to check data before sending
+                console.log('Sending AI analysis request with payload:', JSON.stringify(requestPayload));
+                
+                // Make API request to backend for AI analysis
+                return fetch('/trends/ai-analysis/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(requestPayload),
+                    // Add timeout to prevent long waiting times
+                    signal: AbortSignal.timeout(30000) // 30 seconds timeout
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                });
+            };
+        }
+        
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
     });
 </script>

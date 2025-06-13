@@ -1,0 +1,361 @@
+{% extends "user_dashboard/base.html" %}
+{% load static %}
+
+{% block title %}PageSpeed Insights Test{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pagespeed-card {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        padding: 15px 20px;
+        font-weight: bold;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .score-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        padding: 15px;
+    }
+    
+    .score-item {
+        text-align: center;
+        padding: 10px;
+        flex: 1;
+        min-width: 100px;
+    }
+    
+    .score-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .score-good {
+        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    }
+    
+    .score-average {
+        background: linear-gradient(135deg, #FFC107, #FF8F00);
+    }
+    
+    .score-poor {
+        background: linear-gradient(135deg, #F44336, #C62828);
+    }
+    
+    .score-label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .metrics-container {
+        padding: 15px;
+    }
+    
+    .metric-item {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .metric-name {
+        width: 200px;
+        font-weight: 500;
+    }
+    
+    .metric-value {
+        margin-left: 10px;
+    }
+    
+    .issues-container {
+        padding: 0 15px 15px;
+    }
+    
+    .issue-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">PageSpeed Insights Test</h1>
+            
+            <div class="card pagespeed-card mb-4">
+                <div class="card-header bg-light">
+                    Test Your Website's Performance
+                </div>
+                <div class="card-body">
+                    <form id="pagespeedForm">
+                        <div class="form-group mb-3">
+                            <label for="websiteUrl">Website URL</label>
+                            <input type="url" class="form-control" id="websiteUrl" placeholder="https://example.com" required>
+                            <small class="form-text text-muted">Enter the full URL including http:// or https://</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Analyze Website</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="resultsContainer" style="display: none;">
+                <div class="card pagespeed-card">
+                    <div class="card-header bg-light">
+                        Results for <span id="analyzedUrl">URL</span>
+                    </div>
+                    <div class="score-container">
+                        <div class="score-item">
+                            <div class="score-circle" id="performanceScore">-</div>
+                            <div class="score-label">Performance</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-circle" id="accessibilityScore">-</div>
+                            <div class="score-label">Accessibility</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-circle" id="bestPracticesScore">-</div>
+                            <div class="score-label">Best Practices</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-circle" id="seoScore">-</div>
+                            <div class="score-label">SEO</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-header bg-light">
+                        Core Web Vitals
+                    </div>
+                    <div class="metrics-container">
+                        <div class="metric-item">
+                            <div class="metric-name">First Contentful Paint (FCP)</div>
+                            <div class="metric-value" id="fcp">-</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-name">Largest Contentful Paint (LCP)</div>
+                            <div class="metric-value" id="lcp">-</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-name">Cumulative Layout Shift (CLS)</div>
+                            <div class="metric-value" id="cls">-</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-name">Total Blocking Time (TBT)</div>
+                            <div class="metric-value" id="tbt">-</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-name">Speed Index</div>
+                            <div class="metric-value" id="si">-</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-name">Time to Interactive (TTI)</div>
+                            <div class="metric-value" id="tti">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-header bg-light">
+                        Top Issues
+                    </div>
+                    <div class="issues-container">
+                        <div id="issuesContainer">
+                            <p>No issues found.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card-header bg-light">
+                        Strengths
+                    </div>
+                    <div class="issues-container">
+                        <div id="strengthsContainer">
+                            <p>No notable strengths identified.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="errorContainer" class="alert alert-danger mt-4" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('pagespeedForm');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const errorContainer = document.getElementById('errorContainer');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const websiteUrl = document.getElementById('websiteUrl').value.trim();
+            if (!websiteUrl) {
+                showError('Please enter a valid website URL');
+                return;
+            }
+            
+            // Show loading overlay
+            loadingOverlay.style.display = 'flex';
+            
+            // Hide previous results/errors
+            resultsContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+            
+            // Make API request
+            fetch('{% url "trends:pagespeed_test_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ website_url: websiteUrl })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingOverlay.style.display = 'none';
+                
+                if (data.status === 'error') {
+                    showError(data.message);
+                    return;
+                }
+                
+                // Display results
+                displayResults(data.data, websiteUrl);
+            })
+            .catch(error => {
+                loadingOverlay.style.display = 'none';
+                showError('An error occurred: ' + error.message);
+            });
+        });
+        
+        function showError(message) {
+            errorContainer.textContent = message;
+            errorContainer.style.display = 'block';
+        }
+        
+        function displayResults(data, url) {
+            // Set analyzed URL
+            document.getElementById('analyzedUrl').textContent = url;
+            
+            // Set scores
+            setScore('performanceScore', data.scores.performance);
+            setScore('accessibilityScore', data.scores.accessibility);
+            setScore('bestPracticesScore', data.scores['best-practices']);
+            setScore('seoScore', data.scores.seo);
+            
+            // Set metrics
+            document.getElementById('fcp').textContent = data.metrics['first-contentful-paint']?.display_value || 'N/A';
+            document.getElementById('lcp').textContent = data.metrics['largest-contentful-paint']?.display_value || 'N/A';
+            document.getElementById('cls').textContent = data.metrics['cumulative-layout-shift']?.display_value || 'N/A';
+            document.getElementById('tbt').textContent = data.metrics['total-blocking-time']?.display_value || 'N/A';
+            document.getElementById('si').textContent = data.metrics['speed-index']?.display_value || 'N/A';
+            document.getElementById('tti').textContent = data.metrics['interactive']?.display_value || 'N/A';
+            
+            // Set issues
+            const issuesContainer = document.getElementById('issuesContainer');
+            issuesContainer.innerHTML = '';
+            
+            if (data.opportunities && data.opportunities.length > 0) {
+                data.opportunities.forEach(issue => {
+                    const issueElement = document.createElement('div');
+                    issueElement.className = 'issue-item';
+                    
+                    // Handle both string and object formats
+                    if (typeof issue === 'string') {
+                        issueElement.textContent = issue;
+                    } else if (issue.title) {
+                        issueElement.textContent = issue.title;
+                    }
+                    
+                    issuesContainer.appendChild(issueElement);
+                });
+            } else {
+                issuesContainer.innerHTML = '<p>No significant issues found.</p>';
+            }
+            
+            // Set strengths
+            const strengthsContainer = document.getElementById('strengthsContainer');
+            
+            // For simplicity with the simplified API response, just show a message if there are no issues
+            if (!data.opportunities || data.opportunities.length === 0) {
+                strengthsContainer.innerHTML = '<p>Your website is performing well without major issues.</p>';
+            } else {
+                strengthsContainer.innerHTML = '<p>Focus on fixing the issues above to improve your website performance.</p>';
+            }
+            
+            // Show results
+            resultsContainer.style.display = 'block';
+        }
+        
+        function setScore(elementId, score) {
+            const element = document.getElementById(elementId);
+            
+            if (score === undefined || score === null) {
+                element.textContent = 'N/A';
+                element.className = 'score-circle';
+                return;
+            }
+            
+            element.textContent = Math.round(score);
+            
+            if (score >= 90) {
+                element.className = 'score-circle score-good';
+            } else if (score >= 50) {
+                element.className = 'score-circle score-average';
+            } else {
+                element.className = 'score-circle score-poor';
+            }
+        }
+    });
+</script>
+{% endblock %} 

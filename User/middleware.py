@@ -109,6 +109,10 @@ class UserAuthMiddleware:
                 print(f"Redirecting unauthenticated user from data_miner to login: {current_path}")
                 messages.warning(request, 'Please log in to access Data Miner')
                 return redirect('/accounts/login/?next=/data_miner/')
+            if current_path.startswith('/business_analytics/'):
+                print(f"Redirecting unauthenticated user from data_miner to login: {current_path}")
+                messages.warning(request, 'Please log in to access Data Miner')
+                return redirect('/accounts/login/?next=/business_analytics/')
                 
             # Check if this is a dashboard path
             if current_path == '/user/dashboard/' or current_path.startswith('/dashboard/'):

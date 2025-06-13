@@ -6,19 +6,6 @@ import logging
 import traceback
 import google.generativeai as genai
 from django.conf import settings
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
-import csv
-import tempfile
-import io
-import sys
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -71,13 +58,14 @@ def clean_dataframe(df):
         # Return original dataframe if cleaning fails
         return df
 
-def identify_columns_with_gemini(df, file_path=None):
+def identify_columns_with_gemini(df, file_path=None, platform_type=None):
     """
     Use Gemini AI ONLY for column identification in the dataset
     
     Args:
         df: pandas DataFrame containing the sales data
         file_path: path to the original file (optional)
+        platform_type: type of platform data comes from (optional)
         
     Returns:
         dict: Mapping of analysis categories to column names
@@ -100,6 +88,18 @@ def identify_columns_with_gemini(df, file_path=None):
         "transaction_type": None,  # Added transaction type field
         "_warnings": []
     }
+    
+    # Apply platform-specific mapping if specified
+    if platform_type:
+        logger.info(f"Using platform-specific column mapping for {platform_type}")
+        if platform_type == "amazon_b2b":
+            return map_amazon_b2b_columns(df_clean, column_mapping)
+        elif platform_type == "amazon":
+            return map_amazon_columns(df_clean, column_mapping)
+        elif platform_type == "flipkart":
+            return map_flipkart_columns(df_clean, column_mapping)
+        elif platform_type == "meesho":
+            return map_meesho_columns(df_clean, column_mapping)
     
     # If dataset is too small or appears to be a descriptor rather than data, warn the user
     if df.shape[0] < 3 or df.shape[1] < 3:
@@ -228,15 +228,15 @@ def identify_columns_with_gemini(df, file_path=None):
            - Usually text columns with product names or IDs
            - May contain terms like: product, item, sku, name, title, description
            
-        4. Customer Location/Region (specifically STATE-level location information)
-           - HIGHEST PRIORITY: Identify column containing STATE-level geographical information
-           - The system MUST prioritize columns with state names or codes over other location data
-           - If a column has "state" in its name, it should be selected with highest confidence
-           - If no specific "state" column exists, use any column labeled as "region" or that contains region-level data
+        4. Customer Location/Region (BILLING STATE ONLY)
+           - HIGHEST PRIORITY: Identify column containing BILLING STATE information only
+           - The system MUST prioritize columns with billing state or bill-to state names/codes
+           - Look for columns with names like: bill_to_state, billing_state, bt_state, state
+           - If a column has "bill" and "state" in its name, it should be selected with highest confidence
            - Look for text columns with unique values matching common state names or abbreviations
-           - May contain terms like: state, region, province, location, territory, area
-           - IMPORTANT: Prefer STATE information over city, country, or full address data
-           - If full addresses, check if they contain extractable state information
+           - IMPORTANT: Ignore shipping state, delivery state or any other location data
+           - ONLY map to columns that specifically contain billing state information
+           - If no billing state column exists, return null
            
         5. Sales Channel/Platform (marketplace or platform where sale occurred)
            - Text column with limited unique values representing sales channels
@@ -276,7 +276,7 @@ def identify_columns_with_gemini(df, file_path=None):
             "sales_amount": "Revenue",
             "order_date": "Date",
             "product_name": "Product",
-            "customer_location": "Region",
+            "customer_location": "Bill_To_State",
             "sales_channel": "Platform",
             "product_category": "Category",
             "order_id": "OrderID",
@@ -437,7 +437,9 @@ def identify_columns_heuristically(df):
         logger.info(f"Detected {marketplace_format} format data")
         
         # Apply marketplace-specific column mappings
-        if marketplace_format == "amazon":
+        if marketplace_format == "amazon_b2b":
+            return map_amazon_b2b_columns(df, column_mapping)
+        elif marketplace_format == "amazon":
             return map_amazon_columns(df, column_mapping)
         elif marketplace_format == "flipkart":
             return map_flipkart_columns(df, column_mapping)
@@ -693,12 +695,11 @@ def identify_columns_heuristically(df):
             "commodity", "article_name", "product_description", "item_sku", "product_sku", "merchandise_name"
         ],
         "customer_location": [
-            "location", "region", "country", "state", "city", "address", "ship to", "shipping address", "destination",
+            "location", "state", "city", "address", "ship to", "shipping address", "destination",
             "delivery_address", "customer_location", "customer_address", "ship_to_location", "delivery_location",
             "buyer_address", "postal_code", "zip", "zip_code", "pin_code", "pincode", "ship_country", "ship_state", 
             "shipping_region", "geo", "territory", "area", "province", "district", "county", "town", "place", 
-            "shipping_city", "shipping_state", "shipping_country", "shipping_zip", "shipping_postal", "billing_city",
-            "billing_state", "billing_country", "billing_zip", "billing_postal", "delivery_city", "delivery_region",
+            "shipping_city", "shipping_state", "shipping_country", "shipping_zip", "shipping_postal", "delivery_city", "delivery_region",
             "destination_address", "ship_to_address", "recipient_address", "recipient_location", "customer_region",
             "buyer_location", "buyer_region", "market", "marketplace", "delivery_zone"
         ],
@@ -832,9 +833,20 @@ def identify_columns_heuristically(df):
                 # Look for exact matches first (case-insensitive)
                 exact_matches = [col for i, col in enumerate(columns) if str(col).lower() == pattern]
                 if exact_matches:
-                    column_mapping[category] = exact_matches[0]
-                    logger.info(f"Found exact match for {category}: '{exact_matches[0]}'")
-                    break
+                    # For customer_location category, check if it has enough unique values (at least 10)
+                    if category == "customer_location":
+                        for col in exact_matches:
+                            unique_count = df[col].nunique()
+                            if unique_count >= 10:
+                                column_mapping[category] = col
+                                logger.info(f"Found exact match for {category}: '{col}' with {unique_count} unique values")
+                                break
+                            else:
+                                logger.info(f"Found exact match for {category}: '{col}' but only has {unique_count} unique values, looking for better candidates")
+                    else:
+                        column_mapping[category] = exact_matches[0]
+                        logger.info(f"Found exact match for {category}: '{exact_matches[0]}'")
+                        break
                 
             # If we found a match, continue to next category
             if column_mapping[category]:
@@ -844,9 +856,31 @@ def identify_columns_heuristically(df):
             for pattern in pattern_list:
                 partial_matches = [col for col in columns if pattern in str(col).lower()]
                 if partial_matches:
-                    column_mapping[category] = partial_matches[0]
-                    logger.info(f"Found partial match for {category}: '{partial_matches[0]}'")
-                    break
+                    # For customer_location category, check if it has enough unique values (at least 10)
+                    if category == "customer_location":
+                        best_col = None
+                        highest_unique_count = 0
+                        
+                        for col in partial_matches:
+                            unique_count = df[col].nunique()
+                            if unique_count >= 10 and unique_count > highest_unique_count:
+                                best_col = col
+                                highest_unique_count = unique_count
+                        
+                        if best_col:
+                            column_mapping[category] = best_col
+                            logger.info(f"Found partial match for {category}: '{best_col}' with {highest_unique_count} unique values")
+                            break
+                        elif partial_matches:  # Still use the first match if none have 10+ unique values
+                            col = partial_matches[0]
+                            unique_count = df[col].nunique()
+                            column_mapping[category] = col
+                            logger.info(f"Using partial match for {category}: '{col}' despite having only {unique_count} unique values")
+                            break
+                    else:
+                        column_mapping[category] = partial_matches[0]
+                        logger.info(f"Found partial match for {category}: '{partial_matches[0]}'")
+                        break
     
         # Use statistical features for unmatched columns
         
@@ -1241,7 +1275,7 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                 if ('status' in col_str or 'state' in col_str or 'type' in col_str) and col_str != 'state' and col_str != 'type':
                     # Check if column contains typical status values
                     unique_vals = df_analysis[col].astype(str).str.lower().unique()
-                    status_keywords = ['complete', 'cancel', 'return', 'refund', 'ship', 'deliver', 'process', 'pending']
+                    status_keywords = ['complete','Shipment','Shipped','Refund','Refunded','cancel', 'return', 'refund', 'ship', 'deliver', 'process', 'pending']
                     matches = sum(1 for val in unique_vals if any(keyword in val for keyword in status_keywords))
                     
                     # If at least some values match status keywords, use this column
@@ -1274,14 +1308,15 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
             replaced_mask = status_values.apply(lambda x: 'replace' in x or 'exchange' in x)
             replaced_count = replaced_mask.sum()
             
-            refunded_mask = status_values.apply(lambda x: 'refund' in x or 'money back' in x or 'chargeback' in x)
-            refunded_count = refunded_mask.sum()
+            # Combined mask for returns and refunds (treating them as the same)
+            returned_refunded_mask = status_values.apply(lambda x: 'return' in x or 'refund' in x or 'money back' in x or 'chargeback' in x)
+            returned_count = returned_refunded_mask.sum()
             
-            returned_mask = status_values.apply(lambda x: 'return' in x)
-            returned_count = returned_mask.sum()
+            # We're treating returns and refunds as the same, so set refunded_count to 0
+            refunded_count = 0
             
-            # Count regular orders (not cancelled, replaced, refunded, or returned)
-            problem_orders = cancelled_mask | replaced_mask | refunded_mask | returned_mask
+            # Count regular orders (not cancelled, replaced, or returned/refunded)
+            problem_orders = cancelled_mask | replaced_mask | returned_refunded_mask
             regular_count = (~problem_orders).sum()
             
             # Calculate total orders
@@ -1308,26 +1343,31 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                         analysis["order_metrics"]["replaced_value"] = replaced_value
                     
                     if refunded_count > 0:
-                        refunded_value = float(df_analysis.loc[refunded_mask, sales_col].sum())
+                        refunded_value = float(df_analysis.loc[returned_refunded_mask, sales_col].sum())
                         analysis["order_metrics"]["refunded_value"] = refunded_value
                     
                     if returned_count > 0:
-                        returned_value = float(df_analysis.loc[returned_mask, sales_col].sum())
+                        returned_value = float(df_analysis.loc[returned_refunded_mask, sales_col].sum())
                         analysis["order_metrics"]["returned_value"] = returned_value
                     
                     # Calculate rates based on total orders
                     if total_orders > 0:
-                        analysis["order_metrics"]["cancellation_rate"] = float(round((cancelled_count / total_orders) * 100, 2))
-                        analysis["order_metrics"]["replacement_rate"] = float(round((replaced_count / total_orders) * 100, 2))
-                        analysis["order_metrics"]["refund_rate"] = float(round((refunded_count / total_orders) * 100, 2))
-                        analysis["order_metrics"]["return_rate"] = float(round((returned_count / total_orders) * 100, 2))
+                        # Calculate successful orders (excluding cancelled orders)
+                        successful_orders = total_orders - cancelled_count
                         
-                        # Calculate overall issue rate
-                        problem_order_count = cancelled_count + replaced_count + refunded_count + returned_count
-                        analysis["order_metrics"]["issue_rate"] = float(round((problem_order_count / total_orders) * 100, 2))
+                        # Calculate rates using appropriate denominators
+                        analysis["order_metrics"]["cancellation_rate"] = float(round((cancelled_count / total_orders) * 100, 2))
+                        analysis["order_metrics"]["replacement_rate"] = float(round((replaced_count / successful_orders) * 100, 2))
+                        analysis["order_metrics"]["refund_rate"] = float(round((refunded_count / successful_orders) * 100, 2))
+                        analysis["order_metrics"]["return_rate"] = float(round((returned_count / successful_orders) * 100, 2))
+                        
+                        # Calculate overall issue rate (excluding cancellations from numerator)
+                        problem_order_count = replaced_count + refunded_count + returned_count
+                        analysis["order_metrics"]["issue_rate"] = float(round((problem_order_count / successful_orders) * 100, 2))
                     
                     logger.info(f"Order metrics - Regular: {regular_count}, Cancelled: {cancelled_count}, " +
-                               f"Replaced: {replaced_count}, Refunded: {refunded_count}, Returned: {returned_count}")
+                               f"Replaced: {replaced_count}, Refunded: {refunded_count}, Returned: {returned_count}, " +
+                               f"Successful orders: {successful_orders}")
                 except Exception as e:
                     logger.error(f"Error calculating transaction values: {e}")
             
@@ -1367,13 +1407,14 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                     status_values = df_analysis[transaction_type_col].astype(str).str.lower()
                     
                     # Identify returned transactions (match: return, refunded, returned)
-                    returned_mask = status_values.apply(lambda x: any(kw in x for kw in ['return', 'refund', 'refunded']))
+                    # Note: We're treating returns and refunds as the same
+                    returned_mask = status_values.apply(lambda x: any(kw in x for kw in ['return', 'refund', 'refunded', 'money back', 'chargeback']))
                     
                     # Calculate return amount
                     return_amount = df_analysis.loc[returned_mask, sales_col].sum()
                     analysis["summary"]["total_return_amount"] = float(return_amount) if not pd.isna(return_amount) else 0
                     
-                    logger.info(f"Total return amount: {analysis['summary']['total_return_amount']}")
+                    logger.info(f"Total return/refund amount: {analysis['summary']['total_return_amount']}")
                 except Exception as e:
                     logger.error(f"Error calculating total return amount: {e}")
                     analysis["summary"]["total_return_amount"] = 0
@@ -1636,10 +1677,11 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                     # Sort by sales amount and take top 10
                     top_products = product_sales.sort_values(by=sales_col, ascending=False).head(10)
                     
-                    # Sort by sales amount and take bottom 5
-                    bottom_products = product_sales.sort_values(by=sales_col, ascending=True).head(5)
+                    # Sort by sales amount and take bottom 10 for the bar chart
+                    bottom_products = product_sales.sort_values(by=sales_col, ascending=True).head(10)
                     
                     logger.info(f"Top products analysis: found {len(top_products)} products")
+                    logger.info(f"Bottom products analysis: found {len(bottom_products)} products")
                     
                     # Format product names to prevent excessively long strings
                     analysis["top_products"] = [
@@ -1651,6 +1693,7 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                         for _, row in top_products.iterrows()
                     ]
                     
+                    # Add formatted bottom products data
                     analysis["bottom_products"] = [
                         {
                             "name": str(row[product_col])[:50] + ('...' if len(str(row[product_col])) > 50 else ''),
@@ -1659,6 +1702,19 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                         }
                         for _, row in bottom_products.iterrows()
                     ]
+                    
+                    # Create bottom products bar chart data in a consistent format with other charts
+                    analysis["bottom_products_chart"] = {
+                        "labels": [str(row[product_col])[:20] + ('...' if len(str(row[product_col])) > 20 else '') for _, row in bottom_products.iterrows()],
+                        "data": [float(row[sales_col]) for _, row in bottom_products.iterrows()]
+                    }
+                    
+                    # Add additional visualization format that the frontend might expect
+                    analysis["bottom_product_distribution"] = {
+                        "labels": [str(row[product_col])[:20] + ('...' if len(str(row[product_col])) > 20 else '') for _, row in bottom_products.iterrows()],
+                        "data": [float(row[sales_col]) for _, row in bottom_products.iterrows()],
+                        "percentages": [float(round((row[sales_col] / product_sales[sales_col].sum()) * 100, 2)) for _, row in bottom_products.iterrows()]
+                    }
                     
                     # Calculate product diversity metrics
                     total_products = len(product_sales)
@@ -1717,6 +1773,15 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                 temp_df = df_analysis[[region_col, sales_col]].dropna()
                 
                 if len(temp_df) > 0:
+                    # Check if this column has at least 10 different values (likely to be a state column)
+                    unique_regions = temp_df[region_col].nunique()
+                    if unique_regions < 10:
+                        logger.warning(f"Selected region column '{region_col}' has only {unique_regions} unique values, which may not be a proper state column")
+                        # We'll still use it, but with a warning
+                        analysis["summary"]["warnings"] = analysis["summary"].get("warnings", []) + [
+                            f"Selected region column has only {unique_regions} unique values, which may not represent states"
+                        ]
+                    
                     # Group by region and sum sales using pandas
                     region_sales = temp_df.groupby(region_col)[sales_col].sum().reset_index()
                     
@@ -1727,12 +1792,17 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                     # Sort by sales amount and take top 10
                     top_regions = region_sales.sort_values(by=sales_col, ascending=False).head(10)
                     
+                    # Sort by sales amount and take bottom 10 for the bar chart
+                    bottom_regions = region_sales.sort_values(by=sales_col, ascending=True).head(10)
+                    
                     # Calculate percentage of total sales for each region
                     total_region_sales = region_sales[sales_col].sum()
                     if total_region_sales > 0:
                         top_regions['percentage'] = (top_regions[sales_col] / total_region_sales) * 100
+                        bottom_regions['percentage'] = (bottom_regions[sales_col] / total_region_sales) * 100
                     
                     logger.info(f"Top regions analysis: found {len(top_regions)} regions")
+                    logger.info(f"Bottom regions analysis: found {len(bottom_regions)} regions")
                     
                     analysis["top_regions"] = [
                         {
@@ -1743,6 +1813,30 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                         }
                         for _, row in top_regions.iterrows()
                     ]
+                    
+                    # Add bottom regions data
+                    analysis["bottom_regions"] = [
+                        {
+                            "name": str(row[region_col])[:50],
+                            "value": float(row[sales_col]),
+                            "transaction_count": int(row['transaction_count']),
+                            "percentage": float(row.get('percentage', 0))
+                        }
+                        for _, row in bottom_regions.iterrows()
+                    ]
+                    
+                    # Create bottom regions bar chart data in a consistent format with other charts
+                    analysis["bottom_regions_chart"] = {
+                        "labels": [str(row[region_col])[:20] for _, row in bottom_regions.iterrows()],
+                        "data": [float(row[sales_col]) for _, row in bottom_regions.iterrows()]
+                    }
+                    
+                    # Add additional visualization format that the frontend might expect
+                    analysis["bottom_region_distribution"] = {
+                        "regions": [str(row[region_col])[:20] for _, row in bottom_regions.iterrows()],
+                        "values": [float(row[sales_col]) for _, row in bottom_regions.iterrows()],
+                        "percentages": [float(row.get('percentage', 0)) for _, row in bottom_regions.iterrows()]
+                    }
                     
                     # Get the top selling state
                     if len(region_sales) > 0:
@@ -1821,6 +1915,104 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                 analysis["summary"]["warnings"] = analysis["summary"].get("warnings", []) + [
                     f"Error analyzing regions: {str(e)}"
                 ]
+                
+        # Top products analysis using pandas
+        product_col = column_mapping.get('product_name')
+        if product_col and product_col in df_analysis.columns and sales_col and sales_col in df_analysis.columns:
+            try:
+                # Create a temporary dataframe for analysis with non-null products and sales
+                temp_df = df_analysis[[product_col, sales_col]].dropna()
+                
+                if len(temp_df) > 0:
+                    # Group by product and sum sales using pandas
+                    product_sales = temp_df.groupby(product_col)[sales_col].sum().reset_index()
+                    
+                    # Add count of transactions per product
+                    product_count = temp_df.groupby(product_col).size().reset_index(name='transaction_count')
+                    product_sales = pd.merge(product_sales, product_count, on=product_col)
+                    
+                    # Sort by sales amount and take top 10
+                    top_products = product_sales.sort_values(by=sales_col, ascending=False).head(10)
+                    
+                    # Sort by sales amount and take bottom 10
+                    bottom_products = product_sales.sort_values(by=sales_col, ascending=True).head(10)
+                    
+                    logger.info(f"Top products analysis: found {len(top_products)} products")
+                    logger.info(f"Bottom products analysis: found {len(bottom_products)} products")
+                    
+                    # Format product names to prevent excessively long strings
+                    analysis["top_products"] = [
+                        {
+                            "name": str(row[product_col])[:50] + ('...' if len(str(row[product_col])) > 50 else ''),
+                            "value": float(row[sales_col]),
+                            "transaction_count": int(row['transaction_count'])
+                        }
+                        for _, row in top_products.iterrows()
+                    ]
+                    
+                    analysis["bottom_products"] = [
+                        {
+                            "name": str(row[product_col])[:50] + ('...' if len(str(row[product_col])) > 50 else ''),
+                            "value": float(row[sales_col]),
+                            "transaction_count": int(row['transaction_count'])
+                        }
+                        for _, row in bottom_products.iterrows()
+                    ]
+                    
+                    # Create bottom products bar chart data
+                    analysis["bottom_products_chart"] = {
+                        "labels": [str(row[product_col])[:20] + ('...' if len(str(row[product_col])) > 20 else '') for _, row in bottom_products.iterrows()],
+                        "data": [float(row[sales_col]) for _, row in bottom_products.iterrows()]
+                    }
+                    
+                    # Calculate product diversity metrics
+                    total_products = len(product_sales)
+                    analysis["summary"]["total_products"] = total_products
+                    
+                    # Calculate concentration metrics
+                    if total_products > 0:
+                        # Top 5 products as percentage of total sales
+                        top5_sales = product_sales.nlargest(5, sales_col)[sales_col].sum()
+                        top5_pct = (top5_sales / product_sales[sales_col].sum()) * 100
+                        analysis["summary"]["top5_products_pct"] = float(round(top5_pct, 2))
+                        
+                        # Format for visualization - prepare product distribution data
+                        all_products_total = product_sales[sales_col].sum()
+                        
+                        # Get top 5 products for chart
+                        top5_products = product_sales.nlargest(5, sales_col)
+                        top5_list = [
+                            {
+                                "name": str(row[product_col])[:30] + ('...' if len(str(row[product_col])) > 30 else ''),
+                                "value": float(row[sales_col]),
+                                "percentage": float(round((row[sales_col] / all_products_total) * 100, 2))
+                            }
+                            for _, row in top5_products.iterrows()
+                        ]
+                        
+                        # Add "Others" category for remaining products
+                        others_value = all_products_total - top5_sales
+                        if others_value > 0:
+                            top5_list.append({
+                                "name": "Others",
+                                "value": float(others_value),
+                                "percentage": float(round((others_value / all_products_total) * 100, 2))
+                            })
+                        
+                        # Add pie chart data
+                        analysis["product_distribution"] = {
+                            "labels": [item["name"] for item in top5_list],
+                            "data": [item["value"] for item in top5_list],
+                            "percentages": [item["percentage"] for item in top5_list]
+                        }
+                        
+                        logger.info(f"Product concentration: top 5 products = {top5_pct:.2f}% of sales")
+            except Exception as e:
+                logger.error(f"Error analyzing top products: {e}")
+                logger.error(traceback.format_exc())
+                analysis["summary"]["warnings"] = analysis["summary"].get("warnings", []) + [
+                    f"Error analyzing products: {str(e)}"
+                ]
         
         # Sales channel analysis using pandas
         channel_col = column_mapping.get('sales_channel')
@@ -1892,17 +2084,12 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
         if platform_type:
             platform_type = platform_type.lower().strip()
             
-            if platform_type == 'amazon':
-                analysis["platform_specific"] = analyze_amazon_data(df_analysis, column_mapping)
-            elif platform_type == 'flipkart':
-                analysis["platform_specific"] = analyze_flipkart_data(df_analysis, column_mapping)
-            elif platform_type == 'meesho':
-                analysis["platform_specific"] = analyze_meesho_data(df_analysis, column_mapping)
-            else:
-                logger.warning(f"Unknown platform type: {platform_type}")
-                analysis["summary"]["warnings"] = analysis["summary"].get("warnings", []) + [
-                    f"Unknown platform type: {platform_type}"
-                ]
+            # Set an empty dictionary for platform_specific
+            # All platform types will use the default analysis behavior
+            analysis["platform_specific"] = {}
+            
+            # Log the platform type but don't perform platform-specific analysis
+            logger.info(f"Platform type '{platform_type}' detected, using default analysis behavior")
                 
         # Create a consolidated key metrics section with all the requested metrics
         key_metrics = {}
@@ -1978,6 +2165,44 @@ def analyze_sales_data(df, column_mapping, platform_type=None):
                 {"label": "Lowest Product Sales", "value": key_metrics.get("lowest_product_value", 0), "category": "products", "format": "currency"}
             ]
         }
+        
+        # Apply platform-specific analyses
+        if not platform_type:
+            # Auto-detect marketplace format if platform_type is not provided
+            platform_type = detect_marketplace_format(df_analysis)
+            logger.info(f"Auto-detected platform type: {platform_type}")
+        
+        # Apply format-specific column mapping if needed
+        if platform_type == "amazon" and '_detected_format' not in column_mapping:
+            column_mapping = map_amazon_columns(df_analysis, column_mapping)
+            logger.info("Applied Amazon-specific column mapping")
+        elif platform_type == "amazon_b2b" and '_detected_format' not in column_mapping:
+            column_mapping = map_amazon_b2b_columns(df_analysis, column_mapping)
+            logger.info("Applied Amazon B2B-specific column mapping")
+        elif platform_type == "flipkart" and '_detected_format' not in column_mapping:
+            column_mapping = map_flipkart_columns(df_analysis, column_mapping)
+            logger.info("Applied Flipkart-specific column mapping")
+        elif platform_type == "meesho" and '_detected_format' not in column_mapping:
+            column_mapping = map_meesho_columns(df_analysis, column_mapping)
+            logger.info("Applied Meesho-specific column mapping")
+        
+        # Apply platform-specific analysis based on the platform type
+        if platform_type == "amazon":
+            logger.info("Running Amazon-specific analysis")
+            analysis["platform_specific"] = analyze_amazon_data(df_analysis, column_mapping)
+        elif platform_type == "amazon_b2b":
+            logger.info("Running Amazon B2B-specific analysis")
+            analysis["platform_specific"] = analyze_amazon_b2b_data(df_analysis, column_mapping)
+        elif platform_type == "flipkart":
+            logger.info("Running Flipkart-specific analysis")
+            analysis["platform_specific"] = analyze_flipkart_data(df_analysis, column_mapping)
+        elif platform_type == "meesho":
+            logger.info("Running Meesho-specific analysis")
+            analysis["platform_specific"] = analyze_meesho_data(df_analysis, column_mapping)
+        else:
+            # Use default analysis behavior for unknown platform types
+            analysis["platform_specific"] = {}
+            logger.info(f"No specific analysis for platform type: {platform_type}")
         
     except Exception as e:
         logger.error(f"Error in analyze_sales_data: {e}")
@@ -2133,12 +2358,12 @@ def analyze_amazon_data(df, column_mapping):
             replacement_count = status_values.apply(lambda x: 'replace' in x).sum()
             amazon_analysis["replacement_orders"] = int(replacement_count)
             
-            # Refunds
-            refund_count = status_values.apply(lambda x: 'refund' in x).sum()
-            amazon_analysis["refunds"] = int(refund_count)
+            # Combined returns and refunds (treating them as the same)
+            return_refund_count = status_values.apply(lambda x: 'return' in x or 'refund' in x).sum()
+            amazon_analysis["refunds"] = int(return_refund_count)
             
-            # Regular orders (not cancelled, replaced, or refunded)
-            regular_count = len(status_values) - cancelled_count - replacement_count - refund_count
+            # Regular orders (not cancelled, replaced, or returned/refunded)
+            regular_count = len(status_values) - cancelled_count - replacement_count - return_refund_count
             if regular_count < 0:  # Handle overlapping categories
                 regular_count = 0
             
@@ -2147,7 +2372,7 @@ def analyze_amazon_data(df, column_mapping):
                 {"name": "Regular", "count": int(regular_count)},
                 {"name": "Cancelled", "count": int(cancelled_count)},
                 {"name": "Replaced", "count": int(replacement_count)},
-                {"name": "Refunded", "count": int(refund_count)}
+                {"name": "Returned/Refunded", "count": int(return_refund_count)}
             ]
             
             # Calculate total orders
@@ -2157,9 +2382,9 @@ def analyze_amazon_data(df, column_mapping):
             if total_orders > 0:
                 amazon_analysis["cancellation_rate"] = float(round((cancelled_count / total_orders) * 100, 2))
                 amazon_analysis["replacement_rate"] = float(round((replacement_count / total_orders) * 100, 2))
-                amazon_analysis["refund_rate"] = float(round((refund_count / total_orders) * 100, 2))
+                amazon_analysis["refund_rate"] = float(round((return_refund_count / total_orders) * 100, 2))
             
-            logger.info(f"Amazon order statuses - Cancelled: {cancelled_count}, Replacements: {replacement_count}, Refunds: {refund_count}")
+            logger.info(f"Amazon order statuses - Cancelled: {cancelled_count}, Replacements: {replacement_count}, Refunds: {return_refund_count}")
         
         # Shipping category analysis
         shipping_col = None
@@ -2235,7 +2460,8 @@ def analyze_flipkart_data(df, column_mapping):
             
             # Count different order statuses
             shipped_count = status_values.apply(lambda x: 'ship' in x or 'delivered' in x).sum()
-            returned_count = status_values.apply(lambda x: 'return' in x).sum()
+            # Combine returns and refunds (treating them as the same)
+            returned_count = status_values.apply(lambda x: 'return' in x or 'refund' in x).sum()
             cancelled_count = status_values.apply(lambda x: 'cancel' in x).sum()
             
             # Add these to the analysis dictionary
@@ -2262,7 +2488,7 @@ def analyze_flipkart_data(df, column_mapping):
                 for _, row in status_counts.head(10).iterrows()  # Limit to top 10 statuses
             ]
             
-            logger.info(f"Flipkart order counts - Shipped: {shipped_count}, Returned: {returned_count}, Cancelled: {cancelled_count}")
+            logger.info(f"Flipkart order counts - Shipped: {shipped_count}, Returned/Refunded: {returned_count}, Cancelled: {cancelled_count}")
         
         # Payment method analysis
         payment_col = None
@@ -2433,7 +2659,8 @@ def analyze_meesho_data(df, column_mapping):
         "payment_methods": [],
         "order_statuses": [],
         "category_performance": [],
-        "pricing_tiers": []
+        "pricing_tiers": [],
+        "return_timing_analysis": {}  # New section for return timing analysis
     }
     
     try:
@@ -2509,6 +2736,96 @@ def analyze_meesho_data(df, column_mapping):
             
             logger.info(f"Meesho order status - Returned: {returned_count}, Acceptance rate: {meesho_analysis['order_acceptance_rate']}%")
         
+        # Check if cancel_return_date column is mapped
+        cancel_return_date_col = column_mapping.get('cancel_return_date')
+        order_date_col = column_mapping.get('order_date')
+        source_type_col = 'record_type'  # Changed from '__source_type__' to avoid frontend detection
+        
+        # Analyze return timing if we have both dates
+        if cancel_return_date_col and order_date_col and source_type_col in df.columns:
+            logger.info(f"Analyzing return timing with columns: {cancel_return_date_col} and {order_date_col}")
+            
+            # Filter for return records
+            return_df = df[df[source_type_col] == 'return'].copy()
+            
+            if not return_df.empty:
+                # Ensure date columns are datetime type
+                try:
+                    return_df['order_date'] = pd.to_datetime(return_df[order_date_col], errors='coerce')
+                    return_df['cancel_return_date'] = pd.to_datetime(return_df[cancel_return_date_col], errors='coerce')
+                    
+                    # Calculate days to return
+                    return_df['days_to_return'] = (return_df['cancel_return_date'] - return_df['order_date']).dt.days
+                    
+                    # Filter out invalid values
+                    valid_return_df = return_df[return_df['days_to_return'] >= 0].copy()
+                    
+                    if not valid_return_df.empty:
+                        # Calculate return timing statistics
+                        avg_return_days = valid_return_df['days_to_return'].mean()
+                        median_return_days = valid_return_df['days_to_return'].median()
+                        max_return_days = valid_return_df['days_to_return'].max()
+                        
+                        # Group returns by time periods
+                        return_periods = [
+                            (0, 3, 'Within 3 days'),
+                            (4, 7, '4-7 days'),
+                            (8, 14, '8-14 days'),
+                            (15, 30, '15-30 days'),
+                            (31, float('inf'), 'Over 30 days')
+                        ]
+                        
+                        period_counts = []
+                        for min_days, max_days, label in return_periods:
+                            count = len(valid_return_df[(valid_return_df['days_to_return'] >= min_days) & 
+                                                        (valid_return_df['days_to_return'] <= max_days)])
+                            period_counts.append({
+                                "period": label,
+                                "count": int(count),
+                                "percentage": float(round((count / len(valid_return_df)) * 100, 2)) if len(valid_return_df) > 0 else 0
+                            })
+                        
+                        # Add to analysis
+                        meesho_analysis["return_timing_analysis"] = {
+                            "average_days_to_return": float(round(avg_return_days, 2)),
+                            "median_days_to_return": float(round(median_return_days, 2)),
+                            "max_days_to_return": int(max_return_days),
+                            "return_periods": period_counts
+                        }
+                        
+                        # Check if there's correlation between return timing and order value
+                        sales_col = column_mapping.get('sales_amount')
+                        if sales_col and sales_col in valid_return_df.columns:
+                            # Ensure sales amount is numeric
+                            if not pd.api.types.is_numeric_dtype(valid_return_df[sales_col]):
+                                valid_return_df[sales_col] = pd.to_numeric(valid_return_df[sales_col], errors='coerce')
+                            
+                            # Calculate correlation
+                            correlation = valid_return_df[['days_to_return', sales_col]].corr().iloc[0, 1]
+                            meesho_analysis["return_timing_analysis"]["correlation_with_order_value"] = float(round(correlation, 3))
+                            
+                            # Group by return period and calculate average order value
+                            value_by_period = []
+                            for i, period_data in enumerate(period_counts):
+                                min_days, max_days, _ = return_periods[i]
+                                period_df = valid_return_df[(valid_return_df['days_to_return'] >= min_days) & 
+                                                           (valid_return_df['days_to_return'] <= max_days)]
+                                
+                                if not period_df.empty:
+                                    avg_value = period_df[sales_col].mean()
+                                    value_by_period.append({
+                                        "period": period_data["period"],
+                                        "average_order_value": float(round(avg_value, 2))
+                                    })
+                            
+                            meesho_analysis["return_timing_analysis"]["order_value_by_return_period"] = value_by_period
+                        
+                        logger.info(f"Return timing analysis completed: Avg={avg_return_days:.2f} days, Median={median_return_days:.2f} days")
+                
+                except Exception as e:
+                    logger.error(f"Error in return timing analysis: {e}")
+                    logger.error(traceback.format_exc())
+        
         # Category performance analysis
         category_col = column_mapping.get('product_category')
         sales_col = column_mapping.get('sales_amount')
@@ -2550,6 +2867,28 @@ def analyze_meesho_data(df, column_mapping):
                 ]
                 
                 logger.info(f"Category performance analysis completed for {len(top_categories)} categories")
+                
+                # Calculate category return rates if we have return data
+                if source_type_col in df.columns and status_col:
+                    # Create a dataframe with category, source type, and status
+                    cat_return_df = df[[category_col, source_type_col, status_col]].copy()
+                    
+                    # Calculate returns by category
+                    returns_by_category = {}
+                    for category_name in top_categories['category'].unique():
+                        cat_orders = cat_return_df[cat_return_df[category_col] == category_name]
+                        if not cat_orders.empty:
+                            cat_returns = cat_orders[(cat_orders[source_type_col] == 'return') | 
+                                                    (cat_orders[status_col].astype(str).str.lower().str.contains('return'))]
+                            
+                            return_rate = (len(cat_returns) / len(cat_orders)) * 100 if len(cat_orders) > 0 else 0
+                            returns_by_category[category_name] = round(return_rate, 2)
+                    
+                    # Add return rates to category performance
+                    for i, category_data in enumerate(meesho_analysis["category_performance"]):
+                        category_name = category_data["name"]
+                        if category_name in returns_by_category:
+                            meesho_analysis["category_performance"][i]["return_rate"] = float(returns_by_category[category_name])
         
         # Price tier analysis
         price_col = column_mapping.get('unit_price')
@@ -2611,6 +2950,10 @@ def detect_marketplace_format(df):
     # Convert column names to lowercase strings for easier pattern matching
     columns_str = ' '.join([str(col).lower() for col in df.columns])
     
+    # Check for Amazon B2B Report specific columns
+    amazon_b2b_indicators = ['seller gstin', 'invoice number', 'transaction type', 'shipment id', 'item description', 'asin', 'bill from state', 'ship to state', 'invoice amount', 'igst tax']
+    amazon_b2b_count = sum(1 for indicator in amazon_b2b_indicators if indicator in columns_str)
+    
     # Check for Amazon-specific columns
     amazon_indicators = ['asin', 'amazon', 'fulfillment', 'seller sku', 'merchant', 'order id', 'marketplace']
     amazon_count = sum(1 for indicator in amazon_indicators if indicator in columns_str)
@@ -2624,7 +2967,9 @@ def detect_marketplace_format(df):
     meesho_count = sum(1 for indicator in meesho_indicators if indicator in columns_str)
     
     # Determine the marketplace with the most indicators
-    if amazon_count >= 3 and amazon_count > flipkart_count and amazon_count > meesho_count:
+    if amazon_b2b_count >= 5:
+        return "amazon_b2b"
+    elif amazon_count >= 3 and amazon_count > flipkart_count and amazon_count > meesho_count:
         return "amazon"
     elif flipkart_count >= 3 and flipkart_count > amazon_count and flipkart_count > meesho_count:
         return "flipkart"
@@ -2637,7 +2982,9 @@ def detect_marketplace_format(df):
         for col in df.select_dtypes(include=['object']).columns:
             sample = ' '.join(df[col].astype(str).head(5).str.lower().tolist())
             
-            if 'amazon' in sample and 'seller central' in sample:
+            if 'amazon' in sample and 'b2b' in sample:
+                return "amazon_b2b"
+            elif 'amazon' in sample and 'seller central' in sample:
                 return "amazon"
             elif 'flipkart' in sample and ('seller hub' in sample or 'seller portal' in sample):
                 return "flipkart"
@@ -2707,6 +3054,30 @@ def map_amazon_columns(df, column_mapping):
     # Add detection info
     column_mapping['_detected_format'] = 'amazon'
     
+    # Customer location mapping with unique value check
+    # Look for state/location column which might be available in Amazon data
+    location_columns = ['state', 'ship-state', 'shipping state', 'bill-state', 'billing state', 'buyer state']
+    best_col = None
+    highest_unique_count = 0
+
+    for location_col in location_columns:
+        if location_col in columns_lower:
+            unique_count = df[columns_lower[location_col]].nunique()
+            if unique_count >= 10 and unique_count > highest_unique_count:
+                best_col = columns_lower[location_col]
+                highest_unique_count = unique_count
+            elif not best_col:
+                # Keep track of a fallback option even if < 10 unique values
+                best_col = columns_lower[location_col]
+                highest_unique_count = unique_count
+
+    if best_col:
+        column_mapping['customer_location'] = best_col
+        if highest_unique_count >= 10:
+            logger.info(f"Identified Amazon state column '{best_col}' with {highest_unique_count} unique values")
+        else:
+            logger.info(f"Using Amazon state column '{best_col}' despite having only {highest_unique_count} unique values")
+    
     return column_mapping
 
 def map_flipkart_columns(df, column_mapping):
@@ -2761,6 +3132,30 @@ def map_flipkart_columns(df, column_mapping):
     # Add detection info
     column_mapping['_detected_format'] = 'flipkart'
     
+    # Customer location mapping with unique value check
+    # Customer location might be available in Flipkart data
+    location_columns = ['state', 'buyer state', 'shipping state', 'billing state', 'delivery state']
+    best_col = None
+    highest_unique_count = 0
+
+    for location_col in location_columns:
+        if location_col in columns_lower:
+            unique_count = df[columns_lower[location_col]].nunique()
+            if unique_count >= 10 and unique_count > highest_unique_count:
+                best_col = columns_lower[location_col]
+                highest_unique_count = unique_count
+            elif not best_col:
+                # Keep track of a fallback option even if < 10 unique values
+                best_col = columns_lower[location_col]
+                highest_unique_count = unique_count
+
+    if best_col:
+        column_mapping['customer_location'] = best_col
+        if highest_unique_count >= 10:
+            logger.info(f"Identified Flipkart state column '{best_col}' with {highest_unique_count} unique values")
+        else:
+            logger.info(f"Using Flipkart state column '{best_col}' despite having only {highest_unique_count} unique values")
+    
     return column_mapping
 
 def map_meesho_columns(df, column_mapping):
@@ -2811,16 +3206,125 @@ def map_meesho_columns(df, column_mapping):
         if order_col in columns_lower:
             column_mapping['order_id'] = columns_lower[order_col]
             break
+            
+    # Cancel/Return date mapping - Specific to returns dataset
+    cancel_return_columns = ['cancel date', 'return date', 'cancellation date', 'return_date', 'cancel_date', 
+                            'cancel_return_date', 'return_cancel_date', 'cancelled_date', 'returned_date']
+    for cancel_col in cancel_return_columns:
+        if cancel_col in columns_lower:
+            column_mapping['cancel_return_date'] = columns_lower[cancel_col]
+            logger.info(f"Found cancel/return date column: {columns_lower[cancel_col]}")
+            break
     
     # Customer location is often available in Meesho data
     location_columns = ['state', 'delivery state', 'shipping state', 'customer state', 'shipping address']
+    best_col = None
+    highest_unique_count = 0
+
     for location_col in location_columns:
         if location_col in columns_lower:
-            column_mapping['customer_location'] = columns_lower[location_col]
-            break
+            unique_count = df[columns_lower[location_col]].nunique()
+            if unique_count >= 10 and unique_count > highest_unique_count:
+                best_col = columns_lower[location_col]
+                highest_unique_count = unique_count
+            elif not best_col and location_col in columns_lower:
+                # Keep track of a fallback option even if < 10 unique values
+                if best_col is None:
+                    best_col = columns_lower[location_col]
+                    highest_unique_count = unique_count
+
+    if best_col:
+        column_mapping['customer_location'] = best_col
+        if highest_unique_count >= 10:
+            logger.info(f"Identified Meesho state column '{best_col}' with {highest_unique_count} unique values")
+        else:
+            logger.info(f"Using Meesho state column '{best_col}' despite having only {highest_unique_count} unique values")
     
     # Add detection info
     column_mapping['_detected_format'] = 'meesho'
+    
+    return column_mapping
+
+def map_amazon_b2b_columns(df, column_mapping):
+    """
+    Map columns for Amazon B2B format sales data (GST invoice reports)
+    
+    Args:
+        df: pandas DataFrame with Amazon B2B GST report data
+        column_mapping: Initial column mapping dict
+        
+    Returns:
+        dict: Updated column mapping
+    """
+    columns_lower = {str(col).lower(): col for col in df.columns}
+    
+    # Order date mapping
+    date_columns = ['order date', 'invoice date', 'shipment date']
+    for date_col in date_columns:
+        if date_col in columns_lower:
+            column_mapping['order_date'] = columns_lower[date_col]
+            break
+    
+    # Sales amount mapping
+    amount_columns = ['invoice amount', 'total amount', 'principal amount']
+    for amount_col in amount_columns:
+        if amount_col in columns_lower:
+            column_mapping['sales_amount'] = columns_lower[amount_col]
+            break
+    
+    # Product mapping
+    product_columns = ['item description', 'asin', 'sku', 'hsn/sac']
+    for product_col in product_columns:
+        if product_col in columns_lower:
+            column_mapping['product_name'] = columns_lower[product_col]
+            break
+    
+    # Quantity mapping
+    if 'quantity' in columns_lower:
+        column_mapping['quantity'] = columns_lower['quantity']
+    
+    # Order ID mapping
+    order_columns = ['order id', 'shipment id']
+    for order_col in order_columns:
+        if order_col in columns_lower:
+            column_mapping['order_id'] = columns_lower[order_col]
+            break
+    
+    # Transaction type for identifying B2B vs B2C
+    if 'transaction type' in columns_lower:
+        column_mapping['transaction_type'] = columns_lower['transaction type']
+    
+    # Sales channel mapping
+    if 'fulfillment channel' in columns_lower:
+        column_mapping['sales_channel'] = columns_lower['fulfillment channel']
+    
+    # Customer location mapping
+    location_columns = ['ship to state', 'bill to state']
+    best_col = None
+    highest_unique_count = 0
+
+    for location_col in location_columns:
+        if location_col in columns_lower:
+            unique_count = df[columns_lower[location_col]].nunique()
+            if unique_count >= 5 and unique_count > highest_unique_count:
+                best_col = columns_lower[location_col]
+                highest_unique_count = unique_count
+            elif not best_col:
+                best_col = columns_lower[location_col]
+                highest_unique_count = unique_count
+
+    if best_col:
+        column_mapping['customer_location'] = best_col
+        
+    # Add customer_id (GSTIN) if available
+    gstin_columns = ['customer ship to gstid', 'customer bill to gstid']
+    for gstin_col in gstin_columns:
+        if gstin_col in columns_lower:
+            column_mapping['customer_id'] = columns_lower[gstin_col]
+            break
+    
+    # Add detection info
+    column_mapping['_detected_format'] = 'amazon_b2b'
     
     return column_mapping
 
@@ -2864,6 +3368,14 @@ def compute_sales_metrics(df, column_mapping):
         # Create a clean copy of the dataframe for analysis
         df_analysis = df.copy()
         
+        # Standardize source type field name
+        if '__source_type__' in df_analysis.columns:
+            df_analysis['record_type'] = df_analysis['__source_type__']
+            df_analysis.drop('__source_type__', axis=1, inplace=True)
+        
+        # Check if this is a Meesho dataset with source_type column (from merged files)
+        is_meesho_merged = 'record_type' in df_analysis.columns and 'cancel_return_date' in column_mapping
+        
         # 1. Total Sales & Average Sales - Sum of all numeric sales_amount values
         sales_col = column_mapping.get('sales_amount')
         if sales_col and sales_col in df_analysis.columns:
@@ -2871,8 +3383,13 @@ def compute_sales_metrics(df, column_mapping):
             if not pd.api.types.is_numeric_dtype(df_analysis[sales_col]):
                 df_analysis[sales_col] = pd.to_numeric(df_analysis[sales_col], errors='coerce')
             
-            # Calculate total sales (sum of all valid sales amounts)
-            valid_sales = df_analysis[sales_col].dropna()
+            # For Meesho merged data, use only sales records for total sales calculation
+            if is_meesho_merged:
+                sales_records = df_analysis[df_analysis['record_type'] == 'sale']
+                valid_sales = sales_records[sales_col].dropna()
+            else:
+                valid_sales = df_analysis[sales_col].dropna()
+            
             metrics["total_sales"] = float(valid_sales.sum()) if len(valid_sales) > 0 else 0
             
             # Calculate average sales (mean of all valid, non-zero sales amounts)
@@ -2883,219 +3400,327 @@ def compute_sales_metrics(df, column_mapping):
         
         # 2. Return & Cancellation Rates, Total Return Amount, Total Replacements
         transaction_col = column_mapping.get('transaction_type')
-        total_orders = len(df_analysis)
         
-        if transaction_col and transaction_col in df_analysis.columns and total_orders > 0:
-            # Convert to string and lowercase for consistent analysis
-            status_values = df_analysis[transaction_col].astype(str).str.lower()
+        # Special handling for Meesho merged data
+        if is_meesho_merged:
+            # Count total orders from sales records
+            sales_records = df_analysis[df_analysis['record_type'] == 'sale']
+            total_orders = len(sales_records)
             
-            # Identify returned transactions (match: return, refunded, returned)
-            returned_mask = status_values.apply(lambda x: any(kw in x for kw in ['return', 'refund', 'refunded']))
-            returned_count = returned_mask.sum()
+            # Count returns from return records
+            return_records = df_analysis[df_analysis['record_type'] == 'return']
+            returned_count = len(return_records)
             
-            # Identify cancelled transactions (match: cancelled, canceled, cxl)
-            cancelled_mask = status_values.apply(lambda x: any(kw in x for kw in ['cancel', 'cancelled', 'canceled', 'cxl']))
-            cancelled_count = cancelled_mask.sum()
+            # Calculate return rate
+            if total_orders > 0:
+                metrics["return_rate"] = float(round((returned_count / total_orders) * 100, 2))
             
-            # Calculate replacement count (match: replacement, replaced, exchange)
-            replacement_mask = status_values.apply(lambda x: any(kw in x for kw in ['replace', 'replaced', 'replacement', 'exchange']))
-            metrics["total_replacements"] = int(replacement_mask.sum())
+            # Use cancel_return_date to identify cancellations vs returns if status column exists
+            status_col = None
+            for col in df_analysis.columns:
+                col_str = str(col).lower()
+                if 'status' in col_str or 'state' in col_str or 'order_state' in col_str:
+                    status_col = col
+                    break
             
-            # Calculate return amount if sales column exists
-            if sales_col and sales_col in df_analysis.columns:
-                return_amount = df_analysis.loc[returned_mask, sales_col].sum()
-                metrics["total_return_amount"] = float(return_amount) if not pd.isna(return_amount) else 0
-            
-            # Improve return rate calculation by using successful orders as denominator
-            # Successful orders = total orders - cancelled orders
-            successful_orders = total_orders - cancelled_count
-            
-            # Calculate improved return rate (returns / successful orders)
-            if successful_orders > 0:
-                metrics["return_rate"] = round((returned_count / successful_orders) * 100, 1)
-            else:
-                metrics["return_rate"] = 0
+            if status_col:
+                # Convert to string and lowercase for consistent analysis
+                return_records['status_lower'] = return_records[status_col].astype(str).str.lower()
                 
-            # Cancellation rate remains the same (cancellations / total orders)
-            metrics["cancellation_rate"] = round((cancelled_count / total_orders) * 100, 1) if total_orders > 0 else 0
+                # Count cancellations (match: cancelled, canceled, cxl)
+                cancelled_mask = return_records['status_lower'].apply(lambda x: any(kw in x for kw in ['cancel', 'cancelled', 'canceled', 'cxl']))
+                cancelled_count = cancelled_mask.sum()
+                
+                # Calculate cancellation rate
+                if total_orders > 0:
+                    metrics["cancellation_rate"] = float(round((cancelled_count / total_orders) * 100, 2))
+                
+                # Count replacements (match: replacement, replaced, exchange)
+                replacement_mask = return_records['status_lower'].apply(lambda x: any(kw in x for kw in ['replace', 'replaced', 'replacement', 'exchange']))
+                metrics["total_replacements"] = int(replacement_mask.sum())
             
-            logger.info(f"Return rate: {metrics['return_rate']}%, Cancellation rate: {metrics['cancellation_rate']}%")
-            logger.info(f"Total return amount: {metrics['total_return_amount']}, Total replacements: {metrics['total_replacements']}")
-            logger.info(f"Calculation details: Returns={returned_count}, Cancellations={cancelled_count}, Successful orders={successful_orders}, Total orders={total_orders}")
+            # Calculate total return amount if sales_col exists
+            if sales_col and sales_col in return_records.columns:
+                if not pd.api.types.is_numeric_dtype(return_records[sales_col]):
+                    return_records[sales_col] = pd.to_numeric(return_records[sales_col], errors='coerce')
+                
+                metrics["total_return_amount"] = float(return_records[sales_col].sum())
+            
+            logger.info(f"Meesho return analysis - Return rate: {metrics['return_rate']}%, " +
+                      f"Cancellation rate: {metrics['cancellation_rate']}%, " +
+                      f"Total return amount: {metrics['total_return_amount']}")
+            
+        elif transaction_col and transaction_col in df_analysis.columns:
+            total_orders = len(df_analysis)
+            
+            if total_orders > 0:
+                try:
+                    # Convert to string and lowercase for consistent analysis
+                    status_values = df_analysis[transaction_col].astype(str).str.lower()
+                    
+                    # Identify returned transactions (match: return, refund, refunded, rto)
+                    returned_mask = status_values.apply(lambda x: any(kw in x for kw in ['return', 'refund', 'refunded', 'rto']))
+                    returned_count = returned_mask.sum()
+                    
+                    # Identify cancelled transactions (match: cancelled, canceled, cxl)
+                    cancelled_mask = status_values.apply(lambda x: any(kw in x for kw in ['cancel', 'cancelled', 'canceled', 'cxl']))
+                    cancelled_count = cancelled_mask.sum()
+                    
+                    # Calculate replacement count (match: replacement, replaced, exchange)
+                    replacement_mask = status_values.apply(lambda x: any(kw in x for kw in ['replace', 'replaced', 'replacement', 'exchange']))
+                    metrics["total_replacements"] = int(replacement_mask.sum())
+                    
+                    # Calculate rates as percentages
+                    metrics["return_rate"] = float(round((returned_count / total_orders) * 100, 2))
+                    metrics["cancellation_rate"] = float(round((cancelled_count / total_orders) * 100, 2))
+                    
+                    # Calculate total return amount
+                    if sales_col and sales_col in df_analysis.columns:
+                        # Make sure sales column is numeric
+                        if not pd.api.types.is_numeric_dtype(df_analysis[sales_col]):
+                            df_analysis[sales_col] = pd.to_numeric(df_analysis[sales_col], errors='coerce')
+                        
+                        # Sum sales amount for returned transactions
+                        return_sales = df_analysis.loc[returned_mask, sales_col].fillna(0)
+                        metrics["total_return_amount"] = float(return_sales.sum())
+                    
+                    logger.info(f"Return analysis - Return rate: {metrics['return_rate']}%, " +
+                               f"Cancellation rate: {metrics['cancellation_rate']}%, " +
+                               f"Total return amount: {metrics['total_return_amount']}")
+                
+                except Exception as e:
+                    logger.error(f"Error analyzing transaction types: {e}")
+                    logger.error(traceback.format_exc())
         
-        # 3. Total Regions (States only) - Enhanced state column detection
+        # 3. Total Unique Regions - Count unique customer locations (usually states)
         location_col = column_mapping.get('customer_location')
-        
-        # If no location column is found, implement a multi-level fallback strategy
-        if not location_col or location_col not in df_analysis.columns:
-            # Priority 1: Find columns explicitly named with 'state'
-            state_columns = [col for col in df_analysis.columns if 'state' in str(col).lower()]
-            
-            if state_columns:
-                # Prefer 'state' over anything containing 'state' as substring
-                exact_state_columns = [col for col in state_columns if str(col).lower() == 'state']
-                if exact_state_columns:
-                    location_col = exact_state_columns[0]
-                    logger.info(f"Found explicit state column: '{location_col}'")
-                else:
-                    # Next best: columns with 'state' in the name
-                    location_col = state_columns[0]
-                    logger.info(f"Using column '{location_col}' with 'state' in name as fallback")
-            else:
-                # Priority 2: Look for region, province, or territory columns
-                for keyword in ['region', 'province', 'territory']:
-                    region_columns = [col for col in df_analysis.columns if keyword in str(col).lower()]
-                    if region_columns:
-                        location_col = region_columns[0]
-                        logger.info(f"Using column '{location_col}' with '{keyword}' in name as fallback")
-                        break
-                
-                # Priority 3: Look for address or location columns that might contain state info
-                if not location_col:
-                    for keyword in ['address', 'location', 'place', 'area']:
-                        addr_columns = [col for col in df_analysis.columns if keyword in str(col).lower()]
-                        if addr_columns:
-                            # Sample the first few values to see if they might contain state information
-                            for addr_col in addr_columns:
-                                sample_values = df_analysis[addr_col].dropna().astype(str).head(5)
-                                # Check if any value potentially contains a state
-                                for val in sample_values:
-                                    state = extract_state(val)
-                                    if state:
-                                        location_col = addr_col
-                                        logger.info(f"Using address column '{location_col}' that contains state information")
-                                        break
-                                if location_col:
-                                    break
-                        if location_col:
-                            break
-        
         if location_col and location_col in df_analysis.columns:
-            # Extract state information from location column
-            locations = df_analysis[location_col].astype(str)
+            try:
+                # Convert location to string and extract state information
+                locations = df_analysis[location_col].astype(str)
+                
+                # Try to extract state from addresses
+                if locations.str.len().max() > 20:  # If some values are long, they might be full addresses
+                    cleaned_locations = locations.apply(extract_state)
+                else:
+                    cleaned_locations = locations
+                
+                # Count unique valid locations (excluding empty, NA, etc.)
+                valid_locations = cleaned_locations[cleaned_locations.str.len() > 1]
+                metrics["total_regions"] = int(valid_locations.nunique())
+                
+                logger.info(f"Total unique regions: {metrics['total_regions']}")
             
-            # Helper function to extract state from various formats
-            def extract_state(location_str):
-                # Skip empty or short values
-                if pd.isna(location_str) or len(location_str) < 2:
-                    return None
-                
-                location_str = str(location_str).strip()
-                
-                # Common Indian and US state abbreviations to help with detection
-                us_state_codes = {"AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", 
-                                 "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", 
-                                 "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", 
-                                 "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "DC"}
-                
-                indian_state_codes = {"AP", "AR", "AS", "BR", "CG", "GA", "GJ", "HR", "HP", "JH", "KA", "KL", "MP", 
-                                     "MH", "MN", "ML", "MZ", "NL", "OD", "PB", "RJ", "SK", "TN", "TS", "TR", "UP", 
-                                     "UK", "WB", "AN", "CH", "DN", "DD", "DL", "JK", "LA", "LD", "PY"}
-                
-                # Direct match - If it's already a state code
-                if len(location_str) == 2:
-                    if location_str.upper() in us_state_codes or location_str.upper() in indian_state_codes:
-                        return location_str.upper()
-                
-                # Direct state name check for common names
-                import re
-                
-                # Check for common state format in addresses (City, STATE zip)
-                # US format: City, ST 12345
-                us_address_pattern = re.compile(r'[,\s]+([A-Z]{2})\s+\d{5}(?:-\d{4})?')
-                match = us_address_pattern.search(location_str)
-                if match and match.group(1) in us_state_codes:
-                    return match.group(1)
-                
-                # Indian format: often has state name followed by PIN code
-                indian_pin_pattern = re.compile(r'([a-zA-Z\s]+)[\s,-]+\d{6}')
-                match = indian_pin_pattern.search(location_str)
-                if match:
-                    state_part = match.group(1).strip()
-                    if len(state_part) > 2 and len(state_part) < 30:  # Reasonable length for state name
-                        return state_part
-                
-                # Try to extract state from comma-separated address
-                parts = location_str.split(',')
-                if len(parts) > 1:
-                    # For US addresses, state is typically second-to-last part
-                    # For Indian addresses, state might appear in various positions
-                    for part in reversed(parts):  # Check from end to beginning
-                        clean_part = re.sub(r'\d{5,6}(?:-\d{4})?', '', part).strip()
-                        if 2 <= len(clean_part) <= 30:  # Reasonable length for state name/code
-                            # Check if it looks like a state code
-                            if len(clean_part) == 2 and clean_part.upper() in (us_state_codes | indian_state_codes):
-                                return clean_part.upper()
-                            # Otherwise return the potential state name
-                            if not any(char.isdigit() for char in clean_part):
-                                return clean_part
-                
-                # If it's a single word and looks like a state name (no numbers, reasonable length)
-                if " " not in location_str and not any(char.isdigit() for char in location_str) and len(location_str) <= 30:
-                    return location_str
-                
-                # Last resort - if it contains a recognizable state name somewhere in the string
-                common_state_names = ["alabama", "alaska", "arizona", "arkansas", "california", "colorado", 
-                                     "connecticut", "delaware", "florida", "georgia", "hawaii", "idaho", 
-                                     "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", 
-                                     "maine", "maryland", "massachusetts", "michigan", "minnesota", 
-                                     "mississippi", "missouri", "montana", "nebraska", "nevada", 
-                                     "hampshire", "jersey", "mexico", "york", "carolina", "dakota", 
-                                     "ohio", "oklahoma", "oregon", "pennsylvania", "rhode", "tennessee", 
-                                     "texas", "utah", "vermont", "virginia", "washington", "wisconsin", "wyoming",
-                                     # Indian states
-                                     "andhra", "arunachal", "assam", "bihar", "chhattisgarh", "goa", "gujarat", 
-                                     "haryana", "himachal", "jharkhand", "karnataka", "kerala", "madhya", 
-                                     "maharashtra", "manipur", "meghalaya", "mizoram", "nagaland", "odisha", 
-                                     "punjab", "rajasthan", "sikkim", "tamil", "telangana", "tripura", "uttar", 
-                                     "uttarakhand", "bengal", "delhi"]
-                
-                location_lower = location_str.lower()
-                for state in common_state_names:
-                    if state in location_lower:
-                        # Find the full word containing this state name
-                        words = re.findall(r'\b\w*' + state + r'\w*\b', location_lower)
-                        if words:
-                            return words[0].capitalize()
-                
-                return None
-            
-            # Try to extract states from location data
-            states = []
-            for loc in locations:
-                state = extract_state(loc)
-                if state:
-                    states.append(state)
-            
-            # Count unique states after normalization
-            if states:
-                # Normalize state names (remove extra spaces, lowercase)
-                normalized_states = [s.lower().strip() for s in states if s]
-                metrics["total_regions"] = len(set(normalized_states))
-                logger.info(f"Found {metrics['total_regions']} unique regions/states")
+            except Exception as e:
+                logger.error(f"Error counting unique regions: {e}")
+                logger.error(traceback.format_exc())
         
-        # 4. Total Number of Products
+        # 4. Total Number of Products - Count unique product names
         product_col = column_mapping.get('product_name')
         if product_col and product_col in df_analysis.columns:
-            # Count unique non-empty product values
-            unique_products = df_analysis[product_col].dropna().astype(str)
-            # Filter out empty strings
-            unique_products = unique_products[unique_products.str.strip() != '']
-            metrics["total_products"] = len(unique_products.unique())
-            logger.info(f"Found {metrics['total_products']} unique products")
-        
-        # Ensure all values are properly formatted
-        for key in metrics:
-            if isinstance(metrics[key], float):
-                # Round all floats to 2 decimal places
-                metrics[key] = round(metrics[key], 2)
-            # Ensure no None values in output
-            if metrics[key] is None:
-                metrics[key] = 0
-        
-        return metrics
-        
+            try:
+                products = df_analysis[product_col].astype(str)
+                valid_products = products[products.str.len() > 1]
+                metrics["total_products"] = int(valid_products.nunique())
+                
+                logger.info(f"Total unique products: {metrics['total_products']}")
+            
+            except Exception as e:
+                logger.error(f"Error counting unique products: {e}")
+                logger.error(traceback.format_exc())
+    
     except Exception as e:
         logger.error(f"Error computing sales metrics: {e}")
         logger.error(traceback.format_exc())
-        return metrics
+    
+    # Ensure all values are serializable
+    metrics = ensure_json_serializable(metrics)
+    
+    return metrics
+def extract_state(location_str):
+    """Helper function to extract state information from addresses"""
+    # Skip empty or short values
+    if not isinstance(location_str, str) or len(location_str) < 3:
+        return location_str
+                
+    # Common Indian state names
+    indian_states = [
+        'andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 
+        'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka',
+        'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram',
+        'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana',
+        'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'andaman and nicobar',
+        'chandigarh', 'dadra and nagar haveli', 'daman and diu', 'delhi', 'jammu and kashmir',
+        'ladakh', 'lakshadweep', 'puducherry'
+    ]
+    
+    # Normalize input
+    location_lower = location_str.lower().strip()
+    
+    # First try direct state matching
+    for state in indian_states:
+        if state in location_lower:
+            return state.title()
+    
+    # Common state abbreviations
+    state_abbr = {
+        'ap': 'Andhra Pradesh', 'ar': 'Arunachal Pradesh', 'as': 'Assam',
+        'br': 'Bihar', 'cg': 'Chhattisgarh', 'ga': 'Goa', 'gj': 'Gujarat',
+        'hr': 'Haryana', 'hp': 'Himachal Pradesh', 'jh': 'Jharkhand',
+        'ka': 'Karnataka', 'kl': 'Kerala', 'mp': 'Madhya Pradesh',
+        'mh': 'Maharashtra', 'mn': 'Manipur', 'ml': 'Meghalaya',
+        'mz': 'Mizoram', 'nl': 'Nagaland', 'or': 'Odisha', 'pb': 'Punjab',
+        'rj': 'Rajasthan', 'sk': 'Sikkim', 'tn': 'Tamil Nadu', 'tg': 'Telangana',
+        'tr': 'Tripura', 'up': 'Uttar Pradesh', 'uk': 'Uttarakhand',
+        'wb': 'West Bengal', 'dl': 'Delhi', 'jk': 'Jammu and Kashmir',
+        'la': 'Ladakh', 'ch': 'Chandigarh', 'py': 'Puducherry'
+    }
+    
+    # Look for abbreviations with surrounding word boundaries
+    for abbr, state in state_abbr.items():
+        if f" {abbr} " in f" {location_lower} " or f" {abbr}," in location_lower:
+            return state
+    
+    # Return the original string if no match found
+    return location_str
+def analyze_amazon_b2b_data(df, column_mapping):
+    """
+    Analyze Amazon B2B-specific sales data from GST reports
+    
+    Args:
+        df: pandas DataFrame containing the Amazon B2B sales data
+        column_mapping: dict mapping analysis categories to column names
+        
+    Returns:
+        dict: Amazon B2B-specific analysis results
+    """
+    logger.info("Running Amazon B2B-specific analysis")
+    
+    amazon_b2b_analysis = {
+        "b2b_sales": 0,
+        "b2c_sales": 0,
+        "cancelled_orders": 0,
+        "refunds": 0,
+        "total_tax_amount": 0,
+        "fulfillment_methods": [],
+        "order_statuses": [],
+        "top_states": []
+    }
+    
+    try:
+        # Sales amount analysis
+        sales_col = column_mapping.get('sales_amount')
+        if sales_col and sales_col in df.columns:
+            # Ensure sales column is numeric
+            if not pd.api.types.is_numeric_dtype(df[sales_col]):
+                df[sales_col] = pd.to_numeric(df[sales_col], errors='coerce')
+            
+            # Handle transaction types
+            transaction_type_col = column_mapping.get('transaction_type')
+            if transaction_type_col and transaction_type_col in df.columns:
+                # Identify different transaction types
+                shipment_mask = df[transaction_type_col].astype(str).str.lower() == 'shipment'
+                cancel_mask = df[transaction_type_col].astype(str).str.lower() == 'cancel'
+                refund_mask = df[transaction_type_col].astype(str).str.lower() == 'refund'
+                
+                # Calculate sales by transaction type
+                shipment_sales = df.loc[shipment_mask, sales_col].sum()
+                cancelled_sales = df.loc[cancel_mask, sales_col].sum()
+                refund_sales = df.loc[refund_mask, sales_col].sum()
+                
+                # Store in analysis results
+                amazon_b2b_analysis["b2b_sales"] = float(shipment_sales)
+                amazon_b2b_analysis["cancelled_sales"] = float(cancelled_sales)
+                amazon_b2b_analysis["refunds"] = float(refund_sales)
+                
+                # Count of each transaction type
+                amazon_b2b_analysis["shipped_orders"] = int(shipment_mask.sum())
+                amazon_b2b_analysis["cancelled_orders"] = int(cancel_mask.sum())
+                amazon_b2b_analysis["refunded_orders"] = int(refund_mask.sum())
+                
+                # Chart data for transaction types
+                amazon_b2b_analysis["transaction_types"] = {
+                    "labels": ["Shipment", "Cancel", "Refund"],
+                    "data": [int(shipment_mask.sum()), int(cancel_mask.sum()), int(refund_mask.sum())]
+                }
+                
+                # Chart data for transaction values
+                amazon_b2b_analysis["transaction_values"] = {
+                    "labels": ["Shipment", "Cancel", "Refund"],
+                    "data": [float(shipment_sales), float(cancelled_sales), float(refund_sales)]
+                }
+            else:
+                # If no transaction type column, assume all are shipments/sales
+                total_sales = df[sales_col].sum()
+                amazon_b2b_analysis["b2b_sales"] = float(total_sales)
+        
+        # Tax analysis
+        tax_col = None
+        for col in df.columns:
+            col_str = str(col).lower()
+            if 'total tax amount' in col_str or 'tax' in col_str:
+                tax_col = col
+                break
+        
+        if tax_col:
+            # Ensure tax column is numeric
+            if not pd.api.types.is_numeric_dtype(df[tax_col]):
+                df[tax_col] = pd.to_numeric(df[tax_col], errors='coerce')
+            
+            total_tax = df[tax_col].sum()
+            amazon_b2b_analysis["total_tax_amount"] = float(total_tax)
+            
+            # Calculate tax percentage of total sales if sales column exists
+            if sales_col and sales_col in df.columns:
+                total_sales = df[sales_col].sum()
+                if total_sales > 0:
+                    tax_percentage = (total_tax / total_sales) * 100
+                    amazon_b2b_analysis["tax_percentage"] = float(round(tax_percentage, 2))
+        
+        # Fulfillment channel analysis
+        channel_col = column_mapping.get('sales_channel')
+        if channel_col and channel_col in df.columns:
+            # Group by fulfillment channel
+            channel_counts = df[channel_col].value_counts().reset_index()
+            channel_counts.columns = ['channel', 'count']
+            
+            # Store top channels
+            amazon_b2b_analysis["fulfillment_methods"] = [
+                {
+                    "name": str(row['channel']),
+                    "count": int(row['count']),
+                    "percentage": float(round((row['count'] / len(df)) * 100, 2))
+                }
+                for _, row in channel_counts.head(5).iterrows()
+            ]
+        
+        # State-wise sales analysis
+        state_col = column_mapping.get('customer_location')
+        if state_col and state_col in df.columns and sales_col and sales_col in df.columns:
+            # Group by state and sum sales
+            state_sales = df.groupby(state_col)[sales_col].sum().reset_index()
+            state_sales.columns = ['state', 'sales']
+            state_sales = state_sales.sort_values('sales', ascending=False)
+            
+            # Store top states by sales
+            amazon_b2b_analysis["top_states"] = [
+                {
+                    "name": str(row['state']),
+                    "sales": float(row['sales']),
+                    "percentage": float(round((row['sales'] / df[sales_col].sum()) * 100, 2)) if df[sales_col].sum() > 0 else 0
+                }
+                for _, row in state_sales.head(10).iterrows()
+            ]
+            
+            # Create chart data for states
+            amazon_b2b_analysis["state_sales"] = {
+                "labels": [str(row['state']) for _, row in state_sales.head(5).iterrows()],
+                "data": [float(row['sales']) for _, row in state_sales.head(5).iterrows()]
+            }
+    
+    except Exception as e:
+        logger.error(f"Error in Amazon B2B-specific analysis: {e}")
+        logger.error(traceback.format_exc())
+        amazon_b2b_analysis["error"] = str(e)
+    
+    return amazon_b2b_analysis

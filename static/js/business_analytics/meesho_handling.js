@@ -56,8 +56,17 @@ function showMeeshoUploadModal() {
                     <div class="mb-3">
                         <p class="text-xs text-gray-600 mb-2">Please upload two files – (1) Sales Data, and (2) Sales Return/Cancellation Data.</p>
                         <div class="bg-yellow-50 p-2 rounded-md text-xs text-yellow-700 mb-2">
-                            <p class="font-medium">Both files are required for Meesho analysis.</p>
-                            <p>The system will merge the data and analyze them together.</p>
+                            <p class="font-medium">Important file requirements:</p>
+                            <ul class="list-disc ml-4 mt-1 space-y-1">
+                                <li>Both files should have identical column structures</li>
+                                <li>The Returns file must include an additional <span class="font-medium">'cancel_return_date'</span> column</li>
+                                <li>The system will merge both datasets for comprehensive analysis</li>
+                            </ul>
+                        </div>
+                        <div class="bg-blue-50 p-2 rounded-md text-xs text-blue-700 mt-2">
+                            <p class="font-medium">File Format Example:</p>
+                            <p class="mt-1">Sales file: order_id, product, price, quantity, etc.</p>
+                            <p>Returns file: order_id, product, price, quantity, <span class="underline">cancel_return_date</span>, etc.</p>
                         </div>
                     </div>
                     
@@ -248,28 +257,21 @@ function submitMeeshoFiles() {
         // Show success message
         showMeeshoUploadStatus('Analysis completed successfully!', 'success');
         
-        // Update debug info
-        updateDebugInfo('Meesho analysis completed successfully', metrics);
-        
-        // Enable debug display if it exists
-        const debugInfoContainer = document.getElementById('debugInfoContainer');
-        if (debugInfoContainer) {
-            debugInfoContainer.classList.remove('hidden');
-        }
-        
-        // Close the modal after a delay to show success message
-        setTimeout(() => {
-            meeshoModal.classList.add('hidden');
-        }, 1500);
-        
-        // Reset button state
+        // Hide loading state
         meeshoButtonText.textContent = 'Calculate Metrics';
         meeshoSpinner.classList.add('hidden');
         meeshoCalculateButton.disabled = false;
+        
+        // Close the modal after a small delay
+        setTimeout(() => {
+            meeshoModal.classList.add('hidden');
+        }, 1500);
     })
     .catch(error => {
-        console.error('❌ Error calculating Meesho metrics:', error);
-        showMeeshoUploadStatus('Error: ' + error.message, 'error');
+        console.error('❌ Error:', error);
+        
+        // Show error message
+        showMeeshoUploadStatus(`Error: ${error.message}`, 'error');
         
         // Reset button state
         meeshoButtonText.textContent = 'Calculate Metrics';
@@ -279,7 +281,9 @@ function submitMeeshoFiles() {
 }
 
 /**
- * Helper function to format file size
+ * Formats file size to a human-readable string
+ * @param {number} bytes - File size in bytes
+ * @returns {string} - Formatted file size
  */
 function formatFileSize(bytes) {
     if (bytes < 1024) return bytes + ' bytes';
@@ -288,43 +292,126 @@ function formatFileSize(bytes) {
 }
 
 /**
- * Shows upload status messages in the Meesho modal
+ * Displays upload status messages
+ * @param {string} message - Status message to display
+ * @param {string} type - Message type (success, error, info)
  */
 function showMeeshoUploadStatus(message, type) {
-    const statusElement = document.getElementById('meeshoUploadStatus');
-    if (statusElement) {
-        statusElement.textContent = message;
-        
-        // Set appropriate styling based on message type
-        if (type === 'error') {
-            statusElement.className = 'mb-2 p-2 text-xs bg-red-50 text-red-600 rounded-md';
-        } else if (type === 'success') {
-            statusElement.className = 'mb-2 p-2 text-xs bg-green-50 text-green-600 rounded-md';
-        } else {
-            statusElement.className = 'mb-2 p-2 text-xs bg-blue-50 text-blue-600 rounded-md';
-        }
-        
-        statusElement.classList.remove('hidden');
-    }
+    const statusDiv = document.getElementById('meeshoUploadStatus');
+    if (!statusDiv) return;
+    
+    statusDiv.textContent = message;
+    statusDiv.className = 'mb-2 py-1 px-2 rounded text-xs';
+    statusDiv.classList.remove('hidden');
+    
+    if (type === 'error') statusDiv.classList.add('bg-red-100', 'text-red-700');
+    else if (type === 'success') statusDiv.classList.add('bg-green-100', 'text-green-700');
+    else statusDiv.classList.add('bg-blue-100', 'text-blue-700');
 }
 
 /**
- * Helper function to update debug information display
- * (This should be defined in the main analysis.js file)
+ * Updates debug information on the UI
+ * @param {string} status - Status message
+ * @param {Object} data - Debug data to display
  */
 function updateDebugInfo(status, data) {
-    // If the main analysis.js file has these elements, update them
-    const requestStatus = document.getElementById('requestStatus');
-    const rawResponseDebug = document.getElementById('rawResponseDebug');
+    const debugStatus = document.getElementById('meeshoDebugStatus');
+    const debugData = document.getElementById('meeshoDebugData');
     
-    if (requestStatus) {
-        requestStatus.innerHTML = `<span class="text-green-600">✓ ${status}</span>`;
-    }
-    
-    if (rawResponseDebug) {
-        rawResponseDebug.textContent = JSON.stringify(data, null, 2);
-    }
+    if (debugStatus) debugStatus.textContent = status;
+    if (debugData) debugData.textContent = JSON.stringify(data, null, 2);
 }
+
+// Establish compatibility with the dashboard's functions
+document.addEventListener('DOMContentLoaded', function() {
+    // Connect with dashboard's Meesho handling functions if they exist
+    if (typeof window.handleMeeshoUpload === 'function') {
+        console.log('🔗 Connected with dashboard Meesho handler');
+        
+        // Override the original function to call the dashboard's handler
+        window.originalSubmitMeeshoFiles = submitMeeshoFiles;
+        
+        // Create a new version that can integrate with the dashboard handler
+        window.submitMeeshoFiles = function() {
+            // Get required elements
+            const salesFileInput = document.getElementById('salesFileInput');
+            const returnsFileInput = document.getElementById('returnsFileInput');
+            const meeshoUploadStatus = document.getElementById('meeshoUploadStatus');
+            const meeshoButtonText = document.getElementById('meeshoButtonText');
+            const meeshoSpinner = document.getElementById('meeshoSpinner');
+            const meeshoCalculateButton = document.getElementById('meeshoCalculateButton');
+            const meeshoModal = document.getElementById('meeshoUploadModal');
+            
+            console.log('🟢 Meesho file submission initiated');
+            
+            // Basic validation
+            if (!salesFileInput || !returnsFileInput) {
+                console.error('❌ File input elements not found');
+                if (meeshoUploadStatus) {
+                    showMeeshoUploadStatus('System error: File input elements not found', 'error');
+                } else {
+                    alert('System error: File input elements not found');
+                }
+                return;
+            }
+            
+            // Validate that both files are selected
+            if (!salesFileInput.files.length && !returnsFileInput.files.length) {
+                console.error('❌ Both sales and returns files are missing');
+                showMeeshoUploadStatus('Please upload both sales and returns files.', 'error');
+                return;
+            } else if (!salesFileInput.files.length) {
+                console.error('❌ Sales file is missing');
+                showMeeshoUploadStatus('Please upload the Sales Data file.', 'error');
+                return;
+            } else if (!returnsFileInput.files.length) {
+                console.error('❌ Returns file is missing');
+                showMeeshoUploadStatus('Please upload the Returns/Cancellations Data file.', 'error');
+                return;
+            }
+            
+            // Show loading state
+            if (meeshoButtonText) meeshoButtonText.textContent = 'Processing...';
+            if (meeshoSpinner) meeshoSpinner.classList.remove('hidden');
+            if (meeshoCalculateButton) meeshoCalculateButton.disabled = true;
+            showMeeshoUploadStatus('Uploading files and calculating metrics...', 'info');
+            
+            // Create form data for API request
+            const formData = new FormData();
+            formData.append('sales_file', salesFileInput.files[0]);
+            formData.append('returns_file', returnsFileInput.files[0]);
+            formData.append('platform_type', 'meesho');
+            
+            // Use the dashboard's handler if available
+            try {
+                window.handleMeeshoUpload(formData);
+                console.log('✅ Using dashboard Meesho handler');
+                
+                // Show success message
+                showMeeshoUploadStatus('Files submitted for analysis...', 'success');
+                
+                // Hide loading state after a short delay
+                setTimeout(() => {
+                    if (meeshoButtonText) meeshoButtonText.textContent = 'Calculate Metrics';
+                    if (meeshoSpinner) meeshoSpinner.classList.add('hidden');
+                    if (meeshoCalculateButton) meeshoCalculateButton.disabled = false;
+                    
+                    // Close the modal after processing
+                    if (meeshoModal) meeshoModal.classList.add('hidden');
+                }, 1500);
+                
+            } catch (error) {
+                console.error('❌ Error using dashboard handler:', error);
+                
+                // Fall back to original function
+                console.log('⚠️ Falling back to original implementation');
+                window.originalSubmitMeeshoFiles();
+            }
+        };
+    } else {
+        console.log('ℹ️ Dashboard Meesho handler not found, using standalone implementation');
+    }
+});
 
 // Export functions for use in other modules
 window.meeshoHandler = {

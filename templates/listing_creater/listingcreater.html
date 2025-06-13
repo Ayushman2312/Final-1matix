@@ -46,7 +46,15 @@
                             <!-- Platform Selection -->
                             <div class="mb-1">
                                 <label for="platform" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Platform</label>
-                                <input type="text" id="platform" value="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
+                                <select id="platform" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border">
+                                    {% if platforms %}
+                                        {% for platform in platforms %}
+                                            <option value="{{ platform }}">{{ platform }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="Amazon">Amazon</option>
+                                    {% endif %}
+                                </select>
                             </div>
                             
                             <!-- Brand Name -->
@@ -167,7 +175,7 @@
                     <div class="mb-3">
                         <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Title As Per Platform</label>
                         <div class="flex items-center gap-2">
-                            <input type="text" id="amazon-title" placeholder="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
+                            <input type="text" id="amazon-title" name="amazon-title" placeholder="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
                             <button onclick="copyToClipboard('amazon-title', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
                                 <svg class="copy-icon h-5 w-5" fill="#3C4043" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
@@ -184,7 +192,7 @@
                     <div class="mb-3">
                         <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Title As Per Expert</label>
                         <div class="flex items-center gap-2">
-                            <input type="text" id="expert-title" placeholder="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
+                            <input type="text" id="expert-title" name="expert-title" placeholder="Expert Title" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
                             <button onclick="copyToClipboard('expert-title', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
                                 <svg class="copy-icon h-5 w-5" fill="#3C4043" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path>
@@ -289,39 +297,78 @@
 
                     // Call this function when results are fetched successfully
                     function handleSuccessfulResults(response) {
+                        console.log('Handling successful results:', response);
                         showCopyButtons();
                         
                         // Update input fields with response data
-                        document.getElementById('amazon-title').value = response.amazon_title || '';
-                        document.getElementById('expert-title').value = response.expert_title || '';
-                        document.getElementById('description').value = response.description || '';
-                        document.getElementById('bullet-points').value = response.bullet_points || '';
-                        document.getElementById('search-terms').value = response.search_terms || '';
+                        const amazonTitle = document.getElementById('amazon-title');
+                        const expertTitle = document.getElementById('expert-title');
+                        const description = document.getElementById('description');
+                        const bulletPoints = document.getElementById('bullet-points');
+                        const searchTerms = document.getElementById('search-terms');
+                        
+                        // Log if any elements are missing
+                        if (!amazonTitle) console.warn('amazon-title element not found');
+                        if (!expertTitle) console.warn('expert-title element not found');
+                        if (!description) console.warn('description element not found');
+                        if (!bulletPoints) console.warn('bullet-points element not found');
+                        if (!searchTerms) console.warn('search-terms element not found');
+                        
+                        // Set values with null checks
+                        if (amazonTitle) amazonTitle.value = response.amazon_title || '';
+                        if (expertTitle) expertTitle.value = response.expert_title || '';
+                        if (description) description.value = response.description || '';
+                        
+                        // Handle bullet points which could be array or string
+                        if (bulletPoints) {
+                            if (Array.isArray(response.bullet_points)) {
+                                bulletPoints.value = response.bullet_points.join('\n') || '';
+                            } else {
+                                bulletPoints.value = response.bullet_points || '';
+                            }
+                        }
+                        
+                        if (searchTerms) searchTerms.value = response.search_terms || '';
 
                         // Update popup content
-                        document.getElementById('popup-amazon-title').textContent = response.amazon_title || '';
-                        document.getElementById('popup-expert-title').textContent = response.expert_title || '';
-                        document.getElementById('popup-description').textContent = response.description || '';
+                        const popupAmazonTitle = document.getElementById('popup-amazon-title');
+                        const popupExpertTitle = document.getElementById('popup-expert-title');
+                        const popupDescription = document.getElementById('popup-description');
+                        const popupBulletPoints = document.getElementById('popup-bullet-points');
+                        const popupSearchTerms = document.getElementById('popup-search-terms');
+                        
+                        if (popupAmazonTitle) popupAmazonTitle.textContent = response.amazon_title || '';
+                        if (popupExpertTitle) popupExpertTitle.textContent = response.expert_title || '';
+                        if (popupDescription) popupDescription.textContent = response.description || '';
                         
                         // Handle bullet points in popup
-                        const bulletPointsContainer = document.getElementById('popup-bullet-points');
-                        bulletPointsContainer.innerHTML = ''; // Clear existing content
-                        if (response.bullet_points) {
-                            const points = response.bullet_points.split('\n');
+                        if (popupBulletPoints) {
+                            popupBulletPoints.innerHTML = ''; // Clear existing content
+                            let points = [];
+                            
+                            if (Array.isArray(response.bullet_points)) {
+                                points = response.bullet_points;
+                            } else if (typeof response.bullet_points === 'string') {
+                                points = response.bullet_points.split('\n');
+                            }
+                            
                             points.forEach(point => {
-                                if (point.trim()) {
+                                if (point && point.trim()) {
                                     const p = document.createElement('p');
-                                    p.textContent = point;
-                                    bulletPointsContainer.appendChild(p);
+                                    p.textContent = point.trim();
+                                    popupBulletPoints.appendChild(p);
                                 }
                             });
                         }
                         
-                        document.getElementById('popup-search-terms').textContent = response.search_terms || '';
+                        if (popupSearchTerms) popupSearchTerms.textContent = response.search_terms || '';
 
                         // Show results popup
-                        document.getElementById('resultsPopup').classList.remove('hidden');
-                        document.getElementById('resultsPopup').classList.add('flex');
+                        const resultsPopup = document.getElementById('resultsPopup');
+                        if (resultsPopup) {
+                            resultsPopup.classList.remove('hidden');
+                            resultsPopup.classList.add('flex');
+                        }
 
                         // Hide loading spinner if present
                         const spinner = document.getElementById('loading-spinner');
@@ -446,6 +493,7 @@
                     if (uploadTextId) {
                         document.getElementById(uploadTextId).textContent = input.files[0].name;
                     }
+                    console.log(`File loaded: ${input.id} - ${input.files[0].name} (${Math.round(input.files[0].size/1024)}KB)`);
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -480,6 +528,13 @@
             popup.classList.add('hidden');
             popup.classList.remove('flex');
         }
+        
+        // Function to close the image popup
+        function closeImagePopup() {
+            const popup = document.getElementById('imagePopup');
+            popup.classList.add('hidden');
+            popup.classList.remove('flex');
+        }
 
         // Function to collect all form data
         function collectFormData() {
@@ -494,28 +549,46 @@
                 productPhotos: []
             };
 
-            // Collect competitor URLs
+            // Collect competitor URLs from all visible URL inputs
             const urlInputs = document.querySelectorAll('input[id^="url"]');
             urlInputs.forEach(input => {
-                if (input.value.trim()) {
+                if (input.value && input.value.trim() && !input.parentElement.classList.contains('hidden')) {
                     formData.competitorUrls.push(input.value.trim());
+                    console.log(`Added URL: ${input.value.trim()}`);
                 }
             });
 
-            // Collect product photos
+            // Also check for URLs in dynamically added fields
+            const urlIndicators = document.getElementById('url-indicators');
+            if (urlIndicators) {
+                const dynamicUrlInputs = urlIndicators.querySelectorAll('input[type="url"]');
+                dynamicUrlInputs.forEach(input => {
+                    if (input.value && input.value.trim()) {
+                        formData.competitorUrls.push(input.value.trim());
+                        console.log(`Added dynamic URL: ${input.value.trim()}`);
+                    }
+                });
+            }
+
+            // Collect product photos from all file inputs starting with "product-photo"
             const photoInputs = document.querySelectorAll('input[id^="product-photo"]');
             photoInputs.forEach(input => {
-                if (input.files && input.files[0]) {
+                if (input.files && input.files[0] && !input.parentElement.classList.contains('hidden')) {
                     formData.productPhotos.push(input.files[0]);
+                    console.log(`Added photo: ${input.files[0].name}`);
                 }
             });
 
+            // Log collected data for debugging
+            console.log(`Collected ${formData.competitorUrls.length} URLs and ${formData.productPhotos.length} photos`);
+            
             return formData;
         }
 
         // Function to validate form data
         function validateFormData(formData) {
             const errors = [];
+            console.log("Validating form data:", formData);
 
             if (!formData.brand) {
                 errors.push('Brand name is required');
@@ -533,46 +606,31 @@
                 errors.push('Color is required');
             }
 
+            // URL validation with better error messaging
             if (formData.competitorUrls.length === 0) {
                 errors.push('At least one competitor URL is required');
+                console.log("URL validation failed: No URLs found");
+                
+                // Log all URL input elements for debugging
+                const urlInputs = document.querySelectorAll('input[id^="url"]');
+                urlInputs.forEach((input, index) => {
+                    console.log(`URL input ${index+1} (${input.id}): ${input.value || 'empty'}`);
+                });
             }
 
-            if (formData.productPhotos.length < 2) {
-                errors.push('At least 2 product photos are required');
+            // Photo validation with better error messaging
+            if (formData.productPhotos.length < 1) {
+                errors.push('At least 1 product photo is required');
+                console.log("Photo validation failed: Not enough photos");
+                
+                // Log all photo input elements for debugging
+                const photoInputs = document.querySelectorAll('input[id^="product-photo"]');
+                photoInputs.forEach((input, index) => {
+                    console.log(`Photo input ${index+1} (${input.id}): ${input.files && input.files[0] ? input.files[0].name : 'empty'}`);
+                });
             }
 
             return errors;
-        }
-
-        // Function to copy text to clipboard
-        function copyToClipboard(elementId, button) {
-            const element = document.getElementById(elementId);
-            const text = element.value || element.textContent;
-            
-            // Create a temporary textarea element
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            
-            // Select and copy the text
-            textarea.select();
-            document.execCommand('copy');
-            
-            // Remove the temporary textarea
-            document.body.removeChild(textarea);
-            
-            // Show success animation
-            const copyIcon = button.querySelector('.copy-icon');
-            const checkIcon = button.querySelector('.check-icon');
-            
-            copyIcon.classList.add('hidden');
-            checkIcon.classList.remove('hidden');
-            
-            // Reset the icon after 2 seconds
-            setTimeout(() => {
-                copyIcon.classList.remove('hidden');
-                checkIcon.classList.add('hidden');
-            }, 2000);
         }
 
         // Function to handle form submission with validation
@@ -613,61 +671,125 @@
                     material: formData.material,
                     color: formData.color
                 },
-                keyword_screenshots: [], // Will be populated from the image preview
-                product_images: [] // Will be populated from the product photos
+                keyword_screenshots: [],
+                product_images: []
             };
+
+            // Log the prepared API data
+            console.log('Prepared API data:', {
+                platform: apiData.platform_type,
+                brand: apiData.brand,
+                urls: apiData.urls,
+                product_specs: apiData.product_specs
+            });
+
+            // Create promises array for all file reading operations
+            const fileReadPromises = [];
 
             // Get keyword screenshot data
             const keywordScreenshot = document.getElementById('preview1');
-            if (keywordScreenshot && keywordScreenshot.src) {
+            if (keywordScreenshot && keywordScreenshot.src && keywordScreenshot.src.startsWith('data:')) {
                 apiData.keyword_screenshots.push(keywordScreenshot.src);
-            }
-
-            // Get product photos data
-            const photoInputs = document.querySelectorAll('input[id^="product-photo"]');
-            photoInputs.forEach(input => {
-                if (input.files && input.files[0]) {
+                console.log('Added keyword screenshot from preview');
+            } else if (document.getElementById('keyword-screenshot1').files && document.getElementById('keyword-screenshot1').files[0]) {
+                const promise = new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        apiData.product_images.push(e.target.result);
+                        apiData.keyword_screenshots.push(e.target.result);
+                        console.log('Added keyword screenshot from file input');
+                        resolve();
                     };
-                    reader.readAsDataURL(input.files[0]);
+                    reader.readAsDataURL(document.getElementById('keyword-screenshot1').files[0]);
+                });
+                fileReadPromises.push(promise);
+            }
+
+            // Get product photos data - handle both original and dynamically added fields
+            const photoInputs = document.querySelectorAll('input[type="file"][id^="product-photo"], input[type="file"][id^="dynamic-photo-"]');
+            console.log(`Found ${photoInputs.length} product photo inputs`);
+            
+            photoInputs.forEach((input, index) => {
+                if (input.files && input.files[0]) {
+                    const promise = new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            apiData.product_images.push(e.target.result);
+                            console.log(`Added product image #${index+1} from ${input.id}`);
+                            resolve();
+                        };
+                        reader.readAsDataURL(input.files[0]);
+                    });
+                    fileReadPromises.push(promise);
                 }
             });
 
-            // Make API call to backend
-            fetch('/api/generate-listing/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify(apiData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-                
-                // Update the form with the generated content
-                const response = data.response;
-                document.getElementById('amazon-title').value = response.amazon_title || '';
-                document.getElementById('expert-title').value = response.expert_title || '';
-                document.getElementById('description').value = response.description || '';
-                document.getElementById('bullet-points').value = response.bullet_points.join('\n') || '';
-                document.getElementById('search-terms').value = response.search_terms || '';
-                
-                Swal.close();
-                showResultsPopup();
-            })
-            .catch(error => {
-                Swal.fire({
-                    title: 'Error',
-                    text: error.message || 'An error occurred while generating the listing',
-                    icon: 'error'
+            // Wait for all file reading operations to complete before sending API request
+            Promise.all(fileReadPromises)
+                .then(() => {
+                    // Log data being sent (for debugging)
+                    console.log('Sending data to backend:', {
+                        platform: apiData.platform_type,
+                        brand: apiData.brand,
+                        urls_count: apiData.urls.length,
+                        urls: apiData.urls,
+                        product_specs: apiData.product_specs,
+                        keyword_screenshots_count: apiData.keyword_screenshots.length,
+                        product_images_count: apiData.product_images.length
+                    });
+
+                    // Make API call to backend
+                    return fetch('/listing_creater/ai-chat/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify(apiData)
+                    });
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Update the form with the generated content
+                    const response = data.response;
+                    console.log('Response received from backend:', response);
+                    
+                    // Use the handleSuccessfulResults function to update the UI
+                    handleSuccessfulResults(response);
+                    
+                    // Fallback direct updates for key fields
+                    if (document.getElementById('amazon-title') && !document.getElementById('amazon-title').value) {
+                        document.getElementById('amazon-title').value = response.amazon_title || '';
+                        console.log('Direct update of amazon-title field');
+                    }
+                    
+                    if (document.getElementById('expert-title') && !document.getElementById('expert-title').value) {
+                        document.getElementById('expert-title').value = response.expert_title || '';
+                        console.log('Direct update of expert-title field');
+                    }
+                    
+                    // Close loading dialog
+                    Swal.close();
+                    
+                    // Show results popup
+                    showResultsPopup();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'An error occurred while generating the listing',
+                        icon: 'error'
+                    });
                 });
-            });
         }
 
         // Function to get CSRF token
@@ -689,7 +811,7 @@
         // Function to add URL field
         function addUrlField() {
             const urlIndicators = document.getElementById('url-indicators');
-            const urlCount = urlIndicators.children.length + 1;
+            const urlCount = urlIndicators.querySelectorAll('.url-field').length + 1;
             
             if (urlCount > 4) {
                 Swal.fire({
@@ -700,24 +822,31 @@
                 return;
             }
 
+            // Create a new unique ID for this URL field
+            const newId = `dynamic-url-${Date.now()}`;
+            
             const urlInput = document.createElement('div');
-            urlInput.className = 'flex items-center gap-2 mt-2';
+            urlInput.className = 'flex items-center gap-2 mt-2 url-field';
             urlInput.innerHTML = `
-                <input type="url" id="url${urlCount}" placeholder="https://amazon.in/Xo" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border flex-grow">
+                <input type="url" id="${newId}" placeholder="https://amazon.in/product" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border flex-grow">
                 <button type="button" onclick="removeUrlField(this)" class="px-2 py-1 text-xs text-white rounded-lg bg-red-500 quicksand hover:bg-red-600 transition-colors">Remove</button>
             `;
             urlIndicators.appendChild(urlInput);
+            
+            console.log(`Added new URL field with ID: ${newId}`);
         }
 
         // Function to remove URL field
         function removeUrlField(button) {
-            button.parentElement.remove();
+            const field = button.parentElement;
+            console.log(`Removing URL field: ${field.querySelector('input').id}`);
+            field.remove();
         }
 
         // Function to add photo field
         function addPhotoField() {
             const photoIndicators = document.getElementById('photo-indicators');
-            const photoCount = photoIndicators.children.length + 1;
+            const photoCount = photoIndicators.querySelectorAll('.photo-field').length + 1;
             
             if (photoCount > 8) {
                 Swal.fire({
@@ -728,19 +857,27 @@
                 return;
             }
 
+            // Create a new unique ID for this photo field
+            const newPhotoId = `dynamic-photo-${Date.now()}`;
+            const newTextId = `dynamic-text-${Date.now()}`;
+            
             const photoInput = document.createElement('div');
-            photoInput.className = 'flex items-center gap-2 mt-2';
+            photoInput.className = 'flex items-center gap-2 mt-2 photo-field';
             photoInput.innerHTML = `
-                <input type="text" id="photo-text${photoCount}" placeholder="Attach Upload" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border flex-grow" readonly onclick="document.getElementById('product-photo${photoCount}').click()">
+                <input type="text" id="${newTextId}" placeholder="Attach Upload" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border flex-grow" readonly onclick="document.getElementById('${newPhotoId}').click()">
                 <button type="button" onclick="removePhotoField(this)" class="px-2 py-1 text-xs text-white rounded-lg bg-red-500 quicksand hover:bg-red-600 transition-colors">Remove</button>
-                <input type="file" id="product-photo${photoCount}" class="hidden" accept="image/*" onchange="updatePhotoName('product-photo${photoCount}', 'photo-text${photoCount}')">
+                <input type="file" id="${newPhotoId}" class="hidden" accept="image/*" onchange="updatePhotoName('${newPhotoId}', '${newTextId}')">
             `;
             photoIndicators.appendChild(photoInput);
+            
+            console.log(`Added new photo field with ID: ${newPhotoId}`);
         }
 
         // Function to remove photo field
         function removePhotoField(button) {
-            button.parentElement.remove();
+            const field = button.parentElement;
+            console.log(`Removing photo field: ${field.querySelector('input[type="file"]').id}`);
+            field.remove();
         }
 
         // Function to update photo name in text input
@@ -748,9 +885,147 @@
             const input = document.getElementById(inputId);
             const textInput = document.getElementById(textId);
             if (input.files && input.files[0]) {
-                textInput.value = input.files[0].name;
+                const file = input.files[0];
+                textInput.value = file.name;
+                
+                // Log file information for troubleshooting
+                console.log(`Product photo selected: ${inputId} - ${file.name} (${Math.round(file.size/1024)}KB)`);
+                
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    Swal.fire({
+                        title: 'Invalid File Type',
+                        text: 'Please select a valid image file (JPEG, PNG, GIF, WebP)',
+                        icon: 'error'
+                    });
+                    input.value = '';
+                    textInput.value = '';
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    Swal.fire({
+                        title: 'File Too Large',
+                        text: 'Please select an image file under 5MB',
+                        icon: 'error'
+                    });
+                    input.value = '';
+                    textInput.value = '';
+                    return;
+                }
             }
         }
+    </script>
+    
+    <!-- Compatibility Layer for creater.js -->
+    <script>
+        // This script creates compatibility between our dynamic elements and the legacy creater.js
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create compatibility elements for creater.js
+            console.log('Setting up compatibility layer for creater.js');
+            
+            // Create hidden elements that creater.js expects
+            function createCompatibilityElements() {
+                const hiddenContainer = document.querySelector('.hidden') || document.createElement('div');
+                
+                // Check if productPhoto2 exists, create if not
+                if (!document.getElementById('product-photo2')) {
+                    console.log('Creating compatibility element: product-photo2');
+                    const productPhoto2 = document.createElement('input');
+                    productPhoto2.type = 'file';
+                    productPhoto2.id = 'product-photo2';
+                    productPhoto2.classList.add('hidden');
+                    productPhoto2.accept = 'image/*';
+                    hiddenContainer.appendChild(productPhoto2);
+                }
+                
+                // Create other expected elements if needed
+                if (!document.getElementById('additional-specs')) {
+                    console.log('Creating compatibility element: additional-specs');
+                    const additionalSpecs = document.createElement('textarea');
+                    additionalSpecs.id = 'additional-specs';
+                    additionalSpecs.classList.add('hidden');
+                    hiddenContainer.appendChild(additionalSpecs);
+                }
+                
+                // Create results section if it doesn't exist
+                if (!document.getElementById('results-section')) {
+                    console.log('Creating compatibility element: results-section');
+                    const resultsSection = document.createElement('div');
+                    resultsSection.id = 'results-section';
+                    resultsSection.classList.add('hidden');
+                    hiddenContainer.appendChild(resultsSection);
+                }
+                
+                // Sync the other-specs with additional-specs
+                const otherSpecs = document.getElementById('other-specs');
+                const additionalSpecs = document.getElementById('additional-specs');
+                if (otherSpecs && additionalSpecs) {
+                    otherSpecs.addEventListener('input', function() {
+                        additionalSpecs.value = this.value;
+                    });
+                }
+                
+                // Override the generateListing function in creater.js
+                window.originalGenerateListingFunction = window.generateListing;
+                window.generateListing = function() {
+                    console.log('Using our custom generateListing instead of creater.js version');
+                    
+                    // Sync data from dynamic fields to compatibility fields before calling our implementation
+                    syncFieldsForCompatibility();
+                    
+                    return window.originalGenerateListingFunction();
+                };
+            }
+            
+            // Function to synchronize our dynamic fields with legacy compatibility fields
+            function syncFieldsForCompatibility() {
+                // Sync product photos
+                const dynamicPhotoInputs = document.querySelectorAll('input[type="file"][id^="dynamic-photo-"]');
+                const productPhoto2 = document.getElementById('product-photo2');
+                
+                if (dynamicPhotoInputs.length > 0 && productPhoto2) {
+                    // Take the first dynamic photo and copy it to product-photo2
+                    const firstDynamicPhoto = dynamicPhotoInputs[0];
+                    if (firstDynamicPhoto.files && firstDynamicPhoto.files[0]) {
+                        // Create a DataTransfer object to transfer files
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(firstDynamicPhoto.files[0]);
+                        productPhoto2.files = dataTransfer.files;
+                        console.log('Synced dynamic photo to product-photo2 compatibility field');
+                    }
+                }
+                
+                // Sync URLs
+                const dynamicUrlInputs = document.querySelectorAll('#url-indicators input[type="url"]');
+                const url2 = document.getElementById('url2');
+                const url3 = document.getElementById('url3');
+                const url4 = document.getElementById('url4');
+                
+                if (dynamicUrlInputs.length > 0) {
+                    // Map dynamic URLs to legacy URL fields
+                    dynamicUrlInputs.forEach((input, index) => {
+                        if (index === 0 && url2) url2.value = input.value;
+                        if (index === 1 && url3) url3.value = input.value;
+                        if (index === 2 && url4) url4.value = input.value;
+                    });
+                    console.log('Synced dynamic URLs to compatibility URL fields');
+                }
+                
+                // Sync specifications
+                const otherSpecs = document.getElementById('other-specs');
+                const additionalSpecs = document.getElementById('additional-specs');
+                if (otherSpecs && additionalSpecs) {
+                    additionalSpecs.value = otherSpecs.value;
+                    console.log('Synced specifications fields');
+                }
+            }
+            
+            // Call after a small delay to ensure DOM is fully loaded
+            setTimeout(createCompatibilityElements, 500);
+        });
     </script>
     
     <script src="{% static 'js/listing_creator/creater.js' %}"></script>

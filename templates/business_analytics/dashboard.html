@@ -4,34 +4,37 @@
 {% block extrahead %}
 <!-- Load Chart.js for visualizations -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<!-- Add Inter font for better typography -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-<div class="w-full sm:py-6 md:py-2 font-[Quicksand] mb-10">
-    <div class="bg-white rounded-[20px] shadow-[0_4px_16px_0_rgba(123,61,243,0.07)] p-4 sm:p-7 border border-[#F0EFFF] mb-6">
-        <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-                <h2 class="font-bold text-base sm:text-lg text-[#232323] whitespace-nowrap" style="font-family: 'Montserrat', sans-serif;">
-                    Business Analytics
-                </h2>
+<div class="w-full sm:py-6 md:py-2 font-[Inter] mb-10">
+    <div class="bg-gradient-to-br from-white to-[#faf8ff] rounded-[20px] shadow-[0_10px_30px_0_rgba(123,61,243,0.08)] p-5 sm:p-8 border border-[#F0EFFF] mb-6 relative overflow-hidden">
+        <!-- Decorative elements -->
+        <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#7B3DF3]/5 to-transparent rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[#7B3DF3]/5 to-transparent rounded-full -ml-32 -mb-32 blur-3xl"></div>
+        <div class="absolute top-10 right-10 w-4 h-4 bg-[#7B3DF3]/10 rounded-full"></div>
+        <div class="absolute top-20 right-20 w-2 h-2 bg-[#7B3DF3]/20 rounded-full"></div>
+        <div class="absolute bottom-10 left-10 w-3 h-3 bg-[#7B3DF3]/15 rounded-full"></div>
+        
+        <!-- Header section with enhanced styling -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">
+            <div class="flex flex-col gap-1">
+                <div class="flex items-center">
+                    <div class="w-1.5 h-8 bg-gradient-to-b from-[#7B3DF3] to-[#5524B2] rounded-full mr-3"></div>
+                    <h2 class="font-bold text-2xl sm:text-3xl bg-gradient-to-r from-[#232323] to-[#555] bg-clip-text text-transparent">
+                        Business Analytics
+                    </h2>
+                </div>
+                <p class="text-gray-500 text-sm ml-5 mt-1">Visualize and analyze your business performance</p>
             </div>
-            <div class="flex items-center gap-2">
-                <button 
-                    id="calculateMetricsBtn"
-                    class="text-[#7B3DF3] px-3 py-1.5 rounded-lg text-sm font-medium flex items-center hover:bg-[#F0EFFF] transition-colors duration-200 mr-2"
-                    style="font-family: 'Montserrat', sans-serif;"
-                    aria-label="Calculate Metrics">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                    </svg>
-                    Calculate Metrics
-                </button>
+            <div class="flex items-center">
                 <button 
                     id="uploadAnalyticsBtn"
-                    class="text-[#7B3DF3] px-3 py-1.5 rounded-lg text-sm font-medium flex items-center hover:bg-[#F0EFFF] transition-colors duration-200"
-                    style="font-family: 'Montserrat', sans-serif;"
+                    class="group bg-gradient-to-r from-[#7B3DF3] to-[#5524B2] hover:from-[#8e58fa] hover:to-[#6631c9] text-white px-5 py-2.5 rounded-xl text-sm font-medium flex items-center shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transform transition-all duration-200 hover:-translate-y-1 hover:scale-105"
                     aria-label="Upload Data">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                     </svg>
                     Upload Data
@@ -40,7 +43,7 @@
         </div>
         
         <!-- Debug information for template rendering -->
-        <div id="debugInfo" class="bg-gray-100 p-2 rounded mb-4 text-xs font-mono">
+        {% comment %} <div id="debugInfo" class="bg-gray-100 p-2 rounded mb-4 text-xs font-mono">
             <div>Debug: Template rendered. Recent analysis: {% if recent_analysis %}Available (ID: {{ recent_analysis.id }}){% else %}Not available{% endif %}</div>
             {% if recent_analysis and recent_analysis.analysis_data %}
                 <div>Analysis data available: Yes</div>
@@ -48,133 +51,240 @@
             {% else %}
                 <div>Analysis data available: No</div>
             {% endif %}
-        </div>
+        </div> {% endcomment %}
         
-        <div id="noAnalysisMessage" class="{% if recent_analysis %}hidden{% endif %} text-center py-8">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <h3 class="text-gray-600 font-medium mb-2">No Analysis Data Yet</h3>
-            <p class="text-gray-500 text-sm mb-4">Upload your sales data to see detailed analytics and insights</p>
+        <!-- Enhanced empty state -->
+        <div id="noAnalysisMessage" class="{% if recent_analysis %}hidden{% endif %} text-center py-12 px-4 bg-gradient-to-b from-white to-[#f9f7ff] rounded-2xl border border-[#F0EFFF] shadow-inner">
+            <div class="relative mx-auto w-24 h-24 mb-6">
+                <div class="absolute inset-0 bg-[#7B3DF3]/10 rounded-full animate-pulse"></div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-[#7B3DF3]/60 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-3 text-gray-800">No Analysis Data Yet</h3>
+            <p class="text-gray-500 text-base mb-8 max-w-md mx-auto">Upload your sales data to unlock powerful insights and visualizations for your business</p>
             <button 
                 id="uploadEmptyBtn"
-                class="px-6 py-2 bg-[#7B3DF3] text-white rounded-lg text-sm font-medium hover:bg-[#6931D3] transition-all duration-300">
+                class="px-8 py-3 bg-gradient-to-r from-[#7B3DF3] to-[#5524B2] text-white rounded-xl text-base font-medium hover:shadow-lg hover:shadow-indigo-500/30 transform transition-all duration-300 hover:-translate-y-1 hover:scale-105">
                 Upload Sales Data
             </button>
+            <div class="mt-6 flex justify-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#7B3DF3]/30"></span>
+                <span class="w-2 h-2 rounded-full bg-[#7B3DF3]/60"></span>
+                <span class="w-2 h-2 rounded-full bg-[#7B3DF3]/90"></span>
+            </div>
         </div>
         
-        <div id="analysisContent" class="{% if not recent_analysis %}hidden{% endif %}">
+        <div id="analysisContent" class="{% if not recent_analysis %}hidden{% endif %} relative z-10">
             <!-- Analysis content for the main dashboard -->
             {% if recent_analysis %}
-            <div class="mb-6">
-                <h4 class="text-lg font-semibold mb-3 text-gray-800">Sales Summary</h4>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="dashboardSummaryCards">
+            <div class="mb-8">
+                <div class="flex items-center mb-5">
+                    <div class="w-1 h-6 bg-gradient-to-b from-[#7B3DF3] to-[#5524B2] rounded-full mr-3"></div>
+                    <h4 class="text-xl font-bold bg-gradient-to-r from-[#232323] to-[#555] bg-clip-text text-transparent">Sales Summary</h4>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6" id="dashboardSummaryCards">
                     <!-- Summary cards will be added here -->
                 </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6" id="dashboardChartsContainer">
                 <!-- Sales Trend Chart -->
-                <div id="salesTrendContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Sales Trend</h4>
-                    <div class="h-60">
+                <div id="salesTrendContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-2 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        Sales Trend Over Time
+                    </h4>
+                    <p class="text-xs text-gray-500 mb-3">Visualizing your sales performance over time with trends and patterns</p>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
                         <canvas id="dashboardSalesTrendChart"></canvas>
                     </div>
                 </div>
                 
                 <!-- Sales by Channel Chart -->
-                <div id="salesChannelContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Sales by Channel</h4>
-                    <div class="h-60">
+                <div id="salesChannelContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Sales by Channel
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
                         <canvas id="dashboardSalesChannelChart"></canvas>
                     </div>
                 </div>
                 
                 <!-- Returns vs Cancellations Chart -->
-                <div id="returnsVsCancellationsContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Returns vs Cancellations</h4>
-                    <div class="h-60">
+                <div id="returnsVsCancellationsContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                        </svg>
+                        Returns vs Cancellations
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
                         <canvas id="returnsVsCancellationsChart"></canvas>
                     </div>
                 </div>
                 
                 <!-- Sales by Category Chart -->
-                <div id="salesByCategoryContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Sales by Category</h4>
-                    <div class="h-60">
+                <div id="salesByCategoryContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Sales by Category
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
                         <canvas id="salesByCategoryChart"></canvas>
                     </div>
                 </div>
                 
+                <!-- Top Selling States Bar Chart -->
+                <div id="topSellingStatesContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                        </svg>
+                        Top 10 Selling States
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
+                        <canvas id="topSellingStatesChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Top Selling Products Bar Chart -->
+                <div id="topSellingProductsContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        Top 10 Selling Products
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
+                        <canvas id="topSellingProductsChart"></canvas>
+                    </div>
+                </div>
+                
                 <!-- Fallback chart container for when primary charts don't have data -->
-                <div id="fallbackChartContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 id="fallbackChartTitle" class="text-sm font-semibold mb-3 text-gray-800">Available Data</h4>
-                    <div class="h-60">
+                <div id="fallbackChartContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 id="fallbackChartTitle" class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Available Data
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
                         <canvas id="fallbackChart"></canvas>
                     </div>
                 </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="dashboardListsContainer">
-                <!-- Top Products Container -->
+                {% comment %} <!-- Top Products Container -->
                 <div id="topProductsContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
                     <h4 class="text-sm font-semibold mb-3 text-gray-800">Top 10 Products</h4>
                     <div id="dashboardTopProductsList" class="space-y-2">
                         <!-- Top products will be added here -->
                     </div>
-                </div>
+                </div> {% endcomment %}
                 
                 <!-- Top Regions Container -->
-                <div id="topRegionsContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Top 10 Regions</h4>
+                <div id="topRegionsContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Top 10 Regions
+                    </h4>
                     <div id="dashboardTopRegionsList" class="space-y-2">
                         <!-- Top regions will be added here -->
                     </div>
                 </div>
                 
                 <!-- Bottom Products Container -->
-                <div id="bottomProductsContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Bottom 10 Products</h4>
-                    <div id="dashboardBottomProductsList" class="space-y-2">
+                <div id="bottomProductsContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        Bottom 10 Products
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
+                        <canvas id="bottomSellingProductsChart"></canvas>
+                    </div>
+                    <div id="dashboardBottomProductsList" class="space-y-2 mt-4">
                         <!-- Bottom products will be added here -->
                     </div>
                 </div>
                 
                 <!-- Bottom Regions Container -->
-                <div id="bottomRegionsContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Bottom 10 Regions</h4>
-                    <div id="dashboardBottomRegionsList" class="space-y-2">
+                <div id="bottomRegionsContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Bottom 10 Regions
+                    </h4>
+                    <div class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
+                        <canvas id="bottomSellingStatesChart"></canvas>
+                    </div>
+                    <div id="dashboardBottomRegionsList" class="space-y-2 mt-4">
                         <!-- Bottom regions will be added here -->
                     </div>
                 </div>
                 
                 <!-- Region Heatmap Container -->
-                <div id="regionHeatmapContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Revenue by Region</h4>
-                    <div id="regionHeatmap" class="h-60">
+                <div id="regionHeatmapContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
+                        Revenue by Region
+                    </h4>
+                    <div id="regionHeatmap" class="h-60 group-hover:scale-[1.01] transition-transform duration-300">
                         <!-- Heatmap will be added here -->
                     </div>
                 </div>
                 
                 <!-- High Returns/Cancellations Container -->
-                <div id="highReturnsContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Products with High Returns/Cancellations</h4>
+                <div id="highReturnsContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                        </svg>
+                        Products with High Returns/Cancellations
+                    </h4>
                     <div id="highReturnsList" class="space-y-2">
                         <!-- Products with high returns will be added here -->
                     </div>
                 </div>
                 
                 <!-- Fallback list container for when primary lists don't have data -->
-                <div id="fallbackListContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 id="fallbackListTitle" class="text-sm font-semibold mb-3 text-gray-800">Available Data</h4>
+                <div id="fallbackListContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 id="fallbackListTitle" class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        Available Data
+                    </h4>
                     <div id="fallbackList" class="space-y-2">
                         <!-- Fallback data will be added here -->
                     </div>
                 </div>
                 
                 <!-- Data quality info container -->
-                <div id="dataQualityContainer" class="bg-white rounded-lg shadow p-4 border border-gray-100 hidden">
-                    <h4 class="text-sm font-semibold mb-3 text-gray-800">Data Quality Information</h4>
+                <div id="dataQualityContainer" class="bg-white rounded-xl shadow-lg shadow-indigo-100/40 p-5 border border-[#F0EFFF] hidden group hover:border-[#7B3DF3]/30 transition-all duration-300">
+                    <h4 class="text-sm font-semibold mb-3 text-gray-800 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Data Quality Information
+                    </h4>
                     <div id="dataQualityContent" class="text-sm text-gray-600">
                         <!-- Data quality info will be added here -->
                     </div>
@@ -184,7 +294,7 @@
         </div>
     </div>
 
-    <!-- Debug information section -->
+    {% comment %} <!-- Debug information section -->
     <div class="mt-6 bg-white rounded-[20px] shadow-[0_4px_16px_0_rgba(123,61,243,0.07)] p-4 sm:p-7 border border-[#F0EFFF]">
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
@@ -222,71 +332,67 @@
                 <pre id="rawResponseDebug" class="bg-gray-100 p-2 rounded-md text-xs overflow-auto max-h-40 whitespace-pre-wrap"></pre>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 </div>
 
 <!-- Modal for displaying analysis results -->
 <div id="analysisModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
     <div class="absolute inset-0 bg-black opacity-50" id="analysisModalOverlay"></div>
-    <div class="bg-white w-full max-w-4xl mx-4 rounded-xl shadow-xl z-10 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl mx-4 rounded-lg shadow-lg z-10 max-h-[70vh] overflow-y-auto">
         <!-- Modal header -->
-        <div class="flex items-center justify-between p-6 border-b">
-            <h3 class="text-xl font-bold text-gray-900" id="analysisModalTitle">Analysis Results</h3>
+        <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900" id="analysisModalTitle">Analysis Results</h3>
             <button id="closeAnalysisModalBtn" class="text-gray-400 hover:text-gray-500 focus:outline-none">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
         
         <!-- Modal content -->
-        <div class="p-6">
+        <div class="p-5">
             <!-- Column mapping info -->
-            <div id="columnMappingSection" class="mb-6">
-                <h4 class="text-lg font-semibold mb-3 text-gray-800">Column Mapping</h4>
+            <div id="columnMappingSection" class="mb-5">
+                <h4 class="text-base font-semibold mb-3 text-gray-800">Column Mapping</h4>
                 
                 <!-- Column mapping issues alert -->
-                <div id="modalColumnMappingIssues" class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <h5 class="text-sm font-medium text-yellow-800 mb-2">Column Mapping Issues</h5>
-                    <ul id="modalColumnMappingIssuesList" class="text-xs text-yellow-700 list-disc pl-5 space-y-1">
+                <div id="modalColumnMappingIssues" class="hidden mb-3 p-2.5 bg-yellow-50 border-l-4 border-yellow-400 rounded-md">
+                    <h5 class="text-xs font-medium text-yellow-800 mb-1">Column Mapping Issues</h5>
+                    <ul id="modalColumnMappingIssuesList" class="text-xs text-yellow-700 list-disc pl-4 space-y-0.5">
                         <!-- Column mapping issues will be added here -->
                     </ul>
                 </div>
                 
                 <!-- Detected columns -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <div class="bg-gray-50 p-3 rounded-md">
-                        <div class="text-sm font-medium text-gray-700">Sales Amount</div>
-                        <div id="salesAmountMapping" class="text-xs text-gray-600 mt-1">Not detected</div>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="bg-gray-50 p-2.5 rounded-md border border-gray-100">
+                        <div class="font-medium text-gray-700">Sales Amount</div>
+                        <div id="salesAmountMapping" class="text-gray-600 mt-0.5">Not detected</div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-md">
-                        <div class="text-sm font-medium text-gray-700">Order Date</div>
-                        <div id="orderDateMapping" class="text-xs text-gray-600 mt-1">Not detected</div>
+                    <div class="bg-gray-50 p-2.5 rounded-md border border-gray-100">
+                        <div class="font-medium text-gray-700">Order Date</div>
+                        <div id="orderDateMapping" class="text-gray-600 mt-0.5">Not detected</div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-md">
-                        <div class="text-sm font-medium text-gray-700">Product Name/ID</div>
-                        <div id="productNameMapping" class="text-xs text-gray-600 mt-1">Not detected</div>
+                    <div class="bg-gray-50 p-2.5 rounded-md border border-gray-100">
+                        <div class="font-medium text-gray-700">Product Name/ID</div>
+                        <div id="productNameMapping" class="text-gray-600 mt-0.5">Not detected</div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-md">
-                        <div class="text-sm font-medium text-gray-700">Customer Location</div>
-                        <div id="customerLocationMapping" class="text-xs text-gray-600 mt-1">Not detected</div>
+                    <div class="bg-gray-50 p-2.5 rounded-md border border-gray-100">
+                        <div class="font-medium text-gray-700">Customer Location</div>
+                        <div id="customerLocationMapping" class="text-gray-600 mt-0.5">Not detected</div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-md">
-                        <div class="text-sm font-medium text-gray-700">Sales Channel</div>
-                        <div id="salesChannelMapping" class="text-xs text-gray-600 mt-1">Not detected</div>
+                    <div class="bg-gray-50 p-2.5 rounded-md border border-gray-100">
+                        <div class="font-medium text-gray-700">Sales Channel</div>
+                        <div id="salesChannelMapping" class="text-gray-600 mt-0.5">Not detected</div>
                     </div>
-                    <div class="bg-gray-50 p-3 rounded-md">
-                        <div class="text-sm font-medium text-gray-700">Quantity</div>
-                        <div id="quantityMapping" class="text-xs text-gray-600 mt-1">Not detected</div>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-md">
-                        <div class="text-sm font-medium text-gray-700">Transaction Type</div>
-                        <div id="transactionTypeMapping" class="text-xs text-gray-600 mt-1">Not detected</div>
+                    <div class="bg-gray-50 p-2.5 rounded-md border border-gray-100">
+                        <div class="font-medium text-gray-700">Quantity</div>
+                        <div id="quantityMapping" class="text-gray-600 mt-0.5">Not detected</div>
                     </div>
                 </div>
             </div>
             
-            <div id="analysisContent" class="space-y-6">
+            <div id="analysisContent" class="space-y-4 text-sm">
                 <!-- Analysis content will be inserted here dynamically -->
             </div>
         </div>
@@ -296,144 +402,498 @@
 <!-- Upload Modal -->
 <div id="uploadModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
     <div class="absolute inset-0 bg-black bg-opacity-50" id="uploadModalOverlay"></div>
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 relative z-10 overflow-hidden max-h-[85vh] overflow-y-auto">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 relative z-10 overflow-hidden max-h-[80vh] overflow-y-auto">
         <!-- Modal Header -->
-        <div class="bg-[#7B3DF3] py-1.5 px-4 flex justify-between items-center">
-            <h3 class="text-white text-sm font-bold">Upload Sales Data</h3>
+        <div class="bg-[#7B3DF3] py-1 px-3 flex justify-between items-center">
+            <h3 class="text-white text-xs font-semibold">Upload Sales Data</h3>
             <button id="closeUploadModal" class="text-white hover:text-gray-200 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
         
         <!-- Modal Content -->
-        <div class="p-3">
-            <div class="mb-2">
-                <p class="text-xs text-gray-600 mb-1">Upload your marketplace sales data (CSV or Excel) for AI-powered analysis.</p>
-                <div class="bg-gray-50 p-1.5 rounded-md text-xs text-gray-500 mb-1.5">
-                    <p class="mb-0.5"><strong>Supported formats:</strong> CSV, XLSX, XLS</p>
-                    <p class="mb-0.5"><strong>Recommended:</strong> At least 5 records for meaningful analysis.</p>
-                    <p><strong>Tip:</strong> Include sales amount, dates, products for best results.</p>
-                </div>
+        <div class="p-4 flex flex-col items-center text-center">
+            <div class="mb-3">
+                <p class="text-xs text-gray-700 mb-1">For Meesho <a href="#" id="meeshoUploadLink" class="text-[#7B3DF3] font-medium">Click Here</a></p>
             </div>
             
-            <form id="uploadForm" enctype="multipart/form-data">
+            <div class="bg-[#7B3DF3] bg-opacity-10 w-12 h-12 rounded-full flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#7B3DF3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+            </div>
+            
+            <h3 class="text-base font-medium text-gray-800 mb-1.5">Upload your file here</h3>
+            <p class="text-xs text-gray-500 mb-3">Files supported: CSV, Excel, and other data formats</p>
+            
+            <p class="text-xs text-gray-500 mb-3">OR</p>
+            
+            <form id="uploadForm" enctype="multipart/form-data" class="w-full flex flex-col items-center">
                 {% csrf_token %}
-                <div class="mb-2">
-                    <label for="fileInput" class="block text-xs font-medium text-gray-700 mb-1">Select File</label>
-                    <div class="flex items-center space-x-2">
-                        <input type="file" id="fileInput" name="file" class="hidden" accept=".csv,.xlsx,.xls">
-                        <label for="fileInput" class="cursor-pointer bg-white border border-gray-300 rounded-md py-1 px-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] flex-grow flex items-center justify-between">
-                            <span id="selectedFileName">Choose file...</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                            </svg>
-                        </label>
-                    </div>
+                <input type="file" id="fileInput" name="file" class="hidden" accept=".csv,.xlsx,.xls">
+                <button type="button" onclick="document.getElementById('fileInput').click();" class="bg-[#7B3DF3] text-white text-xs font-medium py-1.5 px-4 rounded w-2/3 mb-3 hover:bg-[#6931D3] transition-colors">
+                    BROWSE
+                </button>
+                
+                <button type="button" id="uploadButton" class="bg-[#a78df3] bg-opacity-40 text-[#7B3DF3] text-xs font-medium py-1.5 px-4 rounded flex items-center justify-center w-2/3 mb-2 hover:bg-opacity-50 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                        <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                    </svg>
+                    <span id="uploadButtonText">Analyze Data</span>
+                    <span id="uploadSpinner" class="hidden ml-1 animate-spin">↻</span>
+                </button>
+                
+                <p class="text-[10px] text-gray-400 mt-1.5">Maximum size: 2MB</p>
+                
+                <div id="selectedFileName" class="text-xs text-gray-600 mt-1.5 hidden"></div>
+                <div id="uploadStatus" class="hidden mt-1.5"></div>
+                
+                <div class="hidden">
+                    <select id="platformType" name="platform_type">
+                        <option value="">Auto-detect (Generic Analysis)</option>
+                        <option value="Meesho">Meesho</option>
+                    </select>
                 </div>
                 
-                <div class="mb-2">
-                    <label for="platformType" class="block text-xs font-medium text-gray-700 mb-1">Marketplace Platform (Optional)</label>
-                    <select id="platformType" name="platform_type" class="w-full bg-white border border-gray-300 rounded-md py-1 px-2.5 text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3]">
-                        <option value="">Auto-detect (Generic Analysis)</option>
-                            <option value="amazon">Amazon</option>
-                            <option value="flipkart">Flipkart</option>
-                            <option value="meesho">Meesho</option>
-                        </select>
-                        </div>
-                
-                <div id="uploadStatus" class="hidden mb-2"></div>
-                
-                <div id="columnMappingIssuesContainer" class="hidden mb-2 p-1.5 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <h4 class="text-xs font-medium text-yellow-800 mb-1">Column Mapping Issues</h4>
-                    <ul id="columnMappingIssuesList" class="text-xs text-yellow-700 list-disc pl-4 space-y-0.5">
+                <div id="columnMappingIssuesContainer" class="hidden mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-left w-full">
+                    <h4 class="text-[10px] font-medium text-yellow-800 mb-1">Column Mapping Issues</h4>
+                    <ul id="columnMappingIssuesList" class="text-[10px] text-yellow-700 list-disc pl-3 space-y-0.5">
                         <!-- Column mapping issues will be added here -->
                     </ul>
-                    <div class="mt-1 text-xs text-yellow-600">
+                    <div class="mt-1 text-[10px] text-yellow-600">
                         <p>These issues may affect the analysis quality. Consider remapping columns.</p>
                     </div>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <button type="button" id="uploadButton" class="bg-[#7B3DF3] py-1 px-3 text-white text-xs font-medium rounded-md hover:bg-[#6931D3] focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:ring-opacity-50 transition-colors">
-                        <span id="uploadButtonText">Upload & Analyze</span>
-                        <span id="uploadSpinner" class="hidden ml-1 animate-spin">↻</span>
-                    </button>
-                    <button type="button" id="advancedOptionsBtn" class="text-xs text-gray-500 hover:text-[#7B3DF3] transition-colors">
-                        Advanced Options
-                    </button>
                 </div>
             </form>
             
             <!-- Advanced Options Panel (hidden by default) -->
-            <div id="advancedOptionsPanel" class="hidden mt-2 p-2 bg-gray-50 rounded-md border border-gray-200">
-                <h4 class="text-xs font-medium text-gray-700 mb-1">Manual Column Mapping</h4>
-                <div class="text-xs text-gray-500 mb-1">
+            <div id="advancedOptionsPanel" class="hidden mt-3 p-2 bg-gray-50 rounded border border-gray-200 w-full text-left">
+                <h4 class="text-[10px] font-medium text-gray-700 mb-1">Manual Column Mapping</h4>
+                <div class="text-[10px] text-gray-500 mb-1">
                     If column detection isn't working correctly, manually select the appropriate columns below:
-        </div>
+                </div>
                 
                 <!-- Auto-detect button -->
                 <div class="mb-2">
-                    <button type="button" id="autoDetectBtn" class="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100 transition-colors">
+                    <button type="button" id="autoDetectBtn" class="text-[10px] px-1.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100 transition-colors">
                         Auto-Detect Columns
                     </button>
-                    <span class="text-xs text-gray-500 ml-1">Uses intelligent pattern matching</span>
+                    <span class="text-[10px] text-gray-500 ml-1">Uses intelligent pattern matching</span>
                 </div>
                 
                 <!-- Column Mapping Form -->
-                <div id="columnMappingForm" class="space-y-1.5 p-1.5 bg-white rounded border border-gray-200">
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <label class="text-xs text-gray-600 font-medium">Sales Amount <span class="text-red-500">*</span></label>
-                        <select id="salesAmountColumn" class="text-xs border border-gray-300 rounded p-0.5 w-full">
+                <div id="columnMappingForm" class="space-y-1 p-1.5 bg-white rounded border border-gray-200">
+                    <div class="grid grid-cols-2 gap-1">
+                        <label class="text-[10px] text-gray-600 font-medium">Sales Amount <span class="text-red-500">*</span></label>
+                        <select id="salesAmountColumn" class="text-[10px] border border-gray-300 rounded p-0.5 w-full">
                             <option value="">Auto-detect</option>
-                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <label class="text-xs text-gray-600 font-medium">Order Date <span class="text-red-500">*</span></label>
-                        <select id="orderDateColumn" class="text-xs border border-gray-300 rounded p-0.5 w-full">
+                    <div class="grid grid-cols-2 gap-1">
+                        <label class="text-[10px] text-gray-600 font-medium">Order Date <span class="text-red-500">*</span></label>
+                        <select id="orderDateColumn" class="text-[10px] border border-gray-300 rounded p-0.5 w-full">
                             <option value="">Auto-detect</option>
-                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <label class="text-xs text-gray-600 font-medium">Product Name/ID <span class="text-red-500">*</span></label>
-                        <select id="productColumn" class="text-xs border border-gray-300 rounded p-0.5 w-full">
+                    <div class="grid grid-cols-2 gap-1">
+                        <label class="text-[10px] text-gray-600 font-medium">Product Name/ID <span class="text-red-500">*</span></label>
+                        <select id="productColumn" class="text-[10px] border border-gray-300 rounded p-0.5 w-full">
                             <option value="">Auto-detect</option>
-                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <label class="text-xs text-gray-600 font-medium">Customer Location</label>
-                        <select id="locationColumn" class="text-xs border border-gray-300 rounded p-0.5 w-full">
+                    <div class="grid grid-cols-2 gap-1">
+                        <label class="text-[10px] text-gray-600 font-medium">Customer Location</label>
+                        <select id="locationColumn" class="text-[10px] border border-gray-300 rounded p-0.5 w-full">
                             <option value="">Auto-detect</option>
-                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <label class="text-xs text-gray-600 font-medium">Quantity</label>
-                        <select id="quantityColumn" class="text-xs border border-gray-300 rounded p-0.5 w-full">
+                    <div class="grid grid-cols-2 gap-1">
+                        <label class="text-[10px] text-gray-600 font-medium">Quantity</label>
+                        <select id="quantityColumn" class="text-[10px] border border-gray-300 rounded p-0.5 w-full">
                             <option value="">Auto-detect</option>
-                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <label class="text-xs text-gray-600 font-medium">Transaction Type</label>
-                        <select id="transactionTypeColumn" class="text-xs border border-gray-300 rounded p-0.5 w-full">
+                    <div class="grid grid-cols-2 gap-1">
+                        <label class="text-[10px] text-gray-600 font-medium">Transaction Type</label>
+                        <select id="transactionTypeColumn" class="text-[10px] border border-gray-300 rounded p-0.5 w-full">
                             <option value="">Auto-detect</option>
-                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
                 </div>
-                <div class="mt-1 text-xs text-gray-500">
+                <div class="mt-1 text-[10px] text-gray-500">
                     <p>Fields marked with <span class="text-red-500">*</span> are required for basic analysis.</p>
                 </div>
+            </div>
+            
+            <div class="mt-2 w-full text-right">
+                <button type="button" id="advancedOptionsBtn" class="text-[10px] text-gray-500 hover:text-[#7B3DF3] transition-colors">
+                    Advanced Options
+                </button>
             </div>
         </div>
     </div>
 </div>
-<script src="{% static 'js/business_analytics/analysis.js' %}?v=2"></script>
-<script src="{% static 'js/business_analytics/meesho_handling.js' %}?v=2"></script>
-<script src="{% static 'js/business_analytics/enhanced_charts.js' %}?v=2"></script>
+
+<!-- Meesho Upload Modal -->
+<div id="meeshoUploadModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+    <div class="absolute inset-0 bg-black opacity-50" id="meeshoUploadModalOverlay"></div>
+    <div class="bg-white w-full max-w-sm mx-4 rounded-lg shadow-lg z-10 overflow-hidden">
+        <!-- Modal Header -->
+        <div class="p-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <button id="meeshoBackButton" class="text-purple-600 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="text-sm">Back</span>
+                </button>
+            </div>
+            <h3 class="text-base font-medium text-center flex-grow">Meesho Upload</h3>
+            <button id="closeMeeshoModal" class="text-gray-400 hover:text-gray-500">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Modal Content -->
+        <div class="p-3 flex flex-col items-center">
+            <!-- Upload Icon -->
+            <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+            </div>
+            
+            <h2 class="text-lg font-semibold mb-1">Upload Meesho Files</h2>
+            <p class="text-gray-600 text-xs mb-4">Please upload both sales and returns files for analysis</p>
+            
+            <form id="meeshoUploadForm" class="w-full">
+                {% csrf_token %}
+                <!-- Sales Data File Upload -->
+                <div class="mb-3 p-3 border border-gray-200 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="font-medium text-sm">Sales Data File</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <input type="file" id="meeshoSalesFileInput" name="sales_file" class="hidden" accept=".csv,.xlsx,.xls">
+                        <button type="button" onclick="document.getElementById('meeshoSalesFileInput').click();" class="bg-purple-600 text-white text-xs font-medium py-1.5 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                            BROWSE
+                        </button>
+                        <span id="meeshoSalesFileName" class="text-gray-500 text-xs">No file selected</span>
+                    </div>
+                </div>
+                
+                <!-- Returns Data File Upload -->
+                <div class="mb-4 p-3 border border-gray-200 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="font-medium text-sm">Returns Data File</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <input type="file" id="meeshoReturnsFileInput" name="returns_file" class="hidden" accept=".csv,.xlsx,.xls">
+                        <button type="button" onclick="document.getElementById('meeshoReturnsFileInput').click();" class="bg-purple-600 text-white text-xs font-medium py-1.5 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                            BROWSE
+                        </button>
+                        <span id="meeshoReturnsFileName" class="text-gray-500 text-xs">No file selected</span>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-center text-gray-500 mb-3">Maximum size: 2MB per file</p>
+                
+                <button type="button" id="meeshoUploadButton" class="w-full bg-purple-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                    Upload & Analyze
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/business_analytics/analysis.js' %}?v=3"></script>
+<script src="{% static 'js/business_analytics/meesho_handling.js' %}?v=3"></script>
+<script src="{% static 'js/business_analytics/enhanced_charts.js' %}?v=3"></script>
+<!-- Initialize Chart.js and ensure it's available -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not found, loading it dynamically');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js';
+            script.async = false; // Load synchronously to ensure it's available when needed
+            script.onload = function() {
+                console.log('Chart.js loaded successfully');
+                // Initialize any charts that need to be shown on page load
+                if (typeof initChartContainers === 'function') {
+                    initChartContainers();
+                }
+            };
+            document.head.appendChild(script);
+        } else {
+            console.log('Chart.js already loaded');
+        }
+    });
+</script>
+
+<!-- Ensure bottom charts are properly initialized -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Log initialization for debugging
+    console.log('Bottom charts initialization script loaded');
+    
+    // Function to initialize bottom charts if data is available
+    function initBottomCharts() {
+        console.log('Checking for bottom charts data in the page');
+        
+        // Function to safely access enhanced charts functions
+        function callChartFunction(functionName, data) {
+            // Try different ways to access the function
+            if (typeof window[functionName] === 'function') {
+                console.log(`Calling ${functionName} from window object`);
+                window[functionName](null, data);
+                return true;
+            } else if (window.enhancedCharts && typeof window.enhancedCharts[functionName] === 'function') {
+                console.log(`Calling ${functionName} from enhancedCharts object`);
+                window.enhancedCharts[functionName](null, data);
+                return true;
+            }
+            console.error(`Function ${functionName} not found`);
+            return false;
+        }
+        
+        // Get bottom regions container and check if it's visible
+        const bottomRegionsContainer = document.getElementById('bottomRegionsContainer');
+        if (bottomRegionsContainer && !bottomRegionsContainer.classList.contains('hidden')) {
+            console.log('Bottom regions container is visible, checking for canvas');
+            
+            // Find canvas or create one if needed
+            let chartDiv = bottomRegionsContainer.querySelector('div.h-60');
+            if (chartDiv) {
+                let canvas = chartDiv.querySelector('canvas');
+                if (canvas) {
+                    console.log('Canvas for bottom regions chart found, checking if chart is rendered');
+                    
+                    // If the canvas is empty, try to render the chart
+                    const ctx = canvas.getContext('2d');
+                    if (ctx && typeof Chart !== 'undefined') {
+                        // Attempt to get data from global state if it exists
+                        if (window.lastAnalysisData && window.lastAnalysisData.bottom_regions) {
+                            callChartFunction('createBottomSellingStatesChart', window.lastAnalysisData.bottom_regions);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Get bottom products container and check if it's visible
+        const bottomProductsContainer = document.getElementById('bottomProductsContainer');
+        if (bottomProductsContainer && !bottomProductsContainer.classList.contains('hidden')) {
+            console.log('Bottom products container is visible, checking for canvas');
+            
+            // Find canvas or create one if needed
+            let chartDiv = bottomProductsContainer.querySelector('div.h-60');
+            if (chartDiv) {
+                let canvas = chartDiv.querySelector('canvas');
+                if (canvas) {
+                    console.log('Canvas for bottom products chart found, checking if chart is rendered');
+                    
+                    // If the canvas is empty, try to render the chart
+                    const ctx = canvas.getContext('2d');
+                    if (ctx && typeof Chart !== 'undefined') {
+                        // Attempt to get data from global state if it exists
+                        if (window.lastAnalysisData && window.lastAnalysisData.bottom_products) {
+                            callChartFunction('createBottomSellingProductsChart', window.lastAnalysisData.bottom_products);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Try initializing after a short delay to ensure all scripts are loaded
+    setTimeout(initBottomCharts, 1000);
+    
+    // Also try again after a longer delay in case there are async operations
+    setTimeout(initBottomCharts, 3000);
+});
+</script>
+
+<!-- Meesho Upload Modal Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get modal elements
+    const meeshoUploadLink = document.getElementById('meeshoUploadLink');
+    const meeshoUploadModal = document.getElementById('meeshoUploadModal');
+    const meeshoUploadModalOverlay = document.getElementById('meeshoUploadModalOverlay');
+    const closeMeeshoModal = document.getElementById('closeMeeshoModal');
+    const meeshoBackButton = document.getElementById('meeshoBackButton');
+    const uploadModal = document.getElementById('uploadModal');
+    
+    // File input elements
+    const meeshoSalesFileInput = document.getElementById('meeshoSalesFileInput');
+    const meeshoReturnsFileInput = document.getElementById('meeshoReturnsFileInput');
+    const meeshoSalesFileName = document.getElementById('meeshoSalesFileName');
+    const meeshoReturnsFileName = document.getElementById('meeshoReturnsFileName');
+    const meeshoUploadButton = document.getElementById('meeshoUploadButton');
+    
+    // Open Meesho upload modal when clicking "Click Here"
+    if (meeshoUploadLink) {
+        meeshoUploadLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Hide the regular upload modal
+            uploadModal.classList.add('hidden');
+            // Show the Meesho upload modal
+            meeshoUploadModal.classList.remove('hidden');
+        });
+    }
+    
+    // Close Meesho modal when clicking the X button
+    if (closeMeeshoModal) {
+        closeMeeshoModal.addEventListener('click', function() {
+            meeshoUploadModal.classList.add('hidden');
+        });
+    }
+    
+    // Close Meesho modal when clicking the overlay
+    if (meeshoUploadModalOverlay) {
+        meeshoUploadModalOverlay.addEventListener('click', function() {
+            meeshoUploadModal.classList.add('hidden');
+        });
+    }
+    
+    // Go back to the regular upload modal when clicking "Back"
+    if (meeshoBackButton) {
+        meeshoBackButton.addEventListener('click', function() {
+            // Hide Meesho modal
+            meeshoUploadModal.classList.add('hidden');
+            // Show regular upload modal
+            uploadModal.classList.remove('hidden');
+        });
+    }
+    
+    // Update file name display when files are selected
+    if (meeshoSalesFileInput) {
+        meeshoSalesFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                meeshoSalesFileName.textContent = this.files[0].name;
+            } else {
+                meeshoSalesFileName.textContent = 'No file selected';
+            }
+        });
+    }
+    
+    if (meeshoReturnsFileInput) {
+        meeshoReturnsFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                meeshoReturnsFileName.textContent = this.files[0].name;
+            } else {
+                meeshoReturnsFileName.textContent = 'No file selected';
+            }
+        });
+    }
+    
+    // Function to submit analysis request for Meesho files
+    function submitAnalysisRequest(formData) {
+        // Ensure we have both sales and returns files
+        const salesFile = formData.get('sales_file') || meeshoSalesFileInput.files[0];
+        const returnsFile = formData.get('returns_file') || meeshoReturnsFileInput.files[0];
+        
+        if (!salesFile || !returnsFile) {
+            alert('Please select both sales and returns files');
+            return;
+        }
+        
+        // Check if calculateSalesMetrics exists in analysis.js
+        if (typeof calculateSalesMetrics === 'function') {
+            // Call the existing function with the files array and platform type
+            calculateSalesMetrics([salesFile, returnsFile], null, 'meesho');
+        } else {
+            // Fallback: submit the FormData directly to the API
+            fetch('/business_analytics/api/metrics/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Failed to calculate metrics');
+                    });
+                }
+                return response.json();
+            })
+            .then(metrics => {
+                console.log('Metrics calculation successful:', metrics);
+                
+                // Try to call displaySalesMetrics if it exists
+                if (typeof displaySalesMetrics === 'function') {
+                    displaySalesMetrics(metrics);
+                } else {
+                    // Fallback: Show a basic alert with success message
+                    alert('Analysis completed successfully!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error processing files: ' + error.message);
+            });
+        }
+    }
+    
+    // Make submitAnalysisRequest globally accessible
+    window.submitAnalysisRequest = submitAnalysisRequest;
+    
+    // Function to handle Meesho file uploads specifically
+    function handleMeeshoUpload(formData) {
+        // Ensure platform type is set
+        formData.set('platform_type', 'meesho');
+        
+        // Call the generic submit function
+        submitAnalysisRequest(formData);
+    }
+    
+    // Make handleMeeshoUpload globally accessible
+    window.handleMeeshoUpload = handleMeeshoUpload;
+    
+    // Handle Meesho upload button click
+    if (meeshoUploadButton) {
+        meeshoUploadButton.addEventListener('click', function() {
+            // Create a FormData object to send the files
+            const formData = new FormData(document.getElementById('meeshoUploadForm'));
+            
+            // Validate that at least the sales file is selected
+            if (!meeshoSalesFileInput.files.length) {
+                alert('Please select a sales data file');
+                return;
+            }
+            
+            // Set the platform type to Meesho
+            formData.append('platform_type', 'Meesho');
+            
+            // This will connect to the existing Meesho handling functionality
+            // You can customize this based on your backend implementation
+            if (typeof handleMeeshoUpload === 'function') {
+                handleMeeshoUpload(formData);
+            } else {
+                // Fallback if the specific handler isn't available
+                // Submit to the generic analysis endpoint
+                submitAnalysisRequest(formData);
+            }
+            
+            // Close the modal after submission
+            meeshoUploadModal.classList.add('hidden');
+        });
+    }
+});
+</script>
 {% endblock %} 

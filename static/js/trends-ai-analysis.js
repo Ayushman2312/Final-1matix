@@ -23,6 +23,39 @@ document.addEventListener('DOMContentLoaded', function() {
         generateAnalysis(window.trendsData, window.lastFetchedKeyword);
     };
 
+    // Make the sendAiAnalysisRequest function available globally so it can be overridden
+    window.sendAiAnalysisRequest = async function(keyword, data, business_intent, brand_name, website_url, marketplaces) {
+        // Create the request payload
+        const requestPayload = {
+            keyword: keyword,
+            data: data,
+            business_intent: business_intent
+        };
+        
+        // Add business details if provided
+        if (brand_name) requestPayload.brand_name = brand_name;
+        if (website_url) requestPayload.user_website = website_url;
+        if (marketplaces) requestPayload.marketplaces_selected = marketplaces;
+        
+        // Make API request to backend for AI analysis
+        const response = await fetch('/trends/ai-analysis/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(requestPayload),
+            // Add timeout to prevent long waiting times
+            signal: AbortSignal.timeout(30000) // 30 seconds timeout
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    };
+
     // Function to generate analysis from trends data
     async function generateAnalysis(data, keyword) {
         console.log('Generating analysis for:', keyword);
@@ -54,46 +87,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const businessIntent = businessIntentElement ? businessIntentElement.value : '';
             console.log('Using business_intent for AI analysis:', businessIntent);
             
-            // Prepare request payload
-            const requestPayload = {
-                keyword: keyword,
-                data: processedData,
-                business_intent: businessIntent
-            };
+            // Get business details if business intent is 'no'
+            let brandName = '';
+            let businessWebsite = '';
+            let marketplace = '';
             
-            // Add business details if business intent is 'no'
             if (businessIntent === 'no') {
-                const brandName = document.getElementById('brandName').value;
-                const businessWebsite = document.getElementById('businessWebsite').value;
+                brandName = document.getElementById('brandName')?.value || '';
+                businessWebsite = document.getElementById('businessWebsite')?.value || '';
                 
                 // Get all selected marketplace options from checkboxes
                 const marketplaceCheckboxes = document.querySelectorAll('.marketplace-checkbox:checked');
                 const selectedMarketplaces = Array.from(marketplaceCheckboxes).map(checkbox => checkbox.value);
-                const marketplace = selectedMarketplaces.join(', ');
-                
-                // Add business details to the request payload
-                requestPayload.brand_name = brandName;
-                requestPayload.user_website = businessWebsite;
-                requestPayload.marketplaces_selected = marketplace;
+                marketplace = selectedMarketplaces.join(', ');
             }
             
-            // Make API request to backend for AI analysis
-            const response = await fetch('/trends/ai-analysis/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify(requestPayload),
-                // Add timeout to prevent long waiting times
-                signal: AbortSignal.timeout(30000) // 30 seconds timeout
-            });
+            // Make API request to backend for AI analysis using the global function
+            const aiResponse = await window.sendAiAnalysisRequest(
+                keyword, 
+                processedData, 
+                businessIntent, 
+                brandName, 
+                businessWebsite, 
+                marketplace
+            );
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const aiResponse = await response.json();
             console.log('AI Analysis response:', aiResponse);
             
             // Check for successful response
@@ -248,24 +266,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Try to intelligently extract from other formats
                 if (data.time_trends) {
                     processedData.timeSeriesData = data.time_trends;
-                } else if (data.data && typeof data.data === 'object') {
-                    // Look for arrays that might contain the time series
-                    for (const key in data.data) {
-                        if (Array.isArray(data.data[key]) && data.data[key].length > 0) {
-                            processedData.timeSeriesData = data.data[key];
-                            break;
-                        }
-                    }
+                    processedData.trends = calculateTrendData(processedData.timeSeriesData);
+                } else if (data.trends && data.trends.timeSeriesData) {
+                    processedData = data.trends;
+                } else {
+                    // If we can't extract data in a structured way, just return original
+                    return data;
                 }
-                
-                // Include all other data as-is
-                processedData = { ...processedData, ...data };
             }
             
             return processedData;
         } catch (error) {
             console.error('Error preparing data for analysis:', error);
-            return data; // Return original data on error
+            return data;
         }
     }
     

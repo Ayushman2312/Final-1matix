@@ -46,6 +46,44 @@ platform_charts_to_display = {
       "Lowest 5 Selling SKU"
     ],
   
+    "Amazon B2B": [
+      # // Total B2B sales from GST reports
+      "B2B Sales",
+  
+      # // Count of orders with Transaction Type = 'Shipment'
+      "Shipped Orders",
+  
+      # // Count of orders with Transaction Type = 'Cancel'
+      "Cancelled Orders",
+  
+      # // Total value of cancelled orders
+      "Cancelled Value",
+  
+      # // Count of orders with Transaction Type = 'Refund'
+      "Refunded Orders",
+  
+      # // Total value of refunded orders
+      "Refund Value",
+  
+      # // Total tax amount collected (GST, IGST, etc.)
+      "Total Tax Amount",
+      
+      # // Tax as percentage of total sales
+      "Tax Percentage",
+  
+      # // Distribution of orders by fulfillment channel
+      "Fulfillment Channels",
+  
+      # // Top 10 states by sales value
+      "Top Selling States",
+  
+      # // Distribution of transactions by type (Shipment/Cancel/Refund)
+      "Transaction Types",
+      
+      # // Distribution of sales by type (Shipment/Cancel/Refund)
+      "Transaction Values"
+    ],
+  
     "Meesho": [
       # // Total sales value from Meesho orders (after or before discounts)
       "Total Sales",

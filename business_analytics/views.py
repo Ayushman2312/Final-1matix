@@ -410,7 +410,7 @@ class SalesDataUploadView(APIView):
                 
                 # Identify columns using Gemini AI - only for column identification
                 logger.info("Starting column identification with Gemini")
-                column_mapping = identify_columns_with_gemini(clean_df)
+                column_mapping = identify_columns_with_gemini(clean_df, platform_type=platform_type)
                 logger.info(f"Column mapping result: {column_mapping}")
                 debug_print(f"Column mapping result: {json.dumps(column_mapping, indent=2)}")
                 
@@ -871,8 +871,8 @@ class SalesMetricsView(APIView):
                 if manual_column_mapping:
                     column_mapping = manual_column_mapping
                 else:
-                    # Use AI or heuristic column identification
-                    column_mapping = identify_columns_with_gemini(df)
+                    # Use AI or heuristic column identification with platform type
+                    column_mapping = identify_columns_with_gemini(df, platform_type=platform_type)
                 
                 # Compute the sales metrics
                 metrics = compute_sales_metrics(df, column_mapping)
@@ -897,6 +897,8 @@ class SalesMetricsView(APIView):
         2. Returns/cancellations data file
         
         This method processes both files, merges them, and then performs the analysis.
+        The returns file should have the same columns as the sales file, plus an additional
+        'cancel_return_date' column.
         """
         try:
             debug_print("🟢 Meesho platform selected")
@@ -945,6 +947,55 @@ class SalesMetricsView(APIView):
                 debug_print(f"Sales file shape: {df_sales.shape}")
                 debug_print(f"Returns file shape: {df_returns.shape}")
                 
+                # Validate that the returns file has a cancel_return_date column
+                returns_columns = set(df_returns.columns)
+                sales_columns = set(df_sales.columns)
+                
+                # Check if 'cancel_return_date' column exists in returns dataset
+                cancel_return_col = None
+                for col in returns_columns:
+                    if 'cancel' in str(col).lower() and 'return' in str(col).lower() and 'date' in str(col).lower():
+                        cancel_return_col = col
+                        break
+                
+                if not cancel_return_col:
+                    # Try to find any column that might be the cancel/return date
+                    for col in returns_columns:
+                        if col not in sales_columns and ('cancel' in str(col).lower() or 'return' in str(col).lower()):
+                            cancel_return_col = col
+                            debug_print(f"Using '{cancel_return_col}' as cancel/return date column")
+                            break
+                
+                if not cancel_return_col:
+                    debug_print("⚠️ Returns file does not have a 'cancel_return_date' column")
+                    # If no specific cancel/return date column found, check if all other columns match
+                    expected_columns = sales_columns - returns_columns
+                    extra_columns = returns_columns - sales_columns
+                    
+                    if expected_columns or (len(extra_columns) != 1):
+                        debug_print(f"❌ Column mismatch between files. Sales file has {len(expected_columns)} unique columns, Returns file has {len(extra_columns)} unique columns")
+                        return Response({
+                            "error": "The returns file should have the same columns as the sales file, plus a 'cancel_return_date' column."
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    # If there's exactly one extra column in returns, use that as cancel_return_date
+                    if len(extra_columns) == 1:
+                        cancel_return_col = list(extra_columns)[0]
+                        debug_print(f"Using extra column '{cancel_return_col}' as cancel_return_date")
+                else:
+                    debug_print(f"Found cancel/return date column: '{cancel_return_col}'")
+                    # Validate that all other columns in the returns file match the sales file
+                    expected_columns = sales_columns - returns_columns
+                    extra_columns = returns_columns - sales_columns - {cancel_return_col}
+                    
+                    if expected_columns or extra_columns:
+                        debug_print(f"❌ Column mismatch between files after accounting for '{cancel_return_col}'")
+                        debug_print(f"Missing columns in returns file: {expected_columns}")
+                        debug_print(f"Extra columns in returns file: {extra_columns}")
+                        return Response({
+                            "error": "The returns file should have the same columns as the sales file, plus a 'cancel_return_date' column."
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                
                 # Map columns for both files
                 sales_mapping = identify_columns_with_gemini(df_sales)
                 returns_mapping = identify_columns_with_gemini(df_returns)
@@ -978,8 +1029,8 @@ class SalesMetricsView(APIView):
                     debug_print(f"⚠️ Different column mappings detected between files: {', '.join(diff_columns)}")
                 
                 # Add source type column to both dataframes
-                df_sales['__source_type__'] = 'sale'
-                df_returns['__source_type__'] = 'return'
+                df_sales['record_type'] = 'sale'
+                df_returns['record_type'] = 'return'
                 
                 # Merge dataframes
                 df_merged = pd.concat([df_sales, df_returns], ignore_index=True)
@@ -991,14 +1042,29 @@ class SalesMetricsView(APIView):
                 # Create merged column mapping (prefer sales mapping but include both transaction types)
                 merged_mapping = sales_mapping.copy()
                 
+                # Add cancel_return_date to the merged mapping if it exists
+                if cancel_return_col:
+                    merged_mapping['cancel_return_date'] = cancel_return_col
+                    debug_print(f"Added 'cancel_return_date' mapping to '{cancel_return_col}'")
+                
+                # IMPORTANT: Make sure record_type is used for filtering data
+                if '__source_type__' in df_merged.columns:
+                    df_merged['record_type'] = df_merged['__source_type__']
+                    df_merged.drop('__source_type__', axis=1, inplace=True)
+                    debug_print("Renamed '__source_type__' to 'record_type' to prevent frontend special handling")
+                
                 # Debug column mapping for final analysis
                 debug_print(f"Column mapping:\n{json.dumps({k: v for k, v in merged_mapping.items() if not k.startswith('_')}, indent=2)}")
                 
-                # Compute metrics on merged data
+                # Use analyze_sales_data to match the process for other datasets
+                debug_print("Running full sales analysis on merged data...")
+                analysis_results = analyze_sales_data(df_merged, merged_mapping, platform_type="meesho")
+                
+                # Compute metrics on merged data (same as before for compatibility)
                 metrics = compute_sales_metrics(df_merged, merged_mapping)
                 
                 # Prepare final response with debug information
-                debug_print(f"✅ Final metrics calculation complete")
+                debug_print(f"✅ Analysis complete")
                 
                 # Include debug logs in the response
                 debug_info = {
@@ -1016,7 +1082,7 @@ class SalesMetricsView(APIView):
                 if hasattr(debug_print, 'log_collection'):
                     debug_info['logs'] = debug_print.log_collection
                 
-                # Final metrics object with exactly the required 8 metrics
+                # Final metrics object with exactly the required 8 metrics (same as before)
                 final_metrics = {
                     "total_sales": metrics.get("total_sales", 0),
                     "average_sales": metrics.get("average_sales", 0),
@@ -1026,11 +1092,96 @@ class SalesMetricsView(APIView):
                     "total_replacements": metrics.get("total_replacements", 0),
                     "total_regions": metrics.get("total_regions", 0),
                     "total_products": metrics.get("total_products", 0),
-                    "debug": debug_info  # Always include debug info for Meesho analysis
+                    # CRITICAL CHANGE: Set data_source to a standard type instead of marking it as Meesho
+                    # This will prevent the frontend from using special Meesho handling
+                    "data_source": "standard",
+                    # Include debug info but don't use a format that triggers Meesho-specific frontend code
+                    "_debug": debug_info  # Use _debug instead of debug to prevent frontend detection
                 }
                 
-                debug_print(f"Final metrics: {json.dumps(final_metrics, indent=2)}")
-                return Response(final_metrics, status=status.HTTP_200_OK)
+                # Include full analysis results for the UI
+                final_metrics.update(analysis_results)
+                
+                # Make sure all visualization data is included in the response
+                if 'platform_specific' in analysis_results:
+                    final_metrics["platform_specific"] = analysis_results["platform_specific"]
+                    debug_print(f"Including platform-specific analysis with {len(analysis_results['platform_specific'])} metrics")
+                
+                # Ensure critical visualization fields are present before standardizing
+                for key in ["time_series", "top_products", "top_regions", "sales_channels", "visualization_data", "order_metrics", "key_metrics"]:
+                    if key in analysis_results:
+                        final_metrics[key] = analysis_results[key]
+                        debug_print(f"Including {key} for visualization")
+                    else:
+                        debug_print(f"Warning: {key} not found in analysis results")
+                
+                # Add standard field for transaction types if missing
+                if "transaction_types" not in final_metrics and "order_metrics" in final_metrics:
+                    final_metrics["transaction_types"] = [
+                        {"name": "Regular Orders", "count": final_metrics["order_metrics"].get("regular_orders", 0)},
+                        {"name": "Cancelled", "count": final_metrics["order_metrics"].get("cancelled_orders", 0)},
+                        {"name": "Returned", "count": final_metrics["order_metrics"].get("returned_orders", 0)},
+                        {"name": "Replaced", "count": final_metrics["order_metrics"].get("replaced_orders", 0)}
+                    ]
+                    debug_print("Added transaction_types field to match standard dataset structure")
+                
+                # Ensure the merged dataset has standard format
+                if "_source_type__" in merged_mapping:
+                    del merged_mapping["_source_type__"]
+                if "cancel_return_date" in merged_mapping:
+                    del merged_mapping["cancel_return_date"]
+                
+                # Remove any property in final_metrics that identifies it as Meesho data
+                keys_to_remove = []
+                for key in final_metrics:
+                    if isinstance(key, str) and ("meesho" in key.lower() or "debug" in key.lower()):
+                        keys_to_remove.append(key)
+                
+                for key in keys_to_remove:
+                    del final_metrics[key]
+                
+                # Make sure metrics are in the expected format for chart rendering
+                if "top_products" in final_metrics and len(final_metrics["top_products"]) > 0:
+                    for product in final_metrics["top_products"]:
+                        if "percentage" not in product and "value" in product:
+                            product["percentage"] = 0  # Add missing percentage field
+                
+                if "top_regions" in final_metrics and len(final_metrics["top_regions"]) > 0:
+                    for region in final_metrics["top_regions"]:
+                        if "percentage" not in region and "value" in region:
+                            region["percentage"] = 0  # Add missing percentage field
+                
+                # CRITICAL CHANGE: Format the response exactly like non-Meesho datasets
+                # This is the key to preventing frontend recalculation
+                standardized_response = {
+                    "success": True,
+                    "message": "File uploaded and analyzed successfully",
+                    "file_id": "standard_data_file",  # Generic ID, not meesho-specific
+                    "analysis_id": "standard_analysis",  # Generic ID, not meesho-specific
+                    "platform_type": None,  # Don't specify any platform type to prevent special handling
+                    "analysis": final_metrics,  # Put all metrics inside the analysis field like other datasets
+                    "column_mapping": merged_mapping  # Include column mapping
+                }
+                
+                # Include debug info in a standard format
+                if hasattr(debug_print, 'log_collection'):
+                    # Filter out any mentions of "Meesho" from the logs to prevent frontend detection
+                    filtered_logs = []
+                    for log in debug_print.log_collection:
+                        # Replace any mention of Meesho with "Dataset" to prevent triggering frontend-specific code
+                        filtered_log = log.replace("Meesho", "Dataset").replace("meesho", "dataset")
+                        filtered_logs.append(filtered_log)
+                    standardized_response["debug_logs"] = filtered_logs
+                
+                # Set calculated flags to ensure frontend doesn't recalculate
+                if "analysis" in standardized_response and isinstance(standardized_response["analysis"], dict):
+                    standardized_response["analysis"]["_is_backend_calculated"] = True
+                    standardized_response["analysis"]["_skip_frontend_processing"] = True
+                
+                # Debug print the response status
+                debug_print(f"Sending standardized response to match other datasets")
+                
+                return Response(standardized_response, status=status.HTTP_200_OK)
                 
             except Exception as e:
                 logger.error(f"Error processing Meesho files: {str(e)}")

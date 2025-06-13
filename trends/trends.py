@@ -2913,12 +2913,36 @@ def fetch_google_trends_no_proxy(keywords, timeframe='today 5-y', geo='IN', anal
 
 # Constants
 REQUEST_TIMEOUT = 30
-SERP_API_KEY = "64e3a48333bbb33f4ce8ded91e5268cd453a80fb244104de63b7ad9af9cc2a58"
+# List of API keys from apiss.txt
+API_KEYS = [
+    "64e3a48333bbb33f4ce8ded91e5268cd453a80fb244104de63b7ad9af9cc2a58",
+    "dd4a8d8e88cd024be7437e101bc61a84252c66784c9d0feda65579f6ea7f7e61", 
+    "b7b117ab390626be29879a9feb4bc69a5b44bcdc8072f519c82f569cdff2f22b",
+    "f34ac57d10bc35d0c35c3222728c7330c48ccfde5cb5cc3af6093db67509ff0b",
+    "a286873875f313c3aa2eeb8fc7081abb9a735ccd966525dd59a0e241fa488fd2",
+    "ac15a46dfe09f2f632d81f9f6eae5e06b4cf751b382cd2ff7581c34c40458f39",
+    "59a32674d187a0351b1a079f173c8fb65ef88fb6f692bb10bc6945356954688c",
+    "36d19d9b372534339b261420b0c63b9ef8162f03cddbdbb43d274a4c16c12e05",
+    "560ac9f7a8062811363f7630cd51de9ef01c4318ec12d47289cb087acc28b445"
+]
+
+# Initialize with first API key
+SERP_API_KEY = API_KEYS[0]
+
+# Function to rotate API key if limit exceeded
+def rotate_api_key():
+    global SERP_API_KEY
+    current_index = API_KEYS.index(SERP_API_KEY)
+    next_index = (current_index + 1) % len(API_KEYS)
+    SERP_API_KEY = API_KEYS[next_index]
+    return SERP_API_KEY
 
 def fetch_serp_trends(keyword, timeframe='today 5-y', geo='IN', analysis_options=None):
     """
     Fetch trends data from SERP API as a fallback using serpapi package
     """
+    global SERP_API_KEY
+    
     if not SERP_API_KEY:
         logger.error("SERP API key not configured")
         return None
@@ -2950,20 +2974,37 @@ def fetch_serp_trends(keyword, timeframe='today 5-y', geo='IN', analysis_options
         if not serp_data_types:
             serp_data_types = ["TIMESERIES"]
 
+        # Try each data type with API key rotation if needed
         for data_type in serp_data_types:
-            params = {
-                "engine": "google_trends",
-                "q": keyword,
-                "geo": geo,
-                "api_key": SERP_API_KEY,
-                "data_type": data_type
-            }
-            # Always use 5 years data for TIMESERIES
-            if data_type == "TIMESERIES":
-                params["date"] = timeframe
-            search = GoogleSearch(params)
-            results = search.get_dict()
-            serp_results[data_type] = results
+            api_key_attempts = 0
+            while api_key_attempts < len(API_KEYS):
+                params = {
+                    "engine": "google_trends",
+                    "q": keyword,
+                    "geo": geo,
+                    "api_key": SERP_API_KEY,
+                    "data_type": data_type
+                }
+                # Always use 5 years data for TIMESERIES
+                if data_type == "TIMESERIES":
+                    params["date"] = timeframe
+                search = GoogleSearch(params)
+                results = search.get_dict()
+                
+                # Check if API key has run out of searches
+                if isinstance(results, dict) and results.get('error') == 'Your account has run out of searches.':
+                    logger.warning(f"API key {SERP_API_KEY} has run out of searches. Rotating to next key.")
+                    SERP_API_KEY = rotate_api_key()
+                    api_key_attempts += 1
+                    continue
+                
+                serp_results[data_type] = results
+                break
+            
+            # If we've tried all API keys and still failed
+            if api_key_attempts >= len(API_KEYS):
+                logger.error("All API keys have run out of searches")
+                return None
 
         # Parse results into your app's format
         data = {}

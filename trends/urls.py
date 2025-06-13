@@ -10,4 +10,6 @@ urlpatterns = [
     path('api/', views.trends_api, name='trends_api'),
     path('ai-insights/', views.ai_insights_api, name='ai_insights_api'),
     path('ai-analysis/', views.ai_analysis_api, name='ai_analysis_api'),
+    path('pagespeed-test/', views.pagespeed_test_api, name='pagespeed_test_api'),
+    path('pagespeed/', views.pagespeed_test_view, name='pagespeed_test_view'),
 ]
