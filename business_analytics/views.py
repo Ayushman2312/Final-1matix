@@ -1,8 +1,6 @@
 from django.shortcuts import render
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -17,10 +15,12 @@ import tempfile
 import io
 import sys
 from django.conf import settings
+from django.contrib.auth.models import User as DjangoUser
 
 from .models import SalesDataFile, SalesAnalysisResult
 from .serializers import SalesDataFileSerializer, SalesAnalysisResultSerializer
 from .analysis_helper import identify_columns_with_gemini, analyze_sales_data, compute_sales_metrics
+from User.models import User as CustomUser
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -58,6 +58,97 @@ def debug_print(message):
         if len(debug_print.log_collection) > 100:
             debug_print.log_collection = debug_print.log_collection[-100:]
 
+def get_user_from_session(request):
+    """
+    Helper function to get the user from the session using various possible keys.
+    Implements thorough debug logging to help troubleshoot authentication issues.
+    
+    Args:
+        request: The request object containing the session
+        
+    Returns:
+        tuple: (user, user_email, django_user) where:
+               - user is the CustomUser object if found, otherwise None
+               - user_email is the email string if found, otherwise None
+               - django_user is the Django User object if found, otherwise None
+    """
+    debug_print("=== SESSION DEBUG ===")
+    debug_print(f"Session ID: {request.session.session_key}")
+    debug_print(f"Session keys: {list(request.session.keys())}")
+    debug_print(f"Headers: {dict(request.headers)}")
+    debug_print(f"CSRF Cookie: {request.META.get('CSRF_COOKIE', 'Not set')}")
+    
+    # Check for authentication
+    user_email = None
+    custom_user = None
+    django_user = None
+    
+    # Try different common session keys
+    if 'email' in request.session:
+        user_email = request.session.get('email')
+        debug_print(f"Found email in session: {user_email}")
+    elif 'user_email' in request.session:
+        user_email = request.session.get('user_email')
+        debug_print(f"Found user_email in session: {user_email}")
+    elif 'username' in request.session:
+        user_email = request.session.get('username')
+        debug_print(f"Found username in session: {user_email}")
+    
+    # Try to get user by ID from session
+    if 'user_id' in request.session:
+        user_id = request.session.get('user_id')
+        debug_print(f"Found user_id in session: {user_id}")
+        
+        # Try to get Django User first
+        try:
+            django_user = DjangoUser.objects.filter(id=user_id).first()
+            if django_user:
+                debug_print(f"Found Django user: {django_user.username}")
+        except Exception as e:
+            debug_print(f"Error finding Django user: {str(e)}")
+        
+        # Try to get Custom User
+        custom_user = CustomUser.objects.filter(user_id=user_id).first()
+        if custom_user:
+            debug_print(f"Found custom user via user_id: {custom_user.email}")
+            user_email = custom_user.email
+    
+    # Try to get custom user by email if we have one
+    if user_email and not custom_user:
+        custom_user = CustomUser.objects.filter(email=user_email).first()
+        if custom_user:
+            debug_print(f"Found custom user via email lookup: {custom_user.email} (ID: {custom_user.user_id})")
+    
+    # If we have a custom user but no Django user, try to find the corresponding Django user
+    if custom_user and not django_user:
+        try:
+            django_user = DjangoUser.objects.filter(username=custom_user.email).first() or DjangoUser.objects.filter(email=custom_user.email).first()
+            if django_user:
+                debug_print(f"Found Django user via custom user email: {django_user.username}")
+        except Exception as e:
+            debug_print(f"Error finding Django user from custom user: {str(e)}")
+    
+    # For testing in debug mode: try to find any user in the system
+    if not custom_user and not django_user and settings.DEBUG:
+        debug_print("DEBUG MODE: Attempting to find any user for testing")
+        test_user = CustomUser.objects.first()
+        if test_user:
+            debug_print(f"DEBUG MODE: Found test custom user: {test_user.email}")
+            # Uncomment the next line to actually use the test user
+            # custom_user, user_email = test_user, test_user.email
+            
+            # Try to find corresponding Django user
+            try:
+                django_user = DjangoUser.objects.filter(username=test_user.email).first() or DjangoUser.objects.filter(email=test_user.email).first()
+                if django_user:
+                    debug_print(f"DEBUG MODE: Found test Django user: {django_user.username}")
+            except Exception as e:
+                debug_print(f"Error finding test Django user: {str(e)}")
+    
+    debug_print(f"Final result - Custom User found: {custom_user is not None}, Django User found: {django_user is not None}, Email: {user_email}")
+    debug_print("=== END SESSION DEBUG ===")
+    return custom_user, user_email, django_user
+
 @method_decorator(csrf_exempt, name='dispatch')
 class SalesDataUploadView(APIView):
     """
@@ -65,9 +156,35 @@ class SalesDataUploadView(APIView):
     """
     parser_classes = (MultiPartParser, FormParser)
     
+    @csrf_exempt  # Add CSRF exemption directly on the post method too
     def post(self, request, format=None):
         """Handle file upload and initiate analysis"""
         try:
+            # Get user from session
+            custom_user, user_email, django_user = get_user_from_session(request)
+            
+            # Check if user is authenticated
+            if not django_user:
+                # Last resort fallback - try to use the user_id directly from session
+                user_id = request.session.get('user_id')
+                if user_id:
+                    try:
+                        # Try to get Django user by ID
+                        django_user = DjangoUser.objects.filter(id=user_id).first()
+                        if django_user:
+                            debug_print(f"Found Django user through session user_id: {django_user.username}")
+                    except Exception as e:
+                        debug_print(f"Error trying fallback authentication: {str(e)}")
+            
+            # If still no Django user, we can't proceed
+            if not django_user:
+                logger.warning("Unauthenticated user tried to upload sales data - no Django user found")
+                debug_print("Unauthenticated user tried to upload sales data - no Django user found")
+                return Response(
+                    {"success": False, "error": "Authentication required"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            
             # Check if file was uploaded
             if 'file' not in request.FILES:
                 debug_print("No file uploaded in request")
@@ -111,8 +228,10 @@ class SalesDataUploadView(APIView):
             
             # Save the file record
             file_type = file_extension[1:]  # Remove the dot
+            debug_print(f"Using user: {django_user.username} ({user_email})")
+                
             sales_file = SalesDataFile.objects.create(
-                user=request.user,
+                user=django_user,
                 file=file_obj,
                 file_name=file_name,
                 file_type=file_type
@@ -122,7 +241,7 @@ class SalesDataUploadView(APIView):
             analysis_result = SalesAnalysisResult.objects.create(
                 sales_data_file=sales_file,
                 status='processing',
-                platform_type=platform_type
+                platform_type=None  # Always use None for consistent analysis
             )
             
             # Read the file into a pandas DataFrame
@@ -146,7 +265,6 @@ class SalesDataUploadView(APIView):
                         dialect = sniffer.sniff(sample)
                         detected_delimiter = dialect.delimiter
                         logger.info(f"Detected delimiter: '{detected_delimiter}'")
-                        debug_print(f"Detected delimiter: '{detected_delimiter}'")
                     except:
                         # Default to comma if detection fails
                         detected_delimiter = ','
@@ -410,7 +528,7 @@ class SalesDataUploadView(APIView):
                 
                 # Identify columns using Gemini AI - only for column identification
                 logger.info("Starting column identification with Gemini")
-                column_mapping = identify_columns_with_gemini(clean_df, platform_type=platform_type)
+                column_mapping = identify_columns_with_gemini(clean_df, platform_type=None)
                 logger.info(f"Column mapping result: {column_mapping}")
                 debug_print(f"Column mapping result: {json.dumps(column_mapping, indent=2)}")
                 
@@ -474,7 +592,7 @@ class SalesDataUploadView(APIView):
                 # Analyze the data using pandas
                 logger.info("Starting data analysis with pandas")
                 try:
-                    analysis_data = analyze_sales_data(clean_df, column_mapping, platform_type)
+                    analysis_data = analyze_sales_data(clean_df, column_mapping, platform_type=None)
                     logger.info("Data analysis completed")
                     
                     # Add column mapping issues to the analysis summary
@@ -639,21 +757,35 @@ class SalesDataUploadView(APIView):
             except:
                 return "Non-serializable data"
 
-@method_decorator(login_required, name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class BusinessAnalyticsView(APIView):
     """
     View for rendering the business analytics dashboard
     """
     def get(self, request, format=None):
+        # Get user from session
+        custom_user, user_email, django_user = get_user_from_session(request)
+        
+        # Check if user is authenticated - check for django_user first since we need it for queries
+        if not django_user:
+            # For API views, you could return a 401 response
+            logger.warning("Unauthenticated user tried to access analytics dashboard - no Django user found")
+            debug_print("Unauthenticated user tried to access analytics dashboard - no Django user found")
+            context = {
+                'recent_analysis': None,
+                'error_message': 'Please log in to view your analytics dashboard.'
+            }
+            return render(request, 'business_analytics/dashboard.html', context)
+            
         # Get the user's most recent analysis result
         recent_analysis = SalesAnalysisResult.objects.filter(
-            sales_data_file__user=request.user,
+            sales_data_file__user=django_user,
             status='completed'
         ).order_by('-created_at').first()
         
         if recent_analysis:
-            logger.info(f"Found recent analysis for user {request.user.username}: {recent_analysis.id}")
-            debug_print(f"Found recent analysis for user {request.user.username}: {recent_analysis.id}")
+            logger.info(f"Found recent analysis for user {django_user.username}")
+            debug_print(f"Found recent analysis for Django user {django_user.username}")
             
             # Check if analysis_data is valid
             analysis_data = recent_analysis.analysis_data
@@ -670,8 +802,8 @@ class BusinessAnalyticsView(APIView):
             else:
                 debug_print("Analysis data is empty or None")
         else:
-            logger.info(f"No completed analysis found for user {request.user.username}")
-            debug_print(f"No completed analysis found for user {request.user.username}")
+            logger.info(f"No completed analysis found for Django user {django_user.username}")
+            debug_print(f"No completed analysis found for Django user {django_user.username}")
         
         context = {
             'recent_analysis': recent_analysis
@@ -683,6 +815,7 @@ class BusinessAnalyticsView(APIView):
         
         return render(request, 'business_analytics/dashboard.html', context)
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class AnalysisResultView(APIView):
     """
@@ -690,30 +823,42 @@ class AnalysisResultView(APIView):
     """
     def get(self, request, analysis_id=None, format=None):
         try:
+            # Get user from session
+            custom_user, user_email, django_user = get_user_from_session(request)
+            
+            # Check if user is authenticated - check for django_user first since we need it for queries
+            if not django_user:
+                logger.warning("Unauthenticated user tried to access analysis results - no Django user found")
+                debug_print("Unauthenticated user tried to access analysis results - no Django user found")
+                return Response(
+                    {"error": "Authentication required"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+                
             if analysis_id:
                 # Get the specified analysis result
                 analysis = SalesAnalysisResult.objects.filter(
                     id=analysis_id,
-                    sales_data_file__user=request.user
+                    sales_data_file__user=django_user
                 ).first()
                 
                 if not analysis:
-                    logger.warning(f"Analysis not found: {analysis_id} for user {request.user.username}")
-                    debug_print(f"Analysis not found: {analysis_id} for user {request.user.username}")
+                    logger.warning(f"Analysis not found: {analysis_id} for Django user {django_user.username}")
+                    debug_print(f"Analysis not found: {analysis_id} for Django user {django_user.username}")
                     return Response({"error": "Analysis not found"}, status=status.HTTP_404_NOT_FOUND)
                 
-                logger.info(f"Returning analysis {analysis_id} for user {request.user.username}")
-                debug_print(f"Returning analysis {analysis_id} for user {request.user.username}")
+                logger.info(f"Returning analysis {analysis_id} for Django user {django_user.username}")
+                debug_print(f"Returning analysis {analysis_id} for Django user {django_user.username}")
                 serializer = SalesAnalysisResultSerializer(analysis)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 # Get all analysis results for the user
                 analyses = SalesAnalysisResult.objects.filter(
-                    sales_data_file__user=request.user
+                    sales_data_file__user=django_user
                 ).order_by('-created_at')
                 
-                logger.info(f"Returning {analyses.count()} analyses for user {request.user.username}")
-                debug_print(f"Returning {analyses.count()} analyses for user {request.user.username}")
+                logger.info(f"Returning {analyses.count()} analyses for Django user {django_user.username}")
+                debug_print(f"Returning {analyses.count()} analyses for Django user {django_user.username}")
                 serializer = SalesAnalysisResultSerializer(analyses, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
                 
@@ -736,17 +881,47 @@ class SalesMetricsView(APIView):
     """
     parser_classes = (MultiPartParser, FormParser)
     
+    @csrf_exempt  # Add CSRF exemption directly on the post method too
     def post(self, request, format=None):
         """Handle file upload and compute metrics"""
         try:
-            # Check platform type for special handling
-            platform_type = request.data.get('platform_type', '').lower()
+            # Get user from session
+            custom_user, user_email, django_user = get_user_from_session(request)
             
-            # Special handling for Meesho platform (dual file upload)
-            if platform_type == 'meesho':
-                return self.handle_meesho_files(request)
+            # Check if user is authenticated
+            if not django_user:
+                logger.warning("Unauthenticated user tried to compute sales metrics - no Django user found")
+                debug_print("Unauthenticated user tried to compute sales metrics - no Django user found")
+                return Response(
+                    {"error": "Authentication required"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
             
-            # Standard handling for other platforms (single file)
+            # Debug request information
+            debug_print("=== REQUEST DEBUG ===")
+            debug_print(f"Content Type: {request.content_type}")
+            debug_print(f"Request method: {request.method}")
+            debug_print(f"Request headers: {dict(request.headers)}")
+            debug_print(f"Request FILES keys: {list(request.FILES.keys())}")
+            debug_print(f"Request POST keys: {list(request.POST.keys())}")
+            debug_print(f"Request DATA keys: {list(request.data.keys())}")
+            debug_print("=== END REQUEST DEBUG ===")
+            
+            # Check if this is a Meesho upload (which requires two files)
+            if 'platform_type' in request.data and request.data.get('platform_type').lower() == 'meesho':
+                debug_print("🟢 Detected Meesho platform type, checking for both files")
+                
+                # Check if both sales_file and returns_file are present
+                if 'sales_file' in request.FILES and 'returns_file' in request.FILES:
+                    debug_print("✅ Found both sales_file and returns_file")
+                    return self.handle_meesho_files(request)
+                else:
+                    debug_print(f"❌ Missing required files for Meesho analysis. Found files: {list(request.FILES.keys())}")
+                    return Response(
+                        {"error": "Meesho analysis requires both sales_file and returns_file"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
             # Check if file was uploaded
             if 'file' not in request.FILES:
                 debug_print("No file uploaded in request")
@@ -871,14 +1046,28 @@ class SalesMetricsView(APIView):
                 if manual_column_mapping:
                     column_mapping = manual_column_mapping
                 else:
-                    # Use AI or heuristic column identification with platform type
-                    column_mapping = identify_columns_with_gemini(df, platform_type=platform_type)
+                    # Use AI or heuristic column identification, but don't pass platform type for consistent analysis
+                    column_mapping = identify_columns_with_gemini(df, platform_type=None)
                 
                 # Compute the sales metrics
                 metrics = compute_sales_metrics(df, column_mapping)
                 
-                # Return ONLY the metrics object as requested, with no additional fields
-                return Response(metrics, status=status.HTTP_200_OK)
+                # Also run the full analysis to match what's done for Meesho files
+                analysis_results = analyze_sales_data(df, column_mapping, platform_type=None)
+                
+                # Combine metrics with analysis results
+                full_results = analysis_results.copy()
+                full_results.update(metrics)
+                
+                # Return the standard analysis response format
+                standard_response = {
+                    "success": True,
+                    "message": "File analyzed successfully",
+                    "analysis": full_results,
+                    "column_mapping": column_mapping
+                }
+                
+                return Response(standard_response, status=status.HTTP_200_OK)
                 
             except Exception as e:
                 logger.error(f"Error processing file: {str(e)}")
@@ -902,6 +1091,17 @@ class SalesMetricsView(APIView):
         """
         try:
             debug_print("🟢 Meesho platform selected")
+            
+            # Debug request information
+            debug_print("=== MEESHO REQUEST DEBUG ===")
+            debug_print(f"Content Type: {request.content_type}")
+            debug_print(f"Request FILES keys: {list(request.FILES.keys())}")
+            debug_print(f"Request FILES types: {[(k, type(v).__name__) for k,v in request.FILES.items()]}")
+            debug_print(f"Sales file name: {request.FILES.get('sales_file').name if 'sales_file' in request.FILES else 'Not found'}")
+            debug_print(f"Returns file name: {request.FILES.get('returns_file').name if 'returns_file' in request.FILES else 'Not found'}")
+            debug_print(f"Request POST keys: {list(request.POST.keys())}")
+            debug_print(f"Request DATA keys: {list(request.data.keys())}")
+            debug_print("=== END MEESHO REQUEST DEBUG ===")
             
             # Validate that both files are present
             if 'sales_file' not in request.FILES or 'returns_file' not in request.FILES:
@@ -930,16 +1130,20 @@ class SalesMetricsView(APIView):
             
             # Process both files
             try:
+                debug_print("🔄 Processing sales file...")
                 # Read sales file
                 df_sales = self._read_file_to_dataframe(sales_file)
                 if df_sales is None or df_sales.empty:
+                    debug_print("❌ Sales file contains no data")
                     return Response({
                         "error": "Sales file contains no data or is in an unsupported format."
                     }, status=status.HTTP_400_BAD_REQUEST)
                 
+                debug_print("🔄 Processing returns file...")
                 # Read returns file
                 df_returns = self._read_file_to_dataframe(returns_file)
                 if df_returns is None or df_returns.empty:
+                    debug_print("❌ Returns file contains no data")
                     return Response({
                         "error": "Returns file contains no data or is in an unsupported format."
                     }, status=status.HTTP_400_BAD_REQUEST)
@@ -974,6 +1178,8 @@ class SalesMetricsView(APIView):
                     
                     if expected_columns or (len(extra_columns) != 1):
                         debug_print(f"❌ Column mismatch between files. Sales file has {len(expected_columns)} unique columns, Returns file has {len(extra_columns)} unique columns")
+                        debug_print(f"Missing columns in returns file: {expected_columns}")
+                        debug_print(f"Extra columns in returns file: {extra_columns}")
                         return Response({
                             "error": "The returns file should have the same columns as the sales file, plus a 'cancel_return_date' column."
                         }, status=status.HTTP_400_BAD_REQUEST)
@@ -997,8 +1203,10 @@ class SalesMetricsView(APIView):
                         }, status=status.HTTP_400_BAD_REQUEST)
                 
                 # Map columns for both files
-                sales_mapping = identify_columns_with_gemini(df_sales)
-                returns_mapping = identify_columns_with_gemini(df_returns)
+                debug_print("🔄 Identifying columns for sales file...")
+                sales_mapping = identify_columns_with_gemini(df_sales, platform_type=None)
+                debug_print("🔄 Identifying columns for returns file...")
+                returns_mapping = identify_columns_with_gemini(df_returns, platform_type=None)
                 
                 # Debug column mappings
                 debug_print("Column mapping (sales file):\n" + json.dumps(
@@ -1058,7 +1266,7 @@ class SalesMetricsView(APIView):
                 
                 # Use analyze_sales_data to match the process for other datasets
                 debug_print("Running full sales analysis on merged data...")
-                analysis_results = analyze_sales_data(df_merged, merged_mapping, platform_type="meesho")
+                analysis_results = analyze_sales_data(df_merged, merged_mapping, platform_type=None)  # Use None instead of "meesho"
                 
                 # Compute metrics on merged data (same as before for compatibility)
                 metrics = compute_sales_metrics(df_merged, merged_mapping)
@@ -1068,7 +1276,6 @@ class SalesMetricsView(APIView):
                 
                 # Include debug logs in the response
                 debug_info = {
-                    "platform": "meesho",
                     "merged_rows": len(df_merged),
                     "sales_rows": len(df_sales),
                     "returns_rows": len(df_returns),
@@ -1082,8 +1289,11 @@ class SalesMetricsView(APIView):
                 if hasattr(debug_print, 'log_collection'):
                     debug_info['logs'] = debug_print.log_collection
                 
-                # Final metrics object with exactly the required 8 metrics (same as before)
-                final_metrics = {
+                # Final metrics object with the full analysis results
+                final_metrics = analysis_results.copy()
+                
+                # Also include the metrics directly computed
+                final_metrics.update({
                     "total_sales": metrics.get("total_sales", 0),
                     "average_sales": metrics.get("average_sales", 0),
                     "return_rate": metrics.get("return_rate", 0),
@@ -1091,97 +1301,19 @@ class SalesMetricsView(APIView):
                     "total_return_amount": metrics.get("total_return_amount", 0),
                     "total_replacements": metrics.get("total_replacements", 0),
                     "total_regions": metrics.get("total_regions", 0),
-                    "total_products": metrics.get("total_products", 0),
-                    # CRITICAL CHANGE: Set data_source to a standard type instead of marking it as Meesho
-                    # This will prevent the frontend from using special Meesho handling
-                    "data_source": "standard",
-                    # Include debug info but don't use a format that triggers Meesho-specific frontend code
-                    "_debug": debug_info  # Use _debug instead of debug to prevent frontend detection
-                }
+                    "total_products": metrics.get("total_products", 0)
+                })
                 
-                # Include full analysis results for the UI
-                final_metrics.update(analysis_results)
-                
-                # Make sure all visualization data is included in the response
-                if 'platform_specific' in analysis_results:
-                    final_metrics["platform_specific"] = analysis_results["platform_specific"]
-                    debug_print(f"Including platform-specific analysis with {len(analysis_results['platform_specific'])} metrics")
-                
-                # Ensure critical visualization fields are present before standardizing
-                for key in ["time_series", "top_products", "top_regions", "sales_channels", "visualization_data", "order_metrics", "key_metrics"]:
-                    if key in analysis_results:
-                        final_metrics[key] = analysis_results[key]
-                        debug_print(f"Including {key} for visualization")
-                    else:
-                        debug_print(f"Warning: {key} not found in analysis results")
-                
-                # Add standard field for transaction types if missing
-                if "transaction_types" not in final_metrics and "order_metrics" in final_metrics:
-                    final_metrics["transaction_types"] = [
-                        {"name": "Regular Orders", "count": final_metrics["order_metrics"].get("regular_orders", 0)},
-                        {"name": "Cancelled", "count": final_metrics["order_metrics"].get("cancelled_orders", 0)},
-                        {"name": "Returned", "count": final_metrics["order_metrics"].get("returned_orders", 0)},
-                        {"name": "Replaced", "count": final_metrics["order_metrics"].get("replaced_orders", 0)}
-                    ]
-                    debug_print("Added transaction_types field to match standard dataset structure")
-                
-                # Ensure the merged dataset has standard format
-                if "_source_type__" in merged_mapping:
-                    del merged_mapping["_source_type__"]
-                if "cancel_return_date" in merged_mapping:
-                    del merged_mapping["cancel_return_date"]
-                
-                # Remove any property in final_metrics that identifies it as Meesho data
-                keys_to_remove = []
-                for key in final_metrics:
-                    if isinstance(key, str) and ("meesho" in key.lower() or "debug" in key.lower()):
-                        keys_to_remove.append(key)
-                
-                for key in keys_to_remove:
-                    del final_metrics[key]
-                
-                # Make sure metrics are in the expected format for chart rendering
-                if "top_products" in final_metrics and len(final_metrics["top_products"]) > 0:
-                    for product in final_metrics["top_products"]:
-                        if "percentage" not in product and "value" in product:
-                            product["percentage"] = 0  # Add missing percentage field
-                
-                if "top_regions" in final_metrics and len(final_metrics["top_regions"]) > 0:
-                    for region in final_metrics["top_regions"]:
-                        if "percentage" not in region and "value" in region:
-                            region["percentage"] = 0  # Add missing percentage field
-                
-                # CRITICAL CHANGE: Format the response exactly like non-Meesho datasets
-                # This is the key to preventing frontend recalculation
-                standardized_response = {
+                # Standard response format exactly like regular dataset uploads
+                standard_response = {
                     "success": True,
                     "message": "File uploaded and analyzed successfully",
-                    "file_id": "standard_data_file",  # Generic ID, not meesho-specific
-                    "analysis_id": "standard_analysis",  # Generic ID, not meesho-specific
-                    "platform_type": None,  # Don't specify any platform type to prevent special handling
-                    "analysis": final_metrics,  # Put all metrics inside the analysis field like other datasets
-                    "column_mapping": merged_mapping  # Include column mapping
+                    "analysis": final_metrics,
+                    "column_mapping": merged_mapping
                 }
                 
-                # Include debug info in a standard format
-                if hasattr(debug_print, 'log_collection'):
-                    # Filter out any mentions of "Meesho" from the logs to prevent frontend detection
-                    filtered_logs = []
-                    for log in debug_print.log_collection:
-                        # Replace any mention of Meesho with "Dataset" to prevent triggering frontend-specific code
-                        filtered_log = log.replace("Meesho", "Dataset").replace("meesho", "dataset")
-                        filtered_logs.append(filtered_log)
-                    standardized_response["debug_logs"] = filtered_logs
-                
-                # Set calculated flags to ensure frontend doesn't recalculate
-                if "analysis" in standardized_response and isinstance(standardized_response["analysis"], dict):
-                    standardized_response["analysis"]["_is_backend_calculated"] = True
-                    standardized_response["analysis"]["_skip_frontend_processing"] = True
-                
-                # Debug print the response status
-                debug_print(f"Sending standardized response to match other datasets")
-                
-                return Response(standardized_response, status=status.HTTP_200_OK)
+                debug_print(f"Sending standard analysis response")
+                return Response(standard_response, status=status.HTTP_200_OK)
                 
             except Exception as e:
                 logger.error(f"Error processing Meesho files: {str(e)}")

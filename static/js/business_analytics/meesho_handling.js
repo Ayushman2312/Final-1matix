@@ -39,7 +39,7 @@ function showMeeshoUploadModal() {
         meeshoModal.id = 'meeshoUploadModal';
         meeshoModal.className = 'fixed inset-0 z-50 flex items-center justify-center';
         meeshoModal.innerHTML = `
-            <div class="absolute inset-0 bg-black bg-opacity-50" id="meeshoModalOverlay"></div>
+            <div class="absolute inset-0 bg-black bg-opacity-50" id="meeshoUploadModalOverlay"></div>
             <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 relative z-10 overflow-hidden max-h-[85vh] overflow-y-auto">
                 <!-- Modal Header -->
                 <div class="bg-[#7B3DF3] py-1.5 px-4 flex justify-between items-center">
@@ -71,11 +71,14 @@ function showMeeshoUploadModal() {
                     </div>
                     
                     <form id="meeshoUploadForm" enctype="multipart/form-data">
+                        <!-- Add CSRF token -->
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''}">
+                        
                         <!-- Sales File Input -->
                         <div class="mb-3">
                             <label for="salesFileInput" class="block text-xs font-medium text-gray-700 mb-1">Sales Data File</label>
                             <div class="flex items-center space-x-2">
-                                <input type="file" id="salesFileInput" name="salesFile" class="hidden" accept=".csv,.xlsx,.xls">
+                                <input type="file" id="salesFileInput" name="sales_file" class="hidden" accept=".csv,.xlsx,.xls">
                                 <label for="salesFileInput" class="cursor-pointer bg-white border border-gray-300 rounded-md py-1 px-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] flex-grow flex items-center justify-between">
                                     <span id="selectedSalesFileName">Choose sales file...</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -89,7 +92,7 @@ function showMeeshoUploadModal() {
                         <div class="mb-3">
                             <label for="returnsFileInput" class="block text-xs font-medium text-gray-700 mb-1">Returns/Cancellations Data File</label>
                             <div class="flex items-center space-x-2">
-                                <input type="file" id="returnsFileInput" name="returnsFile" class="hidden" accept=".csv,.xlsx,.xls">
+                                <input type="file" id="returnsFileInput" name="returns_file" class="hidden" accept=".csv,.xlsx,.xls">
                                 <label for="returnsFileInput" class="cursor-pointer bg-white border border-gray-300 rounded-md py-1 px-2.5 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] flex-grow flex items-center justify-between">
                                     <span id="selectedReturnsFileName">Choose returns file...</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +105,7 @@ function showMeeshoUploadModal() {
                         <div id="meeshoUploadStatus" class="hidden mb-2"></div>
                         
                         <div class="flex items-center justify-between">
-                            <button type="button" id="meeshoCalculateButton" class="bg-[#7B3DF3] py-1 px-3 text-white text-xs font-medium rounded-md hover:bg-[#6931D3] focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:ring-opacity-50 transition-colors">
+                            <button type="button" id="meeshoCalculateButton" class="bg-[#7B3DF3] py-1 px-3 text-white text-xs font-medium rounded-md hover:bg-[#6931D3] focus:outline-none focus:ring-2 focus:ring-[#7B3DF3] focus:ring-opacity-50 transition-colors flex items-center">
                                 <span id="meeshoButtonText">Calculate Metrics</span>
                                 <span id="meeshoSpinner" class="hidden ml-1 animate-spin">↻</span>
                             </button>
@@ -130,7 +133,7 @@ function initMeeshoModalListeners() {
     // Get elements from the modal
     const meeshoModal = document.getElementById('meeshoUploadModal');
     const closeMeeshoModal = document.getElementById('closeMeeshoModal');
-    const meeshoModalOverlay = document.getElementById('meeshoModalOverlay');
+    const meeshoModalOverlay = document.getElementById('meeshoUploadModalOverlay');
     const salesFileInput = document.getElementById('salesFileInput');
     const returnsFileInput = document.getElementById('returnsFileInput');
     const selectedSalesFileName = document.getElementById('selectedSalesFileName');
@@ -138,68 +141,155 @@ function initMeeshoModalListeners() {
     const meeshoCalculateButton = document.getElementById('meeshoCalculateButton');
     
     // Add event listeners for closing the modal
-    closeMeeshoModal.addEventListener('click', () => {
-        meeshoModal.classList.add('hidden');
-    });
+    if (closeMeeshoModal) {
+        closeMeeshoModal.addEventListener('click', () => {
+            meeshoModal.classList.add('hidden');
+        });
+    }
     
-    meeshoModalOverlay.addEventListener('click', () => {
-        meeshoModal.classList.add('hidden');
-    });
+    if (meeshoModalOverlay) {
+        meeshoModalOverlay.addEventListener('click', () => {
+            meeshoModal.classList.add('hidden');
+        });
+    }
     
     // Update file name displays when files are selected
-    salesFileInput.addEventListener('change', function() {
-        if (this.files.length) {
-            selectedSalesFileName.textContent = this.files[0].name;
-        } else {
-            selectedSalesFileName.textContent = 'Choose sales file...';
-        }
-    });
+    if (salesFileInput) {
+        salesFileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                if (selectedSalesFileName) {
+                    selectedSalesFileName.textContent = this.files[0].name;
+                }
+                console.log(`Selected sales file: ${this.files[0].name}`);
+            } else {
+                if (selectedSalesFileName) {
+                    selectedSalesFileName.textContent = 'Choose sales file...';
+                }
+                console.log('No sales file selected');
+            }
+        });
+    } else {
+        console.warn('⚠️ salesFileInput element not found');
+    }
     
-    returnsFileInput.addEventListener('change', function() {
-        if (this.files.length) {
-            selectedReturnsFileName.textContent = this.files[0].name;
-        } else {
-            selectedReturnsFileName.textContent = 'Choose returns file...';
-        }
-    });
+    if (returnsFileInput) {
+        returnsFileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                if (selectedReturnsFileName) {
+                    selectedReturnsFileName.textContent = this.files[0].name;
+                }
+                console.log(`Selected returns file: ${this.files[0].name}`);
+            } else {
+                if (selectedReturnsFileName) {
+                    selectedReturnsFileName.textContent = 'Choose returns file...';
+                }
+                console.log('No returns file selected');
+            }
+        });
+    } else {
+        console.warn('⚠️ returnsFileInput element not found');
+    }
     
     // Handle calculate button click
-    meeshoCalculateButton.addEventListener('click', submitMeeshoFiles);
+    if (meeshoCalculateButton) {
+        meeshoCalculateButton.addEventListener('click', submitMeeshoFiles);
+    } else {
+        console.warn('⚠️ meeshoCalculateButton element not found');
+    }
+    
+    // Also check for alternative IDs that might be used in the dashboard
+    const altSalesFileInput = document.getElementById('meeshoSalesFileInput');
+    const altReturnsFileInput = document.getElementById('meeshoReturnsFileInput');
+    const altMeeshoUploadButton = document.getElementById('meeshoUploadButton');
+    
+    if (altSalesFileInput) {
+        console.log('Found alternative sales file input (meeshoSalesFileInput)');
+        const altSalesFileName = document.getElementById('meeshoSalesFileName');
+        
+        altSalesFileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                if (altSalesFileName) {
+                    altSalesFileName.textContent = this.files[0].name;
+                }
+                console.log(`Selected sales file (alt): ${this.files[0].name}`);
+            }
+        });
+    }
+    
+    if (altReturnsFileInput) {
+        console.log('Found alternative returns file input (meeshoReturnsFileInput)');
+        const altReturnsFileName = document.getElementById('meeshoReturnsFileName');
+        
+        altReturnsFileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                if (altReturnsFileName) {
+                    altReturnsFileName.textContent = this.files[0].name;
+                }
+                console.log(`Selected returns file (alt): ${this.files[0].name}`);
+            }
+        });
+    }
+    
+    if (altMeeshoUploadButton) {
+        console.log('Found alternative upload button (meeshoUploadButton)');
+        altMeeshoUploadButton.addEventListener('click', function() {
+            console.log('Alternative upload button clicked, calling submitMeeshoFiles');
+            submitMeeshoFiles();
+        });
+    }
 }
 
 /**
  * Validates and submits the Meesho files for analysis
  */
 function submitMeeshoFiles() {
-    // Get required elements
-    const salesFileInput = document.getElementById('salesFileInput');
-    const returnsFileInput = document.getElementById('returnsFileInput');
+    // Get required elements - try both direct and global access
+    const salesFileInput = document.getElementById('salesFileInput') || window.salesFileInput;
+    const returnsFileInput = document.getElementById('returnsFileInput') || window.returnsFileInput;
+    
+    // If we still don't have the file inputs, try other IDs that might be used
+    const altSalesFileInput = document.getElementById('meeshoSalesFileInput');
+    const altReturnsFileInput = document.getElementById('meeshoReturnsFileInput');
+    
+    // Use the first available file inputs
+    const finalSalesInput = salesFileInput || altSalesFileInput;
+    const finalReturnsInput = returnsFileInput || altReturnsFileInput;
+    
+    // Get UI elements
     const meeshoUploadStatus = document.getElementById('meeshoUploadStatus');
     const meeshoButtonText = document.getElementById('meeshoButtonText');
     const meeshoSpinner = document.getElementById('meeshoSpinner');
-    const meeshoCalculateButton = document.getElementById('meeshoCalculateButton');
+    const meeshoCalculateButton = document.getElementById('meeshoCalculateButton') || 
+                                 document.getElementById('meeshoUploadButton');
     const meeshoModal = document.getElementById('meeshoUploadModal');
     
     console.log('🟢 Meesho file submission initiated');
     
+    // Validate that we have file input elements
+    if (!finalSalesInput || !finalReturnsInput) {
+        console.error('❌ Could not find file input elements');
+        showMeeshoUploadStatus('System error: Could not find file input elements', 'error');
+        return;
+    }
+    
     // Validate that both files are selected
-    if (!salesFileInput.files.length && !returnsFileInput.files.length) {
+    if (!finalSalesInput.files.length && !finalReturnsInput.files.length) {
         console.error('❌ Both sales and returns files are missing');
         showMeeshoUploadStatus('Please upload both sales and returns files.', 'error');
         return;
-    } else if (!salesFileInput.files.length) {
+    } else if (!finalSalesInput.files.length) {
         console.error('❌ Sales file is missing');
         showMeeshoUploadStatus('Please upload the Sales Data file.', 'error');
         return;
-    } else if (!returnsFileInput.files.length) {
+    } else if (!finalReturnsInput.files.length) {
         console.error('❌ Returns file is missing');
         showMeeshoUploadStatus('Please upload the Returns/Cancellations Data file.', 'error');
         return;
     }
     
     // Validate file types
-    const salesFile = salesFileInput.files[0];
-    const returnsFile = returnsFileInput.files[0];
+    const salesFile = finalSalesInput.files[0];
+    const returnsFile = finalReturnsInput.files[0];
     const validExtensions = ['.csv', '.xlsx', '.xls'];
     
     const salesExt = salesFile.name.substring(salesFile.name.lastIndexOf('.')).toLowerCase();
@@ -217,18 +307,34 @@ function submitMeeshoFiles() {
     - Returns file: ${returnsFile.name} (${formatFileSize(returnsFile.size)})`);
     
     // Show loading state
-    meeshoButtonText.textContent = 'Processing...';
-    meeshoSpinner.classList.remove('hidden');
-    meeshoCalculateButton.disabled = true;
+    if (meeshoButtonText) meeshoButtonText.textContent = 'Processing...';
+    if (meeshoSpinner) meeshoSpinner.classList.remove('hidden');
+    if (meeshoCalculateButton) meeshoCalculateButton.disabled = true;
     showMeeshoUploadStatus('Uploading files and calculating metrics...', 'info');
     
     // Create form data for API request
     const formData = new FormData();
+    
+    // Add files with correct names that match the backend expectations
     formData.append('sales_file', salesFile);
     formData.append('returns_file', returnsFile);
-    formData.append('platform_type', 'meesho');
+    formData.append('platform_type', 'meesho'); // Keep 'meesho' for request identification, backend will use None
+    
+    // Add CSRF token if available
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    if (csrfToken) {
+        console.log('📤 Adding CSRF token to request');
+        formData.append('csrfmiddlewaretoken', csrfToken);
+    } else {
+        console.warn('⚠️ No CSRF token found');
+    }
     
     console.log('📤 Sending API request to /business_analytics/api/metrics/');
+    
+    // Debug form data
+    for (let pair of formData.entries()) {
+        console.log(`📤 FormData: ${pair[0]}: ${pair[1] instanceof File ? pair[1].name : pair[1]}`);
+    }
     
     // Make API request
     fetch('/business_analytics/api/metrics/', {
@@ -236,14 +342,23 @@ function submitMeeshoFiles() {
         body: formData,
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        credentials: 'same-origin'
     })
     .then(response => {
         console.log(`📥 Received response: Status ${response.status}`);
         if (!response.ok) {
-            return response.json().then(err => {
-                console.error('❌ Error response:', err);
-                throw new Error(err.error || 'Failed to calculate metrics');
+            return response.text().then(text => {
+                try {
+                    // Try to parse as JSON
+                    const err = JSON.parse(text);
+                    console.error('❌ Error response:', err);
+                    throw new Error(err.error || 'Failed to calculate metrics');
+                } catch (jsonError) {
+                    // If not JSON, return the text directly
+                    console.error('❌ Error response (text):', text);
+                    throw new Error(text || 'Failed to calculate metrics');
+                }
             });
         }
         return response.json();
@@ -252,20 +367,116 @@ function submitMeeshoFiles() {
         console.log('✅ Metrics calculation successful:', metrics);
         
         // Display the metrics
-        displaySalesMetrics(metrics);
+        if (typeof displaySalesMetrics === 'function') {
+            displaySalesMetrics(metrics);
+            
+            // After displaying metrics, ensure charts are rendered
+            setTimeout(() => {
+                console.log('🔄 Triggering chart rendering for Meesho data...');
+                
+                // Extract the metrics object properly - could be in metrics.analysis or directly in metrics
+                const metricsData = metrics.analysis || metrics;
+                
+                // Use the dedicated helper function if available
+                if (typeof window.renderAllChartsForMeesho === 'function') {
+                    console.log('📊 Using renderAllChartsForMeesho helper function');
+                    window.renderAllChartsForMeesho(metricsData);
+                } else {
+                    // Fallback to manual chart rendering
+                    console.log('⚠️ renderAllChartsForMeesho not available, using manual rendering');
+                    
+                    // Store metrics data globally for charts to access
+                    window.lastAnalysisData = metricsData;
+                    
+                    // Show chart containers
+                    const chartContainers = [
+                        'returnsVsCancellationsContainer',
+                        'topProductsContainer',
+                        'topRegionsContainer',
+                        'salesChannelContainer',
+                        'salesTrendContainer'
+                    ];
+                    
+                    // Make all chart containers visible
+                    chartContainers.forEach(containerId => {
+                        const container = document.getElementById(containerId);
+                        if (container) {
+                            console.log(`📊 Making ${containerId} visible`);
+                            container.classList.remove('hidden');
+                        }
+                    });
+                    
+                    // Trigger returns vs cancellations chart
+                    if (typeof createReturnsVsCancellationsChart === 'function' && 
+                        document.getElementById('returnsVsCancellationsChart')) {
+                        console.log('📊 Creating returns vs cancellations chart');
+                        createReturnsVsCancellationsChart(window.lastAnalysisData);
+                    }
+                    
+                    // Trigger top products chart/list
+                    if (window.lastAnalysisData.top_products && 
+                        window.lastAnalysisData.top_products.length > 0) {
+                        if (typeof createTopProductsChart === 'function') {
+                            console.log('📊 Creating top products visualization');
+                            createTopProductsChart(window.lastAnalysisData, window.lastAnalysisData.top_products);
+                        }
+                    }
+                    
+                    // Trigger top regions chart/list
+                    if (window.lastAnalysisData.top_regions && 
+                        window.lastAnalysisData.top_regions.length > 0) {
+                        if (typeof createTopSellingStatesChart === 'function') {
+                            console.log('📊 Creating top regions visualization');
+                            createTopSellingStatesChart(window.lastAnalysisData, window.lastAnalysisData.top_regions);
+                        }
+                    }
+                    
+                    // Trigger sales channels chart if available
+                    if (window.lastAnalysisData.sales_channels && 
+                        window.lastAnalysisData.sales_channels.length > 0) {
+                        if (typeof updateSalesChannelChart === 'function') {
+                            console.log('📊 Creating sales channels chart');
+                            updateSalesChannelChart(window.lastAnalysisData.sales_channels);
+                        }
+                    }
+                    
+                    // Trigger time series chart if available
+                    if (window.lastAnalysisData.time_series && 
+                        window.lastAnalysisData.time_series.labels &&
+                        window.lastAnalysisData.time_series.labels.length > 0) {
+                        if (typeof updateSalesTrendChart === 'function') {
+                            console.log('📊 Creating sales trend chart');
+                            updateSalesTrendChart(window.lastAnalysisData.time_series);
+                        }
+                    }
+                    
+                    // Force chart redraw by triggering window resize event
+                    setTimeout(() => {
+                        console.log('📊 Triggering window resize to redraw charts');
+                        window.dispatchEvent(new Event('resize'));
+                    }, 100);
+                }
+                
+                console.log('✅ Chart rendering complete');
+            }, 500); // Small delay to ensure DOM is ready
+        } else {
+            console.warn('⚠️ displaySalesMetrics function not found');
+        }
         
         // Show success message
         showMeeshoUploadStatus('Analysis completed successfully!', 'success');
         
         // Hide loading state
-        meeshoButtonText.textContent = 'Calculate Metrics';
-        meeshoSpinner.classList.add('hidden');
-        meeshoCalculateButton.disabled = false;
+        if (meeshoButtonText) meeshoButtonText.textContent = 'Calculate Metrics';
+        if (meeshoSpinner) meeshoSpinner.classList.add('hidden');
+        if (meeshoCalculateButton) meeshoCalculateButton.disabled = false;
         
         // Close the modal after a small delay
-        setTimeout(() => {
-            meeshoModal.classList.add('hidden');
-        }, 1500);
+        if (meeshoModal) {
+            setTimeout(() => {
+                meeshoModal.classList.add('hidden');
+            }, 1500);
+        }
     })
     .catch(error => {
         console.error('❌ Error:', error);
@@ -274,9 +485,9 @@ function submitMeeshoFiles() {
         showMeeshoUploadStatus(`Error: ${error.message}`, 'error');
         
         // Reset button state
-        meeshoButtonText.textContent = 'Calculate Metrics';
-        meeshoSpinner.classList.add('hidden');
-        meeshoCalculateButton.disabled = false;
+        if (meeshoButtonText) meeshoButtonText.textContent = 'Calculate Metrics';
+        if (meeshoSpinner) meeshoSpinner.classList.add('hidden');
+        if (meeshoCalculateButton) meeshoCalculateButton.disabled = false;
     });
 }
 

@@ -2308,9 +2308,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add the files to formData
             formData.append('sales_file', file[0]);
             formData.append('returns_file', file[1]);
-            formData.append('platform_type', 'meesho');
+            formData.append('platform_type', 'meesho'); // Backend will set to None for consistent analysis
             
             showUploadStatus('Processing Meesho sales and returns files...', 'info');
+            console.log('📤 Processing Meesho files - backend will use standard analysis pipeline with platform_type=None');
         } else {
             // Standard single-file handling for other platforms
             formData.append('file', file);
@@ -2388,7 +2389,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error calculating metrics:', error);
             showUploadStatus('Error: ' + error.message, 'error');
-            
             
             // Update request status
             if (requestStatus) {

@@ -607,18 +607,20 @@
                     </div>
                 </div>
                 
+                <!-- Status message area -->
+                <div id="meeshoUploadStatus" class="hidden mb-3 p-2 text-xs rounded"></div>
+                
                 <p class="text-xs text-center text-gray-500 mb-3">Maximum size: 2MB per file</p>
                 
-                <button type="button" id="meeshoUploadButton" class="w-full bg-purple-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
-                    Upload & Analyze
+                <button type="button" id="meeshoUploadButton" class="w-full bg-purple-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center">
+                    <span id="meeshoButtonText">Upload & Analyze</span>
+                    <span id="meeshoSpinner" class="hidden ml-2 animate-spin">↻</span>
                 </button>
             </form>
         </div>
     </div>
 </div>
 
-<script src="{% static 'js/business_analytics/analysis.js' %}?v=3"></script>
-<script src="{% static 'js/business_analytics/meesho_handling.js' %}?v=3"></script>
 <script src="{% static 'js/business_analytics/enhanced_charts.js' %}?v=3"></script>
 <!-- Initialize Chart.js and ensure it's available -->
 <script>
@@ -726,6 +728,175 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- Direct connection between dashboard and meesho_handling.js -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Connect the meeshoUploadButton directly to the submitMeeshoFiles function
+    const meeshoUploadButton = document.getElementById('meeshoUploadButton');
+    
+    if (meeshoUploadButton) {
+        console.log('Found meeshoUploadButton, adding direct event listener');
+        
+        // Add a direct click handler that will call the submitMeeshoFiles function
+        meeshoUploadButton.addEventListener('click', function() {
+            console.log('meeshoUploadButton clicked, checking for meesho_handling.js functions');
+            
+            // Check if the meesho_handling.js file is loaded and its functions are available
+            if (window.meeshoHandler && typeof window.meeshoHandler.submitMeeshoFiles === 'function') {
+                console.log('Using meesho_handling.js submitMeeshoFiles function');
+                
+                // Set global variables for file inputs
+                window.salesFileInput = document.getElementById('meeshoSalesFileInput');
+                window.returnsFileInput = document.getElementById('meeshoReturnsFileInput');
+                
+                // Call the submitMeeshoFiles function
+                window.meeshoHandler.submitMeeshoFiles();
+            } else {
+                console.warn('meesho_handling.js functions not available, using fallback');
+                
+                // If the dedicated functions aren't available, use the form-based approach
+                const formData = new FormData(document.getElementById('meeshoUploadForm'));
+                
+                // Validate that both files are selected
+                const salesFileInput = document.getElementById('meeshoSalesFileInput');
+                const returnsFileInput = document.getElementById('meeshoReturnsFileInput');
+                
+                if (!salesFileInput.files.length || !returnsFileInput.files.length) {
+                    alert('Please select both sales and returns files');
+                    return;
+                }
+                
+                // Set the platform type
+                formData.append('platform_type', 'meesho');
+                
+                // Submit the form data
+                fetch('/business_analytics/api/metrics/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Analysis complete', data);
+                    
+                    // Try to display the metrics
+                    if (typeof displaySalesMetrics === 'function') {
+                        displaySalesMetrics(data);
+                        
+                        // After displaying metrics, ensure charts are rendered
+                        setTimeout(() => {
+                            console.log('🔄 Triggering chart rendering for Meesho data...');
+                            
+                            // Use the dedicated helper function if available
+                            if (typeof window.renderAllChartsForMeesho === 'function') {
+                                console.log('📊 Using renderAllChartsForMeesho helper function');
+                                window.renderAllChartsForMeesho(data);
+                            } else {
+                                // Fallback to manual chart rendering
+                                console.log('⚠️ renderAllChartsForMeesho not available, using manual rendering');
+                                
+                                // Store metrics data globally for charts to access
+                                window.lastAnalysisData = data.analysis || data;
+                                
+                                // Trigger returns vs cancellations chart
+                                if (typeof createReturnsVsCancellationsChart === 'function' && 
+                                    document.getElementById('returnsVsCancellationsChart')) {
+                                    console.log('📊 Creating returns vs cancellations chart');
+                                    createReturnsVsCancellationsChart(window.lastAnalysisData);
+                                    
+                                    // Make sure the container is visible
+                                    const container = document.getElementById('returnsVsCancellationsContainer');
+                                    if (container) container.classList.remove('hidden');
+                                }
+                                
+                                // Trigger top products chart/list
+                                if (window.lastAnalysisData.top_products && 
+                                    window.lastAnalysisData.top_products.length > 0) {
+                                    if (typeof createTopProductsChart === 'function') {
+                                        console.log('📊 Creating top products visualization');
+                                        createTopProductsChart(window.lastAnalysisData, window.lastAnalysisData.top_products);
+                                        
+                                        // Make sure the container is visible
+                                        const container = document.getElementById('topProductsContainer');
+                                        if (container) container.classList.remove('hidden');
+                                    }
+                                }
+                                
+                                // Trigger top regions chart/list
+                                if (window.lastAnalysisData.top_regions && 
+                                    window.lastAnalysisData.top_regions.length > 0) {
+                                    if (typeof createTopSellingStatesChart === 'function') {
+                                        console.log('📊 Creating top regions visualization');
+                                        createTopSellingStatesChart(window.lastAnalysisData, window.lastAnalysisData.top_regions);
+                                        
+                                        // Make sure the container is visible
+                                        const container = document.getElementById('topRegionsContainer');
+                                        if (container) container.classList.remove('hidden');
+                                    }
+                                }
+                                
+                                // Trigger sales channels chart if available
+                                if (window.lastAnalysisData.sales_channels && 
+                                    window.lastAnalysisData.sales_channels.length > 0) {
+                                    if (typeof updateSalesChannelChart === 'function') {
+                                        console.log('📊 Creating sales channels chart');
+                                        updateSalesChannelChart(window.lastAnalysisData.sales_channels);
+                                        
+                                        // Make sure the container is visible
+                                        const container = document.getElementById('salesChannelContainer');
+                                        if (container) container.classList.remove('hidden');
+                                    }
+                                }
+                                
+                                // Trigger time series chart if available
+                                if (window.lastAnalysisData.time_series && 
+                                    window.lastAnalysisData.time_series.labels &&
+                                    window.lastAnalysisData.time_series.labels.length > 0) {
+                                    if (typeof updateSalesTrendChart === 'function') {
+                                        console.log('📊 Creating sales trend chart');
+                                        updateSalesTrendChart(window.lastAnalysisData.time_series);
+                                        
+                                        // Make sure the container is visible
+                                        const container = document.getElementById('salesTrendContainer');
+                                        if (container) container.classList.remove('hidden');
+                                    }
+                                }
+                            }
+                            
+                            console.log('✅ Chart rendering complete');
+                            
+                            // Close the modal after chart rendering is complete
+                            setTimeout(() => {
+                                const meeshoModal = document.getElementById('meeshoUploadModal');
+                                if (meeshoModal) meeshoModal.classList.add('hidden');
+                            }, 1000);
+                        }, 500); // Small delay to ensure DOM is ready
+                    } else {
+                        alert('Analysis completed successfully!');
+                        
+                        // Close the modal
+                        const meeshoModal = document.getElementById('meeshoUploadModal');
+                        if (meeshoModal) meeshoModal.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                });
+            }
+        });
+    }
+});
+</script>
+
+<!-- Load core business analytics scripts -->
+<script src="{% static 'js/business_analytics/analysis.js' %}?v=3"></script>
+<script src="{% static 'js/business_analytics/meesho_handling.js' %}?v=3"></script>
+<script src="{% static 'js/business_analytics/enhanced_charts.js' %}?v=3"></script>
+
 <!-- Meesho Upload Modal Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -742,16 +913,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const meeshoReturnsFileInput = document.getElementById('meeshoReturnsFileInput');
     const meeshoSalesFileName = document.getElementById('meeshoSalesFileName');
     const meeshoReturnsFileName = document.getElementById('meeshoReturnsFileName');
-    const meeshoUploadButton = document.getElementById('meeshoUploadButton');
     
     // Open Meesho upload modal when clicking "Click Here"
     if (meeshoUploadLink) {
         meeshoUploadLink.addEventListener('click', function(e) {
             e.preventDefault();
             // Hide the regular upload modal
-            uploadModal.classList.add('hidden');
+            if (uploadModal) uploadModal.classList.add('hidden');
             // Show the Meesho upload modal
-            meeshoUploadModal.classList.remove('hidden');
+            if (meeshoUploadModal) meeshoUploadModal.classList.remove('hidden');
         });
     }
     
@@ -775,7 +945,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Hide Meesho modal
             meeshoUploadModal.classList.add('hidden');
             // Show regular upload modal
-            uploadModal.classList.remove('hidden');
+            if (uploadModal) uploadModal.classList.remove('hidden');
         });
     }
     
@@ -783,9 +953,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (meeshoSalesFileInput) {
         meeshoSalesFileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
-                meeshoSalesFileName.textContent = this.files[0].name;
+                if (meeshoSalesFileName) meeshoSalesFileName.textContent = this.files[0].name;
+                console.log(`Selected sales file: ${this.files[0].name}`);
             } else {
-                meeshoSalesFileName.textContent = 'No file selected';
+                if (meeshoSalesFileName) meeshoSalesFileName.textContent = 'No file selected';
             }
         });
     }
@@ -793,105 +964,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (meeshoReturnsFileInput) {
         meeshoReturnsFileInput.addEventListener('change', function() {
             if (this.files.length > 0) {
-                meeshoReturnsFileName.textContent = this.files[0].name;
+                if (meeshoReturnsFileName) meeshoReturnsFileName.textContent = this.files[0].name;
+                console.log(`Selected returns file: ${this.files[0].name}`);
             } else {
-                meeshoReturnsFileName.textContent = 'No file selected';
+                if (meeshoReturnsFileName) meeshoReturnsFileName.textContent = 'No file selected';
             }
-        });
-    }
-    
-    // Function to submit analysis request for Meesho files
-    function submitAnalysisRequest(formData) {
-        // Ensure we have both sales and returns files
-        const salesFile = formData.get('sales_file') || meeshoSalesFileInput.files[0];
-        const returnsFile = formData.get('returns_file') || meeshoReturnsFileInput.files[0];
-        
-        if (!salesFile || !returnsFile) {
-            alert('Please select both sales and returns files');
-            return;
-        }
-        
-        // Check if calculateSalesMetrics exists in analysis.js
-        if (typeof calculateSalesMetrics === 'function') {
-            // Call the existing function with the files array and platform type
-            calculateSalesMetrics([salesFile, returnsFile], null, 'meesho');
-        } else {
-            // Fallback: submit the FormData directly to the API
-            fetch('/business_analytics/api/metrics/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => {
-                        throw new Error(err.error || 'Failed to calculate metrics');
-                    });
-                }
-                return response.json();
-            })
-            .then(metrics => {
-                console.log('Metrics calculation successful:', metrics);
-                
-                // Try to call displaySalesMetrics if it exists
-                if (typeof displaySalesMetrics === 'function') {
-                    displaySalesMetrics(metrics);
-                } else {
-                    // Fallback: Show a basic alert with success message
-                    alert('Analysis completed successfully!');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error processing files: ' + error.message);
-            });
-        }
-    }
-    
-    // Make submitAnalysisRequest globally accessible
-    window.submitAnalysisRequest = submitAnalysisRequest;
-    
-    // Function to handle Meesho file uploads specifically
-    function handleMeeshoUpload(formData) {
-        // Ensure platform type is set
-        formData.set('platform_type', 'meesho');
-        
-        // Call the generic submit function
-        submitAnalysisRequest(formData);
-    }
-    
-    // Make handleMeeshoUpload globally accessible
-    window.handleMeeshoUpload = handleMeeshoUpload;
-    
-    // Handle Meesho upload button click
-    if (meeshoUploadButton) {
-        meeshoUploadButton.addEventListener('click', function() {
-            // Create a FormData object to send the files
-            const formData = new FormData(document.getElementById('meeshoUploadForm'));
-            
-            // Validate that at least the sales file is selected
-            if (!meeshoSalesFileInput.files.length) {
-                alert('Please select a sales data file');
-                return;
-            }
-            
-            // Set the platform type to Meesho
-            formData.append('platform_type', 'Meesho');
-            
-            // This will connect to the existing Meesho handling functionality
-            // You can customize this based on your backend implementation
-            if (typeof handleMeeshoUpload === 'function') {
-                handleMeeshoUpload(formData);
-            } else {
-                // Fallback if the specific handler isn't available
-                // Submit to the generic analysis endpoint
-                submitAnalysisRequest(formData);
-            }
-            
-            // Close the modal after submission
-            meeshoUploadModal.classList.add('hidden');
         });
     }
 });

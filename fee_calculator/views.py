@@ -2,7 +2,10 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse
 from .models import Category, SubCategory, FeeStructure, AmazonProgram
 from decimal import Decimal
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
+@method_decorator(csrf_exempt, name='dispatch')
 class FeeCalculatorView(TemplateView):
     template_name = 'fee_calculator/calculator.html'
 
@@ -20,43 +23,51 @@ class FeeCalculatorView(TemplateView):
         print(f"Calculating closing fee for selling price: {selling_price} and program: {program_name}")
         selling_price = float(selling_price)
         
-        if program_name == 'FBA':
-            # Get subcategory from program name
-            subcategory = SubCategory.objects.get(id=self.request.POST.get('subcategory'))
-            if subcategory.is_exception:
-                if selling_price >= 0 and selling_price <= 500:
-                    fee = 12.0
-                elif selling_price >= 501 and selling_price <= 1000:
+        # Get subcategory from request
+        subcategory = SubCategory.objects.get(id=self.request.POST.get('subcategory'))
+        
+        # Check if the subcategory is an exception - use same exception logic for all programs
+        if subcategory.is_exception:
+            # Apply exception-specific closing fee for all program types
+            if selling_price >= 0 and selling_price <= 300:
+                fee = 12.0
+            elif selling_price >= 301 and selling_price <= 500:
+                fee = 12.0
+            elif selling_price >= 501 and selling_price <= 1000:
+                fee = 25.0
+            else:  # > 1000
+                fee = 70.0
+        else:
+            # Apply standard closing fees based on program type
+            if program_name == 'FBA' or program_name == 'SELLER_FLEX':
+                # FBA and Seller Flex have the same closing fee structure now
+                if selling_price >= 0 and selling_price <= 300:
                     fee = 25.0
-                else:
-                    fee = 50.0
-            else:
-                if selling_price >= 0 and selling_price <= 250:
-                    fee = 25.0
-                elif selling_price >= 251 and selling_price <= 500:
+                elif selling_price >= 301 and selling_price <= 500:
                     fee = 20.0
                 elif selling_price >= 501 and selling_price <= 1000:
                     fee = 25.0
-                else:
+                else:  # > 1000
                     fee = 50.0
-        elif program_name == 'SELLER_FLEX':
-            if selling_price >= 0 and selling_price <= 250:
-                fee = 7.0
-            elif selling_price >= 251 and selling_price <= 500:
-                fee = 11.0
-            elif selling_price >= 501 and selling_price <= 1000:
-                fee = 30.0
+            elif program_name == 'EASY_SHIP':
+                if selling_price >= 0 and selling_price <= 300:
+                    fee = 5.0
+                elif selling_price >= 301 and selling_price <= 500:
+                    fee = 10.0
+                elif selling_price >= 501 and selling_price <= 1000:
+                    fee = 33.0
+                else:  # > 1000
+                    fee = 64.0
             else:
-                fee = 61.0
-        else:
-            if selling_price >= 0 and selling_price <= 250:
-                fee = 4.0
-            elif selling_price >= 251 and selling_price <= 500:
-                fee = 9.0
-            elif selling_price >= 501 and selling_price <= 1000:
-                fee = 30.0
-            else:
-                fee = 61.0
+                # Default case - should not happen with the current setup
+                if selling_price >= 0 and selling_price <= 250:
+                    fee = 4.0
+                elif selling_price >= 251 and selling_price <= 500:
+                    fee = 9.0
+                elif selling_price >= 501 and selling_price <= 1000:
+                    fee = 30.0
+                else:
+                    fee = 61.0
             
         print(f"Closing fee: {fee}")
         return fee
@@ -149,49 +160,33 @@ class FeeCalculatorView(TemplateView):
         chargeable_weight = max(weight_in_g, volumetric_weight)
         print(f"Chargeable weight (higher of actual {weight_in_g}g vs volumetric {volumetric_weight}g): {chargeable_weight}g")
         
-        # Base fee for 0-500g
+        # Updated flat fee structure for Easy Ship
         if chargeable_weight <= 500:
-            return 43
+            return 65
         
         # 501-1000g
         if chargeable_weight <= 1000:
-            return 43 + 13
+            return 85
         
-        # 1001g to 5000g: Base + 13 + 21 for each 1000g bracket
+        # 1001-2000g
+        if chargeable_weight <= 2000:
+            return 122
+        
+        # 2001-5000g: Add 34 per additional 1000g bracket
         if chargeable_weight <= 5000:
-            additional_brackets = ((chargeable_weight - 1000) // 1000) + 1
-            return 43 + 13 + (21 * additional_brackets)
+            additional_g = chargeable_weight - 2000
+            additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+            return 122 + (34 * additional_brackets)
         
-        # 5001g onwards: Base + 13 + (21 * 4) + 12 for each additional 1000g bracket
-        additional_brackets = ((chargeable_weight - 5000) // 1000) + 1
-        return 43 + 13 + (21 * 4) + (12 * additional_brackets)
+        # 5001g onwards: Add 18 per additional 1000g bracket
+        additional_g = chargeable_weight - 5000
+        additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+        base_fee_5000g = 122 + (34 * 3)  # Fee for 5000g
+        return base_fee_5000g + (18 * additional_brackets)
 
     def calculate_easy_ship_national_fee(self, weight_in_g, dimensions):
-        print(f"Calculating Easy Ship national fee for weight {weight_in_g}g and dimensions {dimensions}")
-        # Calculate volumetric weight
-        volume = dimensions['length'] * dimensions['width'] * dimensions['height']
-        volumetric_weight = (volume / 5000) * 1000
-        
-        # Use higher of actual vs volumetric weight in grams
-        chargeable_weight = max(weight_in_g, volumetric_weight)
-        print(f"Chargeable weight (higher of actual {weight_in_g}g vs volumetric {volumetric_weight}g): {chargeable_weight}g")
-        
-        # Base fee for 0-500g
-        if chargeable_weight <= 500:
-            return 76
-        
-        # 501-1000g
-        if chargeable_weight <= 1000:
-            return 76 + 25
-        
-        # 1001g to 5000g: Base + 25 + 33 for each 1000g bracket
-        if chargeable_weight <= 5000:
-            additional_brackets = ((chargeable_weight - 1000) // 1000) + 1
-            return 76 + 25 + (33 * additional_brackets)
-        
-        # 5001g onwards: Base + 25 + (33 * 4) + 16 for each additional 1000g bracket
-        additional_brackets = ((chargeable_weight - 5000) // 1000) + 1
-        return 76 + 25 + (33 * 4) + (16 * additional_brackets)
+        # Since Easy Ship now only has flat fee, redirect to local fee calculation
+        return self.calculate_easy_ship_local_fee(weight_in_g, dimensions)
 
     def calculate_fba_local_fee(self, weight_in_g, dimensions):
         print(f"Calculating FBA local fee for weight {weight_in_g}g and dimensions {dimensions}")
@@ -202,22 +197,29 @@ class FeeCalculatorView(TemplateView):
         # Use higher of actual vs volumetric weight in grams
         chargeable_weight = max(weight_in_g, volumetric_weight)
         
-        # Base fee (including Pick & Pack Fee of Rs. 14)
+        # Updated FBA Regional Fee (renamed from local)
         if chargeable_weight <= 500:
-            return 29 + 14
+            return 39
         
         # 501-1000g
         if chargeable_weight <= 1000:
-            return 29 + 14 + 13
+            return 54
         
-        # 1001g to 5000g: Base + 13 + 21 for each 1000g bracket
+        # 1001-2000g
+        if chargeable_weight <= 2000:
+            return 78
+        
+        # 2001-5000g: Add 24 per additional 1000g bracket
         if chargeable_weight <= 5000:
-            additional_brackets = ((chargeable_weight - 1000) // 1000) + 1
-            return 29 + 14 + 13 + (21 * additional_brackets)
+            additional_g = chargeable_weight - 2000
+            additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+            return 78 + (24 * additional_brackets)
         
-        # 5001g onwards: Base + 13 + (21 * 4) + 12 for each additional 1000g bracket
-        additional_brackets = ((chargeable_weight - 5000) // 1000) + 1
-        return 29 + 14 + 13 + (21 * 4) + (12 * additional_brackets)
+        # 5001g onwards: Add 13 per additional 1000g bracket
+        additional_g = chargeable_weight - 5000
+        additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+        base_fee_5000g = 78 + (24 * 3)  # Fee for 5000g
+        return base_fee_5000g + (13 * additional_brackets)
 
     def calculate_fba_national_fee(self, weight_in_g, dimensions):
         print(f"Calculating FBA national fee for weight {weight_in_g}g and dimensions {dimensions}")
@@ -227,22 +229,29 @@ class FeeCalculatorView(TemplateView):
         
         chargeable_weight = max(weight_in_g, volumetric_weight)
         
-        # Base fee (including Pick & Pack Fee of Rs. 14)
+        # Updated FBA National Fee
         if chargeable_weight <= 500:
-            return 62 + 14
+            return 65
         
         # 501-1000g
         if chargeable_weight <= 1000:
-            return 62 + 14 + 25
+            return 85
         
-        # 1001g to 5000g: Base + 25 + 33 for each 1000g bracket
+        # 1001-2000g
+        if chargeable_weight <= 2000:
+            return 122
+        
+        # 2001-5000g: Add 34 per additional 1000g bracket
         if chargeable_weight <= 5000:
-            additional_brackets = ((chargeable_weight - 1000) // 1000) + 1
-            return 62 + 14 + 25 + (33 * additional_brackets)
+            additional_g = chargeable_weight - 2000
+            additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+            return 122 + (34 * additional_brackets)
         
-        # 5001g onwards: Base + 25 + (33 * 4) + 16 for each additional 1000g bracket
-        additional_brackets = ((chargeable_weight - 5000) // 1000) + 1
-        return 62 + 14 + 25 + (33 * 4) + (16 * additional_brackets)
+        # 5001g onwards: Add 18 per additional 1000g bracket
+        additional_g = chargeable_weight - 5000
+        additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+        base_fee_5000g = 122 + (34 * 3)  # Fee for 5000g
+        return base_fee_5000g + (18 * additional_brackets)
 
     def calculate_seller_flex_local_fee(self, weight_in_g, dimensions):
         print(f"Calculating Seller Flex local fee for weight {weight_in_g}g and dimensions {dimensions}")
@@ -254,49 +263,33 @@ class FeeCalculatorView(TemplateView):
         chargeable_weight = max(weight_in_g, volumetric_weight)
         print(f"Chargeable weight (higher of actual {weight_in_g}g vs volumetric {volumetric_weight}g): {chargeable_weight}g")
         
-        # Base fee (including Technology Fee of Rs. 14)
+        # Updated flat fee structure for Seller Flex
         if chargeable_weight <= 500:
-            return 29 + 14
+            return 51
         
         # 501-1000g
         if chargeable_weight <= 1000:
-            return 29 + 14 + 13
+            return 71
         
-        # 1001g to 5000g: Base + 13 + 21 for each 1000g bracket
+        # 1001-2000g
+        if chargeable_weight <= 2000:
+            return 108
+        
+        # 2001-5000g: Add 34 per additional 1000g bracket
         if chargeable_weight <= 5000:
-            additional_brackets = ((chargeable_weight - 1000) // 1000) + 1
-            return 29 + 14 + 13 + (21 * additional_brackets)
+            additional_g = chargeable_weight - 2000
+            additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+            return 108 + (34 * additional_brackets)
         
-        # 5001g onwards: Base + 13 + (21 * 4) + 12 for each additional 1000g bracket
-        additional_brackets = ((chargeable_weight - 5000) // 1000) + 1
-        return 29 + 14 + 13 + (21 * 4) + (12 * additional_brackets)
+        # 5001g onwards: Add 18 per additional 1000g bracket
+        additional_g = chargeable_weight - 5000
+        additional_brackets = (additional_g // 1000) + (1 if additional_g % 1000 > 0 else 0)
+        base_fee_5000g = 108 + (34 * 3)  # Fee for 5000g
+        return base_fee_5000g + (18 * additional_brackets)
 
     def calculate_seller_flex_national_fee(self, weight_in_g, dimensions):
-        print(f"Calculating Seller Flex national fee for weight {weight_in_g}g and dimensions {dimensions}")
-        # Calculate volumetric weight
-        volume = dimensions['length'] * dimensions['width'] * dimensions['height']
-        volumetric_weight = (volume / 5000) * 1000
-        
-        # Use higher of actual vs volumetric weight in grams
-        chargeable_weight = max(weight_in_g, volumetric_weight)
-        print(f"Chargeable weight (higher of actual {weight_in_g}g vs volumetric {volumetric_weight}g): {chargeable_weight}g")
-        
-        # Base fee (including Technology Fee of Rs. 14)
-        if chargeable_weight <= 500:
-            return 62 + 14
-        
-        # 501-1000g
-        if chargeable_weight <= 1000:
-            return 62 + 14 + 25
-        
-        # 1001g to 5000g: Base + 25 + 33 for each 1000g bracket
-        if chargeable_weight <= 5000:
-            additional_brackets = ((chargeable_weight - 1000) // 1000) + 1
-            return 62 + 14 + 25 + (33 * additional_brackets)
-        
-        # 5001g onwards: Base + 25 + (33 * 4) + 16 for each additional 1000g bracket
-        additional_brackets = ((chargeable_weight - 5000) // 1000) + 1
-        return 62 + 14 + 25 + (33 * 4) + (16 * additional_brackets)
+        # Since Seller Flex now only has flat fee, redirect to local fee calculation
+        return self.calculate_seller_flex_local_fee(weight_in_g, dimensions)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -359,19 +352,14 @@ class FeeCalculatorView(TemplateView):
             # Calculate shipping fees for each location and program
             location_fees = {
                 'EASY_SHIP': {
-                    'local': self.calculate_easy_ship_local_fee(weight, dimensions),
-                    'regional': (self.calculate_easy_ship_local_fee(weight, dimensions) + self.calculate_easy_ship_national_fee(weight, dimensions)) / 2,
-                    'national': self.calculate_easy_ship_national_fee(weight, dimensions)
+                    'flat': self.calculate_easy_ship_local_fee(weight, dimensions)
                 },
                 'FBA': {
-                    'local': self.calculate_fba_local_fee(weight, dimensions),
-                    'regional': (self.calculate_fba_local_fee(weight, dimensions) + self.calculate_fba_national_fee(weight, dimensions)) / 2,
+                    'regional': self.calculate_fba_local_fee(weight, dimensions),
                     'national': self.calculate_fba_national_fee(weight, dimensions)
                 },
                 'SELLER_FLEX': {
-                    'local': self.calculate_seller_flex_local_fee(weight, dimensions),
-                    'regional': (self.calculate_seller_flex_local_fee(weight, dimensions) + self.calculate_seller_flex_national_fee(weight, dimensions)) / 2,
-                    'national': self.calculate_seller_flex_national_fee(weight, dimensions)
+                    'flat': self.calculate_seller_flex_local_fee(weight, dimensions)
                 }
             }
             
@@ -417,31 +405,39 @@ class FeeCalculatorView(TemplateView):
                             'profit_margin': float((profit / selling_price) * 100) if selling_price else 0
                         }
 
-                    # Calculate average values
-                    shipping_fees = [loc['shipping_fee'] for loc in program_results['locations'].values()]
-                    total_fees = [loc['total_fees'] for loc in program_results['locations'].values()]
-                    net_amounts = [loc['net_amount'] for loc in program_results['locations'].values()]
-                    profits = [loc['profit'] for loc in program_results['locations'].values()]
-                    profit_margins = [loc['profit_margin'] for loc in program_results['locations'].values()]
-                    
-                    print(f"Calculating averages for {program_name}")
+                    # Only calculate averages for FBA which has both regional and national
+                    if program_name == 'FBA':
+                        shipping_fees = [loc['shipping_fee'] for loc in program_results['locations'].values()]
+                        total_fees = [loc['total_fees'] for loc in program_results['locations'].values()]
+                        net_amounts = [loc['net_amount'] for loc in program_results['locations'].values()]
+                        profits = [loc['profit'] for loc in program_results['locations'].values()]
+                        profit_margins = [loc['profit_margin'] for loc in program_results['locations'].values()]
+                        
+                        print(f"Calculating averages for {program_name}")
 
-                    program_results['locations']['average'] = {
-                        'shipping_fee': sum(shipping_fees) / len(shipping_fees),
-                        'total_fees': sum(total_fees) / len(total_fees),
-                        'net_amount': sum(net_amounts) / len(net_amounts),
-                        'profit': sum(profits) / len(profits),
-                        'profit_margin': sum(profit_margins) / len(profit_margins)
-                    }
+                        program_results['locations']['average'] = {
+                            'shipping_fee': sum(shipping_fees) / len(shipping_fees),
+                            'total_fees': sum(total_fees) / len(total_fees),
+                            'net_amount': sum(net_amounts) / len(net_amounts),
+                            'profit': sum(profits) / len(profits),
+                            'profit_margin': sum(profit_margins) / len(profit_margins)
+                        }
 
                 results['programs'][program_name] = program_results
 
             print("Calculations completed successfully")
-            return JsonResponse({
+            response = JsonResponse({
                 'status': 'success',
                 'message': 'Calculations completed successfully',
                 'data': results
             })
+            
+            # Add cache control headers
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+            
+            return response
 
         except (ValueError, TypeError) as e:
             print(f"Invalid input error: {str(e)}")

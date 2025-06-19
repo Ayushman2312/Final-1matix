@@ -49,15 +49,15 @@ function animateText(element, text) {
     
     const processNode = (node) => {
         if (node.nodeType === 3) { // Text node
-            const chars = node.textContent.split('');
-            chars.forEach(char => {
+            const words = node.textContent.split(/(\s+)/); // Split by whitespace but keep the whitespace
+            words.forEach(word => {
                 const span = document.createElement('span');
-                span.textContent = char;
-                span.className = 'opacity-0 transition-opacity duration-100';
-                span.style.animationDelay = `${delay}ms`;
+                span.textContent = word;
+                span.className = 'opacity-0 transition-opacity duration-300';
+                span.style.transitionDelay = `${delay}ms`;
                 element.appendChild(span);
                 setTimeout(() => span.classList.remove('opacity-0'), delay);
-                delay += 10;
+                delay += 150; // Longer delay between words
             });
         } else if (node.nodeType === 1) { // Element node
             const newElement = document.createElement(node.tagName);
@@ -306,17 +306,17 @@ async function generateListing() {
                 if (id === 'search-terms') {
                     // Format search terms with proper spacing and line breaks
                     const terms = content.split(' ').filter(term => term.trim()).join(' ');
-                    element.innerHTML = `<strong>Search Terms:</strong><br>${terms || 'No search terms generated'}`;
+                    animateText(element, `<strong>Search Terms:</strong><br>${terms || 'No search terms generated'}`);
                 } else if (id === 'bullet-points') {
                     if (Array.isArray(content)) {
-                        element.innerHTML = content.map(point => `• ${point}`).join('<br>');
+                        animateText(element, content.map(point => `• ${point}`).join('<br>'));
                     } else if (typeof content === 'string') {
-                        element.innerHTML = content.split('\n').map(point => `• ${point.trim()}`).join('<br>');
+                        animateText(element, content.split('\n').map(point => `• ${point.trim()}`).join('<br>'));
                     } else {
-                        element.innerHTML = 'No bullet points generated';
+                        animateText(element, 'No bullet points generated');
                     }
                 } else {
-                    element.innerHTML = content || `No ${id.replace('-', ' ')} generated`;
+                    animateText(element, content || `No ${id.replace('-', ' ')} generated`);
                 }
             }
         };
@@ -330,11 +330,49 @@ async function generateListing() {
         updateSection('description', data.response.description?.trim());
         updateSection('search-terms', data.response.search_terms);
         
-        // Also update the standard form fields
+        // Function to animate text in form fields
+        function animateFormField(element, content) {
+            if (!element || !content) return;
+            
+            // Check if element is a string (ID) and get the actual element
+            if (typeof element === 'string') {
+                const el = document.getElementById(element);
+                if (!el) {
+                    console.warn(`Element with ID ${element} not found`);
+                    return;
+                }
+                element = el;
+            }
+            
+            // Create a hidden div to show the animated text
+            const animationContainer = document.createElement('div');
+            animationContainer.className = 'absolute inset-0 bg-white z-10 overflow-hidden p-3';
+            animationContainer.style.pointerEvents = 'none'; // Allow clicking through
+            
+            // Set the actual value immediately (but it will be visually hidden)
+            element.value = content || '';
+            
+            // Add the animation container
+            element.parentElement.style.position = 'relative';
+            element.parentElement.appendChild(animationContainer);
+            
+            // Animate the text
+            animateText(animationContainer, content);
+            
+            // Remove the animation container after animation completes
+            const totalWords = content.split(/\s+/).length;
+            const animationDuration = 150 * totalWords + 500; // Total animation time plus buffer
+            
+            setTimeout(() => {
+                animationContainer.remove();
+            }, animationDuration);
+        }
+        
+        // Update form fields
         const updateFormField = (id, content) => {
             const element = document.getElementById(id);
             if (element && (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA')) {
-                element.value = content || '';
+                animateFormField(element, content || '');
                 console.log(`Updated form field ${id} with value: ${content}`);
             } else {
                 console.warn(`Form field ${id} not found or not an input/textarea element`);
@@ -342,22 +380,30 @@ async function generateListing() {
         };
         
         // Update form fields - adding direct access to form fields by name
-        document.getElementById('amazon-title').value = data.response.amazon_title || '';
-        document.getElementById('expert-title').value = data.response.expert_title || '';
+        const amazonTitle = document.getElementById('amazon-title');
+        const expertTitle = document.getElementById('expert-title');
+        
+        if (amazonTitle) {
+            animateFormField(amazonTitle, data.response.amazon_title || '');
+        }
+        
+        if (expertTitle) {
+            animateFormField(expertTitle, data.response.expert_title || '');
+        }
         
         // Fallback for updating fields by query selector if IDs don't work
-        if (!document.getElementById('amazon-title').value && data.response.amazon_title) {
+        if (!amazonTitle?.value && data.response.amazon_title) {
             const amazonTitleInputs = document.querySelectorAll('input[placeholder="Amazon"]');
             if (amazonTitleInputs.length > 0) {
-                amazonTitleInputs[0].value = data.response.amazon_title;
+                animateFormField(amazonTitleInputs[0], data.response.amazon_title);
                 console.log('Updated amazon-title via selector');
             }
         }
         
-        if (!document.getElementById('expert-title').value && data.response.expert_title) {
+        if (!expertTitle?.value && data.response.expert_title) {
             const expertTitleInputs = document.querySelectorAll('input[placeholder="Amazon"]:not(#amazon-title)');
             if (expertTitleInputs.length > 0) {
-                expertTitleInputs[0].value = data.response.expert_title;
+                animateFormField(expertTitleInputs[0], data.response.expert_title);
                 console.log('Updated expert-title via selector');
             }
         }

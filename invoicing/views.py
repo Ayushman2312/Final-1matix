@@ -415,6 +415,9 @@ class CreateInvoiceView(TemplateView):
                 billing_state = billing_details.get('state')
                 is_same_state = company_state == billing_state
 
+                # Reduce the gap by moving the table up closer to the header sections - start table at 560 instead of 500
+                available_height = 560  
+                
                 # Table header with all data but modified display - exactly as in image
                 table_data = [['Items Description', 'HSN', 'Unit Price', 'Unit', 'Qnt', 'Total']]
                 
@@ -444,6 +447,10 @@ class CreateInvoiceView(TemplateView):
                         igst_amount = (total * gst_percentage) / Decimal('100')
                         total_igst += igst_amount
                     
+                    # Handle long HSN codes by wrapping if needed
+                    if hsn and len(hsn) > 8:
+                        hsn = Paragraph(hsn, styles['Normal'])
+                    
                     # Table row with visible columns
                     description = [
                         Paragraph(f"<b>{product['name']}</b>", styles['Normal']),
@@ -458,73 +465,196 @@ class CreateInvoiceView(TemplateView):
                     total_amount += total
 
                 # Set table column widths for visible columns and center align
-                table = Table(table_data, colWidths=[220, 60, 80, 50, 50, 60])
+                # Increase HSN column width to 80 (from 60) to better fit content
+                table = Table(table_data, colWidths=[200, 80, 80, 50, 50, 60], repeatRows=1)
                 page_width = A4[0]
-                table_width = sum([220, 60, 80, 50, 50, 60])
+                table_width = sum([200, 80, 80, 50, 50, 60])
                 x_offset = (page_width - table_width) / 2
 
                 # Enhanced table styling (keeping original style)
                 table_style = TableStyle([
                     ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.4, 0.4, 0.8)),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                    ('ALIGN', (2, 0), (-1, -1), 'CENTER'),  # Right align numeric columns
-                    ('ALIGN', (0, 0), (0, -1), 'CENTER'),    # Left align description
+                    ('ALIGN', (2, 0), (-1, -1), 'CENTER'),  # Center align numeric columns
+                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),    # Left align description
                     ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
                     ('FONTSIZE', (0, 0), (-1, 0), 11),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),  # Reduced from 12
                     ('BACKGROUND', (0, 1), (-1, -1), colors.white),
                     ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
                     ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
                     ('FONTSIZE', (0, 1), (-1, -1), 10),
                     ('GRID', (0, 0), (-1, -1), 1, colors.Color(0.9, 0.9, 0.9)),
                     ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.Color(0.95, 0.95, 0.95)]),
-                    ('BOTTOMPADDING', (0, 1), (-1, -1), 15),
-                    ('TOPPADDING', (0, 1), (-1, -1), 15),
+                    ('BOTTOMPADDING', (0, 1), (-1, -1), 8),  # Reduced from 15
+                    ('TOPPADDING', (0, 1), (-1, -1), 8),     # Reduced from 15
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # Vertical alignment
+                    ('LINEBELOW', (0, 0), (-1, 0), 1, colors.Color(0.2, 0.2, 0.7)), # Strong header line
+                    # Removed BOX style to eliminate the outer border
                 ])
                 table.setStyle(table_style)
                 
-                # Draw the table - moved up by adjusting y coordinate from 450 to 500
-                table.wrapOn(pdf, 400, 500)
-                table.drawOn(pdf, x_offset, 500)  # Centered horizontally and moved up vertically
-                
-                # Summary section with right alignment and borders
-                pdf.setStrokeColor(colors.Color(0.9, 0.9, 0.9))
-                pdf.rect(350, 250, 195, 150, stroke=1)
-                
-                pdf.setFillColor(colors.black)
-                pdf.setFont("Helvetica", 10)
-                y_pos = 380
-                
-                # Subtotal
-                pdf.drawString(360, y_pos, "Subtotal:")
-                pdf.drawRightString(535, y_pos, f"₹ {total_amount:,.2f}")
-                y_pos -= 20
+                # Calculate the table height based on content - adjusted for tighter spacing
+                row_height = 16 + 10  # 16 for padding (8 top + 8 bottom) + 10 for text height
+                header_height = 8 + 11  # 8 for bottom padding + 11 for font size
+                table_height = (len(table_data) - 1) * row_height + header_height
 
+                # Calculate available space on page
+                available_height = 560  # Starting vertical position for table (reduced gap between header and table)
+
+                # Define column width for footer sections - needed for both single and multi-page layouts
+                col_width = 160
+
+                # Check if table will fit on current page
+                # Create fixed size table area for better layout consistency
+                fixed_table_area_height = 250  # Fixed height for table area
+                max_rows_in_main_area = int((fixed_table_area_height - header_height) / row_height)
+
+                if len(table_data) - 1 > max_rows_in_main_area:
+                    # Too many rows for fixed area - use pagination
+                    # Table is too large - we need to handle pagination
+                    rows_per_page = max(1, max_rows_in_main_area)
+                    
+                    # For first page - only show rows that fit in fixed area
+                    first_page_data = [table_data[0]] + table_data[1:rows_per_page+1]
+                    first_page_table = Table(first_page_data, colWidths=[200, 80, 80, 50, 50, 60])
+                    first_page_table.setStyle(table_style)
+                    actual_table_height = min(fixed_table_area_height, header_height + (len(first_page_data) - 1) * row_height)
+                    
+                    # Draw first page table
+                    first_page_table.wrapOn(pdf, 400, actual_table_height)
+                    first_page_table.drawOn(pdf, x_offset, available_height - actual_table_height)
+                    
+                    # Calculate bottom of first table
+                    table_bottom = available_height - actual_table_height
+                    
+                    # Add continuation message - using standard font instead of Helvetica-Italic
+                    pdf.setFillColor(colors.black)
+                    pdf.setFont("Helvetica", 9)
+                    pdf.drawCentredString(page_width/2, table_bottom - 15, "Continued on next page...")
+                    
+                    # Process remaining rows on new pages
+                    remaining_rows = table_data[rows_per_page+1:]
+                    page_num = 1
+                    
+                    while remaining_rows:
+                        # Start a new page
+                        pdf.showPage()
+                        page_num += 1
+                        
+                        # Add header to identify this is a continuation
+                        pdf.setFont("Helvetica-Bold", 14)
+                        pdf.setFillColor(colors.Color(0.4, 0.4, 0.8, alpha=0.3))
+                        pdf.drawCentredString(page_width/2, 800, f"Invoice Continuation - Page {page_num}")
+                        
+                        # Calculate how many rows fit on this page
+                        continuation_page_height = 700  # More space on continuation pages
+                        rows_this_page = min(len(remaining_rows), int(continuation_page_height / row_height))
+                        
+                        # Create and draw table for this page
+                        this_page_data = [table_data[0]] + remaining_rows[:rows_this_page]
+                        this_page_table = Table(this_page_data, colWidths=[200, 80, 80, 50, 50, 60])
+                        this_page_table.setStyle(table_style)
+                        this_page_table_height = header_height + (len(this_page_data) - 1) * row_height
+                        
+                        # Position table with proper spacing
+                        top_margin = 750
+                        this_page_table.wrapOn(pdf, 400, this_page_table_height)
+                        this_page_table.drawOn(pdf, x_offset, top_margin - this_page_table_height)
+                        
+                        # Update remaining rows
+                        remaining_rows = remaining_rows[rows_this_page:]
+                        
+                        # If there are more rows, add continuation message - using standard font
+                        if remaining_rows:
+                            pdf.setFont("Helvetica", 9)  # Changed from Helvetica-Italic to Helvetica
+                            pdf.setFillColor(colors.black)
+                            bottom_pos = top_margin - this_page_table_height - 15
+                            pdf.drawCentredString(page_width/2, bottom_pos, "Continued on next page...")
+                    
+                    # Start a new page for summary and footer
+                    pdf.showPage()
+                    
+                    # Add final page header
+                    pdf.setFont("Helvetica-Bold", 14)
+                    pdf.setFillColor(colors.Color(0.4, 0.4, 0.8, alpha=0.3))
+                    pdf.drawCentredString(page_width/2, 800, f"Invoice Summary - Page {page_num+1}")
+                    
+                    # Position summary at top of this page
+                    summary_top = 700
+                    note_top = 550
+                    footer_top = 380
+                else:
+                    # Table fits in the fixed area - maintain table height within constraints
+                    actual_table_height = header_height + (len(table_data) - 1) * row_height
+                    
+                    # Draw the table at the calculated position, but ensure it stays within fixed area
+                    table.wrapOn(pdf, 400, actual_table_height)
+                    table.drawOn(pdf, x_offset, available_height - actual_table_height)
+                    
+                    # Always position the summary section at consistent location
+                    # This makes layout consistent regardless of number of rows
+                    table_bottom = available_height - fixed_table_area_height
+                    summary_top = table_bottom - 40  # Fixed position for summary
+                    note_top = summary_top - 150     # Fixed position for notes
+                    footer_top = note_top - 120      # Fixed position for footer
+
+                # Create summary table for better alignment with product table
+                summary_data = []
+                summary_data.append(["Subtotal:", f"₹ {total_amount:,.2f}"])
+                
                 # Tax section based on state
                 if is_same_state:
-                    # CGST
-                    pdf.drawString(360, y_pos, f"CGST:")
-                    pdf.drawRightString(535, y_pos, f"₹ {total_cgst:,.2f}")
-                    y_pos -= 20
-                    
-                    # SGST
-                    pdf.drawString(360, y_pos, f"SGST:")
-                    pdf.drawRightString(535, y_pos, f"₹ {total_sgst:,.2f}")
-                    
+                    summary_data.append(["CGST:", f"₹ {total_cgst:,.2f}"])
+                    summary_data.append(["SGST:", f"₹ {total_sgst:,.2f}"])
                     total_tax = total_cgst + total_sgst
                 else:
-                    # IGST
-                    pdf.drawString(360, y_pos, f"IGST:")
-                    pdf.drawRightString(535, y_pos, f"₹ {total_igst:,.2f}")
-                    
+                    summary_data.append(["IGST:", f"₹ {total_igst:,.2f}"])
                     total_tax = total_igst
 
-                # Final total calculation remains the same
+                # Final total calculation
                 final_total = total_amount + total_tax
+                
+                # Create aligned summary table
+                summary_table = Table(summary_data, colWidths=[80, 115])
+                summary_style = TableStyle([
+                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                    ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+                    ('FONTNAME', (0, 0), (0, -1), 'Helvetica'),
+                    ('FONTNAME', (1, 0), (1, -1), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (1, -1), 10),
+                    ('BOTTOMPADDING', (0, 0), (1, -1), 8),
+                    ('TOPPADDING', (0, 0), (1, -1), 8),
+                    ('GRID', (0, 0), (1, -1), 0.5, colors.Color(0.9, 0.9, 0.9)),
+                ])
+                summary_table.setStyle(summary_style)
+                
+                # Position summary table at right side to align with product table
+                summary_x = x_offset + table_width - 195
+                summary_table.wrapOn(pdf, 195, 75)
+                summary_table.drawOn(pdf, summary_x, summary_top + 75)
 
-                # Add tax explanation note
+                # Total due with shadow effect - adjust position to align with summary table
+                pdf.saveState()
+                pdf.setFillColor(colors.Color(0.4, 0.4, 0.8, alpha=0.3))
+                pdf.roundRect(summary_x+2, summary_top+35, 195, 30, 5, fill=1)
+                pdf.setFillColor(colors.Color(0.4, 0.4, 0.8))
+                pdf.roundRect(summary_x, summary_top+33, 195, 30, 5, fill=1)
+                pdf.setFillColor(colors.white)
+                pdf.setFont("Helvetica-Bold", 12)
+                pdf.drawString(summary_x+10, summary_top+45, "TOTAL DUE:")
+                pdf.drawRightString(summary_x+185, summary_top+45, f"₹ {final_total:,.2f}")
+                pdf.restoreState()
+                
+                # Note section with border - adjust position
+                pdf.setStrokeColor(colors.Color(0.9, 0.9, 0.9))
+                pdf.rect(50, note_top, 500, 40, stroke=1)
                 pdf.setFillColor(colors.gray)
+                pdf.setFont("Helvetica-Bold", 10)
+                pdf.drawString(60, note_top + 25, "Note:")
                 pdf.setFont("Helvetica", 9)
+                
+                # Generate appropriate tax note based on state comparison
                 if is_same_state:
                     # Ensure gst_percentage is defined and valid for the second instance
                     gst_percent_display = gst_percentage/2 if 'gst_percentage' in locals() else 0
@@ -532,67 +662,36 @@ class CreateInvoiceView(TemplateView):
                 else:
                     gst_percent_display = gst_percentage if 'gst_percentage' in locals() else 0
                     tax_note = f"Note: Full GST ({gst_percent_display}%) is charged as IGST for inter-state transaction."
-                pdf.drawString(60, 200, tax_note)
                 
-                # Total due with shadow effect
-                pdf.saveState()
-                pdf.setFillColor(colors.Color(0.4, 0.4, 0.8, alpha=0.3))
-                pdf.roundRect(352, 292, 191, 30, 5, fill=1)
-                pdf.setFillColor(colors.Color(0.4, 0.4, 0.8))
-                pdf.roundRect(350, 290, 191, 30, 5, fill=1)
-                pdf.setFillColor(colors.white)
-                pdf.setFont("Helvetica-Bold", 12)
-                pdf.drawString(360, 303, "TOTAL DUE:")
-                pdf.drawRightString(530, 303, f"₹ {final_total:,.2f}")
-                pdf.restoreState()
+                pdf.drawString(60, note_top + 10, tax_note)
                 
-                # Note section with border
-                pdf.setStrokeColor(colors.Color(0.9, 0.9, 0.9))
-                pdf.rect(50, 190, 500, 40, stroke=1)
-                pdf.setFillColor(colors.gray)
-                pdf.setFont("Helvetica-Bold", 10)
-                pdf.drawString(60, 215, "Note:")
-                pdf.setFont("Helvetica", 9)
-                
-                # Add tax explanation note
-                if is_same_state:
-                    tax_note = f"Note: GST is split equally as CGST ({gst_percentage/2}%) and SGST ({gst_percentage/2}%) as billing state matches company state."
-                else:
-                    tax_note = f"Note: Full GST ({gst_percentage}%) is charged as IGST for inter-state transaction."
-                pdf.drawString(60, 200, tax_note)
-                
-                # Footer with three columns and borders
-                y_pos = 150
-                col_width = 160
-                
-                # Questions section
-                pdf.rect(50, 70, col_width, 100, stroke=1)
+                # Footer with three columns and borders - adjust position
+                pdf.rect(50, footer_top, col_width, 100, stroke=1)
                 pdf.setFillColor(colors.black)
                 pdf.setFont("Helvetica-Bold", 10)
-                pdf.drawString(60, y_pos, "Questions?")
+                pdf.drawString(60, footer_top + 80, "Questions?")
                 pdf.setFont("Helvetica", 9)
                 pdf.setFillColor(colors.gray)
-                pdf.drawString(60, y_pos-15, f"Email: {company.company_email}")
-                pdf.drawString(60, y_pos-30, f"Phone: {company.company_mobile_number}")
+                pdf.drawString(60, footer_top + 65, f"Email: {company.company_email}")
+                pdf.drawString(60, footer_top + 50, f"Phone: {company.company_mobile_number}")
                 
-                # Payment Info with clickable Pay Now button
-                pdf.rect(220, 70, col_width, 100, stroke=1)
+                # Payment Info with clickable Pay Now button - adjust position
+                pdf.rect(220, footer_top, col_width, 100, stroke=1)
                 pdf.setFillColor(colors.black)
                 pdf.setFont("Helvetica-Bold", 10)
-                pdf.drawString(230, y_pos, "Payment Info:")
+                pdf.drawString(230, footer_top + 80, "Payment Info:")
                 pdf.setFont("Helvetica", 9)
                 pdf.setFillColor(colors.gray)
-                pdf.drawString(230, y_pos-15, f"Bank: {company.company_bank_name}")
-                pdf.drawString(230, y_pos-30, f"A/C: {company.company_bank_account_number}")
-                pdf.drawString(230, y_pos-45, f"IFSC: {company.company_bank_ifsc_code}")
-                # pdf.drawString(230, y_pos-60, f"UPI ID: {company.company_upi_id}")
-                
-                # Draw UPI Pay Now button
-                upi_button_y = y_pos - 75
+                pdf.drawString(230, footer_top + 65, f"Bank: {company.company_bank_name}")
+                pdf.drawString(230, footer_top + 50, f"A/C: {company.company_bank_account_number}")
+                pdf.drawString(230, footer_top + 35, f"IFSC: {company.company_bank_ifsc_code}")
+
+                # Draw UPI Pay Now button - adjust position
+                upi_button_y = footer_top + 5
                 pdf.setFillColor(colors.Color(0.13, 0.59, 0.95))  # Blue color
                 pdf.roundRect(230, upi_button_y, 100, 25, 8, fill=1)
                 
-                # UPI Button text
+                # UPI Button text - adjust position
                 pdf.setFillColor(colors.white)
                 pdf.setFont("Helvetica-Bold", 12)
                 pdf.drawString(250, upi_button_y + 8, "UPI Pay")
@@ -605,20 +704,20 @@ class CreateInvoiceView(TemplateView):
                     relative=0
                 )
 
-                # Add shipping address to PDF if different from billing
+                # Add shipping address to PDF if different from billing - adjust position
                 if not shipping_details.get('use_billing_address', True):
                     # Ship To section (third column)
-                    pdf.rect(390, 70, col_width, 100, stroke=1)
+                    pdf.rect(390, footer_top, col_width, 100, stroke=1)
                     pdf.setFillColor(colors.black)
                     pdf.setFont("Helvetica-Bold", 10)
-                    pdf.drawString(400, y_pos, "Ship To:")
+                    pdf.drawString(400, footer_top + 80, "Ship To:")
                     pdf.setFont("Helvetica", 9)
                     pdf.setFillColor(colors.gray)
                     # Safely access shipping address and pincode
-                    pdf.drawString(400, y_pos-15, shipping_details.get('address', ''))
-                    pdf.drawString(400, y_pos-30, f"Pincode: {shipping_details.get('pincode', '')}")
+                    pdf.drawString(400, footer_top + 65, shipping_details.get('address', ''))
+                    pdf.drawString(400, footer_top + 50, f"Pincode: {shipping_details.get('pincode', '')}")
                 
-                # Thank you message with blue color
+                # Thank you message with blue color - keep it at bottom of page
                 pdf.setFont("Helvetica-Bold", 11)
                 pdf.setFillColor(colors.Color(0.4, 0.4, 0.8))
                 pdf.drawString(50, 40, "Thank you for your Business!")

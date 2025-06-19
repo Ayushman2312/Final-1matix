@@ -241,7 +241,7 @@
                     
                     <!-- Search Term -->
                     <div class="mb-3">
-                        <label class="block font-semibold text-sm mb-1 quicksand text-gray-700">Search Term</label>
+                        <label id="search-term-label" class="block font-semibold text-sm mb-1 quicksand text-gray-700">Search Term</label>
                         <div class="flex items-center gap-2">
                             <input type="text" id="search-terms" placeholder="Amazon" class="quicksand w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm box-border" readonly>
                             <button onclick="copyToClipboard('search-terms', this)" class="text-gray-500 hover:text-gray-700 hidden copy-button">
@@ -264,6 +264,70 @@
 
                 <!-- JavaScript for copy functionality -->
                 <script>
+                    // Function to update search term label based on platform
+                    function updateSearchTermLabel() {
+                        const platform = document.getElementById('platform');
+                        const searchTermLabel = document.getElementById('search-term-label');
+                        const popupSearchTermLabel = document.getElementById('popup-search-term-label');
+                        
+                        if (platform) {
+                            const labelText = platform.value === 'Amazon' ? 'Search Term' : 'Keyword';
+                            
+                            if (searchTermLabel) {
+                                searchTermLabel.textContent = labelText;
+                            }
+                            
+                            if (popupSearchTermLabel) {
+                                popupSearchTermLabel.textContent = labelText + 's';
+                            }
+                        }
+                    }
+
+                    // Add event listener to platform dropdown
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const platform = document.getElementById('platform');
+                        if (platform) {
+                            platform.addEventListener('change', updateSearchTermLabel);
+                            // Initialize label on page load
+                            updateSearchTermLabel();
+                        }
+                    });
+
+                    // Function to format bullet points with proper styling
+                    function formatBulletPoints(text) {
+                        return text.replace(/•\s*(.*?)(?=(?:•|\n|$))/g, '<div class="pl-4 py-1 relative before:content-[\'•\'] before:absolute before:left-0 before:text-gray-400">$1</div>');
+                    }
+
+                    // Function to animate text with a word-by-word fade-in effect
+                    function animateText(element, text) {
+                        element.innerHTML = '';
+                        let delay = 0;
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = text;
+                        
+                        const processNode = (node) => {
+                            if (node.nodeType === 3) { // Text node
+                                const words = node.textContent.split(/(\s+)/); // Split by whitespace but keep the whitespace
+                                words.forEach(word => {
+                                    const span = document.createElement('span');
+                                    span.textContent = word;
+                                    span.className = 'opacity-0 transition-opacity duration-300';
+                                    span.style.transitionDelay = `${delay}ms`;
+                                    element.appendChild(span);
+                                    setTimeout(() => span.classList.remove('opacity-0'), delay);
+                                    delay += 150; // Longer delay between words
+                                });
+                            } else if (node.nodeType === 1) { // Element node
+                                const newElement = document.createElement(node.tagName);
+                                newElement.className = node.className;
+                                element.appendChild(newElement);
+                                node.childNodes.forEach(child => processNode(child));
+                            }
+                        };
+                        
+                        tempDiv.childNodes.forEach(node => processNode(node));
+                    }
+
                     function showCopyButtons() {
                         const copyButtons = document.querySelectorAll('.copy-button');
                         copyButtons.forEach(button => {
@@ -337,9 +401,9 @@
                         const popupBulletPoints = document.getElementById('popup-bullet-points');
                         const popupSearchTerms = document.getElementById('popup-search-terms');
                         
-                        if (popupAmazonTitle) popupAmazonTitle.textContent = response.amazon_title || '';
-                        if (popupExpertTitle) popupExpertTitle.textContent = response.expert_title || '';
-                        if (popupDescription) popupDescription.textContent = response.description || '';
+                        if (popupAmazonTitle) animateText(popupAmazonTitle, response.amazon_title || '');
+                        if (popupExpertTitle) animateText(popupExpertTitle, response.expert_title || '');
+                        if (popupDescription) animateText(popupDescription, response.description || '');
                         
                         // Handle bullet points in popup
                         if (popupBulletPoints) {
@@ -352,16 +416,17 @@
                                 points = response.bullet_points.split('\n');
                             }
                             
-                            points.forEach(point => {
+                            const bulletPointsContent = points.map(point => {
                                 if (point && point.trim()) {
-                                    const p = document.createElement('p');
-                                    p.textContent = point.trim();
-                                    popupBulletPoints.appendChild(p);
+                                    return `<p>${point.trim()}</p>`;
                                 }
-                            });
+                                return '';
+                            }).join('');
+                            
+                            animateText(popupBulletPoints, bulletPointsContent);
                         }
                         
-                        if (popupSearchTerms) popupSearchTerms.textContent = response.search_terms || '';
+                        if (popupSearchTerms) animateText(popupSearchTerms, response.search_terms || '');
 
                         // Show results popup
                         const resultsPopup = document.getElementById('resultsPopup');
@@ -414,7 +479,7 @@
                             <div id="popup-bullet-points" class="text-gray-700"></div>
                         </div>
                         <div>
-                            <h4 class="font-semibold mb-2 quicksand">Search Term</h4>
+                            <h4 id="popup-search-term-label" class="font-semibold mb-2 quicksand">Search Terms</h4>
                             <p id="popup-search-terms" class="text-gray-700"></p>
                         </div>
                     </div>

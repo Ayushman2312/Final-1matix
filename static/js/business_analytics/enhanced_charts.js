@@ -1269,6 +1269,148 @@ function createBottomSellingProductsChart(metrics, bottomProducts) {
     }
 }
 
+/**
+ * Renders all available charts for Meesho data
+ * This function is specifically designed to be called after Meesho data analysis
+ * to ensure all charts are properly displayed
+ * 
+ * @param {Object} metricsData - The analysis data returned from the backend
+ */
+function renderAllChartsForMeesho(metricsData) {
+    console.log('🔄 Rendering all charts for Meesho data');
+    
+    if (!metricsData) {
+        console.error('❌ No metrics data provided');
+        return;
+    }
+    
+    try {
+        // Store metrics data globally for charts to access
+        window.lastAnalysisData = metricsData;
+        
+        // Define all chart container IDs
+        const chartContainers = [
+            'returnsVsCancellationsContainer',
+            'topProductsContainer',
+            'bottomProductsContainer',
+            'topRegionsContainer',
+            'bottomRegionsContainer',
+            'salesChannelContainer',
+            'salesTrendContainer'
+        ];
+        
+        // Make all chart containers visible first
+        chartContainers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                console.log(`📊 Making ${containerId} visible`);
+                container.classList.remove('hidden');
+            }
+        });
+        
+        // Render returns vs cancellations chart
+        if (typeof createReturnsVsCancellationsChart === 'function') {
+            try {
+                console.log('📊 Creating returns vs cancellations chart');
+                createReturnsVsCancellationsChart(window.lastAnalysisData);
+            } catch (error) {
+                console.error('❌ Error creating returns vs cancellations chart:', error);
+            }
+        }
+        
+        // Render top products chart/list
+        if (window.lastAnalysisData.top_products && window.lastAnalysisData.top_products.length > 0) {
+            if (typeof createTopProductsChart === 'function') {
+                try {
+                    console.log('📊 Creating top products visualization');
+                    createTopProductsChart(window.lastAnalysisData, window.lastAnalysisData.top_products);
+                } catch (error) {
+                    console.error('❌ Error creating top products chart:', error);
+                }
+            }
+        }
+        
+        // Render bottom products list if available
+        if (window.lastAnalysisData.bottom_products && window.lastAnalysisData.bottom_products.length > 0) {
+            if (typeof createBottomProductsList === 'function') {
+                try {
+                    console.log('📊 Creating bottom products visualization');
+                    createBottomProductsList(window.lastAnalysisData, window.lastAnalysisData.bottom_products);
+                } catch (error) {
+                    console.error('❌ Error creating bottom products list:', error);
+                }
+            }
+        }
+        
+        // Render top regions chart/list
+        if (window.lastAnalysisData.top_regions && window.lastAnalysisData.top_regions.length > 0) {
+            if (typeof createTopSellingStatesChart === 'function') {
+                try {
+                    console.log('📊 Creating top regions visualization');
+                    createTopSellingStatesChart(window.lastAnalysisData, window.lastAnalysisData.top_regions);
+                } catch (error) {
+                    console.error('❌ Error creating top regions chart:', error);
+                }
+            }
+        }
+        
+        // Render bottom regions list if available
+        if (window.lastAnalysisData.bottom_regions && window.lastAnalysisData.bottom_regions.length > 0) {
+            if (typeof createBottomSellingStatesChart === 'function') {
+                try {
+                    console.log('📊 Creating bottom regions visualization');
+                    createBottomSellingStatesChart(window.lastAnalysisData, window.lastAnalysisData.bottom_regions);
+                } catch (error) {
+                    console.error('❌ Error creating bottom regions chart:', error);
+                }
+            }
+        }
+        
+        // Render sales channels chart if available
+        if (window.lastAnalysisData.sales_channels && window.lastAnalysisData.sales_channels.length > 0) {
+            if (typeof updateSalesChannelChart === 'function') {
+                try {
+                    console.log('📊 Creating sales channels chart');
+                    updateSalesChannelChart(window.lastAnalysisData.sales_channels);
+                } catch (error) {
+                    console.error('❌ Error creating sales channels chart:', error);
+                }
+            }
+        }
+        
+        // Render time series chart if available
+        if (window.lastAnalysisData.time_series && 
+            window.lastAnalysisData.time_series.labels &&
+            window.lastAnalysisData.time_series.labels.length > 0) {
+            if (typeof updateSalesTrendChart === 'function') {
+                try {
+                    console.log('📊 Creating sales trend chart');
+                    updateSalesTrendChart(window.lastAnalysisData.time_series);
+                } catch (error) {
+                    console.error('❌ Error creating sales trend chart:', error);
+                }
+            }
+        }
+        
+        // Force chart redraw by triggering window resize event
+        setTimeout(() => {
+            console.log('📊 Triggering window resize to redraw charts');
+            window.dispatchEvent(new Event('resize'));
+        }, 100);
+        
+        console.log('✅ All charts rendered for Meesho data');
+        
+        // Return true to indicate success
+        return true;
+    } catch (error) {
+        console.error('❌ Error in renderAllChartsForMeesho:', error);
+        return false;
+    }
+}
+
+// Make the function globally available
+window.renderAllChartsForMeesho = renderAllChartsForMeesho;
+
 // Export functions for use in other modules
 window.enhancedCharts = {
     createReturnsVsCancellationsChart,
