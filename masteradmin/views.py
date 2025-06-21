@@ -28,6 +28,8 @@ from decimal import Decimal
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import Count
 from django.db.models import Q
+from landingx.models import ProductDetails  # Import ProductDetails model
+
 # register = template.Library()
 
 # @register.filter(name='compress_html')
@@ -3453,8 +3455,181 @@ class DebugTicketAssignmentView(View):
 
 class MyTicketsView(TemplateView):
     template_name = 'masteradmin/my_tickets.html'
-
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['tickets'] = Tickets.objects.filter(assigned_to=None)
+        masteradmin_id = self.request.session.get('masteradmin_id')
+        if masteradmin_id:
+            tickets = Tickets.objects.filter(assigned_to=masteradmin_id)
+            context['tickets'] = tickets
         return context
+
+
+class BeesuggestView(TemplateView):
+    """
+    View to display all product submissions for masteradmin review
+    """
+    template_name = 'masteradmin/beesuggest.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get all product submissions with pagination
+        products_list = ProductDetails.objects.all().order_by('-submitted_at')
+        
+        # Filter by status if provided
+        status_filter = self.request.GET.get('status')
+        if status_filter == 'published':
+            products_list = products_list.filter(is_published=True)
+        elif status_filter == 'pending':
+            products_list = products_list.filter(is_published=False)
+        
+        # Search functionality
+        search_query = self.request.GET.get('search')
+        if search_query:
+            products_list = products_list.filter(
+                Q(organization__icontains=search_query) |
+                Q(focus_keywords__icontains=search_query) |
+                Q(product_description__icontains=search_query) |
+                Q(user__username__icontains=search_query) |
+                Q(user__email__icontains=search_query)
+            )
+        
+        # Pagination
+        paginator = Paginator(products_list, 10)  # Show 10 products per page
+        page_number = self.request.GET.get('page')
+        products = paginator.get_page(page_number)
+        
+        # Statistics
+        total_products = ProductDetails.objects.count()
+        published_products = ProductDetails.objects.filter(is_published=True).count()
+        pending_products = ProductDetails.objects.filter(is_published=False).count()
+        
+        context.update({
+            'products': products,
+            'total_products': total_products,
+            'published_products': published_products,
+            'pending_products': pending_products,
+            'search_query': search_query,
+            'status_filter': status_filter,
+        })
+        
+        return context
+
+
+class EditProductView(View):
+    """
+    View to edit and manage individual product submissions
+    """
+    
+    def get(self, request, product_id):
+        """Display the edit form for a product"""
+        try:
+            product = ProductDetails.objects.get(id=product_id)
+            context = {
+                'product': product,
+                'variations': product.variations if product.variations else [],
+                'faqs': product.faqs if product.faqs else [],
+            }
+            return render(request, 'masteradmin/edit_product.html', context)
+        except ProductDetails.DoesNotExist:
+            messages.error(request, 'Product not found.')
+            return redirect('beesuggest')
+    
+    def post(self, request, product_id):
+        """Handle product updates"""
+        try:
+            product = ProductDetails.objects.get(id=product_id)
+            
+            # Handle publish/unpublish action
+            action = request.POST.get('action')
+            if action == 'publish':
+                product.is_published = True
+                product.published_at = timezone.now()
+                product.save()
+                messages.success(request, f'Product "{product.organization or "Unnamed"}" has been published successfully.')
+                return redirect('beesuggest')
+            elif action == 'unpublish':
+                product.is_published = False
+                product.published_at = None
+                product.save()
+                messages.success(request, f'Product "{product.organization or "Unnamed"}" has been unpublished.')
+                return redirect('beesuggest')
+            elif action == 'delete':
+                product_name = product.organization or "Unnamed"
+                product.delete()
+                messages.success(request, f'Product "{product_name}" has been deleted successfully.')
+                return redirect('beesuggest')
+            
+            # Handle form updates
+            # Basic fields
+            product.focus_keywords = request.POST.get('focus_keywords', '')
+            product.alt_keyword_1 = request.POST.get('alt_keyword_1', '')
+            product.alt_keyword_2 = request.POST.get('alt_keyword_2', '')
+            
+            # Handle file uploads if new files are provided
+            for i in range(1, 6):
+                image_field = f'product_image_{i}'
+                alt_field = f'product_image_{i}_alt'
+                if image_field in request.FILES:
+                    setattr(product, image_field, request.FILES[image_field])
+                setattr(product, alt_field, request.POST.get(alt_field, ''))
+            
+            if 'product_video' in request.FILES:
+                product.product_video = request.FILES['product_video']
+            
+            if 'size_chart' in request.FILES:
+                product.size_chart = request.FILES['size_chart']
+            
+            # Text fields
+            product.product_description = request.POST.get('product_description', '')
+            product.uses = request.POST.get('uses', '')
+            product.best_suited_for = request.POST.get('best_suited_for', '')
+            product.social_media_facebook = request.POST.get('social_media_facebook', '')
+            product.social_media_twitter = request.POST.get('social_media_twitter', '')
+            product.social_media_instagram = request.POST.get('social_media_instagram', '')
+            product.dimensions = request.POST.get('dimensions', '')
+            product.contact_number = request.POST.get('contact_number', '')
+            product.email = request.POST.get('email', '')
+            product.address = request.POST.get('address', '')
+            product.organization = request.POST.get('organization', '')
+            product.gst_details = request.POST.get('gst_details', '')
+            product.map_location = request.POST.get('map_location', '')
+            product.why_choose_us = request.POST.get('why_choose_us', '')
+            product.comparison = request.POST.get('comparison', '')
+
+            # Process variations
+            variations = []
+            variation_count = 1
+            while f'variation_name_{variation_count}' in request.POST:
+                name = request.POST.get(f'variation_name_{variation_count}')
+                value = request.POST.get(f'variation_value_{variation_count}')
+                if name and value:
+                    variations.append({'name': name, 'value': value})
+                variation_count += 1
+            product.variations = variations
+
+            # Process FAQs
+            faqs = []
+            faq_count = 1
+            while f'faq_question_{faq_count}' in request.POST:
+                question = request.POST.get(f'faq_question_{faq_count}')
+                answer = request.POST.get(f'faq_answer_{faq_count}')
+                if question and answer:
+                    faqs.append({'question': question, 'answer': answer})
+                faq_count += 1
+            product.faqs = faqs
+            
+            # Save the product
+            product.save()
+            
+            messages.success(request, f'Product "{product.organization or "Unnamed"}" has been updated successfully.')
+            return redirect('edit_product', product_id=product_id)
+            
+        except ProductDetails.DoesNotExist:
+            messages.error(request, 'Product not found.')
+            return redirect('beesuggest')
+        except Exception as e:
+            logger.error(f"Error updating product: {str(e)}")
+            messages.error(request, 'There was an error updating the product. Please try again.')
+            return redirect('edit_product', product_id=product_id)

@@ -1,0 +1,745 @@
+{% extends 'user_dashboard/base.html' %}
+{% block content %}
+<div class="min-h-screen  py-8">
+    <div class="container mx-auto px-4 md:px-8 max-w-6xl">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-6">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+            </div>
+            <h1 class="text-5xl font-bold bg-gradient-to-r from-gray-800 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-4">
+                Product Information
+            </h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                Create comprehensive product listings with our advanced form system
+            </p>
+            <div class="w-24 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto mt-6 rounded-full"></div>
+        </div>
+
+        <form action="{% url 'product_form' %}" method="post" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Progress Indicator -->
+            <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/20">
+                <div class="flex items-center justify-between text-sm text-gray-600 mb-4">
+                    <span class="font-medium">Progress</span>
+                    <span class="font-medium">Step 1 of 8</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-300" style="width: 12.5%"></div>
+                </div>
+            </div>
+            
+            <!-- Keywords Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Keywords & SEO</h2>
+                        <p class="text-gray-600">Optimize your product visibility with targeted keywords</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="group">
+                        <label for="focus_keywords" class="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors">
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Focus Keywords *
+                            </span>
+                        </label>
+                        <input type="text" name="focus_keywords" id="focus_keywords" 
+                               class="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300"
+                               placeholder="Enter primary keywords">
+                    </div>
+                    <div class="group">
+                        <label for="alt_keyword_1" class="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors">
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Alternative Keyword 1
+                            </span>
+                        </label>
+                        <input type="text" name="alt_keyword_1" id="alt_keyword_1" 
+                               class="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300"
+                               placeholder="Secondary keywords">
+                    </div>
+                    <div class="group">
+                        <label for="alt_keyword_2" class="block text-sm font-semibold text-gray-700 mb-2 group-hover:text-blue-600 transition-colors">
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Alternative Keyword 2
+                            </span>
+                        </label>
+                        <input type="text" name="alt_keyword_2" id="alt_keyword_2" 
+                               class="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300"
+                               placeholder="Tertiary keywords">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Images Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Product Gallery</h2>
+                        <p class="text-gray-600">Upload high-quality images (Minimum 5 required)</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Image 1 -->
+                    <div class="group">
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all duration-300 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50">
+                            <label for="product_image_1" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Product Image 1 *
+                                </span>
+                            </label>
+                            <input type="file" name="product_image_1" id="product_image_1" 
+                                   class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-500 file:to-indigo-500 file:text-white hover:file:from-blue-600 hover:file:to-indigo-600 file:cursor-pointer file:transition-all file:duration-200">
+                            <label for="product_image_1_alt" class="block text-sm font-medium text-gray-600 mt-4 mb-2">Alt Text</label>
+                            <input type="text" name="product_image_1_alt" id="product_image_1_alt" 
+                                   class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                   placeholder="Describe the image">
+                        </div>
+                    </div>
+                    <!-- Image 2 -->
+                    <div class="group">
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all duration-300 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50">
+                            <label for="product_image_2" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Product Image 2 *
+                                </span>
+                            </label>
+                            <input type="file" name="product_image_2" id="product_image_2" 
+                                   class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-500 file:to-indigo-500 file:text-white hover:file:from-blue-600 hover:file:to-indigo-600 file:cursor-pointer file:transition-all file:duration-200">
+                            <label for="product_image_2_alt" class="block text-sm font-medium text-gray-600 mt-4 mb-2">Alt Text</label>
+                            <input type="text" name="product_image_2_alt" id="product_image_2_alt" 
+                                   class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                   placeholder="Describe the image">
+                        </div>
+                    </div>
+                    <!-- Image 3 -->
+                    <div class="group">
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all duration-300 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50">
+                            <label for="product_image_3" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Product Image 3 *
+                                </span>
+                            </label>
+                            <input type="file" name="product_image_3" id="product_image_3" 
+                                   class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-500 file:to-indigo-500 file:text-white hover:file:from-blue-600 hover:file:to-indigo-600 file:cursor-pointer file:transition-all file:duration-200">
+                            <label for="product_image_3_alt" class="block text-sm font-medium text-gray-600 mt-4 mb-2">Alt Text</label>
+                            <input type="text" name="product_image_3_alt" id="product_image_3_alt" 
+                                   class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                   placeholder="Describe the image">
+                        </div>
+                    </div>
+                    <!-- Image 4 -->
+                    <div class="group">
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all duration-300 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50">
+                            <label for="product_image_4" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Product Image 4 *
+                                </span>
+                            </label>
+                            <input type="file" name="product_image_4" id="product_image_4" 
+                                   class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-500 file:to-indigo-500 file:text-white hover:file:from-blue-600 hover:file:to-indigo-600 file:cursor-pointer file:transition-all file:duration-200">
+                            <label for="product_image_4_alt" class="block text-sm font-medium text-gray-600 mt-4 mb-2">Alt Text</label>
+                            <input type="text" name="product_image_4_alt" id="product_image_4_alt" 
+                                   class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                   placeholder="Describe the image">
+                        </div>
+                    </div>
+                    <!-- Image 5 -->
+                    <div class="group">
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-400 transition-all duration-300 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50">
+                            <label for="product_image_5" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Product Image 5 *
+                                </span>
+                            </label>
+                            <input type="file" name="product_image_5" id="product_image_5" 
+                                   class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-500 file:to-indigo-500 file:text-white hover:file:from-blue-600 hover:file:to-indigo-600 file:cursor-pointer file:transition-all file:duration-200">
+                            <label for="product_image_5_alt" class="block text-sm font-medium text-gray-600 mt-4 mb-2">Alt Text</label>
+                            <input type="text" name="product_image_5_alt" id="product_image_5_alt" 
+                                   class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                   placeholder="Describe the image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Product Video</h2>
+                        <p class="text-gray-600">Showcase your product with an engaging video</p>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 border-dashed border-gray-300 hover:border-red-400 transition-all duration-300 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50">
+                    <label for="product_video" class="block text-sm font-semibold text-gray-700 mb-4">
+                        <span class="flex items-center justify-center">
+                            <svg class="w-8 h-8 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 011 1v1a1 1 0 01-1 1v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7a1 1 0 01-1-1V5a1 1 0 011-1h4z"></path>
+                            </svg>
+                            Upload Product Video
+                        </span>
+                    </label>
+                    <input type="file" name="product_video" id="product_video" 
+                           class="block w-full text-sm text-gray-600 file:mr-4 file:py-4 file:px-8 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-red-500 file:to-pink-500 file:text-white hover:file:from-red-600 hover:file:to-pink-600 file:cursor-pointer file:transition-all file:duration-200 file:shadow-lg">
+                    <p class="text-xs text-gray-500 mt-3 text-center">Supported formats: MP4, AVI, MOV | Max size: 50MB</p>
+                </div>
+            </div>
+
+            <!-- Product Description Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Product Description</h2>
+                        <p class="text-gray-600">Provide detailed information about your product</p>
+                    </div>
+                </div>
+                <div class="group">
+                    <label for="product_description" class="block text-sm font-semibold text-gray-700 mb-3">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Detailed Description (1000 characters max) *
+                        </span>
+                    </label>
+                    <div class="relative">
+                        <textarea name="product_description" id="product_description" rows="8" maxlength="1000" 
+                                  class="w-full px-6 py-4 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-200 hover:border-gray-300 resize-none"
+                                  placeholder="Describe your product in detail, highlighting key features, benefits, and specifications..."></textarea>
+                        <div class="absolute bottom-3 right-3 text-xs text-gray-500 bg-white px-2 py-1 rounded-lg shadow">
+                            <span id="char-count">0</span>/1000
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variation Fields Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Product Variations</h2>
+                        <p class="text-gray-600">Define different variants of your product</p>
+                    </div>
+                </div>
+                <div id="variation_fields_container" class="space-y-6">
+                    <!-- Dynamic fields will be added here -->
+                </div>
+                <button type="button" id="add_variation_field" 
+                        class="mt-6 px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg hover:from-cyan-600 hover:to-blue-600 focus:outline-none focus:ring-4 focus:ring-cyan-300 transform hover:scale-105 transition-all duration-200 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add Variation
+                </button>
+            </div>
+
+            <!-- Usage Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Product Usage</h2>
+                        <p class="text-gray-600">Describe how and where your product can be used</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="group">
+                        <label for="uses" class="block text-sm font-semibold text-gray-700 mb-3">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Primary Uses
+                            </span>
+                        </label>
+                        <textarea name="uses" id="uses" rows="6" 
+                                  class="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 resize-none"
+                                  placeholder="List the main uses and applications of your product..."></textarea>
+                    </div>
+                    <div class="group">
+                        <label for="best_suited_for" class="block text-sm font-semibold text-gray-700 mb-3">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                Best Suited For
+                            </span>
+                        </label>
+                        <textarea name="best_suited_for" id="best_suited_for" rows="6" 
+                                  class="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 resize-none"
+                                  placeholder="Describe the target audience and ideal use cases..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact & Social Media Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Contact & Social Media</h2>
+                        <p class="text-gray-600">Connect with your customers across multiple channels</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.12 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                                </svg>
+                            </div>
+                            <input type="text" name="social_media_facebook" placeholder="Facebook Profile URL" 
+                                   class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300">
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-sky-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.051.004-.102.007-.152.011-.94.58-1.98.987-3.12 1.191a4.92 4.92 0 00-8.384 4.482A13.96 13.96 0 011.671 3.149a4.822 4.822 0 001.523 6.574 4.903 4.903 0 01-2.229-.616c-.054 2.281 1.581 4.415 3.949 4.89a4.935 4.935 0 01-2.224.084 4.928 4.928 0 004.6 3.419A9.867 9.867 0 010 21.543a13.94 13.94 0 007.548 2.212c9.142 0 14.307-7.721 13.995-14.646A10.025 10.025 0 0024 4.59c-.004-.054-.007-.107-.011-.161-.943-.695-1.8-1.56-2.462-2.549z"/>
+                                </svg>
+                            </div>
+                            <input type="text" name="social_media_twitter" placeholder="Twitter Profile URL" 
+                                   class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all duration-200 hover:border-gray-300">
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                            </div>
+                            <input type="text" name="social_media_instagram" placeholder="Instagram Profile URL" 
+                                   class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all duration-200 hover:border-gray-300">
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 8v8a2 2 0 002 2h8m0-10h8a2 2 0 012 2v8a2 2 0 01-2 2h-8m8-10V6a2 2 0 00-2-2h-2m0 0V2m0 2h2m0 0v2"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="dimensions" placeholder="Product Dimensions (L×W×H)" 
+                                   class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-300">
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                </svg>
+                            </div>
+                            <input type="tel" name="contact_number" placeholder="Contact Number" 
+                                   class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300">
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <input type="email" name="email" placeholder="Business Email Address" 
+                                   class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 hover:border-gray-300">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <div class="relative">
+                        <div class="absolute top-3 left-3 pointer-events-none">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <textarea name="address" placeholder="Complete Business Address" rows="4" 
+                                  class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-300 resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organization Details Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Organization & Location</h2>
+                        <p class="text-gray-600">Business details and location information</p>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="group">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                </div>
+                                <input type="text" name="organization" placeholder="Organization/Company Name" 
+                                       class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-200 hover:border-gray-300">
+                            </div>
+                        </div>
+                        <div class="group">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>  
+                                <input type="text" name="gst_details" placeholder="GST Number (if applicable)" 
+                                       class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 hover:border-gray-300">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="map_location" placeholder="Google Maps Location URL" 
+                                   class="w-full pl-12 pr-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 hover:border-gray-300">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Frequently Asked Questions</h2>
+                        <p class="text-gray-600">Address common customer inquiries (10 Questions)</p>
+                    </div>
+                </div>
+                <div id="faq_container" class="space-y-6">
+                    <!-- Dynamic FAQs will be added here -->
+                </div>
+                <button type="button" id="add_faq" 
+                        class="mt-6 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl shadow-lg hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-4 focus:ring-amber-300 transform hover:scale-105 transition-all duration-200 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Add FAQ
+                </button>
+            </div>
+
+            <!-- Miscellaneous Section -->
+            <div class="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-r from-violet-500 to-purple-500 rounded-xl flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Additional Information</h2>
+                        <p class="text-gray-600">Extra details and competitive advantages</p>
+                    </div>
+                </div>
+                <div class="space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="group">
+                            <label for="size_chart" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                    Size Chart (Optional)
+                                </span>
+                            </label>
+                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 border-dashed border-gray-300 hover:border-violet-400 transition-all duration-300">
+                                <input type="file" name="size_chart" id="size_chart" 
+                                       class="block w-full text-sm text-gray-600 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-violet-500 file:to-purple-500 file:text-white hover:file:from-violet-600 hover:file:to-purple-600 file:cursor-pointer file:transition-all file:duration-200">
+                            </div>
+                        </div>
+                        <div class="group">
+                            <label for="why_choose_us" class="block text-sm font-semibold text-gray-700 mb-3">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Why Choose Us
+                                </span>
+                            </label>
+                            <textarea name="why_choose_us" id="why_choose_us" rows="6" 
+                                      class="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 resize-none"
+                                      placeholder="What makes your product/service unique? List your competitive advantages..."></textarea>
+                        </div>
+                    </div>
+                    <div class="group">
+                        <label for="comparison" class="block text-sm font-semibold text-gray-700 mb-3">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2V7a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 002 2h2a2 2 0 012-2V7a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 00-2 2h-2a2 2 0 00-2 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2z"></path>
+                                </svg>
+                                Product Comparison & USP
+                            </span>
+                        </label>
+                        <textarea name="comparison" id="comparison" rows="6" 
+                                  class="w-full px-4 py-3 bg-gray-50/50 border-2 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 resize-none"
+                                  placeholder="How does your product compare to competitors? What's your unique selling proposition?"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-500 p-8 rounded-2xl shadow-2xl border border-white/20">
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2">Ready to Submit?</h3>
+                    <p class="text-green-100 mb-6">Review your information and submit for professional processing</p>
+                    <button type="submit" 
+                            class="px-12 py-4 bg-white text-green-600 font-bold text-lg rounded-xl shadow-xl hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-white/50 transform hover:scale-105 transition-all duration-200 flex items-center mx-auto">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        Submit for Review
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Character counter for product description
+        const descriptionTextarea = document.getElementById('product_description');
+        const charCount = document.getElementById('char-count');
+        
+        if (descriptionTextarea && charCount) {
+            descriptionTextarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+        }
+
+        // Dynamic Variation Fields
+        const variationContainer = document.getElementById('variation_fields_container');
+        const addVariationBtn = document.getElementById('add_variation_field');
+        let variationCount = 0;
+        const variationOptions = ['Colour', 'Size', 'Material', 'Grade'];
+
+        function addVariationField() {
+            variationCount++;
+            const variationDiv = document.createElement('div');
+            variationDiv.classList.add('bg-gradient-to-br', 'from-gray-50', 'to-gray-100', 'p-6', 'rounded-xl', 'border', 'border-gray-200', 'hover:border-cyan-300', 'transition-all', 'duration-300');
+            
+            const gridDiv = document.createElement('div');
+            gridDiv.classList.add('grid', 'grid-cols-1', 'md:grid-cols-3', 'gap-4', 'items-center');
+            
+            const selectEl = document.createElement('select');
+            selectEl.name = `variation_name_${variationCount}`;
+            selectEl.classList.add('w-full', 'px-4', 'py-3', 'bg-white', 'border-2', 'border-gray-200', 'rounded-xl', 'shadow-sm', 'focus:ring-2', 'focus:ring-cyan-500', 'focus:border-cyan-500');
+            
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select variation type';
+            selectEl.appendChild(defaultOption);
+            
+            variationOptions.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt.toLowerCase();
+                option.textContent = opt;
+                selectEl.appendChild(option);
+            });
+
+            const inputEl = document.createElement('input');
+            inputEl.type = 'text';
+            inputEl.name = `variation_value_${variationCount}`;
+            inputEl.placeholder = 'Enter variation values (e.g., Red, Blue, Green)';
+            inputEl.classList.add('w-full', 'px-4', 'py-3', 'bg-white', 'border-2', 'border-gray-200', 'rounded-xl', 'shadow-sm', 'focus:ring-2', 'focus:ring-cyan-500', 'focus:border-cyan-500', 'md:col-span-2');
+            
+            gridDiv.appendChild(selectEl);
+            gridDiv.appendChild(inputEl);
+            variationDiv.appendChild(gridDiv);
+            variationContainer.appendChild(variationDiv);
+        }
+
+        addVariationBtn.addEventListener('click', addVariationField);
+        // Add initial fields
+        for(let i = 0; i < 4; i++) {
+            addVariationField();
+        }
+
+        // Dynamic FAQs
+        const faqContainer = document.getElementById('faq_container');
+        const addFaqBtn = document.getElementById('add_faq');
+        let faqCount = 0;
+        const faqTopics = ["Packaging", "Shipping", "Bulk Orders", "Returns/Refunds", "Minimum Order Quantity", "Cash on Delivery", "Safety Information", "Expiry Details", "Usage Precautions", "General Queries"];
+
+        function addFaqField(topic = '') {
+            faqCount++;
+            const faqDiv = document.createElement('div');
+            faqDiv.classList.add('bg-gradient-to-br', 'from-amber-50', 'to-orange-50', 'p-6', 'rounded-xl', 'border', 'border-amber-200', 'hover:border-amber-300', 'transition-all', 'duration-300', 'space-y-4');
+
+            const questionLabel = document.createElement('label');
+            questionLabel.classList.add('block', 'text-sm', 'font-semibold', 'text-gray-700', 'mb-2');
+            questionLabel.innerHTML = `<span class="flex items-center">
+                <svg class="w-4 h-4 mr-2 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Question ${faqCount}${topic ? ` - ${topic}` : ''}
+            </span>`;
+
+            const questionInput = document.createElement('input');
+            questionInput.type = 'text';
+            questionInput.name = `faq_question_${faqCount}`;
+            questionInput.placeholder = topic ? `What about ${topic.toLowerCase()}?` : `Enter your question here...`;
+            questionInput.value = topic ? `What about ${topic.toLowerCase()}?` : '';
+            questionInput.classList.add('w-full', 'px-4', 'py-3', 'bg-white', 'border-2', 'border-gray-200', 'rounded-xl', 'shadow-sm', 'focus:ring-2', 'focus:ring-amber-500', 'focus:border-amber-500');
+
+            const answerLabel = document.createElement('label');
+            answerLabel.classList.add('block', 'text-sm', 'font-semibold', 'text-gray-700', 'mb-2', 'mt-4');
+            answerLabel.innerHTML = `<span class="flex items-center">
+                <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Answer ${faqCount}
+            </span>`;
+
+            const answerTextarea = document.createElement('textarea');
+            answerTextarea.name = `faq_answer_${faqCount}`;
+            answerTextarea.rows = '3';
+            answerTextarea.placeholder = `Provide a detailed answer for question ${faqCount}...`;
+            answerTextarea.classList.add('w-full', 'px-4', 'py-3', 'bg-white', 'border-2', 'border-gray-200', 'rounded-xl', 'shadow-sm', 'focus:ring-2', 'focus:ring-amber-500', 'focus:border-amber-500', 'resize-none');
+            
+            faqDiv.appendChild(questionLabel);
+            faqDiv.appendChild(questionInput);
+            faqDiv.appendChild(answerLabel);
+            faqDiv.appendChild(answerTextarea);
+            faqContainer.appendChild(faqDiv);
+        }
+        
+        addFaqBtn.addEventListener('click', () => addFaqField());
+
+        // Add initial FAQ fields
+        faqTopics.forEach(topic => addFaqField(topic));
+
+        // Form validation and enhancement
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            // Add loading state to submit button
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = `
+                <svg class="animate-spin w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+            `;
+            submitBtn.disabled = true;
+        });
+
+        // Enhanced file input preview (optional)
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const fileName = this.files[0].name;
+                    const fileSize = (this.files[0].size / 1024 / 1024).toFixed(2);
+                    
+                    // Create or update file info display
+                    let fileInfo = this.parentNode.querySelector('.file-info');
+                    if (!fileInfo) {
+                        fileInfo = document.createElement('div');
+                        fileInfo.classList.add('file-info', 'mt-2', 'text-xs', 'text-gray-600', 'bg-blue-50', 'px-3', 'py-2', 'rounded-lg', 'border', 'border-blue-200');
+                        this.parentNode.appendChild(fileInfo);
+                    }
+                    fileInfo.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span class="font-medium">${fileName}</span>
+                            <span class="ml-2 text-gray-500">(${fileSize} MB)</span>
+                        </div>
+                    `;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %} 

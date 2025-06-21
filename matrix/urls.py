@@ -33,18 +33,19 @@ urlpatterns = [
     path('customersupport/', include('customersupport.urls')),
     path('user/', include('User.urls')),
     path('employee/', include('employee.urls')),
-    path('fee_calculator/', include(('fee_calculator.urls','fee_calculator' ))),
-    path('listing_creater/', include('listing_creater.urls')),  
+    path('fee_calculator/', include('fee_calculator.urls')),
+    path('listing_creater/', include('listing_creater.urls')),
     path('product_card/', include('product_card.urls')),
+    path('hr/', include('hr.urls')),
     path('invoicing/', include('invoicing.urls')),
-    path('hr_management/', include('hr.urls')),
-    path('api/', include('product_card.urls')),
     path('blackbox/', include('blackbox.urls')),
+    path('onematrix/', include('onematrix.urls')),
     path('website/', include('website.urls')),
     path('data_miner/', include('data_miner.urls')),
     path('trends/', include('trends.urls')),
     path('business_analytics/', include('business_analytics.urls')),
     path('accounts/', include('allauth.urls')),
+    path('landingx/', include('landingx.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

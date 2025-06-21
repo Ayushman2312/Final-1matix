@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'trends',
     'pwa',  # Django PWA package
     'business_analytics',  # Business Analytics app
+    'landingx',
     # 'apps',
 ]
 
@@ -124,16 +125,63 @@ TEMPLATES = [
     },
 ]
 
-# Specify allowed origins (domains)
+# Specify allowed origins (domains) - Enhanced CORS Configuration
 CORS_ALLOWED_ORIGINS = [
     "https://1matrix.io",
+    "https://www.1matrix.io",
     "https://api.1matrix.io",
-    # Add other allowed domains here
 ]
 
-# Optional: Allow credentials (cookies, authorization headers)
+# More restrictive CORS settings for production
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False  # Set to False for security
 
+# Specify which headers can be used during the actual request
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Specify which HTTP methods are allowed
+CORS_ALLOWED_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Cache preflight requests for 24 hours
+CORS_PREFLIGHT_MAX_AGE = 86400
+
+# REST Framework Configuration for API
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FormParser',
+    ],
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -216,17 +264,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'noreply@1matrix.io'
 EMAIL_HOST_PASSWORD = 'Helpeza@2312'
 DEFAULT_FROM_EMAIL = 'noreply@1matrix.io'
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.TokenAuthentication',
-#         'rest_framework_simplejwt.authentication.JWTAuthentication',
-#     ],
-#     'DEFAULT_PERMISSION_CLASSES': [
-#         'rest_framework.permissions.IsAuthenticated',  # Default permission for all views
-#     ],
-# }
-# settings.py - Add this to your Django settings
 
 # Rainforest API configuration
 RAINFOREST_API_KEY = '75CE67B976F4490B942283B97B61171E'  # Replace with your actual API key

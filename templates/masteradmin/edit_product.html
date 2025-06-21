@@ -1,0 +1,678 @@
+{% extends 'masteradmin/base.html' %}
+{% load static %}
+{% block title %}Edit Product - {{ product.organization|default:"Unnamed Product" }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-[#191919] rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-white">Edit Product</h1>
+                        <p class="text-gray-400 text-sm mt-1">{{ product.organization|default:"Unnamed Product" }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    {% if product.is_published %}
+                        <span class="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">Published</span>
+                    {% else %}
+                        <span class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-medium">Pending Review</span>
+                    {% endif %}
+                    <a href="{% url 'beesuggest' %}" class="bg-[#191919] hover:bg-[#343434] text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mb-8">
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] p-6">
+            <div class="flex flex-wrap gap-3">
+                {% if product.is_published %}
+                    <form method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to unpublish this product?')">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="unpublish">
+                        <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L12 12m-2.122-2.122L7.76 7.76m6.122 6.122L12 12m2.122 2.122l2.122 2.122"></path>
+                            </svg>
+                            Unpublish Product
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to publish this product?')">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="publish">
+                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                            Publish Product
+                        </button>
+                    </form>
+                {% endif %}
+                
+                <form method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this product? This action cannot be undone.')">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Delete Product
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+        
+        <!-- Product Information -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Product Information
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="organization" class="block text-sm font-medium text-gray-300 mb-2">Organization/Company Name</label>
+                        <input type="text" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+                               id="organization" 
+                               name="organization" 
+                               value="{{ product.organization|default:'' }}"
+                               placeholder="Enter organization name">
+                    </div>
+                    <div>
+                        <label for="gst_details" class="block text-sm font-medium text-gray-300 mb-2">GST Details</label>
+                        <input type="text" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+                               id="gst_details" 
+                               name="gst_details" 
+                               value="{{ product.gst_details|default:'' }}"
+                               placeholder="Enter GST details">
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label for="product_description" class="block text-sm font-medium text-gray-300 mb-2">Product Description</label>
+                    <textarea class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+                              id="product_description" 
+                              name="product_description" 
+                              rows="5" 
+                              maxlength="1000"
+                              placeholder="Enter product description">{{ product.product_description|default:'' }}</textarea>
+                    <p class="text-xs text-gray-500 mt-1">Maximum 1000 characters</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keywords Section -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    Keywords & SEO
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label for="focus_keywords" class="block text-sm font-medium text-gray-300 mb-2">Focus Keywords</label>
+                        <input type="text" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                               id="focus_keywords" 
+                               name="focus_keywords" 
+                               value="{{ product.focus_keywords|default:'' }}"
+                               placeholder="Enter focus keywords">
+                    </div>
+                    <div>
+                        <label for="alt_keyword_1" class="block text-sm font-medium text-gray-300 mb-2">Alternative Keyword 1</label>
+                        <input type="text" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                               id="alt_keyword_1" 
+                               name="alt_keyword_1" 
+                               value="{{ product.alt_keyword_1|default:'' }}"
+                               placeholder="Enter alternative keyword">
+                    </div>
+                    <div>
+                        <label for="alt_keyword_2" class="block text-sm font-medium text-gray-300 mb-2">Alternative Keyword 2</label>
+                        <input type="text" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                               id="alt_keyword_2" 
+                               name="alt_keyword_2" 
+                               value="{{ product.alt_keyword_2|default:'' }}"
+                               placeholder="Enter alternative keyword">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Images -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    Product Images
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-[#191919] rounded-lg p-4 border border-[#333333]">
+                        <label class="block text-sm font-medium text-gray-300 mb-3">Product Image 1</label>
+                        {% if product.product_image_1 %}
+                            <div class="mb-3">
+                                <img src="{{ product.product_image_1.url }}" alt="{{ product.product_image_1_alt }}" 
+                                     class="w-full h-32 object-cover rounded-lg border border-[#333333]">
+                            </div>
+                        {% endif %}
+                        <input type="file" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600 file:cursor-pointer cursor-pointer transition-all duration-200 mb-3" 
+                               name="product_image_1" 
+                               accept="image/*">
+                        <input type="text" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
+                               name="product_image_1_alt" 
+                               value="{{ product.product_image_1_alt|default:'' }}" 
+                               placeholder="Alt text for image 1">
+                    </div>
+                    
+                    <div class="bg-[#191919] rounded-lg p-4 border border-[#333333]">
+                        <label class="block text-sm font-medium text-gray-300 mb-3">Product Image 2</label>
+                        {% if product.product_image_2 %}
+                            <div class="mb-3">
+                                <img src="{{ product.product_image_2.url }}" alt="{{ product.product_image_2_alt }}" 
+                                     class="w-full h-32 object-cover rounded-lg border border-[#333333]">
+                            </div>
+                        {% endif %}
+                        <input type="file" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600 file:cursor-pointer cursor-pointer transition-all duration-200 mb-3" 
+                               name="product_image_2" 
+                               accept="image/*">
+                        <input type="text" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
+                               name="product_image_2_alt" 
+                               value="{{ product.product_image_2_alt|default:'' }}" 
+                               placeholder="Alt text for image 2">
+                    </div>
+                    
+                    <div class="bg-[#191919] rounded-lg p-4 border border-[#333333]">
+                        <label class="block text-sm font-medium text-gray-300 mb-3">Product Image 3</label>
+                        {% if product.product_image_3 %}
+                            <div class="mb-3">
+                                <img src="{{ product.product_image_3.url }}" alt="{{ product.product_image_3_alt }}" 
+                                     class="w-full h-32 object-cover rounded-lg border border-[#333333]">
+                            </div>
+                        {% endif %}
+                        <input type="file" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600 file:cursor-pointer cursor-pointer transition-all duration-200 mb-3" 
+                               name="product_image_3" 
+                               accept="image/*">
+                        <input type="text" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
+                               name="product_image_3_alt" 
+                               value="{{ product.product_image_3_alt|default:'' }}" 
+                               placeholder="Alt text for image 3">
+                    </div>
+                    
+                    <div class="bg-[#191919] rounded-lg p-4 border border-[#333333]">
+                        <label class="block text-sm font-medium text-gray-300 mb-3">Product Image 4</label>
+                        {% if product.product_image_4 %}
+                            <div class="mb-3">
+                                <img src="{{ product.product_image_4.url }}" alt="{{ product.product_image_4_alt }}" 
+                                     class="w-full h-32 object-cover rounded-lg border border-[#333333]">
+                            </div>
+                        {% endif %}
+                        <input type="file" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600 file:cursor-pointer cursor-pointer transition-all duration-200 mb-3" 
+                               name="product_image_4" 
+                               accept="image/*">
+                        <input type="text" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
+                               name="product_image_4_alt" 
+                               value="{{ product.product_image_4_alt|default:'' }}" 
+                               placeholder="Alt text for image 4">
+                    </div>
+                    
+                    <div class="bg-[#191919] rounded-lg p-4 border border-[#333333]">
+                        <label class="block text-sm font-medium text-gray-300 mb-3">Product Image 5</label>
+                        {% if product.product_image_5 %}
+                            <div class="mb-3">
+                                <img src="{{ product.product_image_5.url }}" alt="{{ product.product_image_5_alt }}" 
+                                     class="w-full h-32 object-cover rounded-lg border border-[#333333]">
+                            </div>
+                        {% endif %}
+                        <input type="file" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600 file:cursor-pointer cursor-pointer transition-all duration-200 mb-3" 
+                               name="product_image_5" 
+                               accept="image/*">
+                        <input type="text" 
+                               class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200" 
+                               name="product_image_5_alt" 
+                               value="{{ product.product_image_5_alt|default:'' }}" 
+                               placeholder="Alt text for image 5">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    Contact Information
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                        <input type="email" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" 
+                               id="email" 
+                               name="email" 
+                               value="{{ product.email|default:'' }}"
+                               placeholder="Enter email address">
+                    </div>
+                    <div>
+                        <label for="contact_number" class="block text-sm font-medium text-gray-300 mb-2">Contact Number</label>
+                        <input type="tel" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" 
+                               id="contact_number" 
+                               name="contact_number" 
+                               value="{{ product.contact_number|default:'' }}"
+                               placeholder="Enter contact number">
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="address" class="block text-sm font-medium text-gray-300 mb-2">Address</label>
+                    <textarea class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" 
+                              id="address" 
+                              name="address" 
+                              rows="3"
+                              placeholder="Enter complete address">{{ product.address|default:'' }}</textarea>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label for="social_media_facebook" class="block text-sm font-medium text-gray-300 mb-2">Facebook URL</label>
+                        <input type="url" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" 
+                               id="social_media_facebook" 
+                               name="social_media_facebook" 
+                               value="{{ product.social_media_facebook|default:'' }}"
+                               placeholder="https://facebook.com/...">
+                    </div>
+                    <div>
+                        <label for="social_media_twitter" class="block text-sm font-medium text-gray-300 mb-2">Twitter URL</label>
+                        <input type="url" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" 
+                               id="social_media_twitter" 
+                               name="social_media_twitter" 
+                               value="{{ product.social_media_twitter|default:'' }}"
+                               placeholder="https://twitter.com/...">
+                    </div>
+                    <div>
+                        <label for="social_media_instagram" class="block text-sm font-medium text-gray-300 mb-2">Instagram URL</label>
+                        <input type="url" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" 
+                               id="social_media_instagram" 
+                               name="social_media_instagram" 
+                               value="{{ product.social_media_instagram|default:'' }}"
+                               placeholder="https://instagram.com/...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Usage -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    Product Usage
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="uses" class="block text-sm font-medium text-gray-300 mb-2">Primary Uses</label>
+                        <textarea class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" 
+                                  id="uses" 
+                                  name="uses" 
+                                  rows="6"
+                                  placeholder="Describe the primary uses of this product">{{ product.uses|default:'' }}</textarea>
+                    </div>
+                    <div>
+                        <label for="best_suited_for" class="block text-sm font-medium text-gray-300 mb-2">Best Suited For</label>
+                        <textarea class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" 
+                                  id="best_suited_for" 
+                                  name="best_suited_for" 
+                                  rows="6"
+                                  placeholder="Describe what this product is best suited for">{{ product.best_suited_for|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variations -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                    </svg>
+                    Product Variations
+                </h2>
+            </div>
+            <div class="p-6">
+                <div id="variations-container" class="space-y-4">
+                    {% for variation in variations %}
+                    <div class="variation-item bg-[#191919] rounded-lg p-4 border border-[#333333]">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                            <div class="md:col-span-4">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Variation Type</label>
+                                <select class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200" 
+                                        name="variation_name_{{ forloop.counter }}">
+                                    <option value="">Select variation type</option>
+                                    <option value="colour" {% if variation.name == 'colour' %}selected{% endif %}>Colour</option>
+                                    <option value="size" {% if variation.name == 'size' %}selected{% endif %}>Size</option>
+                                    <option value="material" {% if variation.name == 'material' %}selected{% endif %}>Material</option>
+                                    <option value="grade" {% if variation.name == 'grade' %}selected{% endif %}>Grade</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-6">
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Variation Values</label>
+                                <input type="text" 
+                                       class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200" 
+                                       name="variation_value_{{ forloop.counter }}" 
+                                       value="{{ variation.value }}" 
+                                       placeholder="Enter variation values (e.g., Red, Blue, Green)">
+                            </div>
+                            <div class="md:col-span-2">
+                                <button type="button" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg transition-colors duration-200 remove-variation">
+                                    <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="mt-4 bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2" id="add-variation">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Variation
+                </button>
+            </div>
+        </div>
+
+        <!-- FAQs -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Frequently Asked Questions
+                </h2>
+            </div>
+            <div class="p-6">
+                <div id="faqs-container" class="space-y-4">
+                    {% for faq in faqs %}
+                    <div class="faq-item bg-[#191919] rounded-lg p-4 border border-[#333333]">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Question {{ forloop.counter }}</label>
+                                <input type="text" 
+                                       class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200" 
+                                       name="faq_question_{{ forloop.counter }}" 
+                                       value="{{ faq.question }}"
+                                       placeholder="Enter your question">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">Answer {{ forloop.counter }}</label>
+                                <textarea class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200" 
+                                          name="faq_answer_{{ forloop.counter }}" 
+                                          rows="3"
+                                          placeholder="Enter the answer">{{ faq.answer }}</textarea>
+                            </div>
+                            <button type="button" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 remove-faq flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                Remove FAQ
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2" id="add-faq">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add FAQ
+                </button>
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] overflow-hidden">
+            <div class="bg-gradient-to-r from-gray-600 to-gray-700 px-6 py-4">
+                <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Additional Information
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="why_choose_us" class="block text-sm font-medium text-gray-300 mb-2">Why Choose Us</label>
+                        <textarea class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200" 
+                                  id="why_choose_us" 
+                                  name="why_choose_us" 
+                                  rows="6"
+                                  placeholder="Explain why customers should choose your product">{{ product.why_choose_us|default:'' }}</textarea>
+                    </div>
+                    <div>
+                        <label for="comparison" class="block text-sm font-medium text-gray-300 mb-2">Product Comparison & USP</label>
+                        <textarea class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200" 
+                                  id="comparison" 
+                                  name="comparison" 
+                                  rows="6"
+                                  placeholder="Compare with competitors and highlight unique selling points">{{ product.comparison|default:'' }}</textarea>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="dimensions" class="block text-sm font-medium text-gray-300 mb-2">Dimensions</label>
+                        <input type="text" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200" 
+                               id="dimensions" 
+                               name="dimensions" 
+                               value="{{ product.dimensions|default:'' }}"
+                               placeholder="Enter product dimensions">
+                    </div>
+                    <div>
+                        <label for="map_location" class="block text-sm font-medium text-gray-300 mb-2">Map Location URL</label>
+                        <input type="url" 
+                               class="w-full bg-[#191919] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200" 
+                               id="map_location" 
+                               name="map_location" 
+                               value="{{ product.map_location|default:'' }}"
+                               placeholder="https://maps.google.com/...">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="bg-[#2a2a2a] rounded-xl shadow-lg border border-[#333333] p-6">
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Save Changes
+                </button>
+                <a href="{% url 'beesuggest' %}" class="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg transition-colors duration-200 flex items-center gap-3 font-semibold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let variationCount = {{ variations|length|default:0 }};
+    let faqCount = {{ faqs|length|default:0 }};
+
+    // Add variation functionality
+    document.getElementById('add-variation').addEventListener('click', function() {
+        variationCount++;
+        const container = document.getElementById('variations-container');
+        const newVariation = document.createElement('div');
+        newVariation.className = 'variation-item bg-[#191919] rounded-lg p-4 border border-[#333333]';
+        newVariation.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <div class="md:col-span-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Variation Type</label>
+                    <select class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200" 
+                            name="variation_name_${variationCount}">
+                        <option value="">Select variation type</option>
+                        <option value="colour">Colour</option>
+                        <option value="size">Size</option>
+                        <option value="material">Material</option>
+                        <option value="grade">Grade</option>
+                    </select>
+                </div>
+                <div class="md:col-span-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Variation Values</label>
+                    <input type="text" 
+                           class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200" 
+                           name="variation_value_${variationCount}" 
+                           placeholder="Enter variation values (e.g., Red, Blue, Green)">
+                </div>
+                <div class="md:col-span-2">
+                    <button type="button" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg transition-colors duration-200 remove-variation">
+                        <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(newVariation);
+    });
+
+    // Remove variation functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-variation')) {
+            e.target.closest('.variation-item').remove();
+        }
+    });
+
+    // Add FAQ functionality
+    document.getElementById('add-faq').addEventListener('click', function() {
+        faqCount++;
+        const container = document.getElementById('faqs-container');
+        const newFaq = document.createElement('div');
+        newFaq.className = 'faq-item bg-[#191919] rounded-lg p-4 border border-[#333333]';
+        newFaq.innerHTML = `
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Question ${faqCount}</label>
+                    <input type="text" 
+                           class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200" 
+                           name="faq_question_${faqCount}"
+                           placeholder="Enter your question">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Answer ${faqCount}</label>
+                    <textarea class="w-full bg-[#2a2a2a] border border-[#333333] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all duration-200" 
+                              name="faq_answer_${faqCount}" 
+                              rows="3"
+                              placeholder="Enter the answer"></textarea>
+                </div>
+                <button type="button" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 remove-faq flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Remove FAQ
+                </button>
+            </div>
+        `;
+        container.appendChild(newFaq);
+    });
+
+    // Remove FAQ functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-faq')) {
+            e.target.closest('.faq-item').remove();
+        }
+    });
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = ['organization', 'product_description'];
+        let isValid = true;
+        
+        requiredFields.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field && !field.value.trim()) {
+                field.classList.add('border-red-500');
+                isValid = false;
+            } else if (field) {
+                field.classList.remove('border-red-500');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fill in all required fields');
+        }
+    });
+});
+</script>
+{% endblock %} 

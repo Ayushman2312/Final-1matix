@@ -79,6 +79,8 @@ urlpatterns = [
     path('assign_ticket/<uuid:ticket_id>/', AssignTicketView.as_view(), name='assign_ticket'),
     path('debug_ticket/<uuid:ticket_id>/', DebugTicketAssignmentView.as_view(), name='debug_ticket'),
     path('my_tickets/', MyTicketsView.as_view(), name='my_tickets'),
+    path('beesuggest/', BeesuggestView.as_view(), name='beesuggest'),
+    path('beesuggest/edit/<uuid:product_id>/', EditProductView.as_view(), name='edit_product'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
