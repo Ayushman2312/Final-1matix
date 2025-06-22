@@ -37,6 +37,14 @@ class ProductDetailsSerializer(serializers.ModelSerializer):
     def get_faqs_formatted(self, obj):
         return obj.get_faqs_list
 
+class ProductSearchSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='focus_keywords')
+    uuid = serializers.UUIDField(source='id')
+
+    class Meta:
+        model = ProductDetails
+        fields = ['name', 'uuid']
+
 class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductDetails

@@ -7,11 +7,11 @@ from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .forms import ProductDetailsForm
-from .serializers import ProductDetailsSerializer, ProductCreateSerializer
+from .serializers import ProductDetailsSerializer, ProductCreateSerializer, ProductSearchSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from .models import ProductDetails
 import json
 import logging
@@ -244,4 +244,60 @@ def create_product_api(request):
             'success': False,
             'message': 'Error creating product',
             'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ProductDetailByUUID(generics.RetrieveAPIView):
+    """
+    API endpoint to retrieve full product details by UUID.
+    """
+    queryset = ProductDetails.objects.filter(is_published=True)
+    serializer_class = ProductDetailsSerializer
+    lookup_field = 'id'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': 'Product not found or invalid UUID.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def ProductSearchAPI(request):
+    """
+    API endpoint to search for products by name (focus_keywords).
+    Returns a list of products with name and UUID.
+    """
+    query = request.query_params.get('q', None)
+    if not query:
+        return Response({
+            'success': False,
+            'message': 'A search query (`q` parameter) is required.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        products = ProductDetails.objects.filter(
+            focus_keywords__icontains=query,
+            is_published=True
+        )[:10]  # Limit to 10 results
+
+        if not products.exists():
+            return Response({
+                'success': True,
+                'data': [],
+                'message': 'No products found matching the query.'
+            }, status=status.HTTP_200_OK)
+
+        serializer = ProductSearchSerializer(products, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Error in ProductSearchAPI: {str(e)}")
+        return Response({
+            'success': False,
+            'message': 'An error occurred during search.'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

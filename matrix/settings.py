@@ -130,6 +130,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://1matrix.io",
     "https://www.1matrix.io",
     "https://api.1matrix.io",
+    "https://beesuggest.com",
+    "https://www.beesuggest.com",
+    "http://127.0.0.1:8000",
 ]
 
 # More restrictive CORS settings for production

@@ -46,6 +46,7 @@ class UserAuthMiddleware:
             current_path.endswith('.png') or
             current_path.endswith('.ico')
         )
+        is_api_path = current_path.startswith('/api/')
         
         # Check if the path is in the admin area
         is_admin_path = current_path.startswith('/alavi07/')
@@ -63,7 +64,8 @@ class UserAuthMiddleware:
         is_public_path = (
             current_path in public_paths or 
             current_path.rstrip('/') in [p.rstrip('/') for p in public_paths] or  # Compare paths without trailing slashes
-            is_static_or_media or 
+            is_static_or_media or
+            is_api_path or
             (is_data_miner_path and is_user_authenticated) or  # Allow data_miner access if authenticated
             'contact-us' in current_path or
             'about-us' in current_path or
