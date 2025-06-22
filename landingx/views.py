@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .models import ProductDetails
+from .permissions import AllowOnlyCorsOrigin
 import json
 import logging
 
@@ -116,6 +117,7 @@ def user_products_view(request):
 
 # API Views
 @api_view(['GET'])
+@permission_classes([AllowOnlyCorsOrigin])
 def published_products_api(request):
     """
     API endpoint to retrieve all published products with pagination and search.
@@ -169,6 +171,7 @@ def published_products_api(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
+@permission_classes([AllowOnlyCorsOrigin])
 def product_detail_api(request, product_id):
     """
     API endpoint to retrieve a single published product by ID.
@@ -253,6 +256,7 @@ class ProductDetailByUUID(generics.RetrieveAPIView):
     queryset = ProductDetails.objects.filter(is_published=True)
     serializer_class = ProductDetailsSerializer
     lookup_field = 'id'
+    permission_classes = [AllowOnlyCorsOrigin]
 
     def get(self, request, *args, **kwargs):
         try:
@@ -264,6 +268,7 @@ class ProductDetailByUUID(generics.RetrieveAPIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
+@permission_classes([AllowOnlyCorsOrigin])
 def ProductSearchAPI(request):
     """
     API endpoint to search for products by name (focus_keywords).

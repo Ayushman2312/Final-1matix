@@ -46,7 +46,7 @@ class UserAuthMiddleware:
             current_path.endswith('.png') or
             current_path.endswith('.ico')
         )
-        is_api_path = current_path.startswith('/api/')
+        is_api_path = '/api/' in current_path
         
         # Check if the path is in the admin area
         is_admin_path = current_path.startswith('/alavi07/')
