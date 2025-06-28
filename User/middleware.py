@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
-from django.urls import reverse
 from django.contrib import messages
-from django.contrib.auth.models import User
+from .models import UserSession
+from django.utils import timezone
 
 class UserAuthMiddleware:
     def __init__(self, get_response):
@@ -10,6 +10,10 @@ class UserAuthMiddleware:
     def __call__(self, request):
         # Get the current path
         current_path = request.path
+        
+        # Attach user to request to avoid querying DB multiple times
+        if not current_path.startswith('/alavi07/'):
+            request.user = None
         
         # List of paths that don't require authentication
         public_paths = [
@@ -52,11 +56,34 @@ class UserAuthMiddleware:
         is_admin_path = current_path.startswith('/alavi07/')
         
         # Check if this is an authenticated user session (using both custom auth and Django auth)
-        is_user_authenticated = (
-            request.session.get('user_id') is not None or  # Custom auth
-            request.session.get('_auth_user_id') is not None  # Django auth
-        )
-        
+        is_user_authenticated = False
+        session_id = request.session.get('user_session_id')
+
+        if session_id:
+            try:
+                user_session = UserSession.objects.select_related('user').get(id=session_id)
+                
+                # Security checks
+                if (user_session.expires_at > timezone.now() and
+                    user_session.user.is_active and
+                    not user_session.user.is_suspended and
+                    user_session.session_key == request.session.session_key):
+                    
+                    is_user_authenticated = True
+                    if not current_path.startswith('/alavi07/'):
+                        request.user = user_session.user
+                    
+                    # Update last activity
+                    user_session.last_activity = timezone.now()
+                    user_session.save(update_fields=['last_activity'])
+                else:
+                    # Session is invalid, log user out
+                    request.session.flush()
+
+            except UserSession.DoesNotExist:
+                # Session ID in cookie but not in DB, log out
+                request.session.flush()
+
         # Check if the path is a data_miner URL and the user is authenticated
         is_data_miner_path = current_path.startswith('/data_miner/')
         
@@ -79,6 +106,9 @@ class UserAuthMiddleware:
             'onboarding' in current_path or
             'employee' in current_path or
             'mark-attendance' in current_path or
+            'forgot-password' in current_path or
+            'reset-password' in current_path or
+            'verify-otp' in current_path or
             'attend' in current_path or
             # Include website public paths
             current_path.startswith('/website/public/') or
@@ -94,7 +124,7 @@ class UserAuthMiddleware:
         )
         
         # For debugging - prints the session info for every request
-        print(f"Auth check: path={current_path}, user_authenticated={is_user_authenticated}, session={list(request.session.keys())}")
+        print(f"Auth check: path={current_path}, user_authenticated={is_user_authenticated}, session_keys={list(request.session.keys())}")
         
         # Special handling for admin paths
         if is_admin_path:

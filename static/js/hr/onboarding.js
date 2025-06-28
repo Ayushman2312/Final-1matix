@@ -370,7 +370,7 @@ function sendInvitation() {
     }
     
     // Send data to server
-    fetch('/hr_management/onboarding/send-invitation/', {
+    fetch('/hr/onboarding/send-invitation/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -493,6 +493,81 @@ document.addEventListener('DOMContentLoaded', function() {
         switchTab('view');
     } else {
         switchTab('add');
+    }
+
+    const acceptInvitationForm = document.getElementById('acceptInvitationForm');
+    if (acceptInvitationForm) {
+        acceptInvitationForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const confirmButton = document.getElementById('confirmAcceptButton');
+            confirmButton.disabled = true;
+            confirmButton.textContent = 'Accepting...';
+
+            const invitationId = document.getElementById('invitationId').value;
+            const grossSalary = document.getElementById('grossSalary').value;
+            const group = document.getElementById('groupSelect').value;
+
+            if (!grossSalary || parseFloat(grossSalary) <= 0) {
+                Swal.fire('Validation Error', 'Please enter a valid Gross Salary.', 'error');
+                confirmButton.disabled = false;
+                confirmButton.textContent = 'Accept Employee';
+                return;
+            }
+
+            const payouts = [];
+            const payoutRows = document.querySelectorAll('#payoutsContainer > div');
+            payoutRows.forEach(row => {
+                const select = row.querySelector('.payout-select');
+                const amount = row.querySelector('.payout-amount');
+                if (select.value && amount.value) {
+                    payouts.push({ id: select.value, amount: amount.value });
+                }
+            });
+
+            const formData = new FormData();
+            formData.append('gross_salary', grossSalary);
+            formData.append('group', group);
+            formData.append('payouts', JSON.stringify(payouts));
+            formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+            fetch(`/hr/onboarding/invitation/${invitationId}/accept/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('acceptInvitationModal').classList.add('hidden');
+                confirmButton.disabled = false;
+                confirmButton.textContent = 'Accept Employee';
+
+                if (data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Invitation accepted and employee created successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#10B981'
+                    }).then(() => {
+                        // Here you should probably reload the invitations or update the UI
+                        window.location.reload(); // simple reload for now
+                    });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                        text: data.message || 'An error occurred.',
+                            icon: 'error'
+                        });
+                    }
+            })
+            .catch(error => {
+                document.getElementById('acceptInvitationModal').classList.add('hidden');
+                confirmButton.disabled = false;
+                confirmButton.textContent = 'Accept Employee';
+                Swal.fire('Request Failed', error.toString(), 'error');
+            });
+        });
     }
 });
 
@@ -692,7 +767,7 @@ function viewInvitationDetails(invitationId) {
     });
 
     // Fetch invitation details from the server
-    fetch(`/hr_management/onboarding/invitation/${invitationId}/?format=json`, {
+    fetch(`/hr/onboarding/invitation/${invitationId}/?format=json`, {
         headers: {
             'Accept': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
@@ -753,75 +828,19 @@ function viewInvitationDetails(invitationId) {
 
 // Function to accept an invitation
 function acceptInvitation(invitationId) {
-    // Show confirmation dialog
-    Swal.fire({
-        title: 'Accept Invitation',
-        text: 'Are you sure you want to accept this invitation? This will generate employee credentials.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#10B981',
-        cancelButtonColor: '#6B7280',
-        confirmButtonText: 'Yes, accept it',
-        cancelButtonText: 'Cancel'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Show loading indicator
-            Swal.fire({
-                title: 'Processing...',
-                text: 'Accepting invitation',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+    // Show the custom modal
+    const modal = document.getElementById('acceptInvitationModal');
+    modal.classList.remove('hidden');
 
-            // Send the acceptance request
-            fetch(`/hr_management/onboarding/invitation/${invitationId}/accept/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    action: 'accept',
-                    from_status: 'completed',
-                    to_status: 'accepted'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Invitation accepted successfully. The applicant will be notified via email.',
-                        icon: 'success',
-                        confirmButtonColor: '#10B981'
-                    }).then(() => {
-                        // Refresh the invitations table
-                        populateEmployeesTable();
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: data.message || 'An error occurred while accepting the invitation',
-                        icon: 'error',
-                        confirmButtonColor: '#EF4444'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'An error occurred while accepting the invitation. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#EF4444'
-                });
-            });
-        }
-    });
+    // Set the invitation ID in the form
+    document.getElementById('invitationId').value = invitationId;
+
+    // Clear previous form state if any
+    document.getElementById('grossSalary').value = '';
+    document.getElementById('groupSelect').selectedIndex = 0;
+    const payoutsContainer = document.getElementById('payoutsContainer');
+    payoutsContainer.innerHTML = '';
+    addPayoutRow(); // Add one initial payout row
 }
 
 // Function to reject an invitation
@@ -849,7 +868,7 @@ function rejectInvitation(invitationId) {
             });
 
             // Send the rejection request
-            fetch(`/hr_management/onboarding/invitation/${invitationId}/reject/`, {
+            fetch(`/hr/onboarding/invitation/${invitationId}/reject/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -925,7 +944,7 @@ function setupOfferLetterPreview() {
         // Show loading state
         previewContent.innerHTML = '<p class="text-gray-500">Loading preview...</p>';
         
-        const url = `/hr_management/offerletters/${documentId}/preview/`;
+        const url = `/hr/offerletters/${documentId}/preview/`;
         console.log('Fetching offer letter from:', url);
         
         // Fetch the document content
@@ -1017,7 +1036,7 @@ function deleteInvitation(invitationId) {
             const csrftoken = getCookie('csrftoken');
             
             // Send delete request
-            fetch(`/hr_management/onboarding/invitation/${invitationId}/delete/`, {
+            fetch(`/hr/onboarding/invitation/${invitationId}/delete/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken,

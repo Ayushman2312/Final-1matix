@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(form);
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
-        fetch('{% url "department_template" %}', {
+        fetch('/hr/departments/', {
             method: 'POST',
             body: formData,
             headers: {

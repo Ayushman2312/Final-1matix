@@ -392,8 +392,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const isUpdate = document.getElementById('templateId') && document.getElementById('templateId').value;
         const url = isUpdate 
-            ? `/hr_management/hiring-agreements/${document.getElementById('templateId').value}/update/`
-            : '{% url "hiring_agreement_template" %}';
+            ? `/hr/hiring-agreements/${document.getElementById('templateId').value}/update/`
+            : '/hr/hiring-agreements/';
         
         fetch(url, {
             method: 'POST',
@@ -516,7 +516,7 @@ function insertTable() {
 
 // Preview template functionality
 function previewTemplate(templateId) {
-    fetch(`/hr_management/hiring-agreements/${templateId}/preview/`)
+    fetch(`/hr/hiring-agreements/${templateId}/preview/`)
         .then(response => response.json())
         .then(data => {
             if (data.content) {
@@ -555,7 +555,7 @@ function deleteTemplate() {
     
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
-    fetch(`/hr_management/hiring-agreements/${deleteTemplateId}/delete/`, {
+    fetch(`/hr/hiring-agreements/${deleteTemplateId}/delete/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrfToken,
@@ -582,7 +582,7 @@ function deleteTemplate() {
 // Edit template functionality
 function editTemplate(templateId, templateName) {
     // Get template content
-    fetch(`/hr_management/hiring-agreements/${templateId}/preview/`)
+    fetch(`/hr/hiring-agreements/${templateId}/preview/`)
         .then(response => response.json())
         .then(data => {
             if (data.content) {

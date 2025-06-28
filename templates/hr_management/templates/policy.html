@@ -362,8 +362,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const isUpdate = document.getElementById('policyId') && document.getElementById('policyId').value;
         const url = isUpdate 
-            ? `/hr_management/policies/${document.getElementById('policyId').value}/update/`
-            : '{% url "policy_template" %}';
+            ? `/hr/policies/${document.getElementById('policyId').value}/update/`
+            : '/hr/policies/';
         
         fetch(url, {
             method: 'POST',
@@ -503,7 +503,7 @@ function deleteTemplate() {
     
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
-    fetch(`/hr_management/policies/${deleteTemplateId}/delete/`, {
+    fetch(`/hr/policies/${deleteTemplateId}/delete/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrfToken,
@@ -530,7 +530,7 @@ function deleteTemplate() {
 // Edit Policy Function
 function editPolicy(policyId, policyName) {
     // Get policy content
-    fetch(`/hr_management/policies/${policyId}/preview/`)
+    fetch(`/hr/policies/${policyId}/preview/`)
         .then(response => response.json())
         .then(data => {
             if (data.content) {

@@ -2,26 +2,27 @@ import re
 import json
 import logging
 import datetime
-import requests
+from django.urls import reverse
+import random
+import string
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import authenticate, login, logout
 from django.conf import settings
 from django.contrib.auth.models import User as AuthUser
-from allauth.socialaccount.models import SocialApp, SocialAccount
 from masteradmin.models import Tickets
 from customersupport.models import SupportDepartment, SupportUser
 from django.db.models import Count, Q
 from django.contrib import messages
 from .google_auth import get_google_auth_url, handle_google_callback
-from .models import User, Reminder, Feedbacks, UserArticle, UserPolicy, QuickNote
+from .models import *
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 logger = logging.getLogger(__name__)
 
@@ -140,27 +141,46 @@ class DashboardView(TemplateView):
     template_name = 'user_dashboard/base.html'
 
     def dispatch(self, request, *args, **kwargs):
-        # Check both custom authentication and Django authentication
-        is_authenticated = request.session.get('user_id') is not None  # Only use custom auth
-        
-        if not is_authenticated:
+        # Check authentication using the UserSession
+        session_id = request.session.get('user_session_id')
+        if not session_id:
             messages.warning(request, 'Please log in to access the dashboard')
             return redirect('/user/login/')
+
+        try:
+            user_session = UserSession.objects.select_related('user').get(id=session_id)
+            
+            # Check if session is expired
+            if user_session.expires_at < timezone.now():
+                user_session.delete()
+                request.session.flush()
+                messages.warning(request, 'Your session has expired. Please log in again.')
+                return redirect('/user/login/')
+            
+            # Check if user is active
+            if not user_session.user.is_active:
+                user_session.delete()
+                request.session.flush()
+                messages.error(request, 'Your account is inactive. Please contact support.')
+                return redirect('/user/login/')
+
+            # Attach user to request for easy access in the view
+            request.user = user_session.user
+            # Activate timezone for this user
+            if request.user.timezone:
+                timezone.activate(request.user.timezone)
+
+        except UserSession.DoesNotExist:
+            request.session.flush()
+            messages.warning(request, 'Invalid session. Please log in again.')
+            return redirect('/user/login/')
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Add user data to context
-        user_id = self.request.session.get('user_id')
-        
-        # Only get user from custom auth system
-        if user_id:
-            try:
-                user = User.objects.get(user_id=user_id)
-                context['user'] = user
-            except User.DoesNotExist:
-                pass
-                
+        # The user is already attached to the request in dispatch
+        context['user'] = self.request.user
         return context
 
 class CreateTicketView(View):
@@ -337,9 +357,14 @@ class GoogleLoginView(View):
 
 def google_callback(request):
     """Handle the Google OAuth callback"""
-    # If already logged in as a custom user, redirect to dashboard
-    if request.session.get('user_id'):
-        return redirect('/user/dashboard/')
+    # If already logged in, redirect to dashboard
+    session_id = request.session.get('user_session_id')
+    if session_id:
+        try:
+            if UserSession.objects.filter(id=session_id).exists():
+                return redirect('/user/dashboard/')
+        except Exception:
+            pass # Continue with login if session is invalid
         
     user, error = handle_google_callback(request)
     
@@ -363,10 +388,29 @@ def google_callback(request):
             messages.info(request, "Please complete your profile to continue")
             return redirect('signup')
         
-        # Set session variables for existing users (ONLY in custom user system)
-        request.session['user_id'] = str(user.user_id)
-        request.session['user_email'] = user.email
-        request.session['user_name'] = user.name
+        # Existing user login: Invalidate old sessions and create a new one.
+        request.session.flush() # Clears the old session data.
+        UserSession.objects.filter(user=user).delete()
+
+        # Create a new session record, default to "remember me" for 30 days for Google logins
+        if not request.session.session_key:
+            request.session.create()
+        session_key = request.session.session_key
+        
+        request.session.set_expiry(30 * 24 * 60 * 60) # 30 days
+        expires_at = timezone.now() + datetime.timedelta(days=30)
+
+        user_session = UserSession.objects.create(
+            user=user,
+            session_key=session_key,
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT'),
+            is_remembered=True, # Assume "remember me" for Google login
+            expires_at=expires_at
+        )
+
+        # Set session variable
+        request.session['user_session_id'] = str(user_session.id)
         
         # Check if there's a next URL to redirect to
         next_url = request.session.get('next_url')
@@ -397,8 +441,13 @@ class LoginView(TemplateView):
     
     def get(self, request, *args, **kwargs):
         # If user is already logged in, redirect to dashboard
-        if request.session.get('user_id'):
-            return redirect('/user/dashboard/')
+        session_id = request.session.get('user_session_id')
+        if session_id:
+            try:
+                if UserSession.objects.filter(id=session_id).exists():
+                    return redirect('/user/dashboard/')
+            except Exception:
+                pass # Continue to login page if session is invalid
         return super().get(request, *args, **kwargs)
     
     def get_template_names(self):
@@ -428,26 +477,63 @@ class LoginView(TemplateView):
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 messages.error(request, 'Invalid email or password')
+                LoginActivity.objects.create(
+                    user=None,
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+                    status='Failed'
+                )
                 return render(request, template_to_use)
             
             # Check password
             from django.contrib.auth.hashers import check_password
             if not hasattr(user, 'password') or not check_password(password, user.password):
                 messages.error(request, 'Invalid email or password')
+                LoginActivity.objects.create(
+                    user=user,
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+                    status='Failed'
+                )
                 return render(request, template_to_use)
             
-            # Login successful
+            # Login successful: Invalidate old sessions and create a new one.
+            request.session.flush() # Clears the old session data.
+            UserSession.objects.filter(user=user).delete()
+
+            # Create a new session record
+            if not request.session.session_key:
+                request.session.create()
+            session_key = request.session.session_key
+
+            expires_at = timezone.now() + datetime.timedelta(days=30) if remember_me else timezone.now() + datetime.timedelta(seconds=settings.SESSION_COOKIE_AGE)
+            
+            if remember_me:
+                request.session.set_expiry(30 * 24 * 60 * 60) # 30 days
+            else:
+                request.session.set_expiry(0) # Session expires when browser closes
+
+            user_session = UserSession.objects.create(
+                user=user,
+                session_key=session_key,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT'),
+                is_remembered=remember_me,
+                expires_at=expires_at
+            )
+
+            LoginActivity.objects.create(
+                user=user,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+                status='Success'
+            )
+
             # Set session variables
-            request.session['user_id'] = str(user.user_id)
-            request.session['user_email'] = user.email
-            request.session['user_name'] = user.name
+            request.session['user_session_id'] = str(user_session.id)
             
             # Debug print - you can remove this after debugging
-            print(f"User login successful: {user.name} (ID: {user.user_id})")
-            
-            # Set session expiry if remember_me is checked
-            if not remember_me:
-                request.session.set_expiry(0)  # Session expires when browser closes
+            print(f"User login successful: {user.name} (Session ID: {user_session.id})")
             
             # Check if there's a next URL to redirect to
             next_url = request.session.get('next_url')
@@ -466,29 +552,183 @@ class LoginView(TemplateView):
             messages.error(request, f'Error during login: {str(e)}')
             return render(request, self.get_template_names()[0])
 
+class ForgotPasswordRequestView(View):
+    def get(self, request):
+        return render(request, 'user_dashboard/forgot_password.html')
+
+    def post(self, request):
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, 'User with this email does not exist.')
+            return redirect('forgot_password')
+
+        # Invalidate old tokens
+        PasswordResetToken.objects.filter(user=user).delete()
+
+        # Create new token
+        token = PasswordResetToken.objects.create(
+            user=user,
+            expires_at=timezone.now() + datetime.timedelta(hours=1)
+        )
+
+        # Send email
+        reset_link = request.build_absolute_uri(reverse('reset_password', kwargs={'token': token.token}))
+        
+        html_message = render_to_string('user_dashboard/email/password_reset_email.html', {
+            'user': user,
+            'reset_link': reset_link,
+        })
+
+        send_mail(
+            'Password Reset Request for 1Matrix',
+            f'Hi {user.name},\n\nPlease click the link to reset your password: {reset_link}\n\nThe link will expire in 1 hour.',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+            html_message=html_message
+        )
+
+        messages.success(request, 'A password reset link has been sent to your email.')
+        return redirect('forgot_password')
+
+
+class ResetPasswordView(View):
+    def get(self, request, token):
+        try:
+            reset_token = PasswordResetToken.objects.get(token=token)
+            if reset_token.is_expired():
+                messages.error(request, 'The password reset link has expired.')
+                return redirect('forgot_password')
+            return render(request, 'user_dashboard/reset_password.html', {'token': token})
+        except PasswordResetToken.DoesNotExist:
+            messages.error(request, 'Invalid password reset link.')
+            return redirect('forgot_password')
+
+    def post(self, request, token):
+        try:
+            reset_token = PasswordResetToken.objects.get(token=token)
+            if reset_token.is_expired():
+                messages.error(request, 'The password reset link has expired.')
+                return redirect('forgot_password')
+
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if new_password != confirm_password:
+                messages.error(request, 'Passwords do not match.')
+                return render(request, 'user_dashboard/reset_password.html', {'token': token})
+            
+            # Generate OTP
+            otp = ''.join(random.choices(string.digits, k=6))
+            request.session['reset_password_otp'] = otp
+            request.session['reset_password_user_id'] = reset_token.user.id
+            request.session['reset_password_new_password'] = make_password(new_password)
+            request.session['reset_password_token'] = str(token)
+
+            # Send OTP email
+            html_message = render_to_string('user_dashboard/email/password_reset_otp.html', {
+                'user': reset_token.user,
+                'otp': otp,
+            })
+            
+            send_mail(
+                'Your Password Reset OTP for 1Matrix',
+                f'Hi {reset_token.user.name},\n\nYour OTP to finalize your password reset is: {otp}\n\nThis OTP will expire shortly.',
+                settings.DEFAULT_FROM_EMAIL,
+                [reset_token.user.email],
+                fail_silently=False,
+                html_message=html_message
+            )
+
+            messages.info(request, 'An OTP has been sent to your email for final verification.')
+            return redirect('verify_otp')
+
+        except PasswordResetToken.DoesNotExist:
+            messages.error(request, 'Invalid password reset link.')
+            return redirect('forgot_password')
+
+class VerifyOtpView(View):
+    def get(self, request):
+        if 'reset_password_otp' not in request.session:
+            messages.error(request, 'Invalid request. Please start the password reset process again.')
+            return redirect('forgot_password')
+        return render(request, 'user_dashboard/verify_otp.html')
+
+    def post(self, request):
+        if 'reset_password_otp' not in request.session:
+            messages.error(request, 'Your session has expired. Please start the password reset process again.')
+            return redirect('forgot_password')
+
+        otp = request.POST.get('otp')
+        if otp != request.session['reset_password_otp']:
+            messages.error(request, 'Invalid OTP. Please try again.')
+            return render(request, 'user_dashboard/verify_otp.html')
+
+        user_id = request.session['reset_password_user_id']
+        new_password = request.session['reset_password_new_password']
+        token_str = request.session['reset_password_token']
+
+        try:
+            user = User.objects.get(id=user_id)
+            user.password = new_password
+            user.save()
+
+            # Invalidate the token
+            PasswordResetToken.objects.filter(token=token_str).delete()
+
+            # Clear session data
+            del request.session['reset_password_otp']
+            del request.session['reset_password_user_id']
+            del request.session['reset_password_new_password']
+            del request.session['reset_password_token']
+
+            messages.success(request, 'Your password has been reset successfully. Please log in.')
+            return redirect('login')
+
+        except User.DoesNotExist:
+            messages.error(request, 'An error occurred. Please try again.')
+            return redirect('forgot_password')
+
 class DebugSessionView(View):
     def get(self, request):
         """Debug view to check session values"""
+        session_id = request.session.get('user_session_id')
+        user_session = None
+        user = None
+        if session_id:
+            try:
+                user_session = UserSession.objects.get(id=session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                pass
+
         # Only show custom user session values, not Django admin session info
         session_data = {
-            'custom_is_authenticated': request.session.get('user_id') is not None,
-            'custom_user_id': request.session.get('user_id'),
-            'custom_user_email': request.session.get('user_email'),
-            'custom_user_name': request.session.get('user_name'),
-            'custom_session_keys': [key for key in request.session.keys() 
-                                   if key in ['user_id', 'user_email', 'user_name', 'next_url']],
+            'custom_is_authenticated': user is not None,
+            'user_session_id': session_id,
+            'session_key': request.session.session_key,
+            'user_name': user.name if user else None,
+            'user_email': user.email if user else None,
+            'session_expires_at': user_session.expires_at.isoformat() if user_session else None,
+            'is_remembered': user_session.is_remembered if user_session else None,
+            'session_expiry_age': request.session.get_expiry_age(),
+            'custom_session_keys': list(request.session.keys())
         }
         return JsonResponse(session_data)
 
 
 def Logout(request):
     # Only remove custom user session variables
-    if 'user_id' in request.session:
-        del request.session['user_id']
-    if 'user_email' in request.session:
-        del request.session['user_email']
-    if 'user_name' in request.session:
-        del request.session['user_name']
+    session_id = request.session.get('user_session_id')
+    if session_id:
+        try:
+            UserSession.objects.filter(id=session_id).delete()
+        except Exception as e:
+            logger.error(f"Error deleting session on logout: {e}")
+    
+    request.session.flush() # Clears all session data
         
     # Don't call request.session.flush() as it would log out Django admin too
     
@@ -499,9 +739,10 @@ def Logout(request):
 class CreateReminderView(View):
     def post(self, request):
         print("Create reminder API called")
-        print(f"Session data: {request.session.get('user_id')}")
+        session_id = request.session.get('user_session_id')
+        print(f"Session data: {session_id}")
         
-        if not request.session.get('user_id'):
+        if not session_id:
             print("User not authenticated")
             return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
         
@@ -509,41 +750,13 @@ class CreateReminderView(View):
             data = json.loads(request.body)
             print(f"Received data: {data}")
             
-            user_id = request.session.get('user_id')
-            print(f"Looking up user with ID: {user_id}")
-            
-            # Try different ways to find the user
-            user = None
-            
-            # Try by user_id UUID field first
             try:
-                user = User.objects.get(user_id=user_id)
-                print(f"Found user by user_id: {user.name}")
-            except User.DoesNotExist:
-                pass
-                
-            # If not found, try by id
-            if not user:
-                try:
-                    user = User.objects.get(id=user_id)
-                    print(f"Found user by id: {user.name}")
-                except (User.DoesNotExist, ValueError):
-                    pass
-            
-            # If still not found, try by id (numeric)
-            if not user:
-                try:
-                    # Try to convert to int
-                    numeric_id = int(user_id)
-                    user = User.objects.get(id=numeric_id)
-                    print(f"Found user by numeric id: {user.name}")
-                except (User.DoesNotExist, ValueError):
-                    pass
-                    
-            # If we still couldn't find the user, return an error
-            if not user:
-                print(f"User not found with any ID method: {user_id}")
-                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+                user_session = UserSession.objects.get(id=session_id)
+                user = user_session.user
+                print(f"Found user by session: {user.name}")
+            except UserSession.DoesNotExist:
+                print(f"User session not found with ID: {session_id}")
+                return JsonResponse({'success': False, 'message': 'User session not found'}, status=404)
             
             title = data.get('title')
             description = data.get('description', '')
@@ -668,40 +881,13 @@ class CreateReminderView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class ListRemindersView(View):
     def get(self, request):
-        if not request.session.get('user_id'):
+        session_id = request.session.get('user_session_id')
+        if not session_id:
             return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
         
         try:
-            user_id = request.session.get('user_id')
-            
-            # Try different ways to find the user
-            user = None
-            
-            # Try by user_id UUID field first
-            try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
-                pass
-                
-            # If not found, try by id
-            if not user:
-                try:
-                    user = User.objects.get(id=user_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-            
-            # If still not found, try by id (numeric)
-            if not user:
-                try:
-                    # Try to convert to int
-                    numeric_id = int(user_id)
-                    user = User.objects.get(id=numeric_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-                    
-            # If we still couldn't find the user, return an error
-            if not user:
-                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            user_session = UserSession.objects.get(id=session_id)
+            user = user_session.user
             
             reminders = Reminder.objects.filter(user=user).order_by('reminder_time')
             
@@ -731,40 +917,13 @@ class ListRemindersView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class CheckDueRemindersView(View):
     def get(self, request):
-        if not request.session.get('user_id'):
+        session_id = request.session.get('user_session_id')
+        if not session_id:
             return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
         
         try:
-            user_id = request.session.get('user_id')
-            
-            # Try different ways to find the user
-            user = None
-            
-            # Try by user_id UUID field first
-            try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
-                pass
-                
-            # If not found, try by id
-            if not user:
-                try:
-                    user = User.objects.get(id=user_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-            
-            # If still not found, try by id (numeric)
-            if not user:
-                try:
-                    # Try to convert to int
-                    numeric_id = int(user_id)
-                    user = User.objects.get(id=numeric_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-                    
-            # If we still couldn't find the user, return an error
-            if not user:
-                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            user_session = UserSession.objects.get(id=session_id)
+            user = user_session.user
             
             # Get current time
             now = timezone.now()
@@ -841,40 +1000,13 @@ class CheckDueRemindersView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class CompleteReminderView(View):
     def post(self, request, reminder_id):
-        if not request.session.get('user_id'):
+        session_id = request.session.get('user_session_id')
+        if not session_id:
             return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
         
         try:
-            user_id = request.session.get('user_id')
-            
-            # Try different ways to find the user
-            user = None
-            
-            # Try by user_id UUID field first
-            try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
-                pass
-                
-            # If not found, try by id
-            if not user:
-                try:
-                    user = User.objects.get(id=user_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-            
-            # If still not found, try by id (numeric)
-            if not user:
-                try:
-                    # Try to convert to int
-                    numeric_id = int(user_id)
-                    user = User.objects.get(id=numeric_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-                    
-            # If we still couldn't find the user, return an error
-            if not user:
-                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
+            user_session = UserSession.objects.get(id=session_id)
+            user = user_session.user
             
             reminder = Reminder.objects.get(id=reminder_id, user=user)
             reminder.mark_as_completed()
@@ -895,12 +1027,14 @@ class CompleteReminderView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class SnoozeReminderView(View):
     def post(self, request, reminder_id):
-        if not request.session.get('user_id'):
+        session_id = request.session.get('user_session_id')
+        if not session_id:
             return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
         
         try:
             data = json.loads(request.body)
-            user_id = request.session.get('user_id')
+            user_session = UserSession.objects.get(id=session_id)
+            user = user_session.user
             
             # Get snooze time in minutes (default to 10 minutes)
             snooze_minutes = data.get('snooze_minutes', 10)
@@ -911,35 +1045,6 @@ class SnoozeReminderView(View):
             # Get timezone name if provided
             timezone_name = data.get('timezone_name', '')
             print(f"Processing snooze with timezone: {timezone_name}")
-            
-            # Try different ways to find the user
-            user = None
-            
-            # Try by user_id UUID field first
-            try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
-                pass
-                
-            # If not found, try by id
-            if not user:
-                try:
-                    user = User.objects.get(id=user_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-            
-            # If still not found, try by id (numeric)
-            if not user:
-                try:
-                    # Try to convert to int
-                    numeric_id = int(user_id)
-                    user = User.objects.get(id=numeric_id)
-                except (User.DoesNotExist, ValueError):
-                    pass
-                    
-            # If we still couldn't find the user, return an error
-            if not user:
-                return JsonResponse({'success': False, 'message': 'User not found'}, status=404)
             
             reminder = Reminder.objects.get(id=reminder_id, user=user)
             
@@ -1033,9 +1138,9 @@ class CreateQuickNoteView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-            user_id = request.session.get('user_id')
+            session_id = request.session.get('user_session_id')
             
-            if not user_id:
+            if not session_id:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not authenticated'
@@ -1043,8 +1148,9 @@ class CreateQuickNoteView(View):
             
             # Get the user
             try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
+                user_session = UserSession.objects.get(id=session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not found'
@@ -1098,9 +1204,9 @@ class ListQuickNotesView(View):
     """
     def get(self, request):
         try:
-            user_id = request.session.get('user_id')
+            session_id = request.session.get('user_session_id')
             
-            if not user_id:
+            if not session_id:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not authenticated'
@@ -1108,8 +1214,9 @@ class ListQuickNotesView(View):
             
             # Get the user
             try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
+                user_session = UserSession.objects.get(id=session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not found'
@@ -1147,9 +1254,9 @@ class ToggleQuickNotePinView(View):
     """
     def post(self, request, note_id):
         try:
-            user_id = request.session.get('user_id')
+            session_id = request.session.get('user_session_id')
             
-            if not user_id:
+            if not session_id:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not authenticated'
@@ -1157,8 +1264,9 @@ class ToggleQuickNotePinView(View):
             
             # Get the user
             try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
+                user_session = UserSession.objects.get(id=session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not found'
@@ -1196,9 +1304,9 @@ class DeleteQuickNoteView(View):
     """
     def post(self, request, note_id):
         try:
-            user_id = request.session.get('user_id')
+            session_id = request.session.get('user_session_id')
             
-            if not user_id:
+            if not session_id:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not authenticated'
@@ -1206,8 +1314,9 @@ class DeleteQuickNoteView(View):
             
             # Get the user
             try:
-                user = User.objects.get(user_id=user_id)
-            except User.DoesNotExist:
+                user_session = UserSession.objects.get(id=session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
                 return JsonResponse({
                     'success': False,
                     'message': 'User not found'
@@ -1235,6 +1344,56 @@ class DeleteQuickNoteView(View):
                 'success': False,
                 'message': str(e)
             }, status=500)
+
+class ProfileSettingsView(View):
+    def get(self, request):
+        login_activities = LoginActivity.objects.filter(user=request.user).order_by('-timestamp')[:10]
+        return render(request, 'user_dashboard/settings.html', {'login_activities': login_activities})
+
+    def post(self, request):
+        user = request.user
+        user.name = request.POST.get('name', user.name)
+        user.phone = request.POST.get('phone', user.phone)
+        user.language = request.POST.get('language', user.language)
+        
+        if 'profile_picture' in request.FILES:
+            user.profile_picture = request.FILES['profile_picture']
+        
+        user.save()
+        messages.success(request, 'Your profile has been updated successfully.')
+        return redirect('user_settings')
+
+class ChangePasswordView(View):
+    def post(self, request):
+        user = request.user
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_new_password = request.POST.get('confirm_new_password')
+
+        if not user.check_password(current_password):
+            messages.error(request, 'Your current password does not match.')
+            return redirect('user_settings')
+
+        if new_password != confirm_new_password:
+            messages.error(request, 'The new passwords do not match.')
+            return redirect('user_settings')
+            
+        user.password = make_password(new_password)
+        user.save()
+        messages.success(request, 'Your password has been changed successfully.')
+        return redirect('user_settings')
+
+
+class NotificationSettingsView(View):
+    def post(self, request):
+        user = request.user
+        user.email_notifications = 'email_notifications' in request.POST
+        user.sms_notifications = 'sms_notifications' in request.POST
+        user.in_app_notifications = 'in_app_notifications' in request.POST
+        user.notification_frequency = request.POST.get('notification_frequency', 'instant')
+        user.save()
+        messages.success(request, 'Your notification settings have been updated.')
+        return redirect('user_settings')
 
 
 

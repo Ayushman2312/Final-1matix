@@ -1,110 +1,157 @@
 {% extends 'user_dashboard/base.html' %}
 {%block content%}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-gray-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <title>Create Product Card</title>
 </head>
-<body class="font-['Inter'] bg-gradient-to-br from-sky-50 to-blue-50 m-0 min-h-screen">
-    <div class="container">
-        <div class="max-w-5xl bg-white rounded-lg shadow-lg p-6">
-            <!-- Manage Cards Button -->
-            <div class="flex justify-end mb-4">
-                <a href="{% url 'all_product_card' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                    </svg>
-                    Manage Cards
-                </a>
-            </div>
+<body class="h-full font-sans">
+    <div class="min-h-screen rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] bg-white py-8 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <!-- Alert messages -->
-            <div id="successAlert" class="hidden mb-4 p-4 rounded-lg bg-green-100 text-green-800 border border-green-200">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span id="successMessage">Product card created successfully!</span>
+            <!-- Page Header -->
+            <div class="md:flex md:items-center md:justify-between pb-8 border-b border-gray-200">
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-3xl font-bold leading-tight text-gray-900 sm:truncate">Add New Product</h1>
+                    <p class="mt-1 text-sm text-gray-500">Fill in the details below to create a new product card.</p>
+                </div>
+                <div class="mt-4 flex md:mt-0 md:ml-4">
+                    <a href="{% url 'all_product_card' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Manage Cards
+                    </a>
                 </div>
             </div>
+
+            <!-- Alert messages placeholder -->
+            <div id="alert-container" class="fixed top-5 right-5 z-50 space-y-3"></div>
             
-            <div id="errorAlert" class="hidden mb-4 p-4 rounded-lg bg-red-100 text-red-800 border border-red-200">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                    <span id="errorMessage">An error occurred. Please try again.</span>
-                </div>
-            </div>
-            
-            <form id="productForm" class="space-y-8">
+            <form id="productForm" class="mt-8 space-y-12">
                 {% csrf_token %}
-                <!-- Product Images -->
-                <div class="space-y-4">
-                    <label class="block text-base font-semibold text-gray-700">Product Images</label>
-                    <p class="text-sm text-gray-500 mb-2">Add up to 3 images. First image will be the main product image. Images must be square (1:1 ratio).</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
-                            <input type="file" name="image1" id="image1" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required onchange="validateAndDisplayImage('image1', 'image1Name', 'image1Preview')">
-                            <div class="text-center">
-                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                <p class="mt-2 text-sm font-medium text-gray-900">Main Product Image</p>
-                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
-                                <p id="image1Name" class="mt-2 text-xs text-blue-500"></p>
-                                <div id="image1Preview" class="mt-2 hidden"></div>
+                
+                <!-- Product Images Section -->
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Product Media</h2>
+                        <p class="mt-1 text-sm text-gray-500">Add up to 5 images. The first image will be the main product image. Images must be square (1:1 ratio).</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <!-- Image Uploader 1 -->
+                        <div class="space-y-2">
+                            <div class="relative group bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-indigo-500 transition-colors duration-200 aspect-square">
+                                <input type="file" name="image1" id="image1" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required onchange="validateAndDisplayImage('image1', 'image1Name', 'image1Preview', 'image1Placeholder', 'alt1')">
+                                <div id="image1Preview" class="absolute inset-0 w-full h-full bg-white rounded-lg hidden"></div>
+                                <div id="image1Placeholder" class="space-y-2">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <p class="text-sm font-semibold text-gray-900">Main Product Image</p>
+                                    <p class="text-xs text-gray-500">Click to upload</p>
+                                    <p id="image1Name" class="mt-2 text-xs text-indigo-600 font-medium"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="alt1" class="sr-only">Alt text for main image</label>
+                                <input type="text" name="alt1" id="alt1" placeholder="Alt text for main image" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                             </div>
                         </div>
-                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
-                            <input type="file" name="image2" id="image2" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image2', 'image2Name', 'image2Preview')">
-                            <div class="text-center">
-                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                <p class="mt-2 text-sm font-medium text-gray-900">Additional Image</p>
-                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
-                                <p id="image2Name" class="mt-2 text-xs text-blue-500"></p>
-                                <div id="image2Preview" class="mt-2 hidden"></div>
+                        <!-- Image Uploader 2 -->
+                        <div class="space-y-2">
+                            <div class="relative group bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-indigo-500 transition-colors duration-200 aspect-square">
+                                <input type="file" name="image2" id="image2" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image2', 'image2Name', 'image2Preview', 'image2Placeholder', 'alt2')">
+                                <div id="image2Preview" class="absolute inset-0 w-full h-full bg-white rounded-lg hidden"></div>
+                                <div id="image2Placeholder" class="space-y-2">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <p class="text-sm font-semibold text-gray-900">Additional Image</p>
+                                    <p class="text-xs text-gray-500">Click to upload</p>
+                                    <p id="image2Name" class="mt-2 text-xs text-indigo-600 font-medium"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="alt2" class="sr-only">Alt text for image 2</label>
+                                <input type="text" name="alt2" id="alt2" placeholder="Alt text for image 2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             </div>
                         </div>
-                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
-                            <input type="file" name="image3" id="image3" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image3', 'image3Name', 'image3Preview')">
-                            <div class="text-center">
-                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                <p class="mt-2 text-sm font-medium text-gray-900">Additional Image</p>
-                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
-                                <p id="image3Name" class="mt-2 text-xs text-blue-500"></p>
-                                <div id="image3Preview" class="mt-2 hidden"></div>
+                        <!-- Image Uploader 3 -->
+                        <div class="space-y-2">
+                            <div class="relative group bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-indigo-500 transition-colors duration-200 aspect-square">
+                                <input type="file" name="image3" id="image3" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image3', 'image3Name', 'image3Preview', 'image3Placeholder', 'alt3')">
+                                <div id="image3Preview" class="absolute inset-0 w-full h-full bg-white rounded-lg hidden"></div>
+                                <div id="image3Placeholder" class="space-y-2">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <p class="text-sm font-semibold text-gray-900">Additional Image</p>
+                                    <p class="text-xs text-gray-500">Click to upload</p>
+                                    <p id="image3Name" class="mt-2 text-xs text-indigo-600 font-medium"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="alt3" class="sr-only">Alt text for image 3</label>
+                                <input type="text" name="alt3" id="alt3" placeholder="Alt text for image 3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             </div>
                         </div>
-                        <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 transition-colors">
-                            <input type="file" name="image4" id="image4" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image4', 'image4Name', 'image4Preview')">
-                            <div class="text-center">
-                                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                                <p class="mt-2 text-sm font-medium text-gray-900">Additional Image</p>
-                                <p class="text-xs text-gray-500">Must be square (1:1 ratio)</p>
-                                <p id="image4Name" class="mt-2 text-xs text-blue-500"></p>
-                                <div id="image4Preview" class="mt-2 hidden"></div>
+                        <!-- Image Uploader 4 -->
+                        <div class="space-y-2">
+                            <div class="relative group bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-indigo-500 transition-colors duration-200 aspect-square">
+                                <input type="file" name="image4" id="image4" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image4', 'image4Name', 'image4Preview', 'image4Placeholder', 'alt4')">
+                                <div id="image4Preview" class="absolute inset-0 w-full h-full bg-white rounded-lg hidden"></div>
+                                <div id="image4Placeholder" class="space-y-2">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <p class="text-sm font-semibold text-gray-900">Additional Image</p>
+                                    <p class="text-xs text-gray-500">Click to upload</p>
+                                    <p id="image4Name" class="mt-2 text-xs text-indigo-600 font-medium"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="alt4" class="sr-only">Alt text for image 4</label>
+                                <input type="text" name="alt4" id="alt4" placeholder="Alt text for image 4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
+                         <!-- Image Uploader 5 -->
+                         <div class="space-y-2">
+                            <div class="relative group bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-indigo-500 transition-colors duration-200 aspect-square">
+                                <input type="file" name="image5" id="image5" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="validateAndDisplayImage('image5', 'image5Name', 'image5Preview', 'image5Placeholder', 'alt5')">
+                                <div id="image5Preview" class="absolute inset-0 w-full h-full bg-white rounded-lg hidden"></div>
+                                <div id="image5Placeholder" class="space-y-2">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <p class="text-sm font-semibold text-gray-900">Additional Image</p>
+                                    <p class="text-xs text-gray-500">Click to upload</p>
+                                    <p id="image5Name" class="mt-2 text-xs text-indigo-600 font-medium"></p>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="alt5" class="sr-only">Alt text for image 5</label>
+                                <input type="text" name="alt5" id="alt5" placeholder="Alt text for image 5" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <div class="border-t border-gray-200"></div>
+                
                 <script>
-                    function validateAndDisplayImage(inputId, nameDisplayId, previewId) {
+                    function validateAndDisplayImage(inputId, nameDisplayId, previewId, placeholderId, altInputId) {
                         const input = document.getElementById(inputId);
                         const nameDisplay = document.getElementById(nameDisplayId);
                         const preview = document.getElementById(previewId);
+                        const placeholder = document.getElementById(placeholderId);
+                        const altInput = document.getElementById(altInputId);
                         
                         if (input.files && input.files[0]) {
                             const file = input.files[0];
-                            nameDisplay.textContent = file.name;
                             
                             // Create image element to check dimensions
                             const img = new Image();
@@ -113,180 +160,247 @@
                             img.onload = function() {
                                 // Check if image is square (1:1 ratio)
                                 if (img.width !== img.height) {
-                                    alert('Please upload a square image (1:1 ratio)');
+                                    showAlert('Please upload a square image (1:1 ratio).', 'error');
                                     input.value = '';
-                                    nameDisplay.textContent = 'No file chosen';
+                                    nameDisplay.textContent = '';
                                     preview.classList.add('hidden');
+                                    placeholder.classList.remove('hidden');
+                                    if (altInput && inputId !== 'image1') {
+                                        altInput.required = false;
+                                    }
                                     return;
                                 }
                                 
                                 // Show preview
-                                preview.innerHTML = `<img src="${img.src}" class="w-20 h-20 object-cover rounded-lg">`;
+                                nameDisplay.textContent = file.name;
+                                preview.innerHTML = `<img src="${img.src}" class="w-full h-full object-cover rounded-lg">`;
                                 preview.classList.remove('hidden');
+                                placeholder.classList.add('hidden');
+                                if (altInput) {
+                                    altInput.required = true;
+                                }
                             }
                         } else {
-                            nameDisplay.textContent = 'No file chosen';
+                            nameDisplay.textContent = '';
                             preview.classList.add('hidden');
+                            placeholder.classList.remove('hidden');
+                            if (altInput && inputId !== 'image1') {
+                                altInput.required = false;
+                            }
                         }
                     }
                 </script>
     
-                <!-- Product Information -->
-                <div class="bg-gray-50 rounded-lg p-6 space-y-6">
-                    <h2 class="text-xl font-bold text-gray-900">Basic Information</h2>
-                    
-                    <!-- Category and Title Row -->
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label for="title" class="block text-sm font-medium text-gray-700">Product Title <span class="text-red-500">*</span></label>
-                            <input type="text" id="title" name="title" placeholder="Enter product title" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
-                            <p class="text-xs text-gray-500">Write a clear, descriptive title</p>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="youtube_link" class="block text-sm font-medium text-gray-700">YouTube Video Link</label>
-                            <input type="url" id="youtube_link" name="youtube_link" placeholder="Enter YouTube video URL" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors">
-                            <p class="text-xs text-gray-500">Add a YouTube video showcasing your product (optional)</p>
-                        </div>
+                <!-- Product Information Section -->
+                <div class="space-y-6">
+                     <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Product Information</h2>
+                        <p class="mt-1 text-sm text-gray-500">Provide the basic details for your product.</p>
                     </div>
-    
-                    <!-- Price, HSN Code and GST Row -->
-                    <div class="grid grid-cols-4 gap-6">
-                        <div class="space-y-2">
-                            <label for="price" class="block text-sm font-medium text-gray-700">Price <span class="text-red-500">*</span></label>
-                            <div class="mt-1 relative rounded-lg shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">₹</span>
-                                </div>
-                                <input type="number" step="0.01" id="price" name="price" placeholder="0.00" class="pl-8 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
+
+                    <div class="p-6 bg-white shadow-sm rounded-lg space-y-6">
+                         <!-- Category and Title Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-1">
+                                <label for="title" class="block text-sm font-medium text-gray-700">Product Title <span class="text-red-500">*</span></label>
+                                <input type="text" id="title" name="title" placeholder="e.g. Premium Leather Watch" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                <p class="text-xs text-gray-500">A short, descriptive title.</p>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="category" class="block text-sm font-medium text-gray-700">Category <span class="text-red-500">*</span></label>
+                                <select id="category" name="category" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" required>
+                                    <option value="">Select a category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.category_id }}">{{ category.category_name }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <label for="hsn_code" class="block text-sm font-medium text-gray-700">HSN Code <span class="text-red-500">*</span></label>
-                            <input type="text" id="hsn_code" name="hsn_code" placeholder="Enter HSN Code" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
-                            <p class="text-xs text-gray-500">Enter the HSN code for your product</p>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label for="gst_percentage" class="block text-sm font-medium text-gray-700">GST Percentage <span class="text-red-500">*</span></label>
-                            <div class="mt-1 relative rounded-lg shadow-sm">
-                                <input type="number" min="0" max="100" step="0.01" id="gst_percentage" name="gst_percentage" placeholder="Enter GST percentage" class="block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors pr-12" required>
-                                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">%</span>
-                                </div>
-                            </div>
-                            <p class="text-xs text-gray-500">Enter the applicable GST percentage</p>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="category" class="block text-sm font-medium text-gray-700">Category <span class="text-red-500">*</span></label>
-                            <select id="category" name="category" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required>
-                                <option value="">Select a category</option>
-                                {% for category in categories %}
-                                    <option value="{{ category.category_id }}">{{ category.category_name }}</option>
-                                {% endfor %}
-                            </select>
-                            <p class="text-xs text-gray-500">Choose the most relevant category</p>
-                        </div>
-                    </div>
-
-                    <!-- Description and YouTube Link Row -->
-                    <div>
-                        <div class="space-y-2">
+                        <!-- Description -->
+                        <div class="space-y-1">
                             <label for="description" class="block text-sm font-medium text-gray-700">Product Description <span class="text-red-500">*</span></label>
-                            <textarea id="description" name="description" rows="4" placeholder="Describe your product (20 words max)" class="mt-1 block w-full px-4 py-2 border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-colors" required></textarea>
-                            <p class="text-xs text-gray-500">Keep it concise and highlight key features</p>
+                            <textarea id="description" name="description" rows="4" placeholder="Describe your product in detail (max 200 words)" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required></textarea>
+                            <p class="text-xs text-gray-500">Highlight key features and benefits.</p>
+                        </div>
+        
+                        <!-- Price, HSN Code and GST Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-1">
+                                <label for="price" class="block text-sm font-medium text-gray-700">Price <span class="text-red-500">*</span></label>
+                                <div class="mt-1 relative rounded-md shadow-sm">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">₹</span>
+                                    </div>
+                                    <input type="number" step="0.01" id="price" name="price" placeholder="0.00" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-7 pr-12" required>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label for="hsn_code" class="block text-sm font-medium text-gray-700">HSN Code <span class="text-red-500">*</span></label>
+                                <input type="text" id="hsn_code" name="hsn_code" placeholder="e.g. 91021100" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label for="gst_percentage" class="block text-sm font-medium text-gray-700">GST % <span class="text-red-500">*</span></label>
+                                <div class="mt-1 relative rounded-md shadow-sm">
+                                    <input type="number" min="0" max="100" step="0.01" id="gst_percentage" name="gst_percentage" placeholder="18" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <span class="text-gray-500 sm:text-sm">%</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        
+                        <!-- YouTube Link -->
+                        <div class="space-y-1">
+                            <label for="youtube_link" class="block text-sm font-medium text-gray-700">YouTube Video Link</label>
+                            <input type="url" id="youtube_link" name="youtube_link" placeholder="https://youtube.com/watch?v=..." class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <p class="text-xs text-gray-500">Optional: Add a video to showcase your product.</p>
+                        </div>
+        
+                        <!-- Stock Status & MOQ Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-gray-900">Stock Status <span class="text-red-500">*</span></label>
+                                <fieldset class="mt-2">
+                                    <legend class="sr-only">Stock status</legend>
+                                    <div class="flex items-center space-x-6">
+                                        <div class="flex items-center">
+                                            <input id="stock_yes" name="stock" type="radio" value="yes" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>
+                                            <label for="stock_yes" class="ml-3 block text-sm font-medium text-gray-700">In Stock</label>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input id="stock_no" name="stock" type="radio" value="no" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                            <label for="stock_no" class="ml-3 block text-sm font-medium text-gray-700">Out of Stock</label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="moq" class="block text-sm font-medium text-gray-700">Minimum Order Quantity (MOQ)</label>
+                                <input type="number" id="moq" name="moq" placeholder="e.g., 10" min="1" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
                     </div>
-    
-                    <!-- Stock Status Row -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">Stock Status <span class="text-red-500">*</span></label>
-                        <div class="mt-2 space-x-6">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="stock" value="yes" class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
-                                <span class="ml-2 text-sm text-gray-700">In Stock</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="stock" value="no" class="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                <span class="ml-2 text-sm text-gray-700">Out of Stock</span>
-                            </label>
+                </div>
+
+                <div class="border-t border-gray-200"></div>
+
+                <!-- Trusted Fields Section -->
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Trusted Fields</h2>
+                        <p class="mt-1 text-sm text-gray-500">Highlight key trust signals with icons and text (optional).</p>
+                    </div>
+
+                    <div class="p-6 bg-white shadow-sm rounded-lg grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <!-- Trusted Field 1 -->
+                        <div class="space-y-2">
+                            <label for="trusted_icon1" class="block text-sm font-medium text-gray-700">Icon 1</label>
+                            <input type="file" id="trusted_icon1" name="trusted_icon1" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                            <label for="trusted_text1" class="sr-only">Text for Icon 1</label>
+                            <input type="text" id="trusted_text1" name="trusted_text1" placeholder="e.g., Free Shipping" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <!-- Trusted Field 2 -->
+                        <div class="space-y-2">
+                            <label for="trusted_icon2" class="block text-sm font-medium text-gray-700">Icon 2</label>
+                            <input type="file" id="trusted_icon2" name="trusted_icon2" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                            <label for="trusted_text2" class="sr-only">Text for Icon 2</label>
+                            <input type="text" id="trusted_text2" name="trusted_text2" placeholder="e.g., 24/7 Support" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <!-- Trusted Field 3 -->
+                        <div class="space-y-2">
+                            <label for="trusted_icon3" class="block text-sm font-medium text-gray-700">Icon 3</label>
+                            <input type="file" id="trusted_icon3" name="trusted_icon3" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                            <label for="trusted_text3" class="sr-only">Text for Icon 3</label>
+                            <input type="text" id="trusted_text3" name="trusted_text3" placeholder="e.g., Secure Checkout" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <!-- Trusted Field 4 -->
+                        <div class="space-y-2">
+                            <label for="trusted_icon4" class="block text-sm font-medium text-gray-700">Icon 4</label>
+                            <input type="file" id="trusted_icon4" name="trusted_icon4" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                            <label for="trusted_text4" class="sr-only">Text for Icon 4</label>
+                            <input type="text" id="trusted_text4" name="trusted_text4" placeholder="e.g., 2-Year Warranty" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         </div>
                     </div>
                 </div>
     
-                <!-- Product Variations -->
-                <div class="bg-white rounded-lg p-6">
-                    <h2 class="text-xl mb-6">Product Variation</h2>
+                <!-- Product Variations Section -->
+                <div class="space-y-6">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Product Variations</h2>
+                        <p class="mt-1 text-sm text-gray-500">Add variations like color, size, etc. with optional price differences.</p>
+                    </div>
                     
-                    <div id="variations" class="space-y-6">
-                        <div class="variation-group relative">
-                            <!-- Variation Name -->
-                            <div class="mb-4 relative">
-                                <input type="text" 
-                                       placeholder="Name" 
-                                       class="variation-name w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                       style="height: 40px;">
+                    <div id="variations" class="space-y-8">
+                        <!-- Variation Group Template -->
+                        <div class="variation-group bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex-grow pr-4">
+                                    <label class="sr-only">Variation Name</label>
+                                    <input type="text" 
+                                           placeholder="Variation Name (e.g., Color)" 
+                                           class="variation-name rounded-md w-full px-3 py-2 text-lg font-medium border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
                                 <button type="button" 
                                         onclick="removeVariation(this)" 
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        class="text-gray-400 hover:text-red-600 transition-colors">
+                                    <span class="sr-only">Remove Variation</span>
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                     </svg>
                                 </button>
                             </div>
                             
-                            <!-- Value and Price Row -->
-                            <div class="values-container space-y-3">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="relative">
+                            <div class="values-container space-y-4">
+                                <!-- Variation Value Row Template -->
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-grow">
+                                        <label class="sr-only">Value</label>
                                         <input type="text" 
-                                               placeholder="Value" 
-                                               class="variation-value w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                               style="height: 40px;">
+                                               placeholder="Value (e.g., Color, Size, etc.)" 
+                                               class="variation-value w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     </div>
-                                    <div class="relative">
+                                    <div class="relative w-40">
+                                        <label class="sr-only">Price</label>
+                                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <span class="text-gray-500 sm:text-sm">₹</span>
+                                        </div>
                                         <input type="number" 
-                                               placeholder="Price" 
-                                               class="variation-price w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                               style="height: 40px;">
-                                        <div class="text-xs text-gray-500 mt-1">If different price</div>
-                                        <button type="button" 
-                                                onclick="removeValue(this)" 
-                                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </button>
+                                               placeholder="Price (Optional)" 
+                                               class="variation-price w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     </div>
+                                    <button type="button" 
+                                            onclick="removeValue(this)" 
+                                            class="text-gray-400 hover:text-red-600 transition-colors">
+                                        <span class="sr-only">Remove Value</span>
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
                                 </div>
                             </div>
                             
-                            <!-- Add Value Button -->
                             <button type="button" 
                                     onclick="addVariationValue(this)" 
-                                    class="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
-                                    style="height: 40px;">
-                                Add More Value
+                                    class="mt-4 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                Add Value
                             </button>
                         </div>
                     </div>
                     
-                    <!-- Add More Variation Button -->
                     <button type="button" 
                             onclick="addNewVariation()" 
-                            class="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
-                            style="height: 40px;">
-                        Add More Variation
+                            class="mt-6 inline-flex items-center px-4 py-2 border border-dashed border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="-ml-1 mr-2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                        Add Another Variation
                     </button>
                 </div>
-    
                 <!-- Submit Button -->
-                <div class="flex justify-end">
-                    <button type="submit" id="submitBtn" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                <div class="flex justify-end pt-5">
+                    <button type="submit" id="submitBtn" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
                         <span id="submitText">Create Product</span>
-                        <svg id="loadingSpinner" class="hidden animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg id="loadingSpinner" class="hidden animate-spin ml-3 -mr-1 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
@@ -297,337 +411,261 @@
     </div>
 
 <script>
-    // Function to check if device is mobile
-    function isMobileDevice() {
-        return window.innerWidth <= 768; // Common breakpoint for mobile devices
-    }
+    // Function to show alerts as toasts
+    function showAlert(message, type = 'success') {
+        const alertContainer = document.getElementById('alert-container');
+        const alertId = `alert-${Date.now()}`;
 
-    // Function to handle mobile access
-    function handleMobileAccess() {
-        if (isMobileDevice()) {
-            // Hide the main content
-            document.body.innerHTML = `
-                <div style="
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: #f9fafb;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                    text-align: center;
-                    z-index: 9999;
-                ">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <h1 style="
-                        font-size: 1.5rem;
-                        font-weight: bold;
-                        color: #1f2937;
-                        margin-bottom: 1rem;
-                    ">Desktop Only</h1>
-                    <p style="
-                        color: #6b7280;
-                        max-width: 400px;
-                        line-height: 1.5;
-                    ">This page is optimized for desktop viewing. Please access it from a desktop computer for the best experience.</p>
-                </div>
+        const alert = document.createElement('div');
+        alert.id = alertId;
+        // Base classes for the alert
+        alert.className = `flex items-center p-4 mb-4 rounded-lg shadow-lg text-white max-w-sm transition-all duration-300 ease-in-out transform-gpu`;
+        
+        // Add transform for entry/exit animation
+        alert.style.transform = 'translateX(110%)';
+
+        if (type === 'success') {
+            alert.classList.add('bg-green-500');
+            alert.innerHTML = `
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>${message}</span>
+            `;
+        } else { // error
+            alert.classList.add('bg-red-500');
+            alert.innerHTML = `
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>${message}</span>
             `;
         }
+        
+        alertContainer.appendChild(alert);
+
+        // Animate in
+        setTimeout(() => {
+            alert.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Auto-dismiss
+        setTimeout(() => {
+            alert.style.transform = 'translateX(110%)';
+            setTimeout(() => alert.remove(), 300);
+        }, 5000);
     }
 
-    // Run check on page load
-    handleMobileAccess();
-
-    // Run check on window resize
-    window.addEventListener('resize', handleMobileAccess);
-</script>
-
-    
-<script>
-    // Display file names when selected
-    function displayFileName(inputId, displayId) {
-        const input = document.getElementById(inputId);
-        const display = document.getElementById(displayId);
-        display.textContent = input.files[0] ? input.files[0].name : '';
-    }
-    
     // Form submission handler
     document.getElementById('productForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Show loading spinner
-        document.getElementById('submitText').textContent = 'Creating...';
-        document.getElementById('loadingSpinner').classList.remove('hidden');
-        document.getElementById('submitBtn').disabled = true;
+        const submitBtn = document.getElementById('submitBtn');
+        const submitText = document.getElementById('submitText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        submitText.textContent = 'Creating...';
+        loadingSpinner.classList.remove('hidden');
+        submitBtn.disabled = true;
         
-        // Create form data
         const formData = new FormData(this);
         
-        // Add variation data if any
         const variationData = collectVariationData();
         if (Object.keys(variationData).length > 0) {
             formData.append('variants', JSON.stringify(variationData));
         }
         
-        // Submit the form
         fetch('/product_card/', {
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             credentials: 'same-origin'
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Show success message
-                const successAlert = document.createElement('div');
-                successAlert.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg';
-                successAlert.textContent = data.message;
-                document.body.appendChild(successAlert);
-                
-                // Remove success message after 3 seconds
+                showAlert(data.message || 'Product card created successfully!', 'success');
                 setTimeout(() => {
-                    successAlert.remove();
                     if (data.redirect_url) {
                         window.location.href = data.redirect_url;
+                    } else {
+                         // Reset form or stay on page
+                        document.getElementById('productForm').reset();
+                        // Reset image previews
+                        for (let i = 1; i <= 5; i++) {
+                            const input = document.getElementById(`image${i}`);
+                            if (input) { // Check if element exists before processing
+                                validateAndDisplayImage(`image${i}`, `image${i}Name`, `image${i}Preview`, `image${i}Placeholder`, `alt${i}`);
+                            }
+                        }
                     }
-                }, 3000);
+                }, 1500);
             } else {
-                throw new Error(data.message);
+                showAlert(data.message || 'An unexpected error occurred.', 'error');
             }
         })
         .catch(error => {
-            // Show error message
-            document.getElementById('errorMessage').textContent = error.message;
-            document.getElementById('errorAlert').classList.remove('hidden');
+            showAlert(error.message || 'A network error occurred. Please try again.', 'error');
         })
         .finally(() => {
-            // Reset button state
-            document.getElementById('submitBtn').disabled = false;
-            document.getElementById('submitText').textContent = 'Create Product';
-            document.getElementById('loadingSpinner').classList.add('hidden');
+            submitBtn.disabled = false;
+            submitText.textContent = 'Create Product';
+            loadingSpinner.classList.add('hidden');
         });
     });
     
     function addVariationValue(button) {
         const valuesContainer = button.closest('.variation-group').querySelector('.values-container');
         const newValue = document.createElement('div');
-        newValue.className = 'grid grid-cols-2 gap-4';
+        newValue.className = 'flex items-center space-x-4 animate-fade-in';
         newValue.innerHTML = `
-            <div class="relative">
-                <input type="text" 
-                       placeholder="Value" 
-                       class="variation-value w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                       style="height: 40px;">
+            <div class="flex-grow">
+                <label class="sr-only">Value</label>
+                <input type="text" placeholder="Value (e.g., Red)" class="variation-value w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
-            <div class="relative">
-                <input type="number" 
-                       placeholder="Price" 
-                       class="variation-price w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                       style="height: 40px;">
-                <div class="text-xs text-gray-500 mt-1">If different price</div>
-                <button type="button" 
-                        onclick="removeValue(this)" 
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+            <div class="relative w-40">
+                <label class="sr-only">Price</label>
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <span class="text-gray-500 sm:text-sm">₹</span>
+                </div>
+                <input type="number" placeholder="Price (Optional)" class="variation-price w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
             </div>
+            <button type="button" onclick="removeValue(this)" class="text-gray-400 hover:text-red-600 transition-colors">
+                <span class="sr-only">Remove Value</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
         `;
         valuesContainer.appendChild(newValue);
     }
     
     function addNewVariation() {
-        const variations = document.getElementById('variations');
+        const variationsContainer = document.getElementById('variations');
         const newVariation = document.createElement('div');
-        newVariation.className = 'variation-group relative mt-6';
+        newVariation.className = 'variation-group bg-white p-6 rounded-lg shadow-sm border border-gray-200 animate-fade-in';
         newVariation.innerHTML = `
-            <!-- Variation Name -->
-            <div class="mb-4 relative">
-                <input type="text" 
-                       placeholder="Name" 
-                       class="variation-name w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                       style="height: 40px;">
-                <button type="button" 
-                        onclick="removeVariation(this)" 
-                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex-grow pr-4">
+                    <label class="sr-only">Variation Name</label>
+                    <input type="text" 
+                           placeholder="Variation Name (e.g., Size)" 
+                           class="variation-name w-full text-lg font-medium border-0 border-b-2 border-gray-200 focus:ring-0 focus:border-indigo-500 transition duration-150 ease-in-out"
+                           style="padding-left: 0; padding-right: 0;">
+                </div>
+                <button type="button" onclick="removeVariation(this)" class="text-gray-400 hover:text-red-600 transition-colors">
+                    <span class="sr-only">Remove Variation</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
             </div>
-            
-            <!-- Value and Price Row -->
-            <div class="values-container space-y-3">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="relative">
-                        <input type="text" 
-                               placeholder="Value" 
-                               class="variation-value w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                               style="height: 40px;">
+            <div class="values-container space-y-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-grow">
+                        <label class="sr-only">Value</label>
+                        <input type="text" placeholder="Value (e.g., Medium)" class="variation-value w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     </div>
-                    <div class="relative">
-                        <input type="number" 
-                               placeholder="Price" 
-                               class="variation-price w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                               style="height: 40px;">
-                        <div class="text-xs text-gray-500 mt-1">If different price</div>
-                        <button type="button" 
-                                onclick="removeValue(this)" 
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+                    <div class="relative w-40">
+                        <label class="sr-only">Price</label>
+                         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <span class="text-gray-500 sm:text-sm">₹</span>
+                        </div>
+                        <input type="number" placeholder="Price (Optional)" class="variation-price w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     </div>
+                    <button type="button" onclick="removeValue(this)" class="text-gray-400 hover:text-red-600 transition-colors">
+                        <span class="sr-only">Remove Value</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
             </div>
-            
-            <!-- Add Value Button -->
-            <button type="button" 
-                    onclick="addVariationValue(this)" 
-                    class="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none transition-colors"
-                    style="height: 40px;">
-                Add More Value
+            <button type="button" onclick="addVariationValue(this)" class="mt-4 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                Add Value
             </button>
         `;
-        variations.appendChild(newVariation);
+        variationsContainer.appendChild(newVariation);
+        addTailwindAnimations();
     }
     
     // Collect variation data
     function collectVariationData() {
         const variations = {};
-        const variationGroups = document.querySelectorAll('.variation-group');
-        
-        variationGroups.forEach((group, index) => {
-            const name = group.querySelector('.variation-name').value.trim();
+        document.querySelectorAll('.variation-group').forEach((group) => {
+            const nameInput = group.querySelector('.variation-name');
+            const name = nameInput ? nameInput.value.trim() : '';
             if (name) {
                 const values = [];
-                const valueRows = group.querySelectorAll('.values-container > div');
-                valueRows.forEach(row => {
-                    const value = row.querySelector('.variation-value').value.trim();
-                    const price = row.querySelector('.variation-price').value.trim();
+                group.querySelectorAll('.values-container .flex.items-center').forEach(row => {
+                    const valueInput = row.querySelector('.variation-value');
+                    const priceInput = row.querySelector('.variation-price');
+                    const value = valueInput ? valueInput.value.trim() : '';
+                    const price = priceInput ? priceInput.value.trim() : '';
                     if (value) {
-                        values.push({
-                            value: value,
-                            price: price || null
-                        });
+                        values.push({ value: value, price: price || null });
                     }
                 });
                 if (values.length > 0) {
-                    variations[name] = {
-                        values: values,
-                        type: 'variation'
-                    };
+                    variations[name] = { values: values, type: 'variation' };
                 }
             }
         });
-        
         return variations;
-    }
-    
-    // Create success popup
-    function createSuccessPopup(message) {
-        // Remove existing popup if any
-        const existingPopup = document.getElementById('successPopup');
-        if (existingPopup) {
-            existingPopup.remove();
-        }
-        
-        // Create popup container
-        const popup = document.createElement('div');
-        popup.id = 'successPopup';
-        popup.className = 'fixed inset-0 flex items-center justify-center z-50';
-        
-        // Create backdrop
-        const backdrop = document.createElement('div');
-        backdrop.className = 'absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm';
-        popup.appendChild(backdrop);
-        
-        // Create popup content
-        const content = document.createElement('div');
-        content.className = 'bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 relative z-10 transform transition-all duration-300 scale-100 opacity-100';
-        content.style.animation = 'popupFadeIn 0.5s ease-out forwards';
-        
-        content.innerHTML = `
-            <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
-                    <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
-                <p class="text-lg text-gray-600 mb-6">${message}</p>
-                <button id="closePopupBtn" class="inline-flex justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
-                    Continue
-                </button>
-            </div>
-        `;
-        
-        popup.appendChild(content);
-        
-        // Add styles for animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes popupFadeIn {
-                0% { transform: scale(0.9); opacity: 0; }
-                100% { transform: scale(1); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Add to document
-        document.body.appendChild(popup);
-        
-        // Add event listener to close button
-        document.getElementById('closePopupBtn').addEventListener('click', function() {
-            popup.remove();
-        });
-        
-        // Close on backdrop click
-        backdrop.addEventListener('click', function() {
-            popup.remove();
-        });
-        
-        return popup;
     }
 
     // Function to remove a variation group
     function removeVariation(button) {
         const variationGroup = button.closest('.variation-group');
-        const allVariationGroups = document.querySelectorAll('.variation-group');
-        if (allVariationGroups.length > 1) {
+        if (document.querySelectorAll('.variation-group').length > 1) {
             variationGroup.remove();
         } else {
-            // If it's the last variation group, just clear the inputs
-            const inputs = variationGroup.querySelectorAll('input');
-            inputs.forEach(input => input.value = '');
+            // Clear inputs if it's the last one
+            const nameInput = variationGroup.querySelector('.variation-name');
+            if (nameInput) nameInput.value = '';
+
+            const valueRows = variationGroup.querySelectorAll('.values-container > div');
+            valueRows.forEach((row, index) => {
+                if (index === 0) {
+                    const valueInput = row.querySelector('.variation-value');
+                    const priceInput = row.querySelector('.variation-price');
+                    if (valueInput) valueInput.value = '';
+                    if (priceInput) priceInput.value = '';
+                } else {
+                    row.remove();
+                }
+            });
         }
     }
 
     // Function to remove a value row
     function removeValue(button) {
-        const valueRow = button.closest('.grid');
-        const valuesContainer = valueRow.closest('.values-container');
-        const allValueRows = valuesContainer.querySelectorAll('.grid');
-        
-        if (allValueRows.length > 1) {
+        const valueRow = button.closest('.flex.items-center');
+        const valuesContainer = valueRow.parentElement;
+        if (valuesContainer && valuesContainer.children.length > 1) {
             valueRow.remove();
         } else {
-            // If it's the last value row, just clear the inputs
-            const inputs = valueRow.querySelectorAll('input');
-            inputs.forEach(input => input.value = '');
+            // Clear inputs if it's the last one
+            const valueInput = valueRow.querySelector('.variation-value');
+            const priceInput = valueRow.querySelector('.variation-price');
+            if (valueInput) valueInput.value = '';
+            if (priceInput) priceInput.value = '';
         }
     }
+    
+    // Function to add keyframe animations to the document head
+    function addTailwindAnimations() {
+        const styleId = 'tailwind-animations';
+        if (document.getElementById(styleId)) return; // Avoid adding styles multiple times
+
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.innerHTML = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Run on initial page load
+    document.addEventListener('DOMContentLoaded', addTailwindAnimations);
+
 </script>
 </body>
 </html>

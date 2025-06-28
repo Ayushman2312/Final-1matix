@@ -60,12 +60,6 @@
                                         required>
                                     <option value="">Select Country</option>
                                     <option value="IN" {% if request.GET.country == 'IN' or not request.GET.country %}selected{% endif %}>India</option>
-                                    <option value="US" {% if request.GET.country == 'US' %}selected{% endif %}>United States</option>
-                                    <option value="UK" {% if request.GET.country == 'UK' %}selected{% endif %}>United Kingdom</option>
-                                    <option value="CA" {% if request.GET.country == 'CA' %}selected{% endif %}>Canada</option>
-                                    <option value="AU" {% if request.GET.country == 'AU' %}selected{% endif %}>Australia</option>
-                                    <option value="SG" {% if request.GET.country == 'SG' %}selected{% endif %}>Singapore</option>
-                                    <option value="AE" {% if request.GET.country == 'AE' %}selected{% endif %}>UAE</option>
                                 </select>
                             </div>
                         </div>

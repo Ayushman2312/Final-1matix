@@ -118,36 +118,36 @@
         }
         
         /* View mode styles */
-        .view-mode {
+        .two-column-layout.view-mode {
             display: block;
         }
         
         /* In view mode, hide the form */
-        .view-mode #employeeForm {
+        .two-column-layout.view-mode #employeeForm {
             display: none !important;
         }
         
         /* In view mode, hide the offer preview section */
-        .view-mode #offerPreviewSection {
+        .two-column-layout.view-mode #offerPreviewSection {
             display: none !important;
         }
         
         /* In view mode, make the recent submissions section take full width */
-        .view-mode #recentSubmissionsSection {
+        .two-column-layout.view-mode #recentSubmissionsSection {
             width: 100% !important;
             max-width: 100% !important;
             flex: 0 0 100% !important;
         }
         
         /* In view mode, make the right column take full width */
-        .view-mode .two-column-layout > div:last-child {
+        .two-column-layout.view-mode > div:last-child {
             width: 100% !important;
             max-width: 100% !important;
             flex: 0 0 100% !important;
         }
         
         /* Make sure viewEmployeesSection is visible in view mode */
-        .view-mode #viewEmployeesSection {
+        .two-column-layout.view-mode #viewEmployeesSection {
             display: block !important;
             width: 100% !important;
         }
@@ -307,14 +307,111 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Setup offer letter preview
-        if (typeof setupOfferLetterPreview === 'function') {
-            setupOfferLetterPreview();
-        } else {
-            console.error('setupOfferLetterPreview function not defined');
-        }
+        setupOfferLetterPreview();
         
         // Setup document checkboxes
         setupDocumentCheckboxes();
+        
+        // Function to setup offer letter preview
+        function setupOfferLetterPreview() {
+            const offerLetterSelect = document.getElementById('offerLetterSelect');
+            const previewButton = document.getElementById('previewButton');
+            const previewButtons = document.getElementById('previewButtons');
+            const offerLetterPreviewContent = document.getElementById('offerLetterPreviewContent');
+            
+            // Show preview button when an offer letter is selected
+            offerLetterSelect.addEventListener('change', function() {
+                if (this.value) {
+                    previewButtons.classList.remove('hidden');
+                    // Auto-preview when selecting a template
+                    previewOfferLetter(this.value);
+                } else {
+                    previewButtons.classList.add('hidden');
+                }
+            });
+            
+            // Preview button functionality
+            previewButton.addEventListener('click', function() {
+                const selectedLetterId = offerLetterSelect.value;
+                if (selectedLetterId) {
+                    previewOfferLetter(selectedLetterId);
+                }
+            });
+            
+            // Function to preview the offer letter
+            function previewOfferLetter(letterId) {
+                // Show loading state
+                offerLetterPreviewContent.innerHTML = '<p class="text-gray-600">Loading preview...</p>';
+                
+                // Get CSRF token
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                // Gather employee data for template variables
+                const employeeData = {
+                    name: document.getElementById('employeeName').value || '[Employee Name]',
+                    email: document.getElementById('employeeEmail').value || '[Employee Email]',
+                    department: document.getElementById('departmentSelect').options[document.getElementById('departmentSelect').selectedIndex]?.text || '[Department]',
+                    designation: document.getElementById('designationSelect').options[document.getElementById('designationSelect').selectedIndex]?.text || '[Designation]',
+                    role: document.getElementById('roleSelect').options[document.getElementById('roleSelect').selectedIndex]?.text || '[Role]',
+                    company: document.getElementById('companySelect').options[document.getElementById('companySelect').selectedIndex]?.text || '[Company]'
+                };
+                
+                // Send request to preview the offer letter
+                fetch('/hr_management/preview-offer-letter/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken,
+                    },
+                    body: JSON.stringify({
+                        offer_letter_id: letterId,
+                        employee_data: employeeData
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Display the offer letter content with replacements
+                        offerLetterPreviewContent.innerHTML = data.preview_content;
+                    } else {
+                        offerLetterPreviewContent.innerHTML = `<p class="text-red-500">Error: ${data.message}</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error previewing offer letter:', error);
+                    
+                    // If fetch fails, simulate a preview with template variables
+                    let templateContent = `
+                        <div class="p-4">
+                            <div class="mb-6 text-center">
+                                <h1 class="text-xl font-bold">${employeeData.company}</h1>
+                                <p class="text-sm text-gray-600">Offer Letter</p>
+                            </div>
+                            
+                            <p class="mb-4">Dear ${employeeData.name},</p>
+                            
+                            <p class="mb-4">We are pleased to offer you the position of ${employeeData.designation} in the ${employeeData.department} department at ${employeeData.company}.</p>
+                            
+                            <p class="mb-4">Your role will be ${employeeData.role}. We believe your skills and experience will be valuable to our organization.</p>
+                            
+                            <p class="mb-4">Please review the attached documents for more details about your compensation, benefits, and company policies.</p>
+                            
+                            <p class="mb-6">We look forward to welcoming you to our team!</p>
+                            
+                            <p class="mb-2">Sincerely,</p>
+                            <p>HR Department<br>${employeeData.company}</p>
+                        </div>
+                    `;
+                    
+                    offerLetterPreviewContent.innerHTML = templateContent;
+                });
+            }
+        }
         
         // Function to setup document checkboxes
         function setupDocumentCheckboxes() {
@@ -484,8 +581,8 @@
                                     <label for="hrPoliciesCheckbox" class="text-sm font-medium text-gray-700">HR Policies</label>
                                     <select id="hrPoliciesSelect" class="mt-1 w-full text-sm border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-gray-600 disabled:bg-gray-100 disabled:text-gray-400" disabled>
                                         <option value="" disabled selected>Select HR Policies</option>
-                                        {% for policy in hr_policies %}
-                                        <option value="{{ policy.policy_id }}">{{ policy.name }}</option>
+                                        {% for policy in tandcs %}
+                                        <option value="{{ policy.tandc_id }}">{{ policy.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -586,6 +683,33 @@
         {
             id: "{{ role.role_id }}",
             name: "{{ role.name }}"
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ];
+
+    window.leaveTypesData = [
+    {% for type in leave_types %}
+        {
+            id: "{{ type.leave_type_id }}",
+            name: "{{ type.name }}"
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ];
+
+    window.deductionsData = [
+    {% for deduction in deductions %}
+        {
+            id: "{{ deduction.deduction_id }}",
+            name: "{{ deduction.name }}"
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ];
+
+    window.allowancesData = [
+    {% for allowance in allowances %}
+        {
+            id: "{{ allowance.allowance_id }}",
+            name: "{{ allowance.name }}"
         }{% if not forloop.last %},{% endif %}
     {% endfor %}
     ];
@@ -849,6 +973,91 @@
             switchTab('view');
         }
     });
+  </script>
+
+  <!-- Custom Modal for Accepting Invitation -->
+  <div id="acceptInvitationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+      <div class="flex justify-between items-center pb-3 border-b">
+        <h3 class="text-2xl font-bold text-gray-800">Employee Onboarding Configuration</h3>
+        <button id="closeModalButton" class="text-gray-500 hover:text-gray-800">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="mt-5">
+        <form id="acceptInvitationForm">
+          <input type="hidden" id="invitationId" name="invitationId">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="grossSalary" class="block text-sm font-medium text-gray-700">Enter Gross Salary (Amount)</label>
+              <input type="number" name="gross_salary" id="grossSalary" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+              <label for="groupSelect" class="block text-sm font-medium text-gray-700">Select Leave Type</label>
+              <select id="groupSelect" name="group" class="mt-1 block w-full pl-3 pr-10 py-2 text-base outline-2 outline-indigo-500 ring-2 ring-indigo-500 sm:text-sm rounded-md">
+                  <option value="">Select a group</option>
+                  {% for group in leave_groups %}
+                  <option value="{{ group.group_id }}">{{ group.name }}</option>
+                  {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-6">
+
+              <h4 class="text-lg font-semibold text-gray-800 mb-2">Bifurcate Salary</h4>
+              <div id="payoutsContainer" class="space-y-3">
+                <!-- Dynamic payouts will be added here -->
+              </div>
+              <button type="button" id="addPayoutButton" class="mt-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">+ Add More Payouts</button>
+          </div>
+
+          <div class="mt-8 pt-5 border-t flex justify-end space-x-4">
+              <button type="button" id="cancelAcceptButton" class="px-6 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">Cancel</button>
+              <button type="submit" id="confirmAcceptButton" class="px-6 py-2 text-white bg-green-500 rounded-md hover:bg-green-600">Accept Employee</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Payouts dropdown template
+  const payoutOptions = `
+      <option value="">Select Payout</option>
+      {% for payout in payout_types %}
+      <option value="{{ payout.payout_type_id }}">{{ payout.name }}</option>
+      {% endfor %}
+  `;
+
+  function addPayoutRow() {
+      const container = document.getElementById('payoutsContainer');
+      const newRow = document.createElement('div');
+      newRow.className = 'flex items-center space-x-3';
+      newRow.innerHTML = `
+          <select class="payout-select mt-1 block w-1/2 pl-3 pr-10 py-2 text-base border-gray-300 outline  outline-2 outline-indigo-500 ring-2 ring-indigo-500 sm:text-sm rounded-md">
+              ${payoutOptions}
+          </select>
+          <input type="number" class="payout-amount mt-1 block w-1/3 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Amount">
+          <button type="button" class="remove-payout-button text-red-600 hover:text-red-800">Remove</button>
+      `;
+      container.appendChild(newRow);
+      newRow.querySelector('.remove-payout-button').addEventListener('click', () => {
+          newRow.remove();
+      });
+  }
+
+  document.getElementById('addPayoutButton').addEventListener('click', addPayoutRow);
+  document.getElementById('closeModalButton').addEventListener('click', () => {
+      document.getElementById('acceptInvitationModal').classList.add('hidden');
+  });
+  document.getElementById('cancelAcceptButton').addEventListener('click', () => {
+      document.getElementById('acceptInvitationModal').classList.add('hidden');
+  });
+
+  // Add one payout row by default
+  addPayoutRow();
+
   </script>
 </body>
 </html>

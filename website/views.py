@@ -1,7 +1,6 @@
 import subprocess
 from django.shortcuts import render, redirect, get_object_or_404
 import uuid
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
@@ -12,13 +11,10 @@ import json
 from django.utils.text import slugify
 import logging
 from django.utils import timezone
-import shutil
 import os
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
 import dns.resolver
-from django.views.decorators.http import require_POST
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -168,11 +164,11 @@ def calculate_website_seo_score(website):
     seo_score = int((score / total_points) * 100) if total_points > 0 else 0
     return seo_score
 
-@login_required
+
 def dashboard(request):
     """Dashboard view for website management"""
     # Get all websites for the user (which should be at most one)
-    websites = Website.objects.filter(user=request.user)
+    websites = Website.objects.filter(user=request.session.get('user_id'))
     
     # Get user's domains
     domains = CustomDomain.objects.filter(website__in=websites)
@@ -186,7 +182,7 @@ def dashboard(request):
         'domains': domains
     })
 
-@login_required
+
 def domain_settings(request):
     websites = Website.objects.filter(user=request.user)
     domains = CustomDomain.objects.filter(website__user=request.user)
@@ -247,7 +243,7 @@ def domain_settings(request):
     
     return render(request, 'website/domain_settings.html', context)
 
-@login_required
+
 def domain_verification(request, domain_id):
     """View for verifying a custom domain"""
     domain = get_object_or_404(CustomDomain, id=domain_id, website__user=request.user)
@@ -329,7 +325,7 @@ def domain_verification(request, domain_id):
     
     return render(request, 'website/domain_verification.html', {'domain': domain})
 
-@login_required
+
 def delete_domain(request, domain_id):
     """View for deleting a custom domain"""
     try:
@@ -348,7 +344,7 @@ def delete_domain(request, domain_id):
     
     return redirect('domain_settings')
 
-@login_required
+
 def select_template(request):
     # Check if user already has a website
     existing_website = Website.objects.filter(user=request.user).first()
@@ -364,7 +360,7 @@ def select_template(request):
         'templates': all_templates
     })
 
-@login_required
+
 def create_website(request, template_id):
     # Check if user already has a website
     existing_website = Website.objects.filter(user=request.user).first()
@@ -440,7 +436,7 @@ def create_website(request, template_id):
         'template': template
     })
 
-@login_required
+
 def edit_website(request, website_id):
     """View for editing website content"""
     website = get_object_or_404(Website, id=website_id, user=request.user)
@@ -879,7 +875,7 @@ def edit_website(request, website_id):
     
     return render(request, 'website/edit_website.html', context)
 
-@login_required
+
 def preview_website(request, website_id):
     website = get_object_or_404(Website, id=website_id, user=request.user)
     
@@ -1013,7 +1009,7 @@ def preview_website(request, website_id):
             ]
         })
 
-@login_required
+
 def manage_pages(request, website_id):
     website = get_object_or_404(Website, id=website_id, user=request.user)
     pages = website.get_pages()
@@ -1023,7 +1019,7 @@ def manage_pages(request, website_id):
         'pages': pages
     })
 
-@login_required
+
 def create_page(request, website_id):
     website = get_object_or_404(Website, id=website_id, user=request.user)
     
@@ -1068,7 +1064,7 @@ def create_page(request, website_id):
         'template_pages': template_pages
     })
 
-@login_required
+
 def edit_page(request, page_id):
     page = get_object_or_404(WebsitePage, id=page_id, website__user=request.user)
     website = page.website
@@ -1112,7 +1108,7 @@ def edit_page(request, page_id):
         'template_pages': template_pages
     })
 
-@login_required
+
 def delete_page(request, page_id):
     page = get_object_or_404(WebsitePage, id=page_id, website__user=request.user)
     website_id = page.website.id
@@ -1135,7 +1131,7 @@ def delete_page(request, page_id):
     
     return redirect('manage_pages', website_id=website_id)
 
-@login_required
+
 def reorder_pages(request, website_id):
     website = get_object_or_404(Website, id=website_id, user=request.user)
     
@@ -1153,7 +1149,7 @@ def reorder_pages(request, website_id):
     
     return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
 
-@login_required
+
 def home(request):
     return redirect('dashboard')
 
@@ -1569,7 +1565,7 @@ def public_website_page(request, public_slug, page_slug):
     
     return response
 
-@login_required
+
 def delete_website(request, website_id):
     """Delete a website and all its associated data"""
     website = get_object_or_404(Website, id=website_id, user=request.user)
@@ -1609,7 +1605,7 @@ def delete_website(request, website_id):
     # If not a POST request, redirect to dashboard
     return redirect('website_dashboard')
 
-@login_required
+
 def fix_all_slugs(request):
     """Admin utility to fix all missing public slugs"""
     if not request.user.is_superuser:
@@ -1629,7 +1625,7 @@ def fix_all_slugs(request):
     return redirect('website_dashboard')
 
 # Product Category and Product Management Views
-@login_required
+
 def product_category(request):
     """View for managing product categories"""
     # Get the current user's websites
@@ -1686,7 +1682,7 @@ def product_category(request):
         'selected_website': selected_website
     })
 
-@login_required
+
 def delete_category(request, category_id):
     """View for deleting a product category"""
     # Get the selected website from session
@@ -1718,7 +1714,7 @@ def delete_category(request, category_id):
     
     return redirect('website_product_category')
 
-@login_required
+
 def products(request):
     """View for listing all products"""
     # Get the selected website from session
@@ -1752,7 +1748,7 @@ def products(request):
         'selected_website': selected_website
     })
 
-@login_required
+
 def product_create(request):
     """View for creating a new product"""
     # Get the selected website from session
@@ -1853,7 +1849,7 @@ def product_create(request):
         'selected_website': selected_website
     })
 
-@login_required
+
 def product_edit(request, product_id):
     """View for editing an existing product"""
     # Get the selected website from session
@@ -1951,7 +1947,7 @@ def product_edit(request, product_id):
         messages.error(request, 'Product not found')
         return redirect('website_products')
 
-@login_required
+
 def product_delete(request, product_id):
     """View for deleting a product"""
     # Get the selected website from session
@@ -1973,7 +1969,7 @@ def product_delete(request, product_id):
     
     return redirect('website_products')
 
-@login_required
+
 def product_detail(request, product_id):
     """View for viewing product details"""
     # Get the selected website from session
@@ -2097,7 +2093,7 @@ def refund_policy_page(request, public_slug):
     
     return response
 
-@login_required
+
 def view_enhanced_homepage(request, website_id):
     website = get_object_or_404(Website, id=website_id, user=request.user)
     
@@ -2167,7 +2163,7 @@ def view_enhanced_homepage(request, website_id):
     
     return render(request, "website/template1/enhanced_home.html", context)
 
-@login_required
+
 def apply_enhanced_template(request, website_id):
     website = get_object_or_404(Website, id=website_id, user=request.user)
     
@@ -2198,7 +2194,7 @@ def apply_enhanced_template(request, website_id):
     
     return redirect('edit_website', website_id=website.id)
 
-@login_required
+
 def seo_management(request, website_id):
     """View for managing website SEO settings"""
     website = get_object_or_404(Website, id=website_id, user=request.user)
@@ -2271,7 +2267,7 @@ def seo_management(request, website_id):
         'public_url': request.build_absolute_uri(website.get_public_url())
     })
 
-@login_required
+
 def debug_fix_templates(request):
     """Debug utility to fix websites with missing or broken template references"""
     if not request.user.is_superuser:
@@ -2369,7 +2365,7 @@ def shop_redirect(request, public_slug):
         messages.info(request, 'No categories available yet.')
         return redirect('public_website', public_slug=public_slug)
 
-@login_required
+
 def deploy_website(request, website_id):
     """View for deploying website to production environment on Hostinger using Nginx and Gunicorn"""
     website = get_object_or_404(Website, id=website_id, user=request.user)
@@ -2456,7 +2452,7 @@ WantedBy=multi-user.target"""
         messages.error(request, "There was an unexpected error deploying your website. Please try again later.")
         return redirect('edit_website', website_id=website_id)
 
-@login_required
+
 def test_banner_image(request, website_id):
     """
     Test view to debug banner image rendering issues

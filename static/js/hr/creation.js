@@ -33,7 +33,7 @@ document.getElementById('folderForm').addEventListener('submit', function(e) {
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    fetch('/hr_management/create-folder/', {
+    fetch('/hr/create-folder/', {
         method: 'POST',
         body: formData,
         headers: {

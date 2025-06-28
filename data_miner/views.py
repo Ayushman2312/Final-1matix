@@ -1,40 +1,28 @@
 import logging
 import os
-import time
 import json
 import traceback
-import threading
 import socket
 from datetime import datetime
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, View
 from django.http import JsonResponse, HttpResponse, FileResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.conf import settings
 from celery.result import AsyncResult
 from matrix.celery import app as celery_app
 from redis.exceptions import ConnectionError as RedisConnectionError
-
-# Import models
 from .models import MiningHistory, BackgroundTask
-
-# Import scrapers and tasks
-from .scrapper import EnhancedContactScraper
-from .web_scrapper import ContactScraper, run_web_scraper_task
-from .tasks import scrape_contacts, test_redis_connection, test_task_status, scrape_serpapi
+from .web_scrapper import ContactScraper
+from .tasks import  test_redis_connection, test_task_status
 from .services import service_manager  # Original service manager
 from .direct_services import *
-from django.contrib.auth.decorators import login_required
 import pandas as pd
 import uuid
 import asyncio
-from django.contrib.auth.decorators import login_required
 from django.db.utils import OperationalError as DjangoOperationalError
 from requests.exceptions import ConnectionError as RequestsConnectionError
-from django.utils.decorators import method_decorator
-from .scrap import update_task_status  # Import the update_task_status function
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 # Celery/kombu imports for error handling
 try:
     from kombu.exceptions import OperationalError as KombuOperationalError
@@ -326,7 +314,7 @@ class TaskStatusView(View):
             })
 
 
-class BackgroundTasksView(LoginRequiredMixin, TemplateView):
+class BackgroundTasksView(TemplateView):
     """View for managing background tasks"""
     template_name = 'data miner/background_tasks.html'
     
@@ -695,7 +683,7 @@ class BackgroundTasksView(LoginRequiredMixin, TemplateView):
 
 
 # Create your views here.
-class DataMinerView(LoginRequiredMixin, TemplateView):
+class DataMinerView(TemplateView):
     template_name = 'data miner/miner.html'
     login_url = '/accounts/login/'  # Specify the login URL to match Django-allauth
     redirect_field_name = 'next'
@@ -703,19 +691,15 @@ class DataMinerView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Data Mining Tool'
-        # context['app_name'] = 'Welcome to the LeadX!'
         
         # Get recent mining history for the current user
-        if self.request.user.is_authenticated:
-            recent_minings = MiningHistory.objects.filter(user=self.request.user).order_by('-created_at')[:5]
-            context['recent_minings'] = recent_minings
-            
-            # Get running background tasks
-            running_tasks = BackgroundTask.objects.filter(
-                user=self.request.user,
-                status__in=['pending', 'processing']
-            ).order_by('-created_at')
-            context['running_tasks'] = running_tasks
+        context['recent_minings'] = MiningHistory.objects.filter(user=self.request.session.get('user_id')).order_by('-created_at')[:5]
+        
+        # Get running background tasks
+        context['running_tasks'] = BackgroundTask.objects.filter(
+            user=self.request.session.get('user_id'),
+            status__in=['pending', 'processing']
+        ).order_by('-created_at')
 
         # If this is a GET request with search parameters, perform the search
         if self.request.method == 'GET' and 'keyword' in self.request.GET:
@@ -809,24 +793,9 @@ class DataMinerView(LoginRequiredMixin, TemplateView):
         # Return relative path from MEDIA_ROOT
         return os.path.join('mining_results', filename)
 
-    def dispatch(self, request, *args, **kwargs):
-        # Check if an action is specified in kwargs
-        action = kwargs.pop('action', None)
-        if action:
-            # Call the specified method
-            if hasattr(self, action) and callable(getattr(self, action)):
-                return getattr(self, action)(request, *args, **kwargs)
-        # Otherwise use default dispatch
-        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request):
         """Handle POST request for initiating a scraping task."""
-        # Check if user is authenticated first
-        if not request.user.is_authenticated:
-            from django.contrib import messages
-            messages.error(request, "Please log in to use the Data Miner")
-            return redirect('/accounts/login/?next=/data_miner/')
-            
         try:
             keyword = request.POST.get('keyword', '')
             data_type = request.POST.get('data_type', 'phone')
@@ -948,9 +917,6 @@ class DataMinerView(LoginRequiredMixin, TemplateView):
     def get_excel(self, request, history_id):
         """Download Excel file for a specific mining history"""
         try:
-            if not request.user.is_authenticated:
-                return JsonResponse({'error': 'Authentication required'}, status=401)
-                
             # Get the mining history
             mining = MiningHistory.objects.get(id=history_id, user=request.user)
             
@@ -980,16 +946,11 @@ class DataMinerView(LoginRequiredMixin, TemplateView):
             
         try:
             # Get the task from our database if it exists
-            task = None
-            if request.user.is_authenticated:
-                try:
-                    task = BackgroundTask.objects.get(task_id=task_id, user=request.user)
-                    # Update the task record
-                    task.status = 'cancelled'
-                    task.completed_at = timezone.now()
-                    task.save()
-                except BackgroundTask.DoesNotExist:
-                    pass
+            task = BackgroundTask.objects.get(task_id=task_id, user=request.user)
+            # Update the task record
+            task.status = 'cancelled'
+            task.completed_at = timezone.now()
+            task.save()
             
             # Attempt to revoke the Celery task
             celery_task = AsyncResult(task_id)
@@ -1014,6 +975,14 @@ class DataMinerView(LoginRequiredMixin, TemplateView):
                 "success": True,
                 "message": "Task cancelled successfully"
             })
+        except BackgroundTask.DoesNotExist:
+            # If the task doesn't exist in our DB, we can still try to revoke it in Celery
+            celery_task = AsyncResult(task_id)
+            celery_task.revoke(terminate=True)
+            return JsonResponse({
+                "success": True, 
+                "message": "Task not found in database, but cancellation requested in Celery."
+            })
         except Exception as e:
             logger.error(f"Error cancelling task: {e}")
             return JsonResponse({
@@ -1028,7 +997,7 @@ class TestCeleryView(View):
         """Run a simple test Celery task and return its ID"""
         try:
             # Run a test task that will update its status
-            if request.user.is_authenticated:
+            if hasattr(request.user, 'is_authenticated') and request.user.is_authenticated:
                 task = test_task_status.delay(user_id=request.user.id)
                 
                 # Create a BackgroundTask record

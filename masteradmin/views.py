@@ -28,7 +28,9 @@ from decimal import Decimal
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import Count
 from django.db.models import Q
-from landingx.models import ProductDetails  # Import ProductDetails model
+from django.db.models import Sum, Count, Avg
+from django.db.models.functions import TruncDay
+from beesuggest.models import ProductDetails, BeesuggestAgreement
 
 # register = template.Library()
 
@@ -3575,8 +3577,9 @@ class EditProductView(View):
                     setattr(product, image_field, request.FILES[image_field])
                 setattr(product, alt_field, request.POST.get(alt_field, ''))
             
-            if 'product_video' in request.FILES:
-                product.product_video = request.FILES['product_video']
+            product.video_url_1 = request.POST.get('video_url_1', '')
+            product.video_url_2 = request.POST.get('video_url_2', '')
+            product.video_url_3 = request.POST.get('video_url_3', '')
             
             if 'size_chart' in request.FILES:
                 product.size_chart = request.FILES['size_chart']
@@ -3588,7 +3591,7 @@ class EditProductView(View):
             product.social_media_facebook = request.POST.get('social_media_facebook', '')
             product.social_media_twitter = request.POST.get('social_media_twitter', '')
             product.social_media_instagram = request.POST.get('social_media_instagram', '')
-            product.dimensions = request.POST.get('dimensions', '')
+            product.website_url = request.POST.get('website_url', '')
             product.contact_number = request.POST.get('contact_number', '')
             product.email = request.POST.get('email', '')
             product.address = request.POST.get('address', '')
@@ -3633,3 +3636,75 @@ class EditProductView(View):
             logger.error(f"Error updating product: {str(e)}")
             messages.error(request, 'There was an error updating the product. Please try again.')
             return redirect('edit_product', product_id=product_id)
+
+class BeesuggestAgreementView(View):
+    """
+    View for masteradmin to create or update the Beesuggest Agreement.
+    Ensures that there is only one active agreement.
+    """
+    template_name = 'masteradmin/beesuggest_agreement.html'
+
+    def get(self, request, *args, **kwargs):
+        agreements = BeesuggestAgreement.objects.all()
+        active_agreement = BeesuggestAgreement.objects.filter(is_active=True).first()
+        context = {
+            'agreements': agreements,
+            'active_agreement': active_agreement,
+            'l_page': 'Beesuggest',
+            'i_page': 'Agreement',
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+
+        if not title or not content:
+            messages.error(request, 'Title and content cannot be empty.')
+            return redirect('beesuggest_agreement')
+
+        # Create a new agreement. The save method on the model will handle is_active.
+        # For a new agreement, we might want to decide if it should become active automatically.
+        # Let's assume for now new agreements are NOT active by default and must be explicitly activated.
+        BeesuggestAgreement.objects.create(
+            title=title,
+            content=content,
+            is_active=False # Default to not active
+        )
+        
+        messages.success(request, 'New agreement has been created successfully. You can now set it as the active agreement.')
+        
+        return redirect('beesuggest_agreement')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SetActiveBeesuggestAgreementView(View):
+    def post(self, request, *args, **kwargs):
+        agreement_id = request.POST.get('agreement_id')
+        try:
+            agreement = BeesuggestAgreement.objects.get(id=agreement_id)
+            agreement.is_active = True
+            agreement.save()
+            messages.success(request, f'Agreement "{agreement.title}" has been set as active.')
+        except BeesuggestAgreement.DoesNotExist:
+            messages.error(request, 'Agreement not found.')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {e}')
+        return redirect('beesuggest_agreement')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteBeesuggestAgreementView(View):
+    def post(self, request, *args, **kwargs):
+        agreement_id = request.POST.get('agreement_id')
+        try:
+            agreement = BeesuggestAgreement.objects.get(id=agreement_id)
+            if agreement.is_active:
+                messages.error(request, 'Cannot delete an active agreement. Please activate another agreement first.')
+            else:
+                title = agreement.title
+                agreement.delete()
+                messages.success(request, f'Agreement "{title}" has been deleted.')
+        except BeesuggestAgreement.DoesNotExist:
+            messages.error(request, 'Agreement not found.')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {e}')
+        return redirect('beesuggest_agreement')

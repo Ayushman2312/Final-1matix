@@ -13,8 +13,8 @@ admin.site.register(Company)
 admin.site.register(Folder)
 admin.site.register(TrainingMaterial)
 admin.site.register(HiringAgreement)
+admin.site.register(AttendanceRule)
 admin.site.register(Handbook)
-
 @admin.register(OnboardingInvitation)
 class OnboardingInvitationAdmin(admin.ModelAdmin):
     list_display = ['name', 'email', 'department', 'designation', 'role', 'status', 'created_at', 'sent_at']

@@ -378,8 +378,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const isUpdate = document.getElementById('materialId') && document.getElementById('materialId').value;
         const url = isUpdate 
-            ? `/hr_management/training-materials/${document.getElementById('materialId').value}/update/`
-            : '{% url "training_material_template" %}';
+            ? `/hr/training-materials/${document.getElementById('materialId').value}/update/`
+            : '/hr/training-materials/';
         
         fetch(url, {
             method: 'POST',
@@ -520,7 +520,7 @@ function toggleMaterial(id) {
 // Edit Material functionality
 function editMaterial(materialId, materialName) {
     // Get material content
-    fetch(`/hr_management/training-materials/${materialId}/preview/`)
+    fetch(`/hr/training-materials/${materialId}/preview/`)
         .then(response => response.json())
         .then(data => {
             if (data.content) {
@@ -578,7 +578,7 @@ function deleteTemplate() {
     
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     
-    fetch(`/hr_management/training-materials/${deleteTemplateId}/delete/`, {
+    fetch(`/hr/training-materials/${deleteTemplateId}/delete/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrfToken,

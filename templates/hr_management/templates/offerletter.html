@@ -386,8 +386,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const isUpdate = document.getElementById('templateId') && document.getElementById('templateId').value;
         const url = isUpdate 
-            ? `/hr_management/offerletters/${document.getElementById('templateId').value}/update/`
-            : '{% url "offerletter_template" %}';
+            ? `/hr/offerletters/${document.getElementById('templateId').value}/update/`
+            : '/hr/offerletters/';
         
         fetch(url, {
             method: 'POST',

@@ -1,0 +1,64 @@
+<form action="{% url 'notification_settings' %}" method="post">
+    {% csrf_token %}
+    <div class="shadow sm:rounded-md sm:overflow-hidden">
+        <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Notification Settings</h3>
+            
+            <fieldset>
+                <legend class="text-base font-medium text-gray-900">By Channel</legend>
+                <div class="mt-4 space-y-4">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="email_notifications" name="email_notifications" type="checkbox" {% if user.email_notifications %}checked{% endif %} class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="email_notifications" class="font-medium text-gray-700">Email Notifications</label>
+                            <p class="text-gray-500">Get important updates and promotions via email.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="sms_notifications" name="sms_notifications" type="checkbox" {% if user.sms_notifications %}checked{% endif %} class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="sms_notifications" class="font-medium text-gray-700">SMS Notifications</label>
+                            <p class="text-gray-500">Receive critical alerts and reminders via text message.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="in_app_notifications" name="in_app_notifications" type="checkbox" {% if user.in_app_notifications %}checked{% endif %} class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="in_app_notifications" class="font-medium text-gray-700">In-App Notifications</label>
+                            <p class="text-gray-500">See notifications directly within the dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="mt-6">
+                <legend class="text-base font-medium text-gray-900">Delivery Frequency</legend>
+                <div class="mt-4 space-y-4">
+                    <div class="flex items-center">
+                        <input id="freq_instant" name="notification_frequency" type="radio" value="instant" {% if user.notification_frequency == 'instant' %}checked{% endif %} class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300">
+                        <label for="freq_instant" class="ml-3 block text-sm font-medium text-gray-700">Instantly</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input id="freq_daily" name="notification_frequency" type="radio" value="daily" {% if user.notification_frequency == 'daily' %}checked{% endif %} class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300">
+                        <label for="freq_daily" class="ml-3 block text-sm font-medium text-gray-700">Daily Digest</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input id="freq_weekly" name="notification_frequency" type="radio" value="weekly" {% if user.notification_frequency == 'weekly' %}checked{% endif %} class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300">
+                        <label for="freq_weekly" class="ml-3 block text-sm font-medium text-gray-700">Weekly Summary</label>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                Save Preferences
+            </button>
+        </div>
+    </div>
+</form> 

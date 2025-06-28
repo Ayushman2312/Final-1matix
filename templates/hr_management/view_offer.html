@@ -216,11 +216,7 @@
                 </p>
                 
                 <div class="flex flex-col md:flex-row gap-4 justify-center">
-                    <form id="acceptForm" action="{% url 'offer-response' invitation.invitation_id %}" method="POST" class="w-full md:w-auto">
-                        {% csrf_token %}
-                        <input type="hidden" name="response" value="accept">
-                        <button type="submit" class="btn-success w-full">I Accept</button>
-                    </form>
+                    <button type="button" onclick="handleAcceptOffer()" class="btn-success w-full md:w-auto">I Accept</button>
                     
                     <button type="button" onclick="showRejectModal()" class="btn-danger w-full md:w-auto">I Reject</button>
                     
@@ -234,7 +230,7 @@
     <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Reason for Rejection</h3>
-            <form id="rejectForm" action="{% url 'offer-response' invitation.invitation_id %}" method="POST">
+            <form id="rejectForm" action="/hr/onboarding/offer-response/{{ invitation.invitation_id }}/" method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="response" value="reject">
                 <textarea name="reason" class="w-full border border-gray-300 rounded-md p-3 mb-4" rows="4" 
@@ -251,7 +247,7 @@
     <div id="discussModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Discussion Request</h3>
-            <form id="discussForm" action="{% url 'offer-response' invitation.invitation_id %}" method="POST">
+            <form id="discussForm" action="/hr/onboarding/offer-response/{{ invitation.invitation_id }}/" method="POST">
                 {% csrf_token %}
                 <input type="hidden" name="response" value="discuss">
                 <textarea name="message" class="w-full border border-gray-300 rounded-md p-3 mb-4" rows="4" 
@@ -261,6 +257,27 @@
                     <button type="submit" class="btn-warning">Request Discussion</button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- OTP Modal -->
+    <div id="otpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Verify Your Identity</h3>
+            <p class="text-gray-600 mb-4">A 6-digit OTP has been sent to your email address ({{ invitation.email }}). Please enter it below to accept the offer.</p>
+            <form id="otpForm" method="POST">
+                <input type="text" name="otp" id="otpInput" class="w-full border border-gray-300 rounded-md p-3 mb-4" 
+                       placeholder="Enter 6-digit OTP" maxlength="6" required>
+                <div id="otpError" class="text-red-500 text-sm mb-4 hidden"></div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="hideOtpModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700">Cancel</button>
+                    <button type="submit" class="btn-success">Verify & Accept</button>
+                </div>
+            </form>
+            <div class="text-center mt-4">
+                <button id="resendOtpBtn" onclick="handleAcceptOffer(true)" class="text-sm text-blue-600 hover:underline">Resend OTP</button>
+                <span id="resendOtpTimer" class="text-sm text-gray-500 hidden"></span>
+            </div>
         </div>
     </div>
     
@@ -282,6 +299,16 @@
             document.getElementById('discussModal').classList.add('hidden');
         }
         
+        function showOtpModal() {
+            document.getElementById('otpModal').classList.remove('hidden');
+        }
+        
+        function hideOtpModal() {
+            document.getElementById('otpModal').classList.add('hidden');
+            document.getElementById('otpError').classList.add('hidden');
+            document.getElementById('otpInput').value = '';
+        }
+
         // Check for response in session storage and disable buttons if already responded
         document.addEventListener('DOMContentLoaded', function() {
             const responseStatus = sessionStorage.getItem('offerResponse_{{ invitation.invitation_id }}');
@@ -300,7 +327,7 @@
                     messageDiv.innerHTML = `<p>You have accepted this offer. Please complete the onboarding form.</p>`;
                     // Redirect to form after a short delay
                     setTimeout(() => {
-                        window.location.href = "{% url 'onboarding-form' invitation.form_link|cut:'http://127.0.0.1:8000/hr_management/onboarding/form/'|cut:'/' %}";
+                        window.location.href = "/hr/onboarding/form/{{ invitation.form_link|cut:'http://127.0.0.1:8000/hr/onboarding/form/'|cut:'/' }}/";
                     }, 2000);
                 } else if (responseStatus === 'reject') {
                     messageDiv.innerHTML = `<p>You have rejected this offer. Thank you for your consideration.</p>`;
@@ -319,15 +346,8 @@
         
         // Update form submissions to store response in session storage
         document.addEventListener('DOMContentLoaded', function() {
-            const acceptForm = document.getElementById('acceptForm');
             const rejectForm = document.getElementById('rejectForm');
             const discussForm = document.getElementById('discussForm');
-            
-            if (acceptForm) {
-                acceptForm.addEventListener('submit', function() {
-                    sessionStorage.setItem('offerResponse_{{ invitation.invitation_id }}', 'accept');
-                });
-            }
             
             if (rejectForm) {
                 rejectForm.addEventListener('submit', function() {
@@ -339,6 +359,123 @@
                 discussForm.addEventListener('submit', function() {
                     sessionStorage.setItem('offerResponse_{{ invitation.invitation_id }}', 'discuss');
                 });
+            }
+        });
+
+        // Function to handle offer acceptance and OTP sending
+        async function handleAcceptOffer(isResend = false) {
+            const acceptButton = document.querySelector('button.btn-success');
+            const resendButton = document.getElementById('resendOtpBtn');
+            const resendTimer = document.getElementById('resendOtpTimer');
+            
+            if (!isResend) {
+                acceptButton.disabled = true;
+                acceptButton.innerHTML = 'Sending OTP...';
+            } else {
+                resendButton.classList.add('hidden');
+                resendTimer.classList.remove('hidden');
+                resendTimer.textContent = 'Sending...';
+            }
+
+            try {
+                const response = await fetch(`/hr/onboarding/send-otp/{{ invitation.invitation_id }}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (!isResend) {
+                        showOtpModal();
+                    }
+                    // Start resend timer
+                    let timeLeft = 30;
+                    resendButton.classList.add('hidden');
+                    resendTimer.classList.remove('hidden');
+                    resendTimer.textContent = `Resend OTP in ${timeLeft}s`;
+                    
+                    const timerInterval = setInterval(() => {
+                        timeLeft--;
+                        resendTimer.textContent = `Resend OTP in ${timeLeft}s`;
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            resendTimer.classList.add('hidden');
+                            resendButton.classList.remove('hidden');
+                        }
+                    }, 1000);
+
+                } else {
+                    alert(data.error || 'Could not send OTP. Please try again.');
+                    resendTimer.classList.add('hidden');
+                    resendButton.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error sending OTP:', error);
+                alert('An error occurred while sending OTP. Please try again.');
+                resendTimer.classList.add('hidden');
+                resendButton.classList.remove('hidden');
+            } finally {
+                if (!isResend) {
+                    acceptButton.disabled = false;
+                    acceptButton.innerHTML = 'I Accept';
+                }
+            }
+        }
+
+        // Handle OTP form submission
+        document.getElementById('otpForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const otpInput = document.getElementById('otpInput');
+            const otpError = document.getElementById('otpError');
+            const submitButton = this.querySelector('button[type="submit"]');
+
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'Verifying...';
+            otpError.classList.add('hidden');
+
+            try {
+                const response = await fetch(`/hr/onboarding/verify-otp/{{ invitation.invitation_id }}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ otp: otpInput.value })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    sessionStorage.setItem('offerResponse_{{ invitation.invitation_id }}', 'accept');
+                    
+                    // Show success message and redirect
+                    hideOtpModal();
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4';
+                    messageDiv.innerHTML = `<p>Verification successful! Redirecting you to the onboarding form...</p>`;
+                    const responseSection = document.querySelector('.mt-8');
+                    if (responseSection) {
+                        responseSection.insertBefore(messageDiv, responseSection.firstChild);
+                    }
+
+                    setTimeout(() => {
+                        window.location.href = data.form_url;
+                    }, 2000);
+
+                } else {
+                    otpError.textContent = data.error || 'Invalid OTP. Please try again.';
+                    otpError.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error verifying OTP:', error);
+                otpError.textContent = 'An error occurred. Please try again.';
+                otpError.classList.remove('hidden');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Verify & Accept';
             }
         });
     </script>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <!-- Button to trigger popup -->
+    <button id="showAnalysisBtn" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium rounded-xl hover:shadow-blue-500/20 hover:shadow-lg active:scale-[0.98] transition-all duration-300">
+        Show Trend Analysis
+    </button>
+
+    <!-- Popup overlay -->
+    <div id="analysisPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-3xl w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="popupContent">
+            <!-- Popup header -->
+            <div class="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+                <h3 class="text-xl font-bold text-gray-800">Search Trend Analysis</h3>
+                <button id="closePopupBtn" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Popup content -->
+            <div class="p-6 max-h-[80vh] overflow-y-auto">
+                <div class="prose prose-sm max-w-none">
+                    <h2 class="text-xl font-bold text-gray-800">Analysis of "kitchen organisers" search trend on Flipkart:</h2>
+                    <p class="mb-4">Here's what the data shows about people searching for "kitchen organisers" on Flipkart over the past five years:</p>
+                    
+                    <div class="mb-3">
+                        <h3 class="text-lg font-semibold text-gray-700">1. Overall Trend:</h3>
+                        <p>The overall trend for searches of "kitchen organisers" is flat. It hasn't really grown or fallen significantly.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h3 class="text-lg font-semibold text-gray-700">2. Strong Spikes (Peaks):</h3>
+                        <p><em>There were three noticeable spikes in searches.</em></p>
+                        <p>The most recent and highest spike happened on March 9th, 2025.</p>
+                        <p>Other high search points were on April 25th, 2021, and February 14th, 2021.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h3 class="text-lg font-semibold text-gray-700">3. Seasonality:</h3>
+                        <p>The data doesn't show any clear pattern of repeating spikes in specific months. The high search periods seem to be random.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h3 class="text-lg font-semibold text-gray-700">4. Dead Periods (Low Interest):</h3>
+                        <p>There's no information in this data about months with very low interest in "kitchen organisers".</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h3 class="text-lg font-semibold text-gray-700">5. Volatility:</h3>
+                        <p>The graph is quite unpredictable. The volatility is very high, meaning searches jump around a lot.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h3 class="text-lg font-semibold text-gray-700">6. Last 3 Months:</h3>
+                        <p>The recent trend is upward; searches are increasing.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Popup footer -->
+            <div class="border-t border-gray-200 px-6 py-4 flex justify-end">
+                <button id="closePopupBtnFooter" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const showAnalysisBtn = document.getElementById('showAnalysisBtn');
+        const analysisPopup = document.getElementById('analysisPopup');
+        const popupContent = document.getElementById('popupContent');
+        const closePopupBtn = document.getElementById('closePopupBtn');
+        const closePopupBtnFooter = document.getElementById('closePopupBtnFooter');
+        
+        // Function to open popup
+        function openPopup() {
+            analysisPopup.classList.remove('hidden');
+            // Use setTimeout to ensure the transition works properly
+            setTimeout(() => {
+                popupContent.classList.remove('scale-95', 'opacity-0');
+                popupContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        
+        // Function to close popup
+        function closePopup() {
+            popupContent.classList.remove('scale-100', 'opacity-100');
+            popupContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                analysisPopup.classList.add('hidden');
+            }, 300);
+        }
+        
+        // Event listeners
+        showAnalysisBtn.addEventListener('click', openPopup);
+        closePopupBtn.addEventListener('click', closePopup);
+        closePopupBtnFooter.addEventListener('click', closePopup);
+        
+        // Close popup when clicking outside
+        analysisPopup.addEventListener('click', function(event) {
+            if (event.target === analysisPopup) {
+                closePopup();
+            }
+        });
+        
+        // Close popup on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && !analysisPopup.classList.contains('hidden')) {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+</html>

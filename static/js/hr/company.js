@@ -53,7 +53,7 @@ document.getElementById('qrCodeForm').addEventListener('submit', function(e) {
     }
     
     // Use fetch API to submit the form
-    fetch('/hr_management/generate-qr-code/', {
+    fetch('/hr/generate-qr-code/', {
         method: 'POST',
         body: formData,
         credentials: 'include'
@@ -105,7 +105,7 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
     const formData = new FormData(this);
     const companyId = document.getElementById('edit_company_id').value;
 
-    fetch(`/invoicing/edit-company/${companyId}/`, {
+    fetch(`/hr/edit-company/${companyId}/`, {
         method: 'POST',
         body: formData,
         headers: {
@@ -124,7 +124,7 @@ document.getElementById('editForm').addEventListener('submit', function(e) {
 
 function deleteCompany(companyId) {
     if (confirm('Are you sure you want to delete this company?')) {
-        fetch(`/invoicing/delete-company/${companyId}/`, {
+        fetch(`/hr/delete-company/${companyId}/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
@@ -159,7 +159,7 @@ function getCookie(name) {
 // Function to view QR code details
 function viewQRCode(qrCodeId) {
     // Fetch QR code details from the server
-    fetch(`/hr_management/qr-code-details/${qrCodeId}/`, {
+    fetch(`/hr/qr-code-details/${qrCodeId}/`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -250,7 +250,7 @@ function deleteQRCode(qrCodeId) {
         const csrfToken = getCookie('csrftoken');
         
         // Send delete request to the server
-        fetch(`/hr_management/delete-qr-code/${qrCodeId}/`, {
+        fetch(`/hr/delete-qr-code/${qrCodeId}/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': csrfToken,

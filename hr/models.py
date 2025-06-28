@@ -26,9 +26,10 @@ class Company(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='companies')
 
     def __str__(self):
-        return self.company_name
-
+        return self.company_name or str(self.company_id)
+# 'aadhar_number', 'address', 'bank_account_holder_name', 'bank_account_number', 'bank_ifsc_code', 'bank_name', 'branch_name', 'dob', 'pan_number', 'qualification'
 class Employee(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='employees')
     employee_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     number_of_days_attended = models.IntegerField(default=0)
     attendance_photo = models.ImageField(upload_to='attendance_photos/',null=True,blank=True)
@@ -36,6 +37,20 @@ class Employee(models.Model):
     location = models.CharField(max_length=255,null=True,blank=True)
     employee_name = models.CharField(max_length=255)
     employee_email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    pan_number = models.FileField(upload_to='hr/employee_documents/pan/', null=True, blank=True)
+    aadhar_number = models.FileField(upload_to='hr/employee_documents/aadhar/', null=True, blank=True)
+    dob = models.DateField(null=True, blank=True)
+    qualification = models.CharField(max_length=255, null=True, blank=True)
+    bank_account_holder_name = models.CharField(max_length=255, null=True, blank=True)
+    bank_account_number = models.CharField(max_length=20, null=True, blank=True)
+    bank_name = models.CharField(max_length=255, null=True, blank=True)
+    branch_name = models.CharField(max_length=255, null=True, blank=True)
+    bank_ifsc_code = models.CharField(max_length=11, null=True, blank=True)
+    gross_salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    leave_group = models.ForeignKey('LeaveGroup', on_delete=models.SET_NULL, null=True, blank=True)
+    payouts = models.JSONField(null=True, blank=True)
     password = models.CharField(max_length=255,null=True,blank=True)
     is_active = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
@@ -43,7 +58,6 @@ class Employee(models.Model):
     last_attendance_time = models.DateTimeField(null=True, blank=True)
     attendance_status = models.CharField(max_length=20, 
     default='not_marked')  # can be 'marked', 'unmarked', 'completed'
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='employees')
 
     def __str__(self):
         return self.employee_name
@@ -309,20 +323,9 @@ class LeaveApplication(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
-    LEAVE_TYPES = [
-        ('casual', 'Casual Leave'),
-        ('sick', 'Sick Leave'),
-        ('annual', 'Annual Leave'),
-        ('maternity', 'Maternity Leave'),
-        ('paternity', 'Paternity Leave'),
-        ('bereavement', 'Bereavement Leave'),
-        ('unpaid', 'Unpaid Leave'),
-        ('other', 'Other'),
-    ]
-    
     leave_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey('employee.Employee', on_delete=models.CASCADE, related_name='leave_applications')
-    leave_type = models.CharField(max_length=20, choices=LEAVE_TYPES)
+    leave_type = models.ForeignKey('LeaveType', on_delete=models.SET_NULL, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
     reason = models.TextField()
@@ -466,6 +469,7 @@ class Resignation(models.Model):
         return (self.last_working_date - self.resignation_date).days
 
 class EmployeeDocument(models.Model):
+    document_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='documents')
     document_type = models.CharField(max_length=100)
     document_name = models.CharField(max_length=255)
@@ -498,9 +502,7 @@ class TrustedDevice(models.Model):
 class LeaveType(models.Model):
     leave_type_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='leave_types')
-    days_allowed = models.PositiveIntegerField(default=0)
-    description = models.TextField(null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='leave_types', null=True, blank=True)
     color_code = models.CharField(max_length=20, default="#4F46E5", help_text="HEX color code for UI representation")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -508,7 +510,7 @@ class LeaveType(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='leave_types')
     
     def __str__(self):
-        return f"{self.name} ({self.days_allowed} days)"
+        return f"{self.name}"
     
     class Meta:
         ordering = ['name']
@@ -516,7 +518,7 @@ class LeaveType(models.Model):
 class Deduction(models.Model):
     deduction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='deductions')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='deductions', null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     is_percentage = models.BooleanField(default=False, help_text="If True, the value is a percentage of salary; otherwise, it's a fixed amount")
     default_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -537,7 +539,7 @@ class Deduction(models.Model):
 class Allowance(models.Model):
     allowance_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='allowances')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='allowances', null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     is_percentage = models.BooleanField(default=False, help_text="If True, the value is a percentage of salary; otherwise, it's a fixed amount")
     default_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -555,7 +557,93 @@ class Allowance(models.Model):
     class Meta:
         ordering = ['name']
 
-# Add a pre-save signal handler for OnboardingInvitation
+class Holiday(models.Model):
+    holiday_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    date = models.DateField(auto_now_add=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='holidays', null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='holidays')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class PayoutType(models.Model):
+    payout_type_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='payout_types', null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='payout_types')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class AttendanceRule(models.Model):
+    id = models.AutoField(primary_key=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='attendance_rules', null=True, blank=True)
+    punch_in_time = models.TimeField()
+    punch_out_time = models.TimeField()
+    working_days = models.CharField(max_length=255, help_text="Comma-separated list of weekdays, e.g., 'Monday,Tuesday,...'")
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='attendance_rules')
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Rule for {self.company.company_name}"
+
+class LatePunchInRule(models.Model):
+    id = models.AutoField(primary_key=True)
+    attendance_rule = models.ForeignKey(AttendanceRule, on_delete=models.CASCADE, related_name='late_punch_in_rules')
+    start_time = models.TimeField()
+    end_time = models.TimeField(null=True, blank=True)
+    rule_option = models.CharField(max_length=20, choices=[('deduct_amount', 'Deduct Amount'), ('half_day', 'Mark as Half Day')])
+    deduction_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"Late rule for {self.attendance_rule.company.company_name} from {self.start_time}"
+
+class EarlyPunchOutRule(models.Model):
+    id = models.AutoField(primary_key=True)
+    attendance_rule = models.ForeignKey(AttendanceRule, on_delete=models.CASCADE, related_name='early_punch_out_rules')
+    time = models.TimeField()
+    rule_option = models.CharField(max_length=20, choices=[('deduct_amount', 'Deduct Amount'), ('half_day', 'Mark as Half Day')])
+    deduction_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"Early rule for {self.attendance_rule.company.company_name} at {self.time}"
+
+class LeaveGroup(models.Model):
+    FREQUENCY_CHOICES = [
+        ('Monthly', 'Monthly'),
+        ('Yearly', 'Yearly'),
+    ]
+    group_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='Yearly')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='leave_groups')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+class LeaveGroupRule(models.Model):
+    leave_group_rule_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    leave_group = models.ForeignKey(LeaveGroup, on_delete=models.CASCADE, related_name='rules')
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
+    days = models.DecimalField(max_digits=5, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.leave_group.name} - {self.leave_type.name}"
+
 @receiver(pre_save, sender='hr.OnboardingInvitation')
 def ensure_onboarding_data_saved(sender, instance, **kwargs):
     """Ensure form data is properly saved before saving the model to database"""

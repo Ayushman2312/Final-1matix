@@ -1,0 +1,51 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">User Settings</h1>
+
+    <div class="md:grid md:grid-cols-3 md:gap-6">
+        <!-- Left-side navigation -->
+        <div class="md:col-span-1">
+            <div class="px-4 sm:px-0">
+                <div class="bg-white rounded-lg shadow">
+                    <nav class="divide-y divide-gray-200">
+                        <a href="#profile" id="profile-tab" data-target="profile" class="tab-link block px-6 py-4 text-sm font-medium text-gray-900 bg-gray-100 border-l-4 border-purple-500">
+                            Profile Information
+                        </a>
+                        <a href="#security" id="security-tab" data-target="security" class="tab-link block px-6 py-4 text-sm font-medium text-gray-600 hover:bg-gray-50 border-l-4 border-transparent">
+                            Password & Security
+                        </a>
+                        <a href="#notifications" id="notifications-tab" data-target="notifications" class="tab-link block px-6 py-4 text-sm font-medium text-gray-600 hover:bg-gray-50 border-l-4 border-transparent">
+                            Notifications
+                        </a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right-side content -->
+        <div class="mt-5 md:mt-0 md:col-span-2">
+            <!-- Profile Information Section -->
+            <div id="profile-section" class="tab-content">
+                {% include 'user_dashboard/partials/profile_info.html' %}
+            </div>
+
+            <!-- Password & Security Section (Initially Hidden) -->
+            <div id="security-section" class="tab-content hidden">
+                {% include 'user_dashboard/partials/password_security.html' %}
+            </div>
+
+            <!-- Notifications Section (Initially Hidden) -->
+            <div id="notifications-section" class="tab-content hidden">
+                {% include 'user_dashboard/partials/notifications.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/user/settings.js' %}"></script>
+{% endblock %} 

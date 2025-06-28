@@ -1,0 +1,824 @@
+{% extends 'user_dashboard/base.html' %}
+{% load hr_filters %}
+
+{% block content %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ page_title }}</h1>
+
+    {% if config_type == 'deduction_rules' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 id="form-title" class="text-xl font-semibold text-gray-700 mb-4">Working Hours and Days</h2>
+                <form id="config-form" method="post" action="{% url 'hr:hr_configuration' config_type='deduction_rules' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="object_id" id="object_id">
+                    <div class="mb-4">
+                        <label for="company" class="block text-sm font-medium text-gray-600">Company</label>
+                        <select name="company" id="company" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            <option value="">Select a company</option>
+                            {% for company in companies %}
+                            <option value="{{ company.company_id }}">{{ company.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="punch_in_time" class="block text-sm font-medium text-gray-600">Punch-In Time</label>
+                        <input type="time" name="punch_in_time" id="punch_in_time" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                    <div class="mb-4">
+                        <label for="punch_out_time" class="block text-sm font-medium text-gray-600">Punch-Out Time</label>
+                        <input type="time" name="punch_out_time" id="punch_out_time" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                    <div class="mb-4">
+                        <label for="working_days" class="block text-sm font-medium text-gray-600">Working Days</label>
+                        <div id="working_days" class="mt-2 space-y-2">
+                            {% for day in weekdays %}
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="working_days" value="{{ day }}" class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                                <span class="ml-2 text-sm text-gray-600">{{ day }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Save Rule</button>
+                        <button type="button" id="cancel-edit" class="hidden inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="lg:col-span-2">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Existing Attendance Rules</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Punch-In Time</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Punch-Out Time</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Working Days</th>
+                                <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for obj in objects %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ obj.company.company_name|default:"-" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ obj.punch_in_time|time:"H:i" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ obj.punch_out_time|time:"H:i" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ obj.working_days }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button class="text-indigo-600 hover:text-indigo-900 edit-btn" 
+                                            data-id="{{ obj.id }}"
+                                            data-company-id="{{ obj.company.company_id }}"
+                                            data-punch-in-time="{{ obj.punch_in_time|time:'H:i' }}" 
+                                            data-punch-out-time="{{ obj.punch_out_time|time:'H:i' }}" 
+                                            data-working-days="{{ obj.working_days }}">
+                                        Edit
+                                    </button>
+                                    <button class="text-green-600 hover:text-green-900 ml-4 configure-btn"
+                                            data-id="{{ obj.id }}"
+                                            data-late-punch-in-rules='{{ obj.late_punch_in_rules.all|to_json }}'
+                                            data-early-punch-out-rules='{{ obj.early_punch_out_rules.all|to_json }}'>
+                                        Configure
+                                    </button>
+                                    <form method="post" action="{% url 'hr:hr_configuration_delete' config_type='deduction_rules' pk=obj.id %}" class="inline-block ml-4">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this rule?');">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No attendance rules found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 id="form-title" class="text-xl font-semibold text-gray-700 mb-4">Add New</h2>
+                <form id="config-form" method="post" action="{% url 'hr:hr_configuration' config_type=config_type %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="object_id" id="object_id">
+                    <div class="mb-4">
+                        <label for="name" class="block text-sm font-medium text-gray-600">Name</label>
+                        <input type="text" name="name" id="name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                    
+                    {% if config_type == 'holidays' %}
+                    <div class="mb-4">
+                        <label for="date" class="block text-sm font-medium text-gray-600">Date</label>
+                        <input type="date" name="date" id="date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                    {% endif %}
+                    <div class="flex items-center justify-between">
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Save</button>
+                        <button type="button" id="cancel-edit" class="hidden inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="lg:col-span-2">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Existing {{ config_type|capfirst }}</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                {% if config_type == 'holidays' %}
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                {% endif %}
+                                <th scope="col" class="relative px-6 py-3">
+                                    <span class="sr-only">Actions</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for obj in objects %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ obj.name }}
+                                </td>
+                                {% if config_type == 'holidays' %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ obj.date|date:"d M, Y"|default:"-" }}
+                                </td>
+                                {% endif %}
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button class="text-indigo-600 hover:text-indigo-900 edit-btn" data-id="{{ obj.pk }}" data-name="{{ obj.name }}" {% if config_type == 'holidays' %}data-date="{{ obj.date|date:'Y-m-d' }}"{% endif %}>Edit</button>
+                                    <form method="post" action="{% url 'hr:hr_configuration_delete' config_type=config_type pk=obj.pk %}" class="inline-block ml-4">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if config_type == 'holidays' %}3{% else %}2{% endif %}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No items found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if config_type == 'leaves' %}
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Leave Groups</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4">Create New Group</h3>
+                <form id="leave-group-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="group_id" id="group_id">
+                    <div class="mb-4">
+                        <label for="group_name" class="block text-sm font-medium text-gray-600">Group Name</label>
+                        <input type="text" name="name" id="group_name" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                    <div class="mb-4">
+                        <label for="group_frequency" class="block text-sm font-medium text-gray-600">Frequency</label>
+                        <select name="frequency" id="group_frequency" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            <option value="">Select Frequency</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Yearly" selected>Yearly</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="submit" id="group-submit-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Create Group</button>
+                        <button type="button" id="cancel-group-edit" class="hidden inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="lg:col-span-2">
+            <div id="leave-groups-container" class="space-y-4">
+                {% for group in leave_groups %}
+                <div class="bg-white rounded-lg shadow-md" id="group-{{ group.group_id }}">
+                    <h2 id="accordion-header-{{ forloop.counter }}">
+                        <button type="button" class="accordion-header flex items-center justify-between w-full p-6 font-semibold text-gray-800 text-left" data-accordion-target="#accordion-body-{{ forloop.counter }}">
+                            <span>{{ group.name }}</span>
+                            <svg class="w-6 h-6 shrink-0 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </button>
+                    </h2>
+                    <div id="accordion-body-{{ forloop.counter }}" class="hidden p-6 border-t border-gray-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-700">{{ group.name }} ({{ group.frequency }})</h3>
+                            <div>
+                                <button class="text-indigo-600 hover:text-indigo-900 edit-group-btn" data-group-id="{{ group.group_id }}" data-group-name="{{ group.name }}" data-group-frequency="{{ group.frequency }}">Edit</button>
+                                <button class="text-red-600 hover:text-red-900 ml-4 delete-group-btn" data-group-id="{{ group.group_id }}">Delete</button>
+                            </div>
+                        </div>
+                        <div>
+                            <form class="add-rule-form" data-group-id="{{ group.group_id }}">
+                                {% csrf_token %}
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600">Leave Type</label>
+                                        <select name="leave_type_id" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                                            {% for type in objects %}
+                                            <option value="{{ type.leave_type_id }}">{{ type.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600">Days</label>
+                                        <input type="number" name="days" step="0.5" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                                    </div>
+                                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">Add Rule</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="mt-6">
+                            <h4 class="text-lg font-semibold text-gray-700 mb-2">Leave Rules in this group</h4>
+                            <ul class="divide-y divide-gray-200" id="rule-list-{{ group.group_id }}">
+                                {% for rule in group.rules.all %}
+                                <li class="py-2 flex justify-between items-center" id="rule-{{ rule.leave_group_rule_id }}">
+                                    <span>{{ rule.leave_type.name }}: {{ rule.days }} days</span>
+                                    <div>
+                                        <button class="text-indigo-600 hover:text-indigo-900 edit-rule-btn" data-rule-id="{{ rule.leave_group_rule_id }}" data-rule-days="{{ rule.days }}">Edit</button>
+                                        <button class="text-red-600 hover:text-red-900 ml-4 delete-rule-btn" data-rule-id="{{ rule.leave_group_rule_id }}">Delete</button>
+                                    </div>
+                                </li>
+                                {% empty %}
+                                <li class="text-gray-500">No leave rules in this group yet.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if config_type == 'deduction_rules' %}
+<div id="configure-popup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="configure-popup-title">Configure Attendance Rule</h3>
+            <div class="mt-4 px-7 py-3">
+                <form id="popup-configure-form">
+                    <input type="hidden" id="configure_rule_id" name="rule_id">
+                    
+                    <div class="border-b border-gray-200 pb-4 mb-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-md leading-6 font-medium text-gray-800">Late Punch-In Rules</h4>
+                            <button type="button" id="add-late-rule-btn" class="text-sm text-purple-600 hover:text-purple-800 font-medium">+ Add Rule</button>
+                        </div>
+                        <div id="late-punch-in-rules-container" class="space-y-3">
+                            <!-- Late punch-in rules will be dynamically inserted here -->
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-md leading-6 font-medium text-gray-800">Early Punch-Out Rules</h4>
+                            <button type="button" id="add-early-rule-btn" class="text-sm text-purple-600 hover:text-purple-800 font-medium">+ Add Rule</button>
+                        </div>
+                        <div id="early-punch-out-rules-container" class="space-y-3">
+                            <!-- Early punch-out rules will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="items-center px-4 py-3 bg-gray-50 -mx-5 -mb-5 mt-4 rounded-b-md">
+                <div class="flex justify-end space-x-2">
+                    <button id="close-popup" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                        Cancel
+                    </button>
+                    <button id="save-configuration" class="px-4 py-2 bg-purple-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="view-config-popup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">Configuration Details</h3>
+            <div class="mt-4 px-7 py-3 space-y-3 text-left" id="view-config-details">
+                <!-- Details will be populated by JS -->
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="close-view-popup" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editButtons = document.querySelectorAll('.edit-btn');
+    const form = document.getElementById('config-form');
+    const formTitle = document.getElementById('form-title');
+    const objectIdInput = document.getElementById('object_id');
+    const nameInput = document.getElementById('name');
+    const dateInput = document.getElementById('date');
+    const cancelEditButton = document.getElementById('cancel-edit');
+
+    {% if config_type == 'deduction_rules' %}
+    const companyInput = document.getElementById('company');
+    const punchInInput = document.getElementById('punch_in_time');
+    const punchOutInput = document.getElementById('punch_out_time');
+    const workingDaysCheckboxes = document.querySelectorAll('input[name="working_days"]');
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const objectId = this.dataset.id;
+            const companyId = this.dataset.companyId;
+            const punchInTime = this.dataset.punchInTime;
+            const punchOutTime = this.dataset.punchOutTime;
+            const workingDays = this.dataset.workingDays.split(',');
+
+            formTitle.textContent = 'Edit Rule';
+            objectIdInput.value = objectId;
+            companyInput.value = companyId;
+            punchInInput.value = punchInTime;
+            punchOutInput.value = punchOutTime;
+
+            workingDaysCheckboxes.forEach(checkbox => {
+                checkbox.checked = workingDays.includes(checkbox.value);
+            });
+            
+            cancelEditButton.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    const configurePopup = document.getElementById('configure-popup');
+    if (configurePopup) {
+        const configureForm = document.getElementById('popup-configure-form');
+        const closePopupButton = document.getElementById('close-popup');
+        const saveConfigurationButton = document.getElementById('save-configuration');
+        const configurePopupTitle = document.getElementById('configure-popup-title');
+        const lateRulesContainer = document.getElementById('late-punch-in-rules-container');
+        const earlyRulesContainer = document.getElementById('early-punch-out-rules-container');
+        const addLateRuleBtn = document.getElementById('add-late-rule-btn');
+        const addEarlyRuleBtn = document.getElementById('add-early-rule-btn');
+
+        const createLateRuleRow = (rule = {}) => {
+            const ruleId = rule.id || Date.now();
+            const newRow = document.createElement('div');
+            newRow.classList.add('p-3', 'border', 'rounded-md', 'bg-gray-50');
+            newRow.setAttribute('data-rule-id', ruleId);
+            newRow.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end mb-2">
+                    <div class="md:col-span-5 space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Time Range</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="time" name="late_start_time" value="${rule.start_time || ''}" class="late-rule-field block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                            <span class="text-gray-500 font-medium">to</span>
+                            <input type="time" name="late_end_time" value="${rule.end_time || ''}" class="late-rule-field block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Rule Option</label>
+                        <select name="late_rule_option" class="late-rule-field block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                            <option value="">Select an option</option>
+                            <option value="deduct_amount" ${rule.rule_option === 'deduct_amount' ? 'selected' : ''}>Deduct Amount</option>
+                            <option value="half_day" ${rule.rule_option === 'half_day' ? 'selected' : ''}>Mark as Half Day</option>
+                        </select>
+                    </div>
+                    <div class="deduction-amount-wrapper md:col-span-3 space-y-1 ${rule.rule_option === 'deduct_amount' ? '' : 'hidden'}">
+                        <label class="block text-sm font-medium text-gray-700">Amount</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="number" step="0.01" name="late_deduction_amount" value="${rule.deduction_amount || ''}" class="late-rule-field block w-full pl-7 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" class="remove-rule-btn inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove Rule
+                    </button>
+                </div>
+            `;
+            lateRulesContainer.appendChild(newRow);
+        };
+
+        const createEarlyRuleRow = (rule = {}) => {
+            const ruleId = rule.id || Date.now();
+            const newRow = document.createElement('div');
+            newRow.classList.add('p-3', 'border', 'rounded-md', 'bg-gray-50');
+            newRow.setAttribute('data-rule-id', ruleId);
+            newRow.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Early Departure Time</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <input type="time" name="early_time" value="${rule.time || ''}" class="early-rule-field block w-full pl-10 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Rule Option</label>
+                        <div class="relative">
+                            <select name="early_rule_option" class="early-rule-field block w-full pl-3 pr-10 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm appearance-none transition duration-150 ease-in-out">
+                                <option value="">Select an option</option>
+                                <option value="deduct_amount" ${rule.rule_option === 'deduct_amount' ? 'selected' : ''}>Deduct Amount</option>
+                                <option value="half_day" ${rule.rule_option === 'half_day' ? 'selected' : ''}>Mark as Half Day</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="deduction-amount-wrapper space-y-2 ${rule.rule_option === 'deduct_amount' ? '' : 'hidden'}">
+                        <label class="block text-sm font-medium text-gray-700">Deduction Amount</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">$</span>
+                            </div>
+                            <input type="number" step="0.01" name="early_deduction_amount" value="${rule.deduction_amount || ''}" class="early-rule-field block w-full pl-7 pr-3 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-2">
+                    <button type="button" class="remove-rule-btn inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove Rule
+                    </button>
+                </div>
+            `;
+            earlyRulesContainer.appendChild(newRow);
+        };
+
+        const toggleDeductionAmount = (selectElement) => {
+            const wrapper = selectElement.closest('.grid').querySelector('.deduction-amount-wrapper');
+            if (selectElement.value === 'deduct_amount') {
+                wrapper.classList.remove('hidden');
+            } else {
+                wrapper.classList.add('hidden');
+            }
+        };
+
+        document.getElementById('configure-popup').addEventListener('change', (e) => {
+            if (e.target.matches('select[name="late_rule_option"]') || e.target.matches('select[name="early_rule_option"]')) {
+                toggleDeductionAmount(e.target);
+            }
+        });
+        
+        document.getElementById('configure-popup').addEventListener('click', (e) => {
+            if (e.target.matches('.remove-rule-btn')) {
+                e.target.closest('div[data-rule-id]').remove();
+            }
+        });
+
+        addLateRuleBtn.addEventListener('click', () => createLateRuleRow());
+        addEarlyRuleBtn.addEventListener('click', () => createEarlyRuleRow());
+
+        document.querySelectorAll('.configure-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const ruleId = this.dataset.id;
+                document.getElementById('configure_rule_id').value = ruleId;
+                
+                lateRulesContainer.innerHTML = '';
+                earlyRulesContainer.innerHTML = '';
+                
+                try {
+                    const lateRules = JSON.parse(this.dataset.latePunchInRules.replace(/'/g, '"'));
+                    lateRules.forEach(rule => createLateRuleRow(rule));
+                } catch (e) { console.error("Could not parse late punch in rules", e); }
+
+                try {
+                    const earlyRules = JSON.parse(this.dataset.earlyPunchOutRules.replace(/'/g, '"'));
+                    earlyRules.forEach(rule => createEarlyRuleRow(rule));
+                } catch(e) { console.error("Could not parse early punch out rules", e); }
+                
+                configurePopupTitle.textContent = 'Configure Attendance Rule';
+                configurePopup.classList.remove('hidden');
+            });
+        });
+        
+        closePopupButton.addEventListener('click', () => {
+            configurePopup.classList.add('hidden');
+        });
+
+        saveConfigurationButton.addEventListener('click', () => {
+            const ruleId = document.getElementById('configure_rule_id').value;
+            
+            const latePunchInRules = [];
+            lateRulesContainer.querySelectorAll('div[data-rule-id]').forEach(row => {
+                latePunchInRules.push({
+                    start_time: row.querySelector('[name="late_start_time"]').value,
+                    end_time: row.querySelector('[name="late_end_time"]').value,
+                    rule_option: row.querySelector('[name="late_rule_option"]').value,
+                    deduction_amount: row.querySelector('[name="late_deduction_amount"]').value,
+                });
+            });
+
+            const earlyPunchOutRules = [];
+            earlyRulesContainer.querySelectorAll('div[data-rule-id]').forEach(row => {
+                earlyPunchOutRules.push({
+                    time: row.querySelector('[name="early_time"]').value,
+                    rule_option: row.querySelector('[name="early_rule_option"]').value,
+                    deduction_amount: row.querySelector('[name="early_deduction_amount"]').value,
+                });
+            });
+
+            const payload = {
+                late_punch_in_rules: latePunchInRules,
+                early_punch_out_rules: earlyPunchOutRules
+            };
+
+            fetch(`/hr/configure/attendance-rule/${ruleId}/`, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        });
+    }
+
+    const viewConfigPopup = document.getElementById('view-config-popup');
+    if(viewConfigPopup) {
+        const closeViewPopupButton = document.getElementById('close-view-popup');
+        const viewConfigDetails = document.getElementById('view-config-details');
+
+        document.querySelectorAll('.view-config-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const companyName = this.dataset.companyName;
+                const gracePeriodStart = this.dataset.lateArrivalGracePeriodStart;
+                const gracePeriodEnd = this.dataset.lateArrivalGracePeriodEnd;
+                const latePunchOutTime = this.dataset.latePunchOutTime;
+                const ruleOption = this.dataset.ruleOption;
+                const deductionAmount = this.dataset.deductionAmount;
+                const latePunchOutRuleOption = this.dataset.latePunchOutRuleOption;
+                const latePunchOutDeductionAmount = this.dataset.latePunchOutDeductionAmount;
+
+                let gracePeriodText = gracePeriodStart || 'Not set';
+                if (gracePeriodStart && gracePeriodEnd) {
+                    gracePeriodText = `${gracePeriodStart} to ${gracePeriodEnd}`;
+                }
+
+                let ruleText = 'Not set';
+                if (ruleOption === 'deduct_amount') {
+                    ruleText = `Deduct Amount: ${deductionAmount || 'N/A'}`;
+                } else if (ruleOption === 'half_day') {
+                    ruleText = 'Mark as Half Day';
+                }
+
+                let latePunchOutRuleText = 'Not set';
+                if (latePunchOutRuleOption === 'deduction_amount') {
+                    latePunchOutRuleText = `Deduct Amount: ${latePunchOutDeductionAmount || 'N/A'}`;
+                } else if (latePunchOutRuleOption === 'half_day') {
+                    latePunchOutRuleText = 'Mark as Half Day';
+                }
+
+                viewConfigDetails.innerHTML = `
+                    <div class="border-b border-gray-200 pb-2 mb-2">
+                        <h4 class="font-semibold text-gray-700">Late Punch-In Rule</h4>
+                        <p><strong class="font-semibold text-gray-600">Grace Period:</strong> <span class="text-gray-500">${gracePeriodText}</span></p>
+                        <p><strong class="font-semibold text-gray-600">Rule:</strong> <span class="text-gray-500">${ruleText}</span></p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700">Early Punch-Out Rule</h4>
+                        <p><strong class="font-semibold text-gray-600">Time:</strong> <span class="text-gray-500">${latePunchOutTime || 'Not set'}</span></p>
+                        <p><strong class="font-semibold text-gray-600">Rule:</strong> <span class="text-gray-500">${latePunchOutRuleText}</span></p>
+                    </div>
+                 `;
+
+                viewConfigPopup.classList.remove('hidden');
+            });
+        });
+
+        if (closeViewPopupButton) {
+            closeViewPopupButton.addEventListener('click', () => {
+                viewConfigPopup.classList.add('hidden');
+            });
+        }
+    }
+    
+    {% else %}
+    editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const objectId = this.dataset.id;
+            const name = this.dataset.name;
+            
+            formTitle.textContent = 'Edit Item';
+            objectIdInput.value = objectId;
+            nameInput.value = name;
+
+            if (this.dataset.date && dateInput) {
+                dateInput.value = this.dataset.date;
+            }
+            
+            cancelEditButton.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+    {% endif %}
+
+    cancelEditButton.addEventListener('click', function() {
+        formTitle.textContent = 'Add New';
+        objectIdInput.value = '';
+        form.reset();
+        this.classList.add('hidden');
+    });
+
+    {% if config_type == 'leaves' %}
+    const leaveGroupForm = document.getElementById('leave-group-form');
+    leaveGroupForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const groupId = formData.get('group_id');
+        let url = "{% url 'hr:leave_group_create' %}";
+        if (groupId) {
+            url = `/hr/leave-group/${groupId}/update/`;
+        }
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error);
+            }
+        });
+    });
+
+    const groupFormTitle = document.querySelector('#leave-group-form').previousElementSibling;
+    const groupSubmitBtn = document.getElementById('group-submit-btn');
+    const cancelGroupEditBtn = document.getElementById('cancel-group-edit');
+
+    document.querySelectorAll('.accordion-header').forEach(button => {
+        button.addEventListener('click', () => {
+            const accordionContent = document.querySelector(button.dataset.accordionTarget);
+            accordionContent.classList.toggle('hidden');
+            const accordionIcon = button.querySelector('svg');
+            accordionIcon.classList.toggle('rotate-180');
+        });
+    });
+
+    document.getElementById('leave-groups-container').addEventListener('click', function(e) {
+        let targetButton = e.target.closest('.edit-group-btn');
+        if (targetButton) {
+            const groupId = targetButton.dataset.groupId;
+            const groupName = targetButton.dataset.groupName;
+            const groupFrequency = targetButton.dataset.groupFrequency;
+            
+            document.getElementById('group_id').value = groupId;
+            document.getElementById('group_name').value = groupName;
+            document.getElementById('group_frequency').value = groupFrequency;
+
+            groupFormTitle.textContent = 'Edit Group';
+            groupSubmitBtn.textContent = 'Update Group';
+            cancelGroupEditBtn.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        targetButton = e.target.closest('.delete-group-btn');
+        if (targetButton) {
+            const groupId = targetButton.dataset.groupId;
+            if(confirm("Are you sure you want to delete this group?")) {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                fetch(`/hr/leave-group/${groupId}/delete/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        document.getElementById(`group-${groupId}`).remove();
+                    } else {
+                        alert(data.error);
+                    }
+                })
+            }
+            return;
+        }
+
+        targetButton = e.target.closest('.edit-rule-btn');
+        if (targetButton) {
+            const ruleId = targetButton.dataset.ruleId;
+            const days = targetButton.dataset.ruleDays;
+            const newDays = prompt("Enter new number of days:", days);
+            if (newDays && newDays !== days) {
+                const formData = new FormData();
+                formData.append('days', newDays);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                fetch(`/hr/leave-group/rule/${ruleId}/update/`, {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.error);
+                    }
+                })
+            }
+            return;
+        }
+        
+        targetButton = e.target.closest('.delete-rule-btn');
+        if (targetButton) {
+            const ruleId = targetButton.dataset.ruleId;
+            if(confirm("Are you sure you want to delete this rule?")) {
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                fetch(`/hr/leave-group/rule/${ruleId}/delete/`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        document.getElementById(`rule-${ruleId}`).remove();
+                    } else {
+                        alert(data.error);
+                    }
+                })
+            }
+        }
+    });
+
+    cancelGroupEditBtn.addEventListener('click', function() {
+        document.getElementById('group_id').value = '';
+        leaveGroupForm.reset();
+        groupFormTitle.textContent = 'Create New Group';
+        groupSubmitBtn.textContent = 'Create Group';
+        this.classList.add('hidden');
+    });
+
+    const addRuleForms = document.querySelectorAll('.add-rule-form');
+    addRuleForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const groupId = this.dataset.groupId;
+            const formData = new FormData(this);
+            fetch(`/hr/leave-group/${groupId}/rule/create/`, {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
+            })
+        });
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

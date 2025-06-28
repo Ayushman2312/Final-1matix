@@ -16,7 +16,7 @@
         <div class="bg-white rounded-2xl shadow-[0_0px_5px_rgba(0,0,0,0.1)] overflow-hidden">
             <div class="sm:flex sm:items-center sm:justify-end p-4">
                 <div class="flex justify-between space-x-4">
-                    <a href="{% url 'create-company' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-[#7A3DF1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out">
+                    <a href="/hr/create-company/" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-[#7A3DF1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition duration-150 ease-in-out">
                         <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
@@ -34,7 +34,7 @@
                         <div class="bg-white p-8 rounded-lg w-[600px]">
                             <h3 class="text-xl font-semibold mb-6">Add QR Code Details</h3>
                             
-                            <form id="qrCodeForm" method="POST" action="/hr_management/generate-qr-code/">
+                            <form id="qrCodeForm" method="POST" action="/hr/generate-qr-code/">
                                 {% csrf_token %}
                                 <div class="mb-6">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Select Company</label>
@@ -91,7 +91,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ company.company_name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ company.company_gst_number }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ company.company_state }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ company.company_mobile_number }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ company.company_phone }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button onclick="openEditModal('{{ company.company_id }}', '{{ company.company_name|escapejs }}', '{{ company.company_gst_number|escapejs }}', '{{ company.company_mobile_number|escapejs }}', '{{ company.company_email|escapejs }}', '{{ company.company_state|escapejs }}', '{{ company.company_invoice_prefix|escapejs }}', '{{ company.company_bank_name|escapejs }}', '{{ company.company_bank_account_number|escapejs }}', '{{ company.company_bank_ifsc_code|escapejs }}', '{{ company.company_upi_id|escapejs }}', '{{ company.company_address|escapejs }}')" class="text-blue-600 hover:text-blue-900 mr-3">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +285,7 @@
         // Function to view QR code details
         function viewQRCode(qrCodeId) {
             // Fetch QR code details from the server
-            fetch(`/hr_management/qr-code-details/${qrCodeId}/`, {
+            fetch(`/hr/qr-code-details/${qrCodeId}/`, {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -376,7 +376,7 @@
                 const csrfToken = getCookie('csrftoken');
                 
                 // Send delete request to the server
-                fetch(`/hr_management/delete-qr-code/${qrCodeId}/`, {
+                fetch(`/hr/delete-qr-code/${qrCodeId}/`, {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': csrfToken,

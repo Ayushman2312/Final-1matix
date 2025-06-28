@@ -45,7 +45,7 @@ const attendanceFlow = {
         }
         
         try {
-            const response = await fetch('/hr_management/mark-attendance/', {
+            const response = await fetch('/hr/mark-attendance/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const attendanceFlow = {
         
         const email = localStorage.getItem('attendance_email');
         try {
-            const response = await fetch('/hr_management/mark-attendance/', {
+            const response = await fetch('/hr/mark-attendance/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ const attendanceFlow = {
                 longitude: position.coords.longitude
             };
 
-            const response = await fetch('/hr_management/mark-attendance/', {
+            const response = await fetch('/hr/mark-attendance/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

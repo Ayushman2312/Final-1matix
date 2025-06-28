@@ -197,15 +197,15 @@
                     <span class="text-lg font-semibold ml-2">HR Portal</span>
                 </div>
                 <div class="hidden md:flex space-x-1">
-                    <a href="{% url 'employee_dashboard' %}" class="px-3 py-2 text-sm rounded-md text-white/90 hover:text-white hover:bg-white/10 transition-colors flex items-center">
+                    <a href="/hr/employee/dashboard/" class="px-3 py-2 text-sm rounded-md text-white/90 hover:text-white hover:bg-white/10 transition-colors flex items-center">
                         <i class="fas fa-tachometer-alt mr-1.5 text-xs"></i>
                         Dashboard
                     </a>
-                    <a href="{% url 'employee_profile' %}" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors flex items-center">
+                    <a href="/hr/employee/profile/" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors flex items-center">
                         <i class="fas fa-user-circle mr-1.5 text-xs"></i>
                         Profile
                     </a>
-                    <a href="{% url 'employee_leave' %}" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors flex items-center">
+                    <a href="/hr/employee/leave/" class="px-3 py-2 text-sm rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors flex items-center">
                         <i class="fas fa-calendar-alt mr-1.5 text-xs"></i>
                         Leave
                     </a>
@@ -237,7 +237,7 @@
                         </div>
                     {% endif %}
                 </div>
-                <form action="{% url 'employee_logout' %}" method="post" class="hidden md:block">
+                <form action="/hr/employee/logout/" method="post" class="hidden md:block">
                     {% csrf_token %}
                     <button type="submit" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md text-xs transition-colors flex items-center space-x-2 backdrop-blur-sm shadow-sm">
                         <span>Logout</span>
@@ -267,27 +267,27 @@
                     <p class="text-xs text-slate-500">{{ employee.designation }}</p>
                 </div>
             </div>
-            <a href="{% url 'employee_dashboard' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+            <a href="/hr/employee/dashboard/" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
                 <i class="fas fa-home text-indigo-500 w-5 text-center mr-3"></i>
                 <span class="text-sm">Dashboard</span>
             </a>
-            <a href="{% url 'employee_profile' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+            <a href="/hr/employee/profile/" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
                 <i class="fas fa-user-circle text-indigo-500 w-5 text-center mr-3"></i>
                 <span class="text-sm">My Profile</span>
             </a>
-            <a href="{% url 'employee_leave' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+            <a href="/hr/employee/leave/" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
                 <i class="fas fa-calendar-alt text-indigo-500 w-5 text-center mr-3"></i>
                 <span class="text-sm">Apply Leave</span>
             </a>
-            <a href="{% url 'employee_reimbursement' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+            <a href="/hr/employee/reimbursement/" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
                 <i class="fas fa-receipt text-indigo-500 w-5 text-center mr-3"></i>
                 <span class="text-sm">Reimbursement</span>
             </a>
-            <a href="{% url 'employee_documents' %}" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
+            <a href="/hr/employee/documents/" class="flex items-center py-2.5 px-4 hover:bg-slate-50 rounded-lg transition-colors">
                 <i class="fas fa-file-alt text-indigo-500 w-5 text-center mr-3"></i>
                 <span class="text-sm">Documents</span>
             </a>
-            <form action="{% url 'employee_logout' %}" method="post" class="border-t border-slate-100 pt-2 mt-2">
+            <form action="/hr/employee/logout/" method="post" class="border-t border-slate-100 pt-2 mt-2">
                 {% csrf_token %}
                 <button type="submit" class="w-full flex items-center py-2.5 px-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                     <i class="fas fa-sign-out-alt w-5 text-center mr-3"></i>
@@ -657,7 +657,7 @@
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 md:gap-4">
                 <!-- Mark Attendance -->
-                <a href="{% url 'mark_attendance' %}" id="markAttendanceBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-indigo-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="/hr/employee/mark_attendance/" id="markAttendanceBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-indigo-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center mb-3 shadow-sm group-hover:shadow-md transition-all border border-indigo-100 group-hover:border-indigo-200">
                         <i class="fas fa-qrcode text-indigo-600"></i>
                     </div>
@@ -666,7 +666,7 @@
                 </a>
                 
                 <!-- Apply for Leave -->
-                <a href="{% url 'employee_leave' %}" id="applyLeaveBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-purple-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="/hr/employee/leave/" id="applyLeaveBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-purple-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center mb-3 shadow-sm group-hover:shadow-md transition-all border border-purple-100 group-hover:border-purple-200">
                         <i class="fas fa-calendar-plus text-purple-600"></i>
                     </div>
@@ -675,7 +675,7 @@
                 </a>
                 
                 <!-- Submit Reimbursement -->
-                <a href="{% url 'employee_reimbursement' %}" id="submitReimbursementBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-blue-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="/hr/employee/reimbursement/" id="submitReimbursementBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-blue-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center mb-3 shadow-sm group-hover:shadow-md transition-all border border-blue-100 group-hover:border-blue-200">
                         <i class="fas fa-receipt text-blue-600"></i>
                     </div>
@@ -684,7 +684,7 @@
                 </a>
                 
                 <!-- View Salary Slips -->
-                <a href="{% url 'employee_salary_slips' %}" id="viewSalarySlipsBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-emerald-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
+                <a href="/hr/employee/salary_slips/" id="viewSalarySlipsBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-emerald-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300 {% if not employee.is_approved %}opacity-50 cursor-not-allowed{% endif %}" {% if not employee.is_approved %}disabled title="Account pending approval"{% endif %}>
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center mb-3 shadow-sm group-hover:shadow-md transition-all border border-emerald-100 group-hover:border-emerald-200">
                         <i class="fas fa-file-invoice-dollar text-emerald-600"></i>
                     </div>
@@ -693,7 +693,7 @@
                 </a>
                 
                 <!-- View Profile -->
-                <a href="{% url 'employee_profile' %}" id="viewProfileBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300">
+                <a href="/hr/employee/profile/" id="viewProfileBtn" class="bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-slate-100 hover:shadow-lg hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center group transform hover:-translate-y-1 hover:scale-105 duration-300">
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center mb-3 shadow-sm group-hover:shadow-md transition-all border border-slate-100 group-hover:border-slate-200">
                         <i class="fas fa-user text-slate-600"></i>
                     </div>
@@ -702,7 +702,7 @@
                 </a>
                 
                 <!-- Documents -->
-                <a href="{% url 'employee_documents' %}" id="viewDocumentsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                <a href="/hr/employee/documents/" id="viewDocumentsBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
                     <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-slate-100 transition-colors">
                         <i class="fas fa-file-alt text-slate-600"></i>
                     </div>
@@ -710,7 +710,7 @@
                 </a>
                 
                 <!-- Submit Resignation -->
-                <a href="{% url 'employee_resignation' %}" id="submitResignationBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-red-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
+                <a href="/hr/employee/resignation/" id="submitResignationBtn" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-red-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
                     <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-red-100 transition-colors">
                         <i class="fas fa-door-open text-red-600"></i>
                     </div>
@@ -718,7 +718,7 @@
                 </a>
                 
                 <!-- Logout -->
-                <form action="{% url 'employee_logout' %}" method="post" class="contents">
+                <form action="/hr/employee/logout/" method="post" class="contents">
                     {% csrf_token %}
                     <button type="submit" class="bg-white p-4 rounded-xl border border-slate-100 hover:shadow-md hover:border-slate-200 transition-all flex flex-col items-center justify-center text-center hover-lift group">
                         <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 shadow-sm group-hover:bg-slate-100 transition-colors">
@@ -986,7 +986,7 @@
                         return;
                     }
                     
-                    navigateTo("{% url 'employee_leave' %}", "Navigating to leave application page...");
+                    navigateTo("/hr/employee/leave/", "Navigating to leave application page...");
                 });
             }
             
@@ -1008,7 +1008,7 @@
                         return;
                     }
                     
-                    navigateTo("{% url 'employee_reimbursement' %}", "Navigating to reimbursement submission page...");
+                    navigateTo("/hr/employee/reimbursement/", "Navigating to reimbursement submission page...");
                 });
             }
             
@@ -1030,7 +1030,7 @@
                         return;
                     }
                     
-                    navigateTo("{% url 'employee_salary_slips' %}", "Navigating to salary slips page...");
+                    navigateTo("/hr/employee/salary_slips/", "Navigating to salary slips page...");
                 });
             }
             
@@ -1038,7 +1038,7 @@
             const viewProfileBtn = document.getElementById('viewProfileBtn');
             if (viewProfileBtn) {
                 viewProfileBtn.addEventListener('click', function() {
-                    navigateTo("{% url 'employee_profile' %}", "Navigating to your profile page...");
+                    navigateTo("/hr/employee/profile/", "Navigating to your profile page...");
                 });
             }
             
@@ -1046,7 +1046,7 @@
             const viewDocumentsBtn = document.getElementById('viewDocumentsBtn');
             if (viewDocumentsBtn) {
                 viewDocumentsBtn.addEventListener('click', function() {
-                    navigateTo("{% url 'employee_documents' %}", "Navigating to documents page...");
+                    navigateTo("/hr/employee/documents/", "Navigating to documents page...");
                 });
             }
             
@@ -1067,7 +1067,7 @@
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            navigateTo("{% url 'employee_resignation' %}", "Navigating to resignation submission page...");
+                            navigateTo("/hr/employee/resignation/", "Navigating to resignation submission page...");
                         }
                     });
                 });
@@ -1149,7 +1149,7 @@
                 const action = '{% if today_status == "present" and not checked_out %}check_out{% else %}check_in{% endif %}';
                 
                 // Send attendance request
-                fetch('{% url "api_mark_attendance" %}', {
+                fetch('/hr/employee/mark_attendance/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1264,7 +1264,7 @@
             
             // Function to submit attendance data to server
             function submitAttendance(data) {
-                fetch('{% url "api_mark_attendance" %}', {
+                fetch('/hr/employee/mark_attendance/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

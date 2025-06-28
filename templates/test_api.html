@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="text-3xl font-bold text-yellow-500 mr-2">
+                    <a href="/">BeeSuggest</a>
+                </div>
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">API Tester</span>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="/" class="text-gray-600 hover:text-gray-900 font-medium">Home</a>
+                <a href="#documentation" class="text-gray-600 hover:text-gray-900 font-medium">Documentation</a>
+                <a href="#about" class="text-gray-600 hover:text-gray-900 font-medium">About</a>
+            </nav>
+            <button class="md:hidden focus:outline-none" id="menu-toggle">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="hidden md:hidden bg-white px-4 py-2 shadow-inner" id="mobile-menu">
+            <a href="/" class="block py-2 text-gray-600 hover:text-gray-900 font-medium">Home</a>
+            <a href="#documentation" class="block py-2 text-gray-600 hover:text-gray-900 font-medium">Documentation</a>
+            <a href="#about" class="block py-2 text-gray-600 hover:text-gray-900 font-medium">About</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-6">API Testing Dashboard</h1>
+            <p class="text-lg text-gray-600 mb-8">Test your API endpoints with this interactive dashboard. Enter the endpoint URL, select the method, add headers and body parameters, and see the response in real-time.</p>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Request Builder</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="md:col-span-3">
+                                <label for="endpoint-url" class="block text-sm font-medium text-gray-700 mb-1">Endpoint URL</label>
+                                <input type="text" id="endpoint-url" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://api.example.com/endpoint">
+                            </div>
+                            <div>
+                                <label for="http-method" class="block text-sm font-medium text-gray-700 mb-1">Method</label>
+                                <select id="http-method" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                    <option value="PATCH">PATCH</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Headers</h3>
+                                <button id="add-header" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm font-medium flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Header
+                                </button>
+                            </div>
+                            <div id="headers-container" class="space-y-3">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <input type="text" class="header-key w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Header Name">
+                                    <input type="text" class="header-value w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Header Value">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-6" id="body-section">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Request Body</h3>
+                                <div class="flex space-x-2">
+                                    <button id="body-type-json" class="px-3 py-1 bg-blue-500 text-white rounded-md text-sm font-medium">JSON</button>
+                                    <button id="body-type-form" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm font-medium">Form Data</button>
+                                </div>
+                            </div>
+                            <div id="json-body-container">
+                                <textarea id="json-body" class="w-full h-40 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono" placeholder='{"key": "value"}'></textarea>
+                            </div>
+                            <div id="form-body-container" class="hidden space-y-3">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <input type="text" class="form-key w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Parameter Name">
+                                    <input type="text" class="form-value w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Parameter Value">
+                                </div>
+                                <button id="add-form-param" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm font-medium flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Parameter
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button id="send-request" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition duration-200 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                </svg>
+                                Send Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Response</h2>
+                        <div class="flex items-center space-x-2">
+                            <span id="status-code" class="hidden px-3 py-1 rounded-full text-sm font-semibold"></span>
+                            <span id="response-time" class="hidden text-sm text-gray-500"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between">
+                            <div class="flex space-x-4">
+                                <button id="response-tab-body" class="px-3 py-1 text-sm font-medium text-blue-600 border-b-2 border-blue-600">Body</button>
+                                <button id="response-tab-headers" class="px-3 py-1 text-sm font-medium text-gray-500 hover:text-gray-700">Headers</button>
+                            </div>
+                            <button id="copy-response" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-xs font-medium flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                Copy
+                            </button>
+                        </div>
+                        <div id="response-body-container" class="overflow-auto max-h-96">
+                            <pre id="response-body" class="p-4 text-sm font-mono text-gray-800 whitespace-pre-wrap">No response yet. Send a request to see the results.</pre>
+                        </div>
+                        <div id="response-headers-container" class="hidden overflow-auto max-h-96">
+                            <pre id="response-headers" class="p-4 text-sm font-mono text-gray-800 whitespace-pre-wrap">No response headers yet.</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="documentation" class="bg-white rounded-xl shadow-lg overflow-hidden mb-10">
+                <div class="p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">API Documentation</h2>
+                    <div class="prose max-w-none">
+                        <p>This API testing tool allows you to test various endpoints. Here are some example endpoints you can try:</p>
+                        <ul class="space-y-2 mt-4">
+                            <li class="p-3 bg-gray-50 rounded-lg">
+                                <div class="font-semibold">Product Search</div>
+                                <div class="text-sm text-gray-600 mt-1">GET https://1matrix.io/beesuggest/api/products/search/?q=keyword</div>
+                                <button class="use-example mt-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-md text-xs font-medium">Use Example</button>
+                            </li>
+                            <li class="p-3 bg-gray-50 rounded-lg">
+                                <div class="font-semibold">Product Details</div>
+                                <div class="text-sm text-gray-600 mt-1">GET https://1matrix.io/beesuggest/api/products/{uuid}/</div>
+                                <button class="use-example mt-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-md text-xs font-medium">Use Example</button>
+                            </li>
+                            <li class="p-3 bg-gray-50 rounded-lg">
+                                <div class="font-semibold">Vendor Profile</div>
+                                <div class="text-sm text-gray-600 mt-1">GET https://1matrix.io/beesuggest/api/vendors/{slug}/</div>
+                                <button class="use-example mt-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-md text-xs font-medium">Use Example</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold">About BeeSuggest API Tester</h3>
+                    <p class="mt-2 text-gray-400">A powerful tool for testing and debugging API endpoints. Built with modern web technologies to provide a seamless experience.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold">Quick Links</h3>
+                    <ul class="mt-2 space-y-2">
+                        <li><a href="/" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#documentation" class="text-gray-400 hover:text-white">Documentation</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white">About</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold">Follow Us</h3>
+                    <div class="flex mt-2 space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-gray-500">
+                &copy; 2024 BeeSuggest. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Body type toggle
+        document.getElementById('body-type-json').addEventListener('click', function() {
+            document.getElementById('json-body-container').classList.remove('hidden');
+            document.getElementById('form-body-container').classList.add('hidden');
+            document.getElementById('body-type-json').classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-800');
+            document.getElementById('body-type-json').classList.add('bg-blue-500', 'text-white');
+            document.getElementById('body-type-form').classList.remove('bg-blue-500', 'text-white');
+            document.getElementById('body-type-form').classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-800');
+        });
+
+        document.getElementById('body-type-form').addEventListener('click', function() {
+            document.getElementById('json-body-container').classList.add('hidden');
+            document.getElementById('form-body-container').classList.remove('hidden');
+            document.getElementById('body-type-form').classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-800');
+            document.getElementById('body-type-form').classList.add('bg-blue-500', 'text-white');
+            document.getElementById('body-type-json').classList.remove('bg-blue-500', 'text-white');
+            document.getElementById('body-type-json').classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-800');
+        });
+
+        // Response tabs toggle
+        document.getElementById('response-tab-body').addEventListener('click', function() {
+            document.getElementById('response-body-container').classList.remove('hidden');
+            document.getElementById('response-headers-container').classList.add('hidden');
+            document.getElementById('response-tab-body').classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('response-tab-body').classList.remove('text-gray-500', 'hover:text-gray-700');
+            document.getElementById('response-tab-headers').classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('response-tab-headers').classList.add('text-gray-500', 'hover:text-gray-700');
+        });
+
+        document.getElementById('response-tab-headers').addEventListener('click', function() {
+            document.getElementById('response-body-container').classList.add('hidden');
+            document.getElementById('response-headers-container').classList.remove('hidden');
+            document.getElementById('response-tab-headers').classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('response-tab-headers').classList.remove('text-gray-500', 'hover:text-gray-700');
+            document.getElementById('response-tab-body').classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+            document.getElementById('response-tab-body').classList.add('text-gray-500', 'hover:text-gray-700');
+        });
+
+        // Add header button
+        document.getElementById('add-header').addEventListener('click', function() {
+            const headerContainer = document.getElementById('headers-container');
+            const headerRow = document.createElement('div');
+            headerRow.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+            headerRow.innerHTML = `
+                <input type="text" class="header-key w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Header Name">
+                <div class="flex">
+                    <input type="text" class="header-value w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Header Value">
+                    <button class="remove-header px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-r-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            headerContainer.appendChild(headerRow);
+
+            // Add event listener to the remove button
+            headerRow.querySelector('.remove-header').addEventListener('click', function() {
+                headerContainer.removeChild(headerRow);
+            });
+        });
+
+        // Add form parameter button
+        document.getElementById('add-form-param').addEventListener('click', function() {
+            const formContainer = document.getElementById('form-body-container');
+            const formRow = document.createElement('div');
+            formRow.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+            formRow.innerHTML = `
+                <input type="text" class="form-key w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Parameter Name">
+                <div class="flex">
+                    <input type="text" class="form-value w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Parameter Value">
+                    <button class="remove-param px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-r-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            formContainer.insertBefore(formRow, document.getElementById('add-form-param'));
+
+            // Add event listener to the remove button
+            formRow.querySelector('.remove-param').addEventListener('click', function() {
+                formContainer.removeChild(formRow);
+            });
+        });
+
+        // Copy response button
+        document.getElementById('copy-response').addEventListener('click', function() {
+            const responseBody = document.getElementById('response-body').innerText;
+            navigator.clipboard.writeText(responseBody).then(function() {
+                const copyBtn = document.getElementById('copy-response');
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = `
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Copied!
+                `;
+                setTimeout(function() {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        });
+
+        // Example buttons
+        document.querySelectorAll('.use-example').forEach(button => {
+            button.addEventListener('click', function() {
+                const exampleUrl = this.previousElementSibling.textContent;
+                document.getElementById('endpoint-url').value = exampleUrl;
+                document.getElementById('http-method').value = 'GET';
+            });
+        });
+
+        // Send request button
+        document.getElementById('send-request').addEventListener('click', async function() {
+            const url = document.getElementById('endpoint-url').value;
+            if (!url) {
+                alert('Please enter an endpoint URL');
+                return;
+            }
+
+            const method = document.getElementById('http-method').value;
+            const headers = {};
+            
+            // Get headers
+            document.querySelectorAll('.header-key').forEach((keyInput, index) => {
+                const key = keyInput.value.trim();
+                if (key) {
+                    const valueInput = document.querySelectorAll('.header-value')[index];
+                    headers[key] = valueInput.value.trim();
+                }
+            });
+
+            // Prepare request options
+            const options = {
+                method: method,
+                headers: headers,
+                mode: 'cors', // Enable CORS for cross-origin requests
+                cache: 'no-cache', // Ensure fresh response
+                credentials: 'same-origin', // Include credentials only for same-origin requests
+                redirect: 'follow', // Follow redirects automatically
+                referrerPolicy: 'no-referrer-when-downgrade' // Send referrer for HTTPS to HTTP
+            };
+
+            // Add body if not GET or HEAD
+            if (method !== 'GET' && method !== 'HEAD') {
+                if (!document.getElementById('json-body-container').classList.contains('hidden')) {
+                    // JSON body
+                    try {
+                        const jsonBody = document.getElementById('json-body').value;
+                        if (jsonBody.trim()) {
+                            const parsedJson = JSON.parse(jsonBody); // Validate JSON
+                            options.body = jsonBody;
+                            options.headers['Content-Type'] = 'application/json';
+                        }
+                    } catch (e) {
+                        alert('Invalid JSON in request body: ' + e.message);
+                        return;
+                    }
+                } else {
+                    // Form data
+                    const formData = new FormData();
+                    let hasFormData = false;
+                    
+                    document.querySelectorAll('.form-key').forEach((keyInput, index) => {
+                        const key = keyInput.value.trim();
+                        if (key) {
+                            const valueInput = document.querySelectorAll('.form-value')[index];
+                            formData.append(key, valueInput.value.trim());
+                            hasFormData = true;
+                        }
+                    });
+                    
+                    if (hasFormData) {
+                        options.body = formData;
+                    }
+                }
+            }
+
+            // Update UI to show loading state
+            const sendButton = document.getElementById('send-request');
+            const originalButtonContent = sendButton.innerHTML;
+            sendButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Sending...
+            `;
+            sendButton.disabled = true;
+
+            // Reset response area
+            document.getElementById('response-body').innerText = 'Fetching response...';
+            document.getElementById('response-headers').innerText = '';
+            document.getElementById('status-code').classList.add('hidden');
+            document.getElementById('response-time').classList.add('hidden');
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(url, options);
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                // Display status code
+                const statusCode = document.getElementById('status-code');
+                statusCode.innerText = `${response.status} ${response.statusText}`;
+                statusCode.classList.remove('hidden');
+                
+                if (response.ok) {
+                    statusCode.classList.add('bg-green-100', 'text-green-800');
+                    statusCode.classList.remove('bg-red-100', 'text-red-800');
+                } else {
+                    statusCode.classList.add('bg-red-100', 'text-red-800');
+                    statusCode.classList.remove('bg-green-100', 'text-green-800');
+                }
+                
+                // Display response time
+                const responseTimeElement = document.getElementById('response-time');
+                responseTimeElement.innerText = `${responseTime}ms`;
+                responseTimeElement.classList.remove('hidden');
+                
+                // Display response headers
+                const headersText = Array.from(response.headers.entries())
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join('\n');
+                document.getElementById('response-headers').innerText = headersText || 'No headers received';
+                
+                // Display response body
+                try {
+                    const responseText = await response.text();
+                    try {
+                        // Try to parse as JSON for pretty printing
+                        const json = JSON.parse(responseText);
+                        document.getElementById('response-body').innerText = JSON.stringify(json, null, 2);
+                    } catch (e) {
+                        // Not JSON, display as text
+                        document.getElementById('response-body').innerText = responseText || 'Empty response body';
+                    }
+                } catch (e) {
+                    document.getElementById('response-body').innerText = 'Error reading response body: ' + e.message;
+                }
+            } catch (error) {
+                const statusCode = document.getElementById('status-code');
+                statusCode.innerText = 'Network Error';
+                statusCode.classList.remove('hidden', 'bg-green-100', 'text-green-800');
+                statusCode.classList.add('bg-red-100', 'text-red-800');
+
+                document.getElementById('response-body').innerText = 'An error occurred while sending the request:\n' + error.message;
+                document.getElementById('response-headers').innerText = 'No headers received due to the error.';
+                document.getElementById('response-time').classList.add('hidden');
+            } finally {
+                sendButton.innerHTML = originalButtonContent;
+                sendButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
+

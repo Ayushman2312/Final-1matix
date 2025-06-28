@@ -1,8 +1,9 @@
 from django.urls import path
-
 from employee.views import EmployeeReadView
 from .views import *
 from django.views.decorators.csrf import csrf_exempt
+
+app_name = 'hr'
 
 urlpatterns = [
     path('company/', CompanyView.as_view(), name='company'),
@@ -12,6 +13,8 @@ urlpatterns = [
     path('qr-code/', csrf_exempt(QRCodeView.as_view()), name='qr-code'),
     path('get-qr-code/', QRCodeView.as_view(), name='get-qr-code'),
     path('generate-qr-code/', QRCodeView.as_view(), name='generate-qr-code'),
+    path('delete-company/<uuid:company_id>/', csrf_exempt(DeleteCompanyView.as_view()), name='delete-company'),
+    path('edit-company/<uuid:company_id>/', csrf_exempt(EditCompanyView.as_view()), name='edit-company'),
     path('qr-code-details/<uuid:qr_code_id>/', QRCodeDetailsView.as_view(), name='qr-code-details'),
     path('delete-qr-code/<uuid:qr_code_id>/', csrf_exempt(DeleteQRCodeView.as_view()), name='delete-qr-code'),
     path('mark-attendance/', EmployeeAttendanceView.as_view(), name='mark_attendance'),
@@ -25,7 +28,9 @@ urlpatterns = [
     path('onboarding/send-invitation/', OnboardingInvitationView.as_view(), name='send-onboarding-invitation'),
     path('onboarding/form/<str:token>/', OnboardingView.as_view(), name='onboarding-form'),
     path('onboarding/view-offer/<str:token>/', ViewOfferView.as_view(), name='view-offer'),
-    path('onboarding/offer-response/<str:invitation_id>/', OfferResponseView.as_view(), name='offer-response'),
+    path('onboarding/offer-response/<uuid:invitation_id>/', OfferResponseView.as_view(), name='offer-response'),
+    path('onboarding/send-otp/<uuid:invitation_id>/', SendOfferAcceptanceOTPView.as_view(), name='send-offer-otp'),
+    path('onboarding/verify-otp/<uuid:invitation_id>/', VerifyOfferAcceptanceOTPView.as_view(), name='verify-offer-otp'),
     path('onboarding/complete/<uuid:invitation_id>/', OnboardingInvitationStatusView.as_view(), name='complete-onboarding'),
     path('onboarding/reject/<uuid:invitation_id>/', OnboardingInvitationStatusView.as_view(), name='reject-onboarding'),
     path('onboarding/invitations/', OnboardingInvitationsListView.as_view(), name='invitations-list'),
@@ -92,5 +97,22 @@ urlpatterns = [
     path('training-materials/<uuid:template_id>/preview/', TrainingMaterialPreviewView.as_view(), name='training_material_preview'),
     path('training-materials/<uuid:template_id>/update/', TrainingMaterialUpdateView.as_view(), name='training_material_update'),
     path('training-materials/<uuid:template_id>/delete/', TrainingMaterialDeleteView.as_view(), name='training_material_delete'),
+    path('salary/', SalaryView.as_view(), name='salary'),
+    path('salary/export-incentives/', ExportIncentiveSheetView.as_view(), name='export_incentives'),
+    path('salary/export-deductions/', ExportDeductionSheetView.as_view(), name='export_deductions'),
+    path('configure/', ConfigureView.as_view(), name='configure'),
+    path('configure/<str:config_type>/', HRConfigurationView.as_view(), name='hr_configuration'),
+    path('configure/<str:config_type>/<str:pk>/delete/', HRConfigurationDeleteView.as_view(), name='hr_configuration_delete'),
+    path('configure/attendance-rule/<int:rule_id>/', ConfigureAttendanceRuleView.as_view(), name='configure_attendance_rule'),
+    
+    # Leave Group URLs
+    path('leave-group/create/', LeaveGroupCreateView.as_view(), name='leave_group_create'),
+    path('leave-group/<uuid:group_id>/update/', LeaveGroupUpdateView.as_view(), name='leave_group_update'),
+    path('leave-group/<uuid:group_id>/delete/', LeaveGroupDeleteView.as_view(), name='leave_group_delete'),
+
+    # Leave Group Rule URLs
+    path('leave-group/<uuid:group_id>/rule/create/', LeaveGroupRuleCreateView.as_view(), name='leave_group_rule_create'),
+    path('leave-group/rule/<uuid:rule_id>/update/', LeaveGroupRuleUpdateView.as_view(), name='leave_group_rule_update'),
+    path('leave-group/rule/<uuid:rule_id>/delete/', LeaveGroupRuleDeleteView.as_view(), name='leave_group_rule_delete'),
 ]
 

@@ -715,16 +715,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     label: keyword,
                     data: chartData.values,
-                    borderColor: 'rgba(39, 255, 180, 1)', // bright teal (#27FFB4)
+                    borderColor: '#7B3DF3', // bright teal (#27FFB4)
                     backgroundColor: primaryGradient,
                     borderWidth: 3,
                     pointRadius: 2,
                     pointHoverRadius: 6,
-                    pointBackgroundColor: 'rgba(39, 255, 180, 1)',
+                    pointBackgroundColor: '#7B3DF3',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
                     pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(39, 255, 180, 1)',
+                    pointHoverBorderColor: '#7B3DF3',
                     tension: 0.4,
                     fill: true
                 }
@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets.push({
                 label: 'Trend Line',
                 data: trendLineData,
-                borderColor: 'rgba(255, 102, 204, 0.8)', // pink
+                borderColor: '#7B3DF3',
                 borderWidth: 2,
                 pointRadius: 0,
                 pointHoverRadius: 0,

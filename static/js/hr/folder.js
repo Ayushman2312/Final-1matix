@@ -14,7 +14,7 @@ document.getElementById('createDataForm').addEventListener('submit', async funct
     const folderId = document.querySelector('input[name="folder_id"]').value;
 
     try {
-        const response = await fetch(`/hr_management/create-data/${folderId}/`, {
+        const response = await fetch(`/hr/create-data/${folderId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ async function deleteData(title) {
     }
 
     try {
-        const response = await fetch(`/hr_management/delete-data/${folderId}/`, {
+        const response = await fetch(`/hr/delete-data/${folderId}/`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ document.getElementById('editDataForm').addEventListener('submit', async functio
     const newContent = document.getElementById('editDataContent').value;
 
     try {
-        const response = await fetch(`/hr_management/update-data/${folderId}/`, {
+        const response = await fetch(`/hr/update-data/${folderId}/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

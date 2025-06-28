@@ -1726,7 +1726,7 @@
             const token = currentPath.split('/').filter(segment => segment).pop();
             
             // Submit form data to correct endpoint using the token
-            fetch(`/hr_management/onboarding/form/${token}/`, {
+            fetch(`/hr/onboarding/form/${token}/`, {
                 method: 'POST',
                 body: formData,
                 headers: {

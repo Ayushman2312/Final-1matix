@@ -6,6 +6,8 @@ from django.core.files.base import ContentFile
 import qrcode
 import json
 from django.views import View
+from User.models import *
+from User.models import UserSession
 import json
 import uuid
 from django.utils import timezone
@@ -13,7 +15,6 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 import random
 from datetime import datetime, timedelta
-from geopy.distance import geodesic
 import base64
 from django.shortcuts import redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -30,11 +31,14 @@ import string
 from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
-from django.db import models
 from django.db.models.signals import pre_save
-from django.dispatch import receiver
 import math
-from django.db.models import Q
+from xhtml2pdf import pisa
+from django.template.loader import get_template, render_to_string
+from django.core.mail import EmailMessage
+import openpyxl
+from openpyxl.utils import get_column_letter
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +54,36 @@ def class_employee_login_required(cls):
     cls.dispatch = new_dispatch
     return cls
 
+def get_user_from_session(request):
+    """
+    Get the user from the session.
+    
+    Args:
+        request: The HTTP request object containing the session
+        
+    Returns:
+        User object if authenticated, None otherwise
+    """
+    user_session_id = request.session.get('user_session_id')
+    if not user_session_id:
+        return None
+    
+    try:
+        user_session = UserSession.objects.get(id=user_session_id)
+        user = user_session.user
+        user_id = user.user_id
+        
+        try:
+            return User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            logger.error(f"User with ID {user_id} does not exist")
+            return None
+            
+    except UserSession.DoesNotExist:
+        logger.warning("Invalid session in get_user_from_session")
+        return None
+
+
 # Create your views here.
 class CompanyView(TemplateView):
     template_name = 'hr_management/company.html'
@@ -57,24 +91,13 @@ class CompanyView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get user ID from session
-        user_id = self.request.session.get('user_id')
-        user = None
+        user = get_user_from_session(self.request)
+        print(user)
         
-        if user_id:
-            from User.models import User
-            try:
-                user = User.objects.get(user_id=user_id)
-                # Filter companies by user
-                context['companies'] = Company.objects.filter(user=user)
-                # Filter QR codes by user
-                context['qr_codes'] = QRCode.objects.filter(user=user)
-            except User.DoesNotExist:
-                # If user doesn't exist, show no data
-                context['companies'] = Company.objects.none()
-                context['qr_codes'] = QRCode.objects.none()
+        if user:
+            context['companies'] = Company.objects.filter(user=user)
+            context['qr_codes'] = QRCode.objects.filter(user=user)
         else:
-            # If no user is logged in, show all data (or none if you prefer)
             context['companies'] = Company.objects.all()
             context['qr_codes'] = QRCode.objects.all()
             
@@ -86,39 +109,32 @@ class CreationView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # Get user ID from session
-        user_id = self.request.session.get('user_id')
         user = None
-        
-        if user_id:
-            from User.models import User
+        user_session_id = self.request.session.get('user_session_id')
+        if user_session_id:
             try:
-                user = User.objects.get(user_id=user_id)
-                # Filter data by user
-                context['departments'] = Department.objects.filter(user=user)
-                context['designations'] = Designation.objects.filter(user=user)
-                context['tandcs'] = TandC.objects.filter(user=user)
-                context['roles'] = Role.objects.filter(user=user)
-                
-                # Get folders
-                folders = Folder.objects.filter(user=user)
-                context['folder_list'] = folders
-                
-                # Debug information
-                print(f"User {user.user_id} has {folders.count()} folders")
-                for folder in folders:
-                    print(f"Folder: {folder.folder_id}, {folder.name}")
-                
-                context['offer_letters'] = OfferLetter.objects.filter(user=user)
-            except User.DoesNotExist:
-                # If user doesn't exist, show no data
-                context['departments'] = Department.objects.none()
-                context['designations'] = Designation.objects.none()
-                context['tandcs'] = TandC.objects.none()
-                context['roles'] = Role.objects.none()
-                context['folder_list'] = Folder.objects.none()
-                context['offer_letters'] = OfferLetter.objects.none()
-                print("User not found, showing no folders")
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                user = None
+        
+        if user:
+            # Filter data by user
+            context['departments'] = Department.objects.filter(user=user)
+            context['designations'] = Designation.objects.filter(user=user)
+            context['tandcs'] = TandC.objects.filter(user=user)
+            context['roles'] = Role.objects.filter(user=user)
+            
+            # Get folders
+            folders = Folder.objects.filter(user=user)
+            context['folder_list'] = folders
+            
+            # Debug information
+            print(f"User {user.user_id} has {folders.count()} folders")
+            for folder in folders:
+                print(f"Folder: {folder.folder_id}, {folder.name}")
+            
+            context['offer_letters'] = OfferLetter.objects.filter(user=user)
         else:
             # If no user is logged in, get all folders
             print("No user logged in, showing all folders")
@@ -139,14 +155,14 @@ class CreationView(TemplateView):
 
     def post(self, request, *args, **kwargs):
         try:
-            # Get user ID from session
-            user_id = request.session.get('user_id')
             user = None
-            if user_id:
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
                 from User.models import User
                 try:
-                    user = User.objects.get(user_id=user_id)
-                except User.DoesNotExist:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
                     pass
             
             # Handle department creation
@@ -202,25 +218,37 @@ class OnboardingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['companies'] = Company.objects.all()
-        context['employees'] = Employee.objects.all()
-        context['offer_letters'] = OfferLetter.objects.all()
-        context['roles'] = Role.objects.all()
-        context['departments'] = Department.objects.all()
-        context['designations'] = Designation.objects.all()
-        context['tandcs'] = TandC.objects.all()
-        # context['policies'] = Policy.objects.all()
-        context['hiring_agreements'] = HiringAgreement.objects.all()
-        context['handbooks'] = Handbook.objects.all()
-        context['training_materials'] = TrainingMaterial.objects.all()
+        user = get_user_from_session(self.request)
+        
+        user_companies = Company.objects.filter(user=user)
+        context['companies'] = user_companies
+
+        context['employees'] = Employee.objects.filter(user=user)
+        context['offer_letters'] = OfferLetter.objects.filter(user=user)
+        context['roles'] = Role.objects.filter(user=user)
+        context['departments'] = Department.objects.filter(user=user)
+        context['designations'] = Designation.objects.filter(user=user)
+        context['tandcs'] = TandC.objects.filter(user=user)
+        context['hiring_agreements'] = HiringAgreement.objects.filter(user=user)
+        context['handbooks'] = Handbook.objects.filter(user=user)
+        context['training_materials'] = TrainingMaterial.objects.filter(user=user)
+        
+        # Add leave types, deductions and allowances for the modal
+        context['leave_types'] = LeaveType.objects.filter(is_active=True, user=user)
+        context['deductions'] = Deduction.objects.filter(is_active=True, user=user)
+        context['allowances'] = Allowance.objects.filter(is_active=True, user=user)
+        context['leave_groups'] = LeaveGroup.objects.filter(user=user)
+        context['payout_types'] = PayoutType.objects.filter(user=user)
+        
         # If token is in kwargs, this is an onboarding form request
         token = kwargs.get('token')
         if token:
             # Try to find invitation by form link
-            form_link = f"{self.request.scheme}://{self.request.get_host()}/hr_management/onboarding/form/{token}/"
+            form_link = f"{self.request.scheme}://{self.request.get_host()}/hr/onboarding/form/{token}/"
             try:
                 # Look for invitation with matching token in form_link
-                invitations = OnboardingInvitation.objects.filter(form_link__contains=token)
+                # Filter invitations by the user's companies and the token
+                invitations = OnboardingInvitation.objects.filter(form_link__contains=token, company__in=user_companies)
                 if invitations.exists():
                     invitation = invitations.first()
                     context['invitation'] = invitation
@@ -232,7 +260,7 @@ class OnboardingView(TemplateView):
                         # Set template for expired form message
                         self.template_name = 'hr_management/onboarding_form_expired.html'
                     # Check if the invitation has been completed (accepted)
-                    elif invitation.status == 'completed':
+                    elif invitation.status in ['accepted', 'completed']:
                         context['is_onboarding_form'] = True
                         # If using a different template for the form, set it here
                         self.template_name = 'hr_management/onboarding_form.html'
@@ -243,8 +271,8 @@ class OnboardingView(TemplateView):
             except Exception as e:
                 logger.error(f"Error retrieving onboarding invitation: {str(e)}", exc_info=True)
         
-        # Get all invitations for the "See Invites" tab
-        context['invitations'] = OnboardingInvitation.objects.all().order_by('-created_at')
+        # Get all invitations for the "See Invites" tab, filtered by the user's companies
+        context['invitations'] = OnboardingInvitation.objects.filter(company__in=user_companies).order_by('-created_at')
         
         return context
         
@@ -254,7 +282,7 @@ class OnboardingView(TemplateView):
         # Check if we need to redirect to the offer view page
         if context.get('redirect_to_offer'):
             token = context.get('offer_token')
-            return redirect(f"/hr_management/onboarding/view-offer/{token}/")
+            return redirect(f"/hr/onboarding/view-offer/{token}/")
             
         return self.render_to_response(context)
     
@@ -359,7 +387,10 @@ class OnboardingView(TemplateView):
                 employee_email=invitation.email,
                 defaults=employee_data
             )
-            
+            if created:
+                logger.info(f"New employee created: {employee}")
+            else:
+                logger.info(f"Existing employee updated: {employee}")
             # Handle file uploads
             if request.FILES:
                 try:
@@ -434,7 +465,7 @@ class OnboardingView(TemplateView):
             'department': invitation.department.name if invitation.department else 'Not specified',
             'designation': invitation.designation.name if invitation.designation else 'Not specified',
             'role': invitation.role.name if invitation.role else 'Not specified',
-            'login_url': f"{site_url}/hr_management/employee/login/",
+            'login_url': f"{site_url}/hr/employee/login/",
             'username': invitation.email,  # Email is used as username
             'password': password,
             'current_year': timezone.now().year,
@@ -657,6 +688,32 @@ class EmployeeStatusToggleAPIView(View):
                 'success': False,
                 'message': f'Error processing request: {str(e)}'
             }, status=500)
+        
+
+class DeleteCompanyView(View):
+    def post(self, request, company_id, *args, **kwargs):
+        try:
+            company = Company.objects.get(company_id=company_id)
+            company.delete()
+            return JsonResponse({'success': True, 'message': 'Company deleted successfully'})
+        except Company.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Company not found'}, status=404)
+        except Exception as e:
+            logger.error(f"Error deleting company: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': f'Error processing request: {str(e)}'}, status=500)
+        
+class EditCompanyView(View):
+    def post(self, request, company_id, *args, **kwargs):
+        try:
+            company = Company.objects.get(company_id=company_id)
+            company.update(**request.POST)
+            return JsonResponse({'success': True, 'message': 'Company updated successfully'})
+        except Company.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Company not found'}, status=404)
+        except Exception as e:
+            logger.error(f"Error updating company: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': f'Error processing request: {str(e)}'}, status=500)
+
 
 class CreateCompanyView(TemplateView):
     template_name = 'hr_management/create_hr_company.html'
@@ -670,14 +727,15 @@ class CreateCompanyView(TemplateView):
         logger.debug("Processing company creation request")
         try:
             # Get user ID from session
-            user_id = request.session.get('user_id')
-            user = None
-            if user_id:
-                from User.models import User
-                try:
-                    user = User.objects.get(user_id=user_id)
-                except User.DoesNotExist:
-                    pass
+            user_session_id = request.session.get('user_session_id')
+            if not user_session_id:
+                return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+            
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
                     
             # Get form data
             company_name = request.POST.get('company_name')
@@ -705,13 +763,13 @@ class CreateCompanyView(TemplateView):
                 company_address=company_address,
                 company_identification_number=company_identification_number,
                 company_state=company_state,
-                user=user
+                user=user,
             )
 
-            logger.info(f"Company '{company_name}' created successfully")
+            logger.info(f"Company '{company_name}' created successfully for user {user}")
             return JsonResponse({
                 'success': True,
-                'redirect_url': '/hr_management/company/'
+                'redirect_url': '/hr/company/'
             })
 
         except Exception as e:
@@ -723,14 +781,13 @@ class CreateCompanyView(TemplateView):
 class QRCodeView(View):
     def post(self, request):
         try:
-            # Get user ID from session
-            user_id = request.session.get('user_id')
             user = None
-            if user_id:
-                from User.models import User
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
                 try:
-                    user = User.objects.get(user_id=user_id)
-                except User.DoesNotExist:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
                     pass
             
             # Determine if we're getting data from JSON or form submission
@@ -871,7 +928,7 @@ class QRCodeView(View):
 
                 # Create QR code data with attendance URL
                 base_url = request.build_absolute_uri('/').rstrip('/')
-                attendance_url = f"{base_url}/hr_management/attend/{qr_code.qr_code_id}/{secret_key}/"
+                attendance_url = f"{base_url}/hr/attend/{qr_code.qr_code_id}/{secret_key}/"
                 
                 qr_data = {
                     'qr_code_id': str(qr_code.qr_code_id),
@@ -919,11 +976,7 @@ class QRCodeView(View):
                     'message': 'No valid QR codes could be generated. Please check your location data.'
                 }, status=400)
 
-            return JsonResponse({
-                'success': True,
-                'message': 'QR Codes generated successfully',
-                'qr_codes': created_qr_codes
-            })
+            return redirect('/hr/company/')
 
         except Company.DoesNotExist:
             return JsonResponse({
@@ -1049,7 +1102,7 @@ class QRAttendanceRedirectView(View):
             
             # Encode parameters in the URL
             query_params = '&'.join([f"{key}={value}" for key, value in params.items()])
-            redirect_url = f"/hr_management/mark-attendance/?{query_params}&auto_mark=true"
+            redirect_url = f"/hr/mark-attendance/?{query_params}&auto_mark=true"
             
             # Redirect to the mark attendance page with parameters
             return redirect(redirect_url)
@@ -1523,14 +1576,14 @@ class CreateFolderView(View):
 
             try:
                 # Get user from session
-                user_id = request.session.get('user_id')
                 user = None
-                if user_id:
-                    from User.models import User
+                user_session_id = request.session.get('user_session_id')
+                if user_session_id:
                     try:
-                        user = User.objects.get(user_id=user_id)
+                        user_session = UserSession.objects.get(id=user_session_id)
+                        user = user_session.user
                         print(f"Found user: {user.user_id}")
-                    except User.DoesNotExist:
+                    except UserSession.DoesNotExist:
                         print("User not found")
                         pass
                 else:
@@ -1542,7 +1595,8 @@ class CreateFolderView(View):
                     name=name,
                     description=description,
                     logo=logo_path,
-                    created_at=timezone.now()
+                    created_at=timezone.now(),
+                    user=get_user_from_session(self.request)
                 )
                 
                 # Associate with user if available
@@ -1893,7 +1947,7 @@ class OnboardingInvitationView(View):
             
             # Generate a unique form link with token
             token = str(uuid.uuid4())
-            form_link = f"{request.scheme}://{request.get_host()}/hr_management/onboarding/form/{token}/"
+            form_link = f"{request.scheme}://{request.get_host()}/hr/onboarding/form/{token}/"
             
             # Get additional documents if provided
             additional_documents_json = request.POST.get('additional_documents')
@@ -1920,7 +1974,8 @@ class OnboardingInvitationView(View):
                 form_link=form_link,
                 policies=policies,
                 additional_documents=additional_documents,
-                photo=photo
+                photo=photo,
+                user=get_user_from_session(self.request)
             )
             
             # Log successful creation with document details
@@ -1978,7 +2033,7 @@ class OnboardingInvitationView(View):
             token = invitation.form_link.split('/')[-2]
             
             # Create view offer link
-            view_offer_link = f"{site_url}/hr_management/onboarding/view-offer/{token}/"
+            view_offer_link = f"{site_url}/hr/onboarding/view-offer/{token}/"
             
             # Prepare context data for the email template
             context = {
@@ -1988,7 +2043,7 @@ class OnboardingInvitationView(View):
                 'department': invitation.department.name if invitation.department else 'Not specified',
                 'designation': invitation.designation.name if invitation.designation else 'Not specified',
                 'role': invitation.role.name if invitation.role else 'Not specified',
-                'login_url': f"{site_url}/hr_management/employee/login/",
+                'login_url': f"{site_url}/hr/employee/login/",
                 'form_link': invitation.form_link,
                 'view_offer_link': view_offer_link,
                 'username': invitation.email,  # Email is used as username
@@ -2026,16 +2081,76 @@ class OnboardingInvitationView(View):
                 
                 logger.info(f"Sending email to {invitation.email} with subject '{subject}' from {from_email}")
                 
-                send_mail(
-                    subject=subject,
-                    message=text_content,
-                    from_email=from_email,
-                    recipient_list=recipient_list,
-                    html_message=html_content,
-                    fail_silently=False,
+                email = EmailMessage(
+                    subject,
+                    html_content,
+                    from_email,
+                    recipient_list,
                 )
+                email.content_subtype = "html"  # Main content is HTML
                 
-                logger.info(f"Onboarding invitation email sent successfully to {invitation.email}")
+                # Attach offer letter
+                if invitation.offer_letter_template and invitation.offer_letter_template.content:
+                    pdf_content = generate_pdf_from_html(invitation.offer_letter_template.content)
+                    if pdf_content:
+                        email.attach(f"{invitation.offer_letter_template.name}.pdf", pdf_content, 'application/pdf')
+
+                # Attach hiring agreement
+                if invitation.hiring_agreement_template and invitation.hiring_agreement_template.content:
+                    pdf_content = generate_pdf_from_html(invitation.hiring_agreement_template.content)
+                    if pdf_content:
+                        email.attach(f"{invitation.hiring_agreement_template.name}.pdf", pdf_content, 'application/pdf')
+
+                # Attach handbook
+                if invitation.handbook_template and invitation.handbook_template.content:
+                    pdf_content = generate_pdf_from_html(invitation.handbook_template.content)
+                    if pdf_content:
+                        email.attach(f"{invitation.handbook_template.name}.pdf", pdf_content, 'application/pdf')
+
+                # Attach HR policies
+                if invitation.hr_policies_template and invitation.hr_policies_template.description:
+                    pdf_content = generate_pdf_from_html(invitation.hr_policies_template.description)
+                    if pdf_content:
+                        email.attach(f"{invitation.hr_policies_template.name}.pdf", pdf_content, 'application/pdf')
+
+                # Attach training material
+                if invitation.training_material_template and invitation.training_material_template.content:
+                    pdf_content = generate_pdf_from_html(invitation.training_material_template.content)
+                    if pdf_content:
+                        email.attach(f"{invitation.training_material_template.name}.pdf", pdf_content, 'application/pdf')
+
+                # Attach additional documents
+                if invitation.additional_documents:
+                    for doc_info in invitation.additional_documents:
+                        try:
+                            doc_id = doc_info.get('id')
+                            if not doc_id:
+                                continue
+                            
+                            doc = EmployeeDocument.objects.get(document_id=doc_id)
+                            
+                            if doc.file:
+                                with doc.file.open('rb') as f:
+                                    file_content = f.read()
+                                
+                                import mimetypes
+                                import os
+
+                                file_name = os.path.basename(doc.file.name)
+                                content_type, _ = mimetypes.guess_type(file_name)
+                                if content_type is None:
+                                    content_type = 'application/octet-stream'
+                                
+                                email.attach(file_name, file_content, content_type)
+
+                        except EmployeeDocument.DoesNotExist:
+                            logger.warning(f"Additional document with ID {doc_id} not found")
+                        except Exception as e:
+                            logger.error(f"Error attaching document with ID {doc_id}: {e}", exc_info=True)
+
+                # Send the email
+                email.send(fail_silently=False)
+                logger.info(f"Successfully sent invitation email to {invitation.email}")
                 return True
                 
             except Exception as template_error:
@@ -2045,6 +2160,32 @@ class OnboardingInvitationView(View):
         except Exception as e:
             logger.error(f"Error in send_invitation_email: {str(e)}", exc_info=True)
             return False
+
+def generate_pdf_from_html(html_content):
+    """
+    Generates a PDF from HTML content.
+    """
+    try:
+        result = BytesIO()
+        # The HTML content might be a template path or raw HTML
+        template = get_template("hr_management/pdf_template.html")
+        html = template.render({'content': html_content})
+        
+        # Create PDF
+        pisa_status = pisa.CreatePDF(
+            html,                # the HTML to convert
+            dest=result           # file-like object to receive PDF
+        )
+        
+        if pisa_status.err:
+            logger.error(f"PDF generation error: {pisa_status.err}")
+            return None
+        
+        result.seek(0)
+        return result.getvalue()
+    except Exception as e:
+        logger.error(f"Error generating PDF: {str(e)}", exc_info=True)
+        return None
 
 @method_decorator(csrf_exempt, name='dispatch')
 class OnboardingInvitationStatusView(View):
@@ -2110,15 +2251,24 @@ class DepartmentTemplateView(TemplateView):
     template_name = 'hr_management/templates/department.html'
     
     def get_context_data(self, **kwargs):
+        user_session_id = self.request.session.get('user_session_id')
+        if not user_session_id:
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+            
+        try:
+            user_session = UserSession.objects.get(id=user_session_id)
+            user = user_session.user
+        except UserSession.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
         context = super().get_context_data(**kwargs)
-        context['departments'] = Department.objects.all()
+        context['departments'] = Department.objects.filter(user=user)
         return context
     
     def post(self, request, *args, **kwargs):
         try:
             department_name = request.POST.get('department_name')
             if department_name:
-                Department.objects.create(name=department_name)
+                Department.objects.create(name=department_name, user=get_user_from_session(self.request))
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Department name is required'}, status=400)
         except Exception as e:
@@ -2129,15 +2279,24 @@ class DesignationTemplateView(TemplateView):
     template_name = 'hr_management/templates/designation.html'
     
     def get_context_data(self, **kwargs):
+        user_session_id = self.request.session.get('user_session_id')
+        if not user_session_id:
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+            
+        try:
+            user_session = UserSession.objects.get(id=user_session_id)
+            user = user_session.user
+        except UserSession.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
         context = super().get_context_data(**kwargs)
-        context['designations'] = Designation.objects.all()
+        context['designations'] = Designation.objects.filter(user=user)
         return context
     
     def post(self, request, *args, **kwargs):
         try:
             designation_name = request.POST.get('designation_name')
             if designation_name:
-                Designation.objects.create(name=designation_name)
+                Designation.objects.create(name=designation_name, user=get_user_from_session(self.request))
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Designation name is required'}, status=400)
         except Exception as e:
@@ -2148,15 +2307,23 @@ class RoleTemplateView(TemplateView):
     template_name = 'hr_management/templates/role.html'
     
     def get_context_data(self, **kwargs):
+        user_session_id = self.request.session.get('user_session_id')
+        if not user_session_id:
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        try:
+            user_session = UserSession.objects.get(id=user_session_id)
+            user = user_session.user
+        except UserSession.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
         context = super().get_context_data(**kwargs)
-        context['roles'] = Role.objects.all()
+        context['roles'] = Role.objects.filter(user=user)
         return context
     
     def post(self, request, *args, **kwargs):
         try:
             role_name = request.POST.get('role_name')
             if role_name:
-                Role.objects.create(name=role_name)
+                Role.objects.create(name=role_name, user=get_user_from_session(self.request))
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Role name is required'}, status=400)
         except Exception as e:
@@ -2167,8 +2334,16 @@ class OfferLetterTemplateView(TemplateView):
     template_name = 'hr_management/templates/offerletter.html'
     
     def get_context_data(self, **kwargs):
+        user_session_id = self.request.session.get('user_session_id')
+        if not user_session_id:
+            return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+        try:
+            user_session = UserSession.objects.get(id=user_session_id)
+            user = user_session.user
+        except UserSession.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
         context = super().get_context_data(**kwargs)
-        context['offerletters'] = OfferLetter.objects.all()
+        context['offerletters'] = OfferLetter.objects.filter(user=get_user_from_session(self.request))
         return context
     
     def post(self, request, *args, **kwargs):
@@ -2176,7 +2351,7 @@ class OfferLetterTemplateView(TemplateView):
             name = request.POST.get('offer_letter_name')
             content = request.POST.get('offer_letter_content')
             if name and content:
-                OfferLetter.objects.create(name=name, content=content)
+                OfferLetter.objects.create(name=name, content=content, user=get_user_from_session(self.request))
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Name and content are required'}, status=400)
         except Exception as e:
@@ -2188,7 +2363,7 @@ class PolicyTemplateView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['policies'] = TandC.objects.all()
+        context['policies'] = TandC.objects.filter(user=get_user_from_session(self.request))
         return context
     
     def post(self, request, *args, **kwargs):
@@ -2196,7 +2371,7 @@ class PolicyTemplateView(TemplateView):
             name = request.POST.get('policy_name')
             description = request.POST.get('policy_description')
             if name and description:
-                TandC.objects.create(name=name, description=description)
+                TandC.objects.create(name=name, description=description, user=get_user_from_session(self.request))
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Name and description are required'}, status=400)
         except Exception as e:
@@ -2208,15 +2383,36 @@ class HiringAgreementTemplateView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['agreements'] = HiringAgreement.objects.all()
+        user = None
+        user_session_id = self.request.session.get('user_session_id')
+        if user_session_id:
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                user = None
+        
+        if user:
+            context['agreements'] = HiringAgreement.objects.filter(user=user)
+        else:
+            context['agreements'] = HiringAgreement.objects.all()
         return context
     
     def post(self, request, *args, **kwargs):
         try:
+            user = None
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
+                try:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
+                    pass
+            
             name = request.POST.get('agreement_name')
             content = request.POST.get('agreement_content')
             if name and content:
-                HiringAgreement.objects.create(name=name, content=content)
+                HiringAgreement.objects.create(name=name, content=content, user=user)
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Name and content are required'}, status=400)
         except Exception as e:
@@ -2228,15 +2424,36 @@ class HandbookTemplateView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['handbooks'] = Handbook.objects.all()
+        user = None
+        user_session_id = self.request.session.get('user_session_id')
+        if user_session_id:
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                user = None
+        
+        if user:
+            context['handbooks'] = Handbook.objects.filter(user=user)
+        else:
+            context['handbooks'] = Handbook.objects.all()
         return context
     
     def post(self, request, *args, **kwargs):
         try:
+            user = None
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
+                try:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
+                    pass
+            
             name = request.POST.get('handbook_name')
             content = request.POST.get('handbook_content')
             if name and content:
-                Handbook.objects.create(name=name, content=content)
+                Handbook.objects.create(name=name, content=content, user=user)
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Name and content are required'}, status=400)
         except Exception as e:
@@ -2248,15 +2465,36 @@ class TrainingMaterialTemplateView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['materials'] = TrainingMaterial.objects.all()
+        user = None
+        user_session_id = self.request.session.get('user_session_id')
+        if user_session_id:
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                user = None
+        
+        if user:
+            context['materials'] = TrainingMaterial.objects.filter(user=user)
+        else:
+            context['materials'] = TrainingMaterial.objects.all()
         return context
     
     def post(self, request, *args, **kwargs):
         try:
+            user = None
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
+                try:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
+                    pass
+            
             name = request.POST.get('material_name')
             content = request.POST.get('material_content')
             if name and content:
-                TrainingMaterial.objects.create(name=name, content=content)
+                TrainingMaterial.objects.create(name=name, content=content, user=user)
                 return JsonResponse({'success': True})
             return JsonResponse({'error': 'Name and content are required'}, status=400)
         except Exception as e:
@@ -2265,7 +2503,19 @@ class TrainingMaterialTemplateView(TemplateView):
 class OfferLetterPreviewView(View):
     def get(self, request, template_id):
         try:
-            template = OfferLetter.objects.get(offer_letter_id=template_id)
+            user = None
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
+                try:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
+                    pass
+            
+            if user:
+                template = OfferLetter.objects.get(offer_letter_id=template_id, user=user)
+            else:
+                template = OfferLetter.objects.get(offer_letter_id=template_id)
             return JsonResponse({
                 'success': True,
                 'content': template.content
@@ -2284,7 +2534,19 @@ class OfferLetterPreviewView(View):
 class HiringAgreementPreviewView(View):
     def get(self, request, template_id):
         try:
-            template = HiringAgreement.objects.get(hiring_agreement_id=template_id)
+            user = None
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
+                try:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
+                    pass
+            
+            if user:
+                template = HiringAgreement.objects.get(hiring_agreement_id=template_id, user=user)
+            else:
+                template = HiringAgreement.objects.get(hiring_agreement_id=template_id)
             return JsonResponse({
                 'success': True,
                 'content': template.content
@@ -2303,7 +2565,19 @@ class HiringAgreementPreviewView(View):
 class HandbookPreviewView(View):
     def get(self, request, template_id):
         try:
-            template = Handbook.objects.get(handbook_id=template_id)
+            user = None
+            user_session_id = request.session.get('user_session_id')
+            if user_session_id:
+                try:
+                    user_session = UserSession.objects.get(id=user_session_id)
+                    user = user_session.user
+                except UserSession.DoesNotExist:
+                    pass
+            
+            if user:
+                template = Handbook.objects.get(handbook_id=template_id, user=user)
+            else:
+                template = Handbook.objects.get(handbook_id=template_id)
             return JsonResponse({
                 'success': True,
                 'content': template.content
@@ -2429,289 +2703,111 @@ class OnboardingInvitationDetailView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class OnboardingInvitationAcceptView(View):
     def post(self, request, invitation_id, *args, **kwargs):
-        """Accept an invitation and generate employee credentials"""
         try:
-            invitation = OnboardingInvitation.objects.get(invitation_id=invitation_id)
-            
-            # Parse request data if present
-            try:
-                data = json.loads(request.body)
-                action = data.get('action', '')
-                from_status = data.get('from_status', '')
-                to_status = data.get('to_status', '')
-                salary_ctc = data.get('salary_ctc', 0)
-                allowances = data.get('allowances', {})
-            except (ValueError, json.JSONDecodeError):
-                # Try to get from POST data if not JSON
-                action = request.POST.get('action', '')
-                from_status = request.POST.get('from_status', '')
-                to_status = request.POST.get('to_status', '')
-                salary_ctc = float(request.POST.get('salary_ctc', 0))
-                allowances = json.loads(request.POST.get('allowances', '{}'))
-            
-            # Verify status transition is valid
-            if from_status != invitation.status:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Invalid current status. Expected {from_status}, found {invitation.status}'
-                }, status=400)
+            invitation = get_object_or_404(OnboardingInvitation, invitation_id=invitation_id)
 
-            # Handle the action
-            if action == 'approve_completed' or action == 'accept':
-                # Update the invitation status
-                invitation.status = to_status
-                invitation.accepted_at = timezone.now()
-                invitation.save()
-                
-                # Generate a random password
-                password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
-                hashed_password = make_password(password)
-                
-                # Extract form data from the invitation's policies field
-                form_data = {}
-                if isinstance(invitation.policies, dict) and 'form_data' in invitation.policies:
-                    form_data = invitation.policies['form_data']
-                
-                # Create or update employee record
-                # Using hr.models.Employee (not employee.models.Employee)
-                employee, created = Employee.objects.get_or_create(
-                    employee_email=invitation.email,
-                    defaults={
-                        'employee_name': invitation.name,
-                        'company': invitation.company,
-                        # 'department': invitation.department,  # hr.models.Employee has no department field
-                        # 'designation': invitation.designation,  # hr.models.Employee has no designation field
-                        # 'role': invitation.role,  # hr.models.Employee has no role field
-                        'is_active': True,
-                        'is_approved': True,
-                        'password': hashed_password
-                    }
-                )
-                
-                if not created:
-                    # Update existing employee
-                    employee.employee_name = invitation.name
-                    employee.company = invitation.company
-                    # employee.department = invitation.department  # hr.models.Employee has no department field
-                    # employee.designation = invitation.designation  # hr.models.Employee has no designation field
-                    # employee.role = invitation.role  # hr.models.Employee has no role field
-                    employee.is_active = True
-                    employee.is_approved = True
-                    employee.password = hashed_password
-                    employee.save()
-                
-                # Update salary and allowances in the employee record
-                employee.salary_ctc = salary_ctc
-                employee.allowances = allowances
-                employee.save()
-                
-                # If there's a profile photo saved in the invitation, copy it to the employee
-                if invitation.photo:
-                    employee.attendance_photo = invitation.photo
-                    employee.save()
-                
-                # Process any pending documents that were saved during form submission
-                if isinstance(invitation.policies, dict) and 'document_files' in invitation.policies:
-                    document_files = invitation.policies['document_files']
-                    
-                    # Create EmployeeDocument records for each stored document
-                    for key, doc_info in document_files.items():
-                        try:
-                            # Create document with stored information
-                            document_type = doc_info.get('document_type', '')
-                            file_path = doc_info.get('file_path', '')
-                            file_name = doc_info.get('file_name', '')
-                            file_size = doc_info.get('file_size', '')
-                            
-                            if file_path and file_name:
-                                # Create the document record linked to the employee
-                                doc = EmployeeDocument(
-                                    employee=employee,
-                                    document_type=document_type,
-                                    document_name=file_name,
-                                    file=file_path,
-                                    file_size=file_size,
-                                )
-                                doc.save()
-                                logger.info(f"Created document record for {document_type} from stored file info")
-                        except Exception as doc_error:
-                            logger.error(f"Error creating document from stored info: {str(doc_error)}", exc_info=True)
-                
-                # Save employment configuration
+            # Check if invitation is in a state to be accepted
+            if invitation.status != 'completed':
+                return JsonResponse({'success': False, 'message': f'This invitation cannot be accepted. Its status is "{invitation.status}".'}, status=400)
+
+            # Extract data from the request
+            gross_salary = request.POST.get('gross_salary')
+            group_id = request.POST.get('group')
+            payouts_str = request.POST.get('payouts')
+
+            # Validate data
+            if not gross_salary:
+                return JsonResponse({'success': False, 'message': 'Gross salary is required.'}, status=400)
+
+            # Create a password for the employee
+            password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+            hashed_password = make_password(password)
+
+            # Get leave group
+            leave_group = None
+            if group_id:
                 try:
-                    # Add to policies JSON field
-                    if not isinstance(invitation.policies, dict):
-                        invitation.policies = {}
-                    
-                    # Add salary and benefits information
-                    employment_config = {
-                        'salary_ctc': float(salary_ctc),
-                        'leave_types': leave_types,
-                        'deductions': deductions,
-                        'allowances': allowances,
-                    }
-                    
-                    invitation.policies['employment_config'] = employment_config
-                    invitation.save()
-                    
-                    # Create a salary record if SalarySlip model is used
-                    try:
-                        # Create a salary record
-                        current_date = timezone.now()
-                        
-                        # Process allowances
-                        allowance_dict = {}
-                        total_allowances = 0
-                        
-                        for allowance_data in allowances:
-                            allowance_id = allowance_data.get('id')
-                            value = float(allowance_data.get('value', 0))
-                            
-                            if allowance_id and value > 0:
-                                try:
-                                    allowance = Allowance.objects.get(allowance_id=allowance_id)
-                                    allowance_dict[allowance.name] = value
-                                    total_allowances += value
-                                except Allowance.DoesNotExist:
-                                    continue
-                        
-                        # Process deductions
-                        deduction_dict = {}
-                        total_deductions = 0
-                        
-                        for deduction_data in deduction_dict:
-                            deduction_id = deduction_data.get('id')
-                            value = float(deduction_data.get('value', 0))
-                            
-                            if deduction_id and value > 0:
-                                try:
-                                    deduction = Deduction.objects.get(deduction_id=deduction_id)
-                                    deduction_dict[deduction.name] = value
-                                    total_deductions += value
-                                except Deduction.DoesNotExist:
-                                    continue
-                        
-                        # Calculate net salary
-                        basic_salary = float(salary_ctc)
-                        net_salary = basic_salary + total_allowances - total_deductions
-                        
-                        # Create or update salary slip
-                        salary_slip, created = SalarySlip.objects.get_or_create(
-                            employee=employee,
-                            month=current_date.month,
-                            year=current_date.year,
-                            defaults={
-                                'basic_salary': basic_salary,
-                                'allowances': allowance_dict,
-                                'deductions': deduction_dict,
-                                'net_salary': net_salary,
-                                'payment_date': current_date,
-                                'payment_method': 'Bank Transfer',
-                                'is_paid': False,
-                                'notes': 'Initial salary configuration',
-                            }
-                        )
-                        
-                        if not created:
-                            # Update existing salary slip
-                            salary_slip.basic_salary = basic_salary
-                            salary_slip.allowances = allowance_dict
-                            salary_slip.deductions = deduction_dict
-                            salary_slip.net_salary = net_salary
-                            salary_slip.save()
-                        
-                        logger.info(f"Created/updated salary configuration for employee {employee.employee_id}")
-                    except Exception as salary_error:
-                        logger.error(f"Error creating salary record: {str(salary_error)}", exc_info=True)
-                except Exception as config_error:
-                    logger.error(f"Error saving employment configuration: {str(config_error)}", exc_info=True)
-                
-                # Send acceptance email with login credentials
-                success = self.send_acceptance_email(invitation, password)
-                
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Invitation accepted successfully',
-                    'email_sent': success
-                })
-                
-            elif action == 'reject':
-                # Update the invitation status
-                invitation.status = to_status
-                invitation.rejected_at = timezone.now()
-                invitation.rejection_reason = data.get('rejection_reason', '')
-                invitation.save()
+                    leave_group = LeaveGroup.objects.get(group_id=group_id)
+                except (LeaveGroup.DoesNotExist, ValueError):
+                    return JsonResponse({'success': False, 'message': 'Invalid Leave Group selected.'}, status=400)
             
-                # Send rejection email
-                success = self.send_rejection_email(invitation)
+            # Parse payouts
+            payouts_data = json.loads(payouts_str) if payouts_str else []
+
+            # Get the employee record that was created when the candidate submitted the form
+            try:
+                employee = Employee.objects.get(employee_email=invitation.email)
+            except Employee.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Employee record not found. The candidate may not have completed the onboarding form.'}, status=404)
+
+            # Update the employee record with the details from the acceptance modal
+            employee.gross_salary = gross_salary
+            employee.leave_group = leave_group
+            employee.payouts = payouts_data
+            employee.password = hashed_password
+            employee.is_active = True
+            employee.is_approved = True
+            employee.save()
+
+            # Update invitation status
+            invitation.status = 'accepted'
+            invitation.accepted_at = timezone.now()
+            invitation.save()
+
+            # Send acceptance email with credentials
+            self.send_acceptance_email(invitation, password)
             
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Invitation rejected successfully',
-                    'email_sent': success
-                })
-                
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Invalid action: {action}'
-                }, status=400)
-            
+            return JsonResponse({'success': True, 'message': 'Invitation accepted and employee created successfully.'})
+
         except OnboardingInvitation.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Invitation not found'
-            }, status=404)
+            return JsonResponse({'success': False, 'message': 'Invitation not found.'}, status=404)
         except Exception as e:
-            logger.error(f"Error processing acceptance: {str(e)}", exc_info=True)
-            return JsonResponse({
-                'success': False,
-                'message': f'Error processing acceptance: {str(e)}'
-            }, status=500)
-    
+            logger.error(f"Error accepting invitation: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': f'An unexpected error occurred: {e}'}, status=500)
+
     def send_acceptance_email(self, invitation, password):
-        """Send acceptance email with credentials to the employee"""
+        """Send email with login credentials to the accepted employee"""
+        company = invitation.company
+        
+        # Get site URL from settings or use a default
+        site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
+        
+        # Prepare context data for the email template
+        context = {
+            'name': invitation.name,
+            'email': invitation.email,
+            'company_name': company.company_name,
+            'department': invitation.department.name if invitation.department else 'Not specified',
+            'designation': invitation.designation.name if invitation.designation else 'Not specified',
+            'role': invitation.role.name if invitation.role else 'Not specified',
+            'login_url': f"{site_url}/hr/employee/login/",
+            'username': invitation.email,  # Email is used as username
+            'password': password,
+            'current_year': timezone.now().year,
+        }
+        
+        # Add company logo if available
+        if company.company_logo:
+            context['company_logo'] = company.company_logo.url
+        
         try:
-            company = invitation.company
-            
-            # Get site URL from settings or use a default
-            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
-            
-            # Prepare context data for the email template
-            context = {
-                'name': invitation.name,
-                'email': invitation.email,
-                'company_name': company.company_name,
-                'department': invitation.department.name if invitation.department else 'Not specified',
-                'designation': invitation.designation.name if invitation.designation else 'Not specified',
-                'role': invitation.role.name if invitation.role else 'Not specified',
-                'login_url': f"{site_url}/hr_management/employee/login/",
-                'username': invitation.email,  # Email is used as username
-                'password': password,
-                'current_year': timezone.now().year,
-            }
-            
-            # Add company logo if available
-            if company.company_logo:
-                context['company_logo'] = company.company_logo.url
-            
-            # Check if template exists
-            template_path = 'hr_management/email_templates/acceptance_credentials.html'
-            
-            # Render email template
-            html_message = render_to_string(template_path, context)
-            plain_message = strip_tags(html_message)
+            # Render email template with context
+            html_content = render_to_string('hr_management/email_templates/acceptance_credentials.html', context)
+            text_content = strip_tags(html_content)
             
             # Send email
             subject = f"Welcome to {company.company_name} - Your Login Credentials"
             from_email = settings.DEFAULT_FROM_EMAIL
             recipient_list = [invitation.email]
             
-            email = EmailMultiAlternatives(subject, plain_message, from_email, recipient_list)
-            email.attach_alternative(html_message, "text/html")
-            
-            # Send the email
-            email.send()
+            send_mail(
+                subject=subject,
+                message=text_content,
+                from_email=from_email,
+                recipient_list=recipient_list,
+                html_message=html_content,
+                fail_silently=False,
+            )
             
             logger.info(f"Acceptance email with credentials sent to {invitation.email}")
             return True
@@ -2719,52 +2815,6 @@ class OnboardingInvitationAcceptView(View):
             logger.error(f"Error sending acceptance email: {str(e)}", exc_info=True)
             # Don't raise the exception as the employee is already created
             # Just log the error for monitoring
-            return False
-    
-    def send_rejection_email(self, invitation):
-        """Send rejection email to the applicant"""
-        try:
-            company = invitation.company
-            
-            # Get site URL from settings or use a default
-            site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
-            
-            # Prepare context data for the email template
-            context = {
-                'name': invitation.name,
-                'email': invitation.email,
-                'company_name': company.company_name,
-                'rejection_reason': invitation.rejection_reason or 'No specific reason provided',
-                'current_year': timezone.now().year,
-            }
-            
-            # Add company logo if available
-            if company.company_logo:
-                context['company_logo'] = company.company_logo.url
-            
-            # Check if template exists
-            template_path = 'hr_management/email_templates/rejection_notification.html'
-            
-            # Render email template
-            html_message = render_to_string(template_path, context)
-            plain_message = strip_tags(html_message)
-            
-            # Send email
-            subject = f"Update on Your Application at {company.company_name}"
-            from_email = settings.DEFAULT_FROM_EMAIL
-            recipient_list = [invitation.email]
-            
-            email = EmailMultiAlternatives(subject, plain_message, from_email, recipient_list)
-            email.attach_alternative(html_message, "text/html")
-            
-            # Send the email
-            email.send()
-            
-            logger.info(f"Rejection email sent to {invitation.email}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error sending rejection email: {str(e)}", exc_info=True)
             return False
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -2864,9 +2914,8 @@ class OnboardingInvitationRejectView(View):
             
             email = EmailMultiAlternatives(subject, plain_message, from_email, recipient_list)
             email.attach_alternative(html_message, "text/html")
-            
-            # Send the email
             email.send()
+            
             logger.info(f"Rejection email sent to {invitation.email}")
             return True
             
@@ -2906,6 +2955,55 @@ class OnboardingInvitationDeleteView(View):
                 'success': False,
                 'message': str(e)
             }, status=500)
+        
+def get_employee_leave_balance(employee):
+    leave_balance = {
+        'casual': 0, 'sick': 0, 'annual': 0,
+    }
+    leave_policy = {
+        'casual': 0, 'sick': 0, 'annual': 0,
+    }
+    
+    if employee.leave_group:
+        leave_group_rules = employee.leave_group.rules.all().select_related('leave_type')
+        
+        for rule in leave_group_rules:
+            leave_type_name = rule.leave_type.name.lower()
+            days_allowed = rule.days if rule.days is not None else 0
+            if 'casual' in leave_type_name:
+                leave_policy['casual'] = days_allowed
+            elif 'sick' in leave_type_name:
+                leave_policy['sick'] = days_allowed
+            elif 'annual' in leave_type_name:
+                leave_policy['annual'] = days_allowed
+        
+        current_year = timezone.now().year
+        approved_leaves = LeaveApplication.objects.filter(
+            employee=employee,
+            status='approved',
+            start_date__year=current_year
+        ).select_related('leave_type')
+        
+        days_taken = {'casual': 0, 'sick': 0, 'annual': 0}
+        
+        for leave in approved_leaves:
+            if leave.leave_type:
+                leave_type_name = leave.leave_type.name.lower()
+                duration = leave.duration if leave.duration is not None else 0
+                if 'casual' in leave_type_name:
+                    days_taken['casual'] += duration
+                elif 'sick' in leave_type_name:
+                    days_taken['sick'] += duration
+                elif 'annual' in leave_type_name:
+                    days_taken['annual'] += duration
+
+        leave_balance['casual'] = leave_policy['casual'] - days_taken['casual']
+        leave_balance['sick'] = leave_policy['sick'] - days_taken['sick']
+        leave_balance['annual'] = leave_policy['annual'] - days_taken['annual']
+
+    leave_balance['total'] = leave_balance['casual'] + leave_balance['sick'] + leave_balance['annual']
+    
+    return leave_balance, leave_policy
 
 @class_employee_login_required
 class EmployeeDashboardView(TemplateView):
@@ -3189,16 +3287,17 @@ class EmployeeLeaveView(TemplateView):
             
             context['leave_applications'] = leave_applications
             
-            # Get leave types
-            context['leave_types'] = dict(LeaveApplication.LEAVE_TYPES)
+            # Get leave types for the company's user
+            if employee.company and employee.company.user:
+                context['leave_types'] = LeaveType.objects.filter(user=employee.company.user)
+            else:
+                context['leave_types'] = LeaveType.objects.none()
             
             # Leave balance (example values, should be calculated from policy)
-            context['leave_balance'] = {
-                'casual': 7,
-                'sick': 5,
-                'annual': 14,
-                'total': 26,
-            }
+            # Calculate actual leave balance from employee's leave group and used leaves
+            leave_balance, leave_policy = get_employee_leave_balance(employee)
+            context['leave_balance'] = leave_balance
+            context['leave_policy'] = leave_policy
         except Exception as e:
             logger.error(f"Error retrieving employee leave data: {str(e)}", exc_info=True)
         
@@ -3325,7 +3424,7 @@ class EmployeeLogoutView(View):
             del request.session['employee_id']
         
         # Redirect to login page
-        return redirect('employee_login')
+        return redirect('/hr/employee/login/')
 
 # API Views for Employee Dashboard
 @method_decorator(csrf_exempt, name='dispatch')
@@ -3496,18 +3595,21 @@ class LeaveApplicationAPIView(View):
         
         try:
             data = json.loads(request.body)
-            leave_type = data.get('leave_type')
+            leave_type_id = data.get('leave_type_id')
             start_date_str = data.get('start_date')
             end_date_str = data.get('end_date')
             reason = data.get('reason')
             
             # Validate required fields
-            if not all([leave_type, start_date_str, end_date_str, reason]):
+            if not all([leave_type_id, start_date_str, end_date_str, reason]):
                 return JsonResponse({
                     'success': False,
                     'message': 'Missing required fields'
                 }, status=400)
             
+            employee = Employee.objects.get(employee_id=employee_id)
+            leave_type = LeaveType.objects.get(leave_type_id=leave_type_id, company=employee.company)
+
             # Parse dates
             try:
                 start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
@@ -3535,8 +3637,6 @@ class LeaveApplicationAPIView(View):
             # Calculate leave days
             leave_days = (end_date - start_date).days + 1
             
-            
-            employee = Employee.objects.get(employee_id=employee_id)
             
             # Check if there are overlapping leave applications
             overlapping_leaves = LeaveApplication.objects.filter(
@@ -3806,7 +3906,7 @@ class HREmployeeLoginView(View):
                 request.session['employee_id'] = str(employee.employee_id)
                 
                 # Redirect to dashboard
-                return redirect('employee_dashboard')
+                return redirect('/hr/employee/dashboard/')
             else:
                 messages.error(request, 'Invalid password')
         except Employee.DoesNotExist:
@@ -3901,6 +4001,7 @@ class ViewOfferView(TemplateView):
                 
             # Get hiring agreement content
             hiring_agreement_id = None
+            additional_documents = invitation.additional_documents
             # Check in additional_documents first (new approach)
             if isinstance(additional_documents, list):
                 for doc in additional_documents:
@@ -4027,7 +4128,6 @@ class ViewOfferView(TemplateView):
             # Get training material content
             training_material_id = None
             # Check in additional_documents first (new approach)
-            additional_documents = invitation.additional_documents
             if isinstance(additional_documents, list):
                 for doc in additional_documents:
                     if doc.get('type') == 'training_material':
@@ -4126,7 +4226,7 @@ class OfferResponseView(View):
                 
                 # Redirect to onboarding form
                 token = invitation.form_link.split('/')[-2]
-                return redirect(f"/hr_management/onboarding/form/{token}/")
+                return redirect(f"/hr/onboarding/form/{token}/")
                 
             elif response == 'reject':
                 # Get rejection reason
@@ -4206,7 +4306,7 @@ class OfferResponseView(View):
             
             # Get site URL from settings or use a default
             site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
-            dashboard_url = f"{site_url}/hr_management/onboarding/"
+            dashboard_url = f"{site_url}/hr/onboarding/"
             
             # Prepare context for the email template
             context = {
@@ -4251,7 +4351,7 @@ class OfferResponseView(View):
             
             # Get site URL from settings or use a default
             site_url = getattr(settings, 'SITE_URL', "https://1matrix.io")
-            dashboard_url = f"{site_url}/hr_management/onboarding/"
+            dashboard_url = f"{site_url}/hr/onboarding/"
             
             # Prepare context for the email template
             context = {
@@ -4930,7 +5030,7 @@ class FormCompletedActionView(View):
             'department': invitation.department.name if invitation.department else 'Not specified',
             'designation': invitation.designation.name if invitation.designation else 'Not specified',
             'role': invitation.role.name if invitation.role else 'Not specified',
-            'login_url': f"{site_url}/hr_management/employee/login/",
+            'login_url': f"{site_url}/hr/employee/login/",
             'username': invitation.email,  # Email is used as username
             'password': password,
             'current_year': timezone.now().year,
@@ -5483,3 +5583,500 @@ class ReimbursementCancelAPIView(View):
         except Exception as e:
             logger.error(f"Error cancelling reimbursement request: {str(e)}", exc_info=True)
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+class SalaryView(TemplateView):
+    template_name = 'hr_management/salary.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = None
+        user_session_id = self.request.session.get('user_session_id')
+
+        if user_session_id:
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                user = None
+
+        if not user:
+            context['employees'] = []
+            return context
+
+        try:
+            companies = Company.objects.filter(user=user)
+            company_ids = [c.company_id for c in companies]
+            employees = Employee.objects.filter(company__company_id__in=company_ids).select_related('company')
+            context['employees'] = employees
+        except Exception as e:
+            logger.error(f"Error fetching employees for salary view: {e}", exc_info=True)
+            context['employees'] = []
+
+        return context
+
+class ExportIncentiveSheetView(View):
+    def get(self, request, *args, **kwargs):
+        user = None
+        user_session_id = request.session.get('user_session_id')
+        if user_session_id:
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                user = None
+
+        if not user:
+            return HttpResponse("Unauthorized", status=401)
+
+        try:
+            companies = Company.objects.filter(user=user)
+            company_ids = [c.company_id for c in companies]
+            employees = Employee.objects.filter(company_id__in=company_ids)
+
+            workbook = openpyxl.Workbook()
+            sheet = workbook.active
+            sheet.title = "Incentive Sheet"
+
+            headers = [
+                "Employee ID", "Employee Name", "Employee Mobile Number",
+                "Incentive Amount", "Incentive Reason"
+            ]
+            for col_num, header in enumerate(headers, 1):
+                col_letter = get_column_letter(col_num)
+                cell = sheet[f"{col_letter}1"]
+                cell.value = header
+                cell.font = openpyxl.styles.Font(bold=True)
+
+            for row_num, employee in enumerate(employees, 2):
+                sheet[f"A{row_num}"] = str(employee.employee_id)
+                sheet[f"B{row_num}"] = employee.employee_name
+                sheet[f"C{row_num}"] = employee.phone_number if employee.phone_number else ""
+                sheet[f"D{row_num}"] = ""  # Incentive Amount (leave blank)
+                sheet[f"E{row_num}"] = ""  # Incentive Reason (leave blank)
+            
+            for i in range(1, sheet.max_column + 1):
+                sheet.column_dimensions[get_column_letter(i)].width = 20
+
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="incentive_sheet.xlsx"'
+            workbook.save(response)
+            return response
+
+        except Exception as e:
+            logger.error(f"Error exporting incentive sheet: {e}", exc_info=True)
+            return HttpResponse("An error occurred during export.", status=500)
+
+class ExportDeductionSheetView(View):
+    def get(self, request, *args, **kwargs):
+        user = None
+        user_session_id = request.session.get('user_session_id')
+        if user_session_id:
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+            except UserSession.DoesNotExist:
+                user = None
+
+        if not user:
+            return HttpResponse("Unauthorized", status=401)
+
+        try:
+            companies = Company.objects.filter(user=user)
+            company_ids = [c.company_id for c in companies]
+            employees = Employee.objects.filter(company_id__in=company_ids)
+
+            workbook = openpyxl.Workbook()
+            sheet = workbook.active
+            sheet.title = "Deductions Sheet"
+
+            headers = [
+                "Employee ID", "Employee Name", "Employee Mobile Number",
+                "Deduction Amount", "Deduction Reason"
+            ]
+            for col_num, header in enumerate(headers, 1):
+                col_letter = get_column_letter(col_num)
+                cell = sheet[f"{col_letter}1"]
+                cell.value = header
+                cell.font = openpyxl.styles.Font(bold=True)
+
+            for row_num, employee in enumerate(employees, 2):
+                sheet[f"A{row_num}"] = str(employee.employee_id)
+                sheet[f"B{row_num}"] = employee.employee_name
+                sheet[f"C{row_num}"] = employee.phone_number if employee.phone_number else ""
+                sheet[f"D{row_num}"] = ""  # Deduction Amount (leave blank)
+                sheet[f"E{row_num}"] = ""  # Deduction Reason (leave blank)
+            
+            for i in range(1, sheet.max_column + 1):
+                sheet.column_dimensions[get_column_letter(i)].width = 20
+
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="deductions_sheet.xlsx"'
+            workbook.save(response)
+            return response
+
+        except Exception as e:
+            logger.error(f"Error exporting deductions sheet: {e}", exc_info=True)
+            return HttpResponse("An error occurred during export.", status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SendOfferAcceptanceOTPView(View):
+    def post(self, request, invitation_id, *args, **kwargs):
+        invitation = get_object_or_404(OnboardingInvitation, invitation_id=invitation_id)
+
+        if invitation.status != 'sent':
+            return JsonResponse({'success': False, 'error': 'This offer is no longer active.'}, status=400)
+
+        otp = str(random.randint(100000, 999999))
+        otp_expiry = timezone.now() + timedelta(minutes=10)
+
+        request.session['offer_acceptance_otp'] = otp
+        request.session['offer_acceptance_otp_expiry'] = otp_expiry.isoformat()
+        request.session['offer_invitation_id'] = str(invitation.invitation_id)
+
+        try:
+            subject = 'Your One-Time Password (OTP) for Offer Acceptance'
+            message = f"""
+Dear {invitation.name},
+
+To securely accept your job offer for the position of {invitation.designation.name} at our company, please use the following One-Time Password (OTP).
+
+Your OTP is: {otp}
+
+This OTP is valid for 10 minutes.
+
+If you did not request this OTP, please disregard this email.
+
+Best regards,
+The HR Team
+"""
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [invitation.email],
+                fail_silently=False,
+            )
+            return JsonResponse({'success': True, 'message': 'OTP sent successfully.'})
+        except Exception as e:
+            logger.error(f"Error sending OTP email for invitation {invitation_id}: {e}")
+            return JsonResponse({'success': False, 'error': 'Could not send OTP. Please try again.'}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class VerifyOfferAcceptanceOTPView(View):
+    def post(self, request, invitation_id, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            user_otp = data.get('otp')
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+        stored_otp = request.session.get('offer_acceptance_otp')
+        otp_expiry_str = request.session.get('offer_acceptance_otp_expiry')
+        session_invitation_id = request.session.get('offer_invitation_id')
+
+        if not all([stored_otp, otp_expiry_str, session_invitation_id]) or session_invitation_id != str(invitation_id):
+            return JsonResponse({'success': False, 'error': 'OTP not found or session expired. Please try again.'}, status=400)
+
+        otp_expiry = datetime.fromisoformat(otp_expiry_str)
+
+        if timezone.now() > otp_expiry:
+            # Clear expired OTP from session
+            if 'offer_acceptance_otp' in request.session:
+                del request.session['offer_acceptance_otp']
+            if 'offer_acceptance_otp_expiry' in request.session:
+                del request.session['offer_acceptance_otp_expiry']
+            if 'offer_invitation_id' in request.session:
+                del request.session['offer_invitation_id']
+            return JsonResponse({'success': False, 'error': 'OTP has expired. Please request a new one.'}, status=400)
+
+        if user_otp == stored_otp:
+            # OTP is correct, proceed with accepting the offer
+            invitation = get_object_or_404(OnboardingInvitation, invitation_id=invitation_id)
+            invitation.status = 'accepted'
+            invitation.response_date = timezone.now()
+            invitation.save()
+
+            # Clean up session
+            if 'offer_acceptance_otp' in request.session:
+                del request.session['offer_acceptance_otp']
+            if 'offer_acceptance_otp_expiry' in request.session:
+                del request.session['offer_acceptance_otp_expiry']
+            if 'offer_invitation_id' in request.session:
+                del request.session['offer_invitation_id']
+            
+            form_url = invitation.form_link
+            
+            return JsonResponse({'success': True, 'message': 'Offer accepted successfully.', 'form_url': form_url})
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid OTP. Please try again.'}, status=400)
+
+
+class ConfigureView(TemplateView):
+    template_name = 'hr_management/configure.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+class HRConfigurationView(View):
+    template_name = 'hr_management/hr_configuration.html'
+    
+    def get_model(self, config_type):
+        if config_type == 'leaves':
+            return LeaveType
+        elif config_type == 'holidays':
+            return Holiday
+        elif config_type == 'payouts':
+            return PayoutType
+        elif config_type == 'deduction_rules':
+            return AttendanceRule
+        return None
+
+    def get(self, request, config_type):
+        model = self.get_model(config_type)
+        if not model:
+            return HttpResponse("Invalid configuration type", status=404)
+        
+        user = get_user_from_session(request)
+        objects = model.objects.filter(user=user) if user else model.objects.all()
+        
+        companies = Company.objects.filter(user=user) if user else Company.objects.all()
+
+        context = {
+            'config_type': config_type,
+            'objects': objects,
+            'page_title': f"Manage {config_type.capitalize()}",
+            'companies': companies,
+        }
+
+        if config_type == 'deduction_rules':
+            context['weekdays'] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+        if config_type == 'leaves':
+            leave_groups = LeaveGroup.objects.filter(user=user) if user else LeaveGroup.objects.all()
+            context['leave_groups'] = leave_groups
+            # The 'objects' variable already contains the leave types
+
+        return render(request, self.template_name, context)
+
+    def post(self, request, config_type):
+        model = self.get_model(config_type)
+        if not model:
+            return HttpResponse("Invalid configuration type", status=404)
+
+        user = get_user_from_session(request)
+        object_id = request.POST.get('object_id')
+
+        if config_type != 'deduction_rules':
+            name = request.POST.get('name')
+            if not name:
+                return redirect('hr:hr_configuration', config_type=config_type)
+
+        if object_id:
+            # Update existing object
+            obj = get_object_or_404(model, pk=object_id)
+            if user:
+                if hasattr(obj, 'user') and obj.user != user:
+                    return HttpResponse("Unauthorized", status=403)
+            
+            if config_type == 'holidays':
+                obj.name = request.POST.get('name')
+                date = request.POST.get('date')
+                if date:
+                    obj.date = date
+            elif config_type == 'payouts':
+                obj.name = request.POST.get('name')
+            elif config_type == 'deduction_rules':
+                obj.punch_in_time = request.POST.get('punch_in_time')
+                obj.punch_out_time = request.POST.get('punch_out_time')
+                obj.working_days = ','.join(request.POST.getlist('working_days'))
+                company_id = request.POST.get('company')
+                if company_id:
+                    obj.company_id = company_id
+            obj.save()
+        else:
+            # Create new object
+            data = {}
+            if config_type == 'holidays':
+                data['name'] = request.POST.get('name')
+                date = request.POST.get('date')
+                if date:
+                    data['date'] = date
+            elif config_type == 'payouts':
+                data['name'] = request.POST.get('name')
+            elif config_type == 'deduction_rules':
+                data['punch_in_time'] = request.POST.get('punch_in_time')
+                data['punch_out_time'] = request.POST.get('punch_out_time')
+                data['working_days'] = ','.join(request.POST.getlist('working_days'))
+                company_id = request.POST.get('company')
+                if company_id:
+                    data['company_id'] = company_id
+            
+            if user:
+                data['user'] = user
+
+            
+            model.objects.create(**data)
+
+        return redirect('hr:hr_configuration', config_type=config_type)
+
+
+class HRConfigurationDeleteView(View):
+    def get_model(self, config_type):
+        if config_type == 'leaves':
+            return LeaveType
+        elif config_type == 'holidays':
+            return Holiday
+        elif config_type == 'payouts':
+            return PayoutType
+        elif config_type == 'deduction_rules':
+            return AttendanceRule
+        return None
+
+    def post(self, request, config_type, pk):
+        model = self.get_model(config_type)
+        if not model:
+            return HttpResponse("Invalid configuration type", status=404)
+        
+        user = get_user_from_session(request)
+        obj = get_object_or_404(model, pk=pk)
+        if user:
+            if obj.user != user:
+                return HttpResponse("Unauthorized", status=403)
+        
+        obj.delete()
+        return redirect('hr:hr_configuration', config_type=config_type)
+
+
+class LeaveGroupCreateView(View):
+    def post(self, request, *args, **kwargs):
+        user = get_user_from_session(request)
+        name = request.POST.get('name')
+        frequency = request.POST.get('frequency')
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Name is required'})
+
+        group = LeaveGroup.objects.create(name=name, frequency=frequency, user=user)
+        return JsonResponse({'success': True, 'group': {'id': group.group_id, 'name': group.name, 'frequency': group.frequency}})
+
+
+class LeaveGroupUpdateView(View):
+    def post(self, request, group_id, *args, **kwargs):
+        user = get_user_from_session(request)
+        name = request.POST.get('name')
+        frequency = request.POST.get('frequency')
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Name is required'})
+
+        group = get_object_or_404(LeaveGroup, group_id=group_id, user=user)
+        group.name = name
+        group.frequency = frequency
+        group.save()
+        return JsonResponse({'success': True, 'group': {'id': group.group_id, 'name': group.name, 'frequency': group.frequency}})
+
+
+class LeaveGroupDeleteView(View):
+    def post(self, request, group_id, *args, **kwargs):
+        user = get_user_from_session(request)
+        group = get_object_or_404(LeaveGroup, group_id=group_id, user=user)
+        group.delete()
+        return JsonResponse({'success': True})
+
+
+class LeaveGroupRuleCreateView(View):
+    def post(self, request, group_id, *args, **kwargs):
+        user = get_user_from_session(request)
+        leave_type_id = request.POST.get('leave_type_id')
+        days = request.POST.get('days')
+
+        if not all([leave_type_id, days]):
+            return JsonResponse({'success': False, 'error': 'Leave type and days are required'})
+
+        group = get_object_or_404(LeaveGroup, group_id=group_id, user=user)
+        leave_type = get_object_or_404(LeaveType, leave_type_id=leave_type_id, user=user)
+
+        rule = LeaveGroupRule.objects.create(leave_group=group, leave_type=leave_type, days=days)
+        return JsonResponse({'success': True, 'rule': {'id': rule.leave_group_rule_id, 'leave_type_name': rule.leave_type.name, 'days': rule.days}})
+
+
+class LeaveGroupRuleUpdateView(View):
+    def post(self, request, rule_id, *args, **kwargs):
+        user = get_user_from_session(request)
+        days = request.POST.get('days')
+
+        if not days:
+            return JsonResponse({'success': False, 'error': 'Days are required'})
+
+        rule = get_object_or_404(LeaveGroupRule, leave_group_rule_id=rule_id, leave_group__user=user)
+        rule.days = days
+        rule.save()
+        return JsonResponse({'success': True, 'rule': {'id': rule.leave_group_rule_id, 'leave_type_name': rule.leave_type.name, 'days': rule.days}})
+
+
+class LeaveGroupRuleDeleteView(View):
+    def post(self, request, rule_id, *args, **kwargs):
+        user = get_user_from_session(request)
+        rule = get_object_or_404(LeaveGroupRule, leave_group_rule_id=rule_id, leave_group__user=user)
+        rule.delete()
+        return JsonResponse({'success': True})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ConfigureAttendanceRuleView(View):
+    def post(self, request, rule_id):
+        try:
+            with transaction.atomic():
+                rule = AttendanceRule.objects.get(id=rule_id)
+                data = json.loads(request.body)
+                
+                # Clear existing sub-rules
+                rule.late_punch_in_rules.all().delete()
+                rule.early_punch_out_rules.all().delete()
+
+                # Create new late punch-in rules
+                for sub_rule_data in data.get('late_punch_in_rules', []):
+                    if not sub_rule_data.get('start_time') or not sub_rule_data.get('rule_option'):
+                        continue
+                    LatePunchInRule.objects.create(
+                        attendance_rule=rule,
+                        start_time=sub_rule_data.get('start_time'),
+                        end_time=sub_rule_data.get('end_time') or None,
+                        rule_option=sub_rule_data.get('rule_option'),
+                        deduction_amount=sub_rule_data.get('deduction_amount') if sub_rule_data.get('rule_option') == 'deduct_amount' else None
+                    )
+
+                # Create new early punch-out rules
+                for sub_rule_data in data.get('early_punch_out_rules', []):
+                    if not sub_rule_data.get('time') or not sub_rule_data.get('rule_option'):
+                        continue
+                    EarlyPunchOutRule.objects.create(
+                        attendance_rule=rule,
+                        time=sub_rule_data.get('time'),
+                        rule_option=sub_rule_data.get('rule_option'),
+                        deduction_amount=sub_rule_data.get('deduction_amount') if sub_rule_data.get('rule_option') == 'deduct_amount' else None
+                    )
+
+            return JsonResponse({'success': True, 'message': 'Configuration saved successfully.'})
+        except AttendanceRule.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Attendance rule not found.'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': 'Invalid JSON format.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=400)
+
+class LeaveGroupCreateView(View):
+    def post(self, request, *args, **kwargs):
+        user = get_user_from_session(request)
+        name = request.POST.get('name')
+        frequency = request.POST.get('frequency')
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Name is required'})
+
+        group = LeaveGroup.objects.create(name=name, frequency=frequency, user=user)
+        return JsonResponse({'success': True, 'group': {'id': group.group_id, 'name': group.name, 'frequency': group.frequency}})

@@ -102,7 +102,7 @@ function handleAttendanceAction(button) {
     const action = button.dataset.action || 'check_in';
     
     // Send attendance request
-    fetch('/hr_management/api/mark-attendance/', {
+    fetch('/hr/api/mark-attendance/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

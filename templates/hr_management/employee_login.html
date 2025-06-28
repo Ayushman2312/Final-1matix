@@ -83,7 +83,7 @@
             </div>
             {% endif %}
 
-            <form method="post" action="{% url 'hr_employee_login' %}" class="space-y-6">
+            <form method="post" action="/hr/employee/login/" class="space-y-6">
                 {% csrf_token %}
                 
                 <div class="space-y-2">

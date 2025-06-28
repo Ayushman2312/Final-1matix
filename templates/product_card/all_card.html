@@ -15,10 +15,9 @@
             <div class="relative">
                 <input 
                     type="text"
-                    id="searchInput"
+                    id="productSearchInput"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Search products..."
-                    onkeyup="searchProducts()"
                 >
                 <div class="absolute right-3 top-2.5 text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,7 +34,7 @@
 
         <!-- Category filter -->
         <div class="relative w-[200px]">
-            <select id="categoryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none" onchange="searchProducts()">
+            <select id="categoryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none">
                 <option value="">All Categories</option>
                 {% for category in categories %}
                     <option value="{{ category.category_id }}">{{ category.category_name }}</option>
@@ -51,7 +50,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
+        const searchInput = document.getElementById('productSearchInput');
         const suggestionsContainer = document.getElementById('suggestions');
         const categoryFilter = document.getElementById('categoryFilter');
 
@@ -61,7 +60,7 @@
 
             try {
                 // Make API call to search products with search term and category
-                const response = await fetch(`/product_card/api/products/search/?q=${encodeURIComponent(searchTerm)}&category=${selectedCategory}`);
+                const response = await fetch(`{% url 'search_products' %}`);
                 const data = await response.json();
 
                 if (!response.ok) {
@@ -176,9 +175,8 @@
                             </div>
                         {% endif %}
                         <div class="p-3 sm:p-4 lg:p-6 flex flex-col flex-grow">
-                            <h5 class="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 mb-2 line-clamp-2">{{ card.product_title }}</h5>
-                            <p class="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-3">{{ card.product_description|truncatechars:100 }}</p>
-                            <p class="text-sm sm:text-base lg:text-lg font-bold text-gray-800 mb-4">₹{{ card.product_price }}</p>
+                            <h5 class="text-sm font-semibold text-gray-800 mb-2 line-clamp-2">{{ card.product_title }}</h5>
+                            <p class="text-xs font-bold text-gray-800 mb-4">₹{{ card.product_price }}</p>
                             
                             <!-- Action buttons -->
                             <div class="grid grid-cols-3 gap-1 sm:gap-2 mt-auto">
@@ -334,6 +332,10 @@
             function confirmDelete(productId) {
                 const modal = document.getElementById('delete-modal');
                 const confirmBtn = document.getElementById('confirm-delete-btn');
+
+                // Get CSRF token from the edit form's hidden input
+                const form = document.getElementById(`edit-form-${productId}`);
+                const csrfToken = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
                 
                 // Show modal
                 modal.classList.remove('hidden');
@@ -344,12 +346,13 @@
                     fetch(`/product_card/delete/${productId}/`, {
                         method: 'POST',
                         headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-CSRFToken': csrfToken,
                             'Content-Type': 'application/json'
                         },
                     })
-                    .then(response => {
-                        if (response.ok) {
+                    .then(response => response.json().then(data => ({ok: response.ok, data})))
+                    .then(({ok, data}) => {
+                        if (ok) {
                             // Remove the product card element from the DOM
                             const productCard = document.getElementById(`product-card-${productId}`);
                             if (productCard) {
@@ -358,7 +361,7 @@
                             
                             // Show success toast
                             const toast = document.getElementById('toast-notification');
-                            toast.textContent = 'Product card deleted successfully!';
+                            toast.textContent = data.message || 'Product card deleted successfully!';
                             toast.classList.remove('translate-y-10', 'opacity-0');
                             toast.classList.add('translate-y-0', 'opacity-100');
                             
@@ -366,11 +369,12 @@
                             setTimeout(() => {
                                 toast.classList.add('translate-y-10', 'opacity-0');
                                 toast.classList.remove('translate-y-0', 'opacity-100');
+                                toast.textContent = 'Link copied to clipboard!'; // Reset toast text
                             }, 3000);
                         } else {
                             // Show error toast
                             const toast = document.getElementById('toast-notification');
-                            toast.textContent = 'Error deleting product card!';
+                            toast.textContent = data.error || 'Error deleting product card!';
                             toast.classList.remove('translate-y-10', 'opacity-0');
                             toast.classList.add('translate-y-0', 'opacity-100');
                             
@@ -378,6 +382,7 @@
                             setTimeout(() => {
                                 toast.classList.add('translate-y-10', 'opacity-0');
                                 toast.classList.remove('translate-y-0', 'opacity-100');
+                                toast.textContent = 'Link copied to clipboard!'; // Reset toast text
                             }, 3000);
                         }
                     });
@@ -388,22 +393,6 @@
                     // Prevent default action and stop propagation
                     return false;
                 };
-            }
-            
-            // Function to get CSRF token from cookies
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
             }
             
             function closeDeleteModal() {

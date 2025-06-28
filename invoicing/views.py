@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import TemplateView
+
+from User.models import UserSession
 from .models import *
 from django.contrib import messages
 from django.http import JsonResponse, FileResponse
@@ -49,6 +51,22 @@ class CreateCompanyView(TemplateView):
     def post(self, request, *args, **kwargs):
         logger.debug("Processing company creation request")
         try:
+
+            user_session_id = request.session.get('user_session_id')
+            if not user_session_id:
+                return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+            
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+                user_id = user.user_id
+            except UserSession.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
+            
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                print("User does not exist")
             # Get form data
             company_name = request.POST.get('company_name')
             company_logo = request.FILES.get('company_logo')
@@ -70,7 +88,7 @@ class CreateCompanyView(TemplateView):
             # Create company
             logger.debug("Creating company record")
             company = Company.objects.create(
-                # user=request.user,
+                user=user,
                 company_name=company_name,
                 company_logo=company_logo,
                 company_gst_number=company_gst_number,
@@ -181,6 +199,30 @@ class CreateInvoiceView(TemplateView):
     template_name = 'invoicing/create_invoice.html'
 
     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_session_id = self.request.session.get('user_session_id')
+        if not user_session_id:
+            logger.warning("User not authenticated in CreateInvoiceView")
+            # We can't return JsonResponse in get_context_data, so we'll handle this in the template
+            context['authenticated'] = False
+            return context
+        
+        try:
+            user_session = UserSession.objects.get(id=user_session_id)
+            user = user_session.user
+            user_id = user.user_id
+            context['authenticated'] = True
+            context['user'] = user
+        except UserSession.DoesNotExist:
+            logger.warning("Invalid session in CreateInvoiceView")
+            context['authenticated'] = False
+            return context
+        
+        try:
+            user = User.objects.get(user_id=user_id)
+            context['user_details'] = user
+        except User.DoesNotExist:
+            logger.error(f"User with ID {user_id} does not exist")
         context = super().get_context_data(**kwargs)
         context['companies'] = Company.objects.all()
         context['products'] = Product.objects.all()
@@ -819,8 +861,24 @@ class CreateInvoiceView(TemplateView):
                     'total': str(product_total)
                 })
 
+            user_session_id = request.session.get('user_session_id')
+            if not user_session_id:
+                return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+            
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+                user_id = user.user_id
+            except UserSession.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
+            
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                print("User does not exist")
             # Create invoice with products JSON
             invoice = Invoice.objects.create(
+                user=user,
                 company=company,
                 billing=billing,
                 invoice_title=f"{company.company_name}_{billing_name}",
@@ -1087,7 +1145,21 @@ class CreateRecipientView(View):
             # Validate mobile number format
             if not mobile_number.isdigit() or len(mobile_number) != 10:
                 raise ValueError("Invalid mobile number format")
+            user_session_id = request.session.get('user_session_id')
+            if not user_session_id:
+                return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
             
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+                user_id = user.user_id
+            except UserSession.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
+            
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                print("User does not exist")
             # Get company instances
             try:
                 companies = [Company.objects.get(company_id=company_id) for company_id in selected_companies]
@@ -1107,6 +1179,7 @@ class CreateRecipientView(View):
             else:
                 # Create new recipient with hashed security code
                 recipient = Recipent.objects.create(
+                    user=user,
                     recipent_mobile_number=mobile_number,
                     security_code=make_password(security_code),
                     passcode=passcode
@@ -1225,9 +1298,24 @@ class AddBillingView(TemplateView):
                 company = Company.objects.get(company_id=company_id)
             except Company.DoesNotExist:
                 raise ValueError("Selected company not found")
-
+            user_session_id = request.session.get('user_session_id')
+            if not user_session_id:
+                return JsonResponse({'success': False, 'message': 'User not authenticated'}, status=401)
+            
+            try:
+                user_session = UserSession.objects.get(id=user_session_id)
+                user = user_session.user
+                user_id = user.user_id
+            except UserSession.DoesNotExist:
+                return JsonResponse({'success': False, 'message': 'Invalid session'}, status=401)
+            
+            try:
+                user = User.objects.get(user_id=user_id)
+            except User.DoesNotExist:
+                print("User does not exist")
             # Create billing
             billing = Billing.objects.create(
+                user=user,
                 company=company,
                 billing_name=billing_name,
                 billing_phone=billing_phone,

@@ -81,6 +81,9 @@ urlpatterns = [
     path('my_tickets/', MyTicketsView.as_view(), name='my_tickets'),
     path('beesuggest/', BeesuggestView.as_view(), name='beesuggest'),
     path('beesuggest/edit/<uuid:product_id>/', EditProductView.as_view(), name='edit_product'),
+    path('beesuggest-agreement/', BeesuggestAgreementView.as_view(), name='beesuggest_agreement'),
+    path('beesuggest-agreement/set-active/', SetActiveBeesuggestAgreementView.as_view(), name='set_active_beesuggest_agreement'),
+    path('beesuggest-agreement/delete/', DeleteBeesuggestAgreementView.as_view(), name='delete_beesuggest_agreement'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -33,7 +33,7 @@ Beesuggest is a comprehensive product management system integrated into the 1Mat
 - Auto-save functionality
 
 ## Database Model
-The system uses the `ProductDetails` model from the `landingx` app with the following key fields:
+The system uses the `ProductDetails` model from the `beesuggest` app with the following key fields:
 
 - **User Relationship**: `ForeignKey` to Django User model
 - **Publishing Status**: `is_published`, `published_at` fields
@@ -79,7 +79,7 @@ masteradmin/
 6. **Manage**: Delete products if necessary
 
 ### For Regular Users:
-1. Submit products via the landingx product form
+1. Submit products via the beesuggest product form
 2. Wait for masteradmin review and approval
 3. Published products become available via API endpoints
 4. View their submissions in the user dashboard

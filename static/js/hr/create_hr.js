@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingSpinner.classList.remove('hidden');
 
         const formData = new FormData(this);
-
-        fetch('/hr_management/create-company/', {
+        console.log(formData)
+        fetch('/hr/create-company/', {
             method: 'POST',
             body: formData,
             headers: {
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             credentials: 'same-origin'
         })
+        
         .then(response => {
             if (response.redirected) {
                 window.location.href = response.url;
@@ -43,12 +44,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error);
             }
             // If we reach here, it means the company was created successfully
-            window.location.href = data.redirect_url || '/hr_management/company/';
+            window.location.href = data.redirect_url || '/hr/company/';
         })
         .catch(error => {
             console.error('Error:', error);
             // Only show error alert if it's actually an error, not a redirect
-            if (!window.location.href.includes('/hr_management/company/')) {
+            if (!window.location.href.includes('/hr/company/')) {
                 alert('An error occurred while creating the company. Please try again.');
             }
         })

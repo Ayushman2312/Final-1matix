@@ -24,11 +24,27 @@ class User(models.Model):
     last_payment_mode = models.CharField(max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_suspended = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # New fields for User Settings
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    timezone = models.CharField(max_length=100, default='UTC')
+    language = models.CharField(max_length=10, default='en')
+    
+    # 2FA Settings
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_secret = models.CharField(max_length=255, null=True, blank=True)
+    
+    # Notification Settings
+    email_notifications = models.BooleanField(default=True)
+    sms_notifications = models.BooleanField(default=False)
+    in_app_notifications = models.BooleanField(default=True)
+    notification_frequency = models.CharField(max_length=20, default='instant') # instant, daily, weekly
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.user_id}"
 
     def check_password(self, raw_password):
         """
@@ -143,3 +159,39 @@ class QuickNote(models.Model):
     
     class Meta:
         ordering = ['-created_at']  # Newest first by default
+
+class LoginActivity(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_activities')
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20) # e.g., 'Success', 'Failed'
+
+    def __str__(self):
+        return f"{self.user.name} - {self.status} at {self.timestamp}"
+
+class UserSession(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sessions')
+    session_key = models.CharField(max_length=255, unique=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    is_remembered = models.BooleanField(default=False)
+    expires_at = models.DateTimeField()
+    last_activity = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Session for {self.user.name} ({self.session_key})"
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"Password reset token for {self.user.name}"

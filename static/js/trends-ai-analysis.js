@@ -296,30 +296,63 @@ document.addEventListener('DOMContentLoaded', function() {
             return sanitizedContent;
         }
         
-        // Format paragraphs (split by double newlines)
-        let formatted = content
-            .split('\n\n')
-            .filter(para => para.trim() !== '')
-            .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
-            .join('');
+        const sections = content.split('\n\n').filter(s => s.trim() !== '');
         
-        // Format headers (markdown style)
-        formatted = formatted.replace(/<p>#+\s+(.*?)<\/p>/g, (match, header) => {
-            return `<h3 class="text-lg font-semibold mb-2">${header}</h3>`;
-        });
-        
-        // Format bold text
-        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        formatted = formatted.replace(/__(.*?)__/g, '<strong>$1</strong>');
-        
-        // Format emphasis
-        formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        formatted = formatted.replace(/_(.*?)_/g, '<em>$1</em>');
-        
-        // Add extra styling
-        formatted = `<div class="ai-analysis">${formatted}</div>`;
+        if (sections.length === 0) {
+            return '';
+        }
+
+        let stepCounter = 1;
+        const stepsHtml = sections.map(section => {
+            const lines = section.trim().split('\n');
+            let title = '';
+            let description = '';
+
+            const headingMatch = lines[0].match(/^#+\s*(.*)/);
+
+            if (headingMatch && headingMatch[1]) {
+                title = headingMatch[1];
+                description = lines.slice(1).join('<br>');
+            } else {
+                description = lines.join('<br>');
+            }
+
+            const stepNumber = String(stepCounter++).padStart(2, '0');
+
+            let stepHtml = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 w-12 h-12 bg-[#7B3DF3] rounded-full flex items-center justify-center">
+                        <span class="text-sm font-bold text-white">${stepNumber}</span>
+                    </div>
+                    <div class="ml-4">
+            `;
+            if (title) {
+                stepHtml += `<h3 class="text-lg font-[800] text-gray-800 mb-1">${title}</h3>`;
+            }
+            stepHtml += `<p class="text-gray-600 text-sm">${description}</p>`;
+            stepHtml += `
+                    </div>
+                </div>
+            `;
+            return stepHtml;
+        }).join('');
+
+        const finalHtml = `
+            <div class="bg-white rounded-lg">
+                <div class="flex flex-col md:flex-row">
+                    <div class="md:w-1/3 pr-0 md:pr-8 mb-4 md:mb-0">
+                        <h2 class="text-3xl md:text-4xl text-gray-800 mb-3" style="font-weight: 800;">Our analysis</h2>
+                        <p class="text-gray-600 text-sm md:text-base">Here's what our AI discovered.</p>
+                    </div>
+                    
+                    <div class="md:w-2/3 space-y-8">
+                        ${stepsHtml}
+                    </div>
+                </div>
+            </div>
+        `;
             
-        return formatted;
+        return finalHtml;
     }
     
     // Function to format recommendations with better styling

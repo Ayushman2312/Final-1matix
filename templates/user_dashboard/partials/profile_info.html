@@ -1,0 +1,53 @@
+<form action="{% url 'profile_settings' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="shadow sm:rounded-md sm:overflow-hidden">
+        <div class="px-4 py-5 bg-white space-y-6 sm:p-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
+            
+            <!-- Profile Picture -->
+            <div class="flex items-center space-x-4">
+                {% if user.profile_picture %}
+                    <img class="h-16 w-16 rounded-full object-cover" src="{{ user.profile_picture.url }}" alt="Current profile photo">
+                {% else %}
+                    <img class="h-16 w-16 rounded-full object-cover" src="/media/masteradmin_web/1matrix_logo.jpg" alt="Default profile photo">
+                {% endif %}
+                <div class="flex flex-col">
+                    <label for="profile_picture" class="block text-sm font-medium text-gray-700">Change profile picture</label>
+                    <input type="file" name="profile_picture" id="profile_picture" class="mt-1 text-sm text-gray-900">
+                </div>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="grid grid-cols-6 gap-6">
+                <div class="col-span-6 sm:col-span-3">
+                    <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" name="name" id="name" value="{{ user.name|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                </div>
+
+                <div class="col-span-6 sm:col-span-3">
+                    <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" name="email" id="email" value="{{ user.email|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" readonly>
+                </div>
+
+                <div class="col-span-6 sm:col-span-3">
+                    <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <input type="text" name="phone" id="phone" value="{{ user.phone|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                </div>
+
+                <div class="col-span-6 sm:col-span-3">
+                    <label for="language" class="block text-sm font-medium text-gray-700">Language</label>
+                    <select id="language" name="language" class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <option value="en" {% if user.language == 'en' %}selected{% endif %}>English</option>
+                        <option value="es" {% if user.language == 'es' %}selected{% endif %}>Spanish</option>
+                        <option value="fr" {% if user.language == 'fr' %}selected{% endif %}>French</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                Save Changes
+            </button>
+        </div>
+    </div>
+</form> 

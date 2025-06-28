@@ -5,6 +5,7 @@ from django.contrib import messages
 import json
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 from django.db.models import Q
 from django.urls import reverse
 import logging
@@ -21,7 +22,6 @@ class CreateProductCardView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Product Card'
         context['categories'] = ProductCategory.objects.all()
         return context
     
@@ -36,13 +36,32 @@ class CreateProductCardView(TemplateView):
         product_image2 = request.FILES.get('image2', None)
         product_image3 = request.FILES.get('image3', None)
         product_image4 = request.FILES.get('image4', None)
+        product_image5 = request.FILES.get('image5', None)
+
+        alt1 = request.POST.get('alt1')
+        alt2 = request.POST.get('alt2')
+        alt3 = request.POST.get('alt3')
+        alt4 = request.POST.get('alt4')
+        alt5 = request.POST.get('alt5')
+
         category_id = request.POST.get('category')
         youtube_link = request.POST.get('youtube_link')
         product_hsc_code = request.POST.get('hsn_code')
         product_gst_percentage = request.POST.get('gst_percentage')
         
+        product_moq = request.POST.get('moq')
+        
+        trusted_icon1 = request.FILES.get('trusted_icon1', None)
+        trusted_text1 = request.POST.get('trusted_text1')
+        trusted_icon2 = request.FILES.get('trusted_icon2', None)
+        trusted_text2 = request.POST.get('trusted_text2')
+        trusted_icon3 = request.FILES.get('trusted_icon3', None)
+        trusted_text3 = request.POST.get('trusted_text3')
+        trusted_icon4 = request.FILES.get('trusted_icon4', None)
+        trusted_text4 = request.POST.get('trusted_text4')
+        
         logger.debug(f"Received product data: title={product_title}, price={product_price}, category={category_id}")
-        logger.debug(f"Images received: primary={bool(product_image1)}, secondary={bool(product_image2)}, tertiary={bool(product_image3)}, quaternary={bool(product_image4)}")
+        logger.debug(f"Images received: primary={bool(product_image1)}, secondary={bool(product_image2)}, tertiary={bool(product_image3)}, quaternary={bool(product_image4)}, quinary={bool(product_image5)}")
         
         # Get variant data if available
         variant_data = {}
@@ -72,14 +91,29 @@ class CreateProductCardView(TemplateView):
                 product_description=product_description,
                 product_price=product_price,  # Default price
                 product_image1=product_image1,
+                product_image1_alt=alt1,
                 product_image2=product_image2,
+                product_image2_alt=alt2,
                 product_image3=product_image3,
+                product_image3_alt=alt3,
                 product_image4=product_image4,
+                product_image4_alt=alt4,
+                product_image5=product_image5,
+                product_image5_alt=alt5,
                 product_variant=variant_data,  # This will now include prices
                 product_video_link=youtube_link,
                 product_hsc_code=product_hsc_code,
                 product_gst_percentage=product_gst_percentage,
-                product_available=True
+                product_available=True,
+                product_moq=product_moq,
+                product_trusted_icon1=trusted_icon1,
+                product_trusted_text1=trusted_text1,
+                product_trusted_icon2=trusted_icon2,
+                product_trusted_text2=trusted_text2,
+                product_trusted_icon3=trusted_icon3,
+                product_trusted_text3=trusted_text3,
+                product_trusted_icon4=trusted_icon4,
+                product_trusted_text4=trusted_text4
             )
             
             # Create product card
@@ -109,7 +143,6 @@ class AllProductCardView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'All Product Cards'
         context['product_cards'] = Product.objects.all().order_by('-product_created_at')
         context['categories'] = ProductCategory.objects.all()
         return context
@@ -130,7 +163,6 @@ class ProductCardDetailView(TemplateView):
                 variants = json.loads(variants)
 
             context.update({
-                'app_name': 'Product Card Details',
                 'product': product,
                 'product_card': product_card,
                 'variants': variants or {},  # Ensure variants is a dict even if None
@@ -147,35 +179,26 @@ class ProductCardDetailView(TemplateView):
             messages.error(self.request, 'Product not found')
             return context
         
+@require_POST
 def delete_product(request, product_id, *args, **kwargs):
     try:
-        # Get the product card by product_id
         product = Product.objects.get(product_id=product_id)
         product_name = product.product_title
-        
-        # Delete the product card
         product.delete()
-        
-        # Add success message
-        messages.success(request, f'Product card "{product_name}" deleted successfully!')
         logger.info(f"Product card for '{product_name}' deleted successfully")
+        return JsonResponse({'success': True, 'message': f'Product card "{product_name}" deleted successfully!'})
     except Product.DoesNotExist:
-        # Handle case where product card doesn't exist
-        messages.error(request, 'Product card not found')
         logger.error(f"Attempted to delete non-existent product card with ID: {product_id}")
+        return JsonResponse({'success': False, 'error': 'Product card not found'}, status=404)
     except Exception as e:
-        # Handle any other exceptions
-        messages.error(request, f'Error deleting product card: {str(e)}')
         logger.error(f"Error deleting product card: {str(e)}", exc_info=True)
-    
-    return redirect('all_product_card')
+        return JsonResponse({'success': False, 'error': f'Error deleting product card: {str(e)}'}, status=500)
 
 class CategoryView(TemplateView):
     template_name = 'product_card/category.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_name'] = 'Category'
         context['categories'] = ProductCategory.objects.all()
         return context
 
@@ -213,7 +236,6 @@ def edit_category(request, category_id, *args, **kwargs):
         
         context = {
             'category': category,
-            'app_name': 'Edit Category',
             'categories': ProductCategory.objects.all()
         }
         
@@ -271,7 +293,6 @@ def update_product_card(request, product_id, *args, **kwargs):
                 'product': product,
                 'categories': categories,
                 'form_data': form_data,
-                'app_name': 'Edit Product',
                 'is_edit': True
             }
 

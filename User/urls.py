@@ -30,4 +30,15 @@ urlpatterns = [
     path('api/quick-notes/list/', ListQuickNotesView.as_view(), name='list_quick_notes'),
     path('api/quick-notes/<uuid:note_id>/toggle-pin/', ToggleQuickNotePinView.as_view(), name='toggle_note_pin'),
     path('api/quick-notes/<uuid:note_id>/delete/', DeleteQuickNoteView.as_view(), name='delete_quick_note'),
+
+    # Forgot Password URLs
+    path('forgot-password/', ForgotPasswordRequestView.as_view(), name='forgot_password'),
+    path('reset-password/<uuid:token>/', ResetPasswordView.as_view(), name='reset_password'),
+    path('reset-password/verify-otp/', VerifyOtpView.as_view(), name='verify_otp'),
+
+    # User Settings URLs
+    path('settings/', ProfileSettingsView.as_view(), name='user_settings'),
+    path('settings/profile/', ProfileSettingsView.as_view(), name='profile_settings'),
+    path('settings/change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('settings/notifications/', NotificationSettingsView.as_view(), name='notification_settings'),
 ]

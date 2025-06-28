@@ -20,7 +20,7 @@ urlpatterns = [
     # FAQ URLs
     path('faq/', FAQListView.as_view(), name='faq-list'),
     path('faq/category/<int:pk>/', FAQCategoryDetailView.as_view(), name='faq-category-detail'),
-    
+    path('test-api/', TestApi.as_view(), name='test-api'),
     # Include the FAQ API URLs
     path('', include(router.urls)),
     

@@ -185,7 +185,7 @@ const attendanceSystem = {
         sendOtpBtn.disabled = true;
         
         try {
-            const response = await fetch('/hr_management/mark-attendance/', {
+            const response = await fetch('/hr/mark-attendance/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -243,7 +243,7 @@ const attendanceSystem = {
         
         try {
             const email = localStorage.getItem('attendance_email');
-            const response = await fetch('/hr_management/mark-attendance/', {
+            const response = await fetch('/hr/mark-attendance/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -372,7 +372,7 @@ const attendanceSystem = {
             // Check if this is a URL QR code for attendance
             if (typeof decodedText === 'string' && 
                 (decodedText.startsWith('http') || decodedText.startsWith('/')) && 
-                decodedText.includes('/hr_management/attend/')) {
+                decodedText.includes('/hr/attend/')) {
                 
                 // This is a direct attendance URL - navigate to it
                 console.log("Detected attendance URL:", decodedText);
@@ -493,7 +493,7 @@ const attendanceSystem = {
             attendanceData.action = localStorage.getItem('last_attendance_action') === 'check_in' ? 'check_out' : 'check_in';
             
             // Make request to the server
-            const response = await fetch('/hr_management/mark-attendance/', {
+            const response = await fetch('/hr/mark-attendance/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

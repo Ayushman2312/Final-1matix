@@ -68,7 +68,7 @@ INSTALLED_APPS = [
     'trends',
     'pwa',  # Django PWA package
     'business_analytics',  # Business Analytics app
-    'landingx',
+    'beesuggest',
     # 'apps',
 ]
 
@@ -268,8 +268,6 @@ EMAIL_HOST_USER = 'noreply@1matrix.io'
 EMAIL_HOST_PASSWORD = 'Helpeza@2312'
 DEFAULT_FROM_EMAIL = 'noreply@1matrix.io'
 
-# Rainforest API configuration
-RAINFOREST_API_KEY = '75CE67B976F4490B942283B97B61171E'  # Replace with your actual API key
 
 # Logging configuration
 LOGGING = {

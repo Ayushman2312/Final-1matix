@@ -126,8 +126,10 @@
                 </div>
                 <div class="mt-2">
                     <div class="w-full bg-gray-100 rounded-full h-1.5">
-                        <div class="bg-green-500 h-1.5 rounded-full" style="width: {{ metrics.active_employees|default:0|divisibleby:metrics.total_employees|default:1|floatformat:0 }}%"></div>
-                    </div>
+                        <div class="bg-green-500 h-1.5 rounded-full" 
+                             style="width: {% if metrics.total_employees > 0 %}{{ metrics.active_employees|floatformat:0|default:0 }}0{% else %}0{% endif %}%">
+                        </div>
+                    </div>                                   
                 </div>
             </div>
 
@@ -146,7 +148,7 @@
                 </div>
                 <div class="mt-2">
                     <div class="w-full bg-gray-100 rounded-full h-1.5">
-                        <div class="bg-red-500 h-1.5 rounded-full" style="width: {{ metrics.non_attendees|default:0|divisibleby:metrics.total_employees|default:1|floatformat:0 }}%"></div>
+                        <div class="bg-red-500 h-1.5 rounded-full" style="width: {% if metrics.total_employees > 0 %}{{ metrics.non_attendees|floatformat:0|default:0 }}0{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
             </div>
@@ -166,7 +168,7 @@
                 </div>
                 <div class="mt-2">
                     <div class="w-full bg-gray-100 rounded-full h-1.5">
-                        <div class="bg-amber-500 h-1.5 rounded-full" style="width: {{ metrics.employees_on_leave|default:0|divisibleby:metrics.total_employees|default:1|floatformat:0 }}%"></div>
+                        <div class="bg-amber-500 h-1.5 rounded-full" style="width: {% if metrics.total_employees > 0 %}{{ metrics.employees_on_leave|floatformat:0|default:0 }}0{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
             </div>
@@ -186,7 +188,7 @@
                 </div>
                 <div class="mt-2">
                     <div class="w-full bg-gray-100 rounded-full h-1.5">
-                        <div class="bg-blue-500 h-1.5 rounded-full" style="width: {{ metrics.unassigned_employees|default:0|divisibleby:metrics.total_employees|default:1|floatformat:0 }}%"></div>
+                        <div class="bg-blue-500 h-1.5 rounded-full" style="width: {% if metrics.total_employees > 0 %}{{ metrics.unassigned_employees|floatformat:0|default:0 }}0{% else %}0{% endif %}%"></div>
                     </div>
                 </div>
             </div>
@@ -206,7 +208,7 @@
             </div>
 
             <!-- Search and Filter Section -->
-            <form id="searchForm" method="GET" action="{% url 'attendance' %}" class="p-6 bg-gray-50 border-b border-gray-100">
+            <form id="searchForm" method="GET" action="/hr/attendance/" class="p-6 bg-gray-50 border-b border-gray-100">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <!-- Search By Dropdown -->
                     <div class="relative">
@@ -269,7 +271,7 @@
                         </svg>
                         Search
                     </button>
-                    <a href="{% url 'attendance' %}" class="clear-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-5 rounded-lg text-sm transition duration-200 ease-in-out text-center">
+                    <a href="/hr/attendance/" class="clear-button bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-5 rounded-lg text-sm transition duration-200 ease-in-out text-center">
                         Clear
                     </a>
                 </div>
@@ -389,7 +391,7 @@
             // Real-time metrics update
             function updateMetrics() {
                 $.ajax({
-                    url: "{% url 'attendance' %}",
+                    url: "/hr/attendance/",
                     data: $('#searchForm').serialize() + '&fetch_metrics=true',
                     dataType: 'json',
                     headers: {
@@ -495,7 +497,7 @@
             
             // Add Employee button functionality
             $('.add-employee-button').on('click', function() {
-                window.location.href = "{% url 'attendance' %}?action=add_employee";
+                window.location.href = "/hr/onboarding/";
             });
             
             // Enhanced search functionality
