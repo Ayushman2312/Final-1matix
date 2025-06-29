@@ -17,6 +17,8 @@ urlpatterns = [
     path('cancellation/', CancellationView.as_view(), name='cancellation'),
     path('invoice-reports/<str:recipient_id>/', InvoiceReportsView.as_view(), name='invoice-reports'),
     path('shipping-and-delivery/', ShippingAndDeliveryView.as_view(), name='shipping_and_delivery'),
+    path('plans-and-pricing/', PlansAndPricingView.as_view(), name='plans_and_pricing'),
+    path('create-payment-session/', create_payment_session, name='create_payment_session'),
     # FAQ URLs
     path('faq/', FAQListView.as_view(), name='faq-list'),
     path('faq/category/<int:pk>/', FAQCategoryDetailView.as_view(), name='faq-category-detail'),
@@ -28,5 +30,9 @@ urlpatterns = [
     path('api/verify-professional/', verify_professional, name='verify-professional'),
     path('api/verify-passcode/', verify_passcode, name='verify-passcode'),
     path('api/contact/', ContactAPIView.as_view(), name='contact-api'),
+    path('payment/success/', payment_success, name='payment_success'),
+    path('payment/failure/', payment_failure, name='payment_failure'),
+    path('payment/webhook/', cashfree_webhook, name='cashfree_webhook'),
+    path('complete-profile-setup/', complete_profile_setup, name='complete_profile_setup'),
 ]
 

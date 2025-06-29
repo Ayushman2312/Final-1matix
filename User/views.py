@@ -13,7 +13,7 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.contrib.auth.models import User as AuthUser
-from masteradmin.models import Tickets
+from masteradmin.models import Tickets, UserAgreement
 from customersupport.models import SupportDepartment, SupportUser
 from django.db.models import Count, Q
 from django.contrib import messages
@@ -23,8 +23,44 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+import uuid
 
 logger = logging.getLogger(__name__)
+
+def is_valid_gstin(gstin):
+    """
+    Validates a GSTIN number.
+    - Must be 15 characters long.
+    - First 2 characters must be a valid state code (01-37).
+    - Next 10 characters must be a valid PAN.
+    - 13th character is the entity number for the same PAN holder in a state.
+    - 14th character must be 'Z'.
+    - 15th character is a checksum.
+    """
+    if not re.match(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$', gstin):
+        return False
+
+    # Check state code
+    state_code = int(gstin[0:2])
+    if not (1 <= state_code <= 37):
+        return False
+
+    # Checksum validation (MOD-36)
+    gstin_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    total = 0
+    for i, char in enumerate(gstin[:-1]):
+        val = gstin_chars.find(char)
+        weight = (i % 2) + 1
+        if weight == 1:
+            total += val
+        else:
+            res = val * 2
+            total += (res // 36) + (res % 36)
+
+    checksum_val = (36 - (total % 36)) % 36
+    checksum_char = gstin_chars[checksum_val]
+
+    return gstin[-1] == checksum_char
 
 # Create your views here.
 def get_user_id(request):
@@ -38,6 +74,10 @@ class SignupView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        # Get the active user agreement
+        active_agreement = UserAgreement.objects.filter(is_active=True).first()
+        context['user_agreement'] = active_agreement
+
         # Check if user is coming from Google authentication
         if 'google_auth_email' in self.request.session:
             context['google_auth_email'] = self.request.session.get('google_auth_email')
@@ -56,87 +96,263 @@ class SignupView(TemplateView):
     
     def post(self, request, *args, **kwargs):
         try:
-            # Get form data
-            full_name = request.POST.get('full_name')
-            email = request.POST.get('email')  # Changed from username to email
-            password = request.POST.get('password')
-            mobile_number = request.POST.get('mobile_number')
-            
-            # Check if this is a Google signup completion
-            is_google_auth = 'google_auth_email' in request.session
-            
-            # Determine which template to use based on device
-            template_to_use = self.get_template_names()[0]
-            
-            # For debugging
-            print(f"Received form data: name={full_name}, email={email}, mobile={mobile_number}, pwd_length={len(password) if password else 0}")
-            
+            data = json.loads(request.body)
+            full_name = data.get('full_name')
+            email = data.get('email')
+            password = data.get('password') # Can be null for Google Auth
+            mobile_number = data.get('mobile_number')
+            gst_number = data.get('gst_number')
+            user_agreement_id = data.get('user_agreement_id')
+            is_google_auth = 'google_auth_email' in request.session and request.session['google_auth_email'] == email
+
             # Basic validation
             if not all([full_name, email, mobile_number]):
-                messages.error(request, 'Please fill all required fields')
-                return render(request, template_to_use, self.get_context_data())
-            
-            # Password is not required for Google auth
+                return JsonResponse({'status': 'error', 'message': 'Please fill all required fields'}, status=400)
+
             if not is_google_auth and not password:
-                messages.error(request, 'Password is required')
-                return render(request, template_to_use, self.get_context_data())
-            
-            # Validate mobile number (assuming Indian format without +91)
-            if not mobile_number.isdigit() or len(mobile_number) != 10:
-                messages.error(request, 'Please enter a valid 10-digit mobile number')
-                return render(request, template_to_use, self.get_context_data())
-            
-            # Check if username already exists in email field
+                 return JsonResponse({'status': 'error', 'message': 'Password is required'}, status=400)
+
+            if not re.match(r'^\d{10}$', mobile_number):
+                return JsonResponse({'status': 'error', 'message': 'Please enter a valid 10-digit mobile number'}, status=400)
+
             if User.objects.filter(email=email).exists():
-                messages.error(request, 'Email already exists')
-                return render(request, template_to_use, self.get_context_data())
+                return JsonResponse({'status': 'error', 'message': 'Email already exists'}, status=400)
             
-            # Check if mobile already exists
             if User.objects.filter(phone=mobile_number).exists():
-                messages.error(request, 'Mobile number already registered')
-                return render(request, template_to_use, self.get_context_data())
+                return JsonResponse({'status': 'error', 'message': 'Mobile number already registered'}, status=400)
+
+            if gst_number:
+                if not is_valid_gstin(gst_number):
+                    return JsonResponse({'status': 'error', 'message': 'Please enter a valid GST number'}, status=400)
+
+            # Get user agreement if ID was provided
+            user_agreement = None
+            if user_agreement_id:
+                try:
+                    user_agreement = UserAgreement.objects.get(id=user_agreement_id)
+                except UserAgreement.DoesNotExist:
+                    # Fallback to active agreement if provided ID doesn't exist
+                    user_agreement = UserAgreement.objects.filter(is_active=True).first()
+            else:
+                # Get active agreement if no ID was provided
+                user_agreement = UserAgreement.objects.filter(is_active=True).first()
+
+            # Generate OTP and store data in session
+            otp = ''.join(random.choices(string.digits, k=6))
+            request.session['signup_data'] = {
+                'full_name': full_name,
+                'email': email,
+                'password': make_password(password) if password else None,
+                'mobile_number': mobile_number,
+                'gst_number': gst_number,
+                'otp': otp,
+                'otp_expires_at': (timezone.now() + datetime.timedelta(minutes=10)).isoformat(),
+                'is_google_auth': is_google_auth,
+                'user_agreement_id': str(user_agreement.id) if user_agreement else None,
+            }
+            request.session.save()
+
+            # Send OTP email
+            html_message = render_to_string('user_dashboard/email/signup_otp_email.html', {'otp': otp, 'user_name': full_name})
+            send_mail(
+                'Verify your 1Matrix Account',
+                f'Hi {full_name},\n\nYour One-Time Password (OTP) for creating your 1Matrix account is: {otp}\n\nThis OTP is valid for 10 minutes.',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+                html_message=html_message
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'OTP sent to your email.'})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+        except Exception as e:
+            logger.error(f"Error in SignupView: {e}")
+            return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class VerifySignupOTPView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            otp_entered = data.get('otp')
             
+            signup_data = request.session.get('signup_data')
+
+            if not signup_data or 'otp' not in signup_data:
+                return JsonResponse({'status': 'error', 'message': 'Session expired. Please try signing up again.'}, status=400)
+
+            if timezone.now() > datetime.datetime.fromisoformat(signup_data['otp_expires_at']):
+                return JsonResponse({'status': 'error', 'message': 'OTP has expired. Please request a new one.'}, status=400)
+
+            if signup_data['otp'] != otp_entered:
+                return JsonResponse({'status': 'error', 'message': 'Invalid OTP. Please try again.'}, status=400)
+
             # Create user
-            user = User(
-                name=full_name,
-                email=email,
-                phone=mobile_number,
+            user = User.objects.create(
+                name=signup_data['full_name'],
+                email=signup_data['email'],
+                phone=signup_data['mobile_number'],
+                password=signup_data['password'],
+                gst_number=signup_data.get('gst_number'),
                 created_at=timezone.now()
             )
             
-            # Set password if not Google auth
-            if not is_google_auth:
-                user.password = make_password(password)
+            # Track user agreement acceptance if available
+            user_agreement = None
+            if signup_data.get('user_agreement_id'):
+                try:
+                    user_agreement = UserAgreement.objects.get(id=signup_data['user_agreement_id'])
+                    
+                    # Create agreement acceptance record
+                    from User.models import UserAgreementAcceptance
+                    agreement_acceptance = UserAgreementAcceptance.objects.create(
+                        user=user,
+                        agreement=user_agreement,
+                        agreement_title=user_agreement.title,
+                        agreement_content=user_agreement.content,
+                        ip_address=get_client_ip(request)
+                    )
+                    
+                    # Send email with agreement details
+                    self.send_agreement_email(user, user_agreement)
+                    
+                except (UserAgreement.DoesNotExist, Exception) as e:
+                    logger.error(f"Error saving user agreement acceptance: {e}")
+                    
+            is_google_auth = signup_data.get('is_google_auth', False)
             
-            user.save()
-            print(f"User created with ID: {user.user_id}")
-            
-            # If this is Google auth completion, set session variables for login
+            # Clean up session
+            del request.session['signup_data']
             if is_google_auth:
-                request.session['user_id'] = str(user.user_id)
-                request.session['user_email'] = user.email
-                request.session['user_name'] = user.name
-                
-                # Clear Google auth session data
                 request.session.pop('google_auth_email', None)
                 request.session.pop('google_auth_name', None)
                 request.session.pop('google_auth_user_id', None)
-                
-                messages.success(request, 'Registration completed successfully!')
-                return redirect('/user/dashboard/')
             
-            # Regular signup - redirect to login page
-            messages.success(request, 'Registration successful! Please log in.')
-            return redirect('/user/login/')
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print(f"Error creating user: {str(e)}")
-            messages.error(request, f'Error during registration: {str(e)}')
-            return render(request, template_to_use, {'form_data': request.POST})
+            request.session.save()
 
+            logger.info(f"User created with ID: {user.user_id}")
+
+            if is_google_auth:
+                messages.success(request, 'Registration completed successfully!')
+                return JsonResponse({'status': 'success_redirect', 'message': 'Account created! Please log in.', 'redirect_url': reverse('login')})
+
+            return JsonResponse({'status': 'success', 'message': 'Account created successfully! Please log in.'})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+        except Exception as e:
+            logger.error(f"Error in VerifySignupOTPView: {e}")
+            return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
+    
+    def send_agreement_email(self, user, agreement):
+        """Send email with the accepted agreement details"""
+        try:
+            subject = '1Matrix - Your Account Terms and Conditions'
             
+            html_message = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background-color: #f8f8f8; padding: 20px; text-align: center;">
+                    <img src="/media/masteradmin_web/1mlogo.png" alt="1Matrix" style="max-width: 150px;">
+                </div>
+                <div style="padding: 30px 20px; border: 1px solid #eee; background-color: white;">
+                    <h2 style="color: #333; margin-bottom: 20px;">Welcome to 1Matrix!</h2>
+                    <p>Hello {user.name},</p>
+                    <p>Your account has been successfully created. Thank you for joining us!</p>
+                    <p>As part of your registration, you accepted the following terms and conditions:</p>
+                    
+                    <div style="background-color: #f9f9f9; border-left: 4px solid #ccc; padding: 15px; margin: 20px 0;">
+                        <h3 style="color: #444;">{agreement.title}</h3>
+                        <div>{agreement.content}</div>
+                    </div>
+                    
+                    <p>Please keep this email for your reference.</p>
+                    <p>If you have any questions or concerns, please contact our support team.</p>
+                </div>
+                <div style="padding: 15px; text-align: center; font-size: 12px; color: #666;">
+                    <p>&copy; {timezone.now().year} 1Matrix. All rights reserved.</p>
+                </div>
+            </div>
+            """
+            
+            plain_message = f"""
+            Welcome to 1Matrix!
+            
+            Hello {user.name},
+            
+            Your account has been successfully created. Thank you for joining us!
+            
+            As part of your registration, you accepted the following terms and conditions:
+            
+            {agreement.title}
+            
+            {agreement.content}
+            
+            Please keep this email for your reference.
+            
+            If you have any questions or concerns, please contact our support team.
+            
+            © {timezone.now().year} 1Matrix. All rights reserved.
+            """
+            
+            send_mail(
+                subject,
+                plain_message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+                html_message=html_message
+            )
+            
+            logger.info(f"Agreement acceptance email sent to {user.email}")
+        except Exception as e:
+            logger.error(f"Error sending agreement email: {e}")
+
+
+# Helper function to get client IP
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ResendSignupOTPView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            signup_data = request.session.get('signup_data')
+
+            if not signup_data:
+                return JsonResponse({'status': 'error', 'message': 'Session expired. Please try signing up again.'}, status=400)
+
+            # Generate new OTP
+            otp = ''.join(random.choices(string.digits, k=6))
+            signup_data['otp'] = otp
+            signup_data['otp_expires_at'] = (timezone.now() + datetime.timedelta(minutes=10)).isoformat()
+            
+            request.session['signup_data'] = signup_data
+            request.session.save()
+
+            # Send new OTP email
+            html_message = render_to_string('user_dashboard/email/signup_otp_email.html', {'otp': otp, 'user_name': signup_data['full_name']})
+            send_mail(
+                'Your New 1Matrix Signup OTP',
+                f"Hi {signup_data['full_name']},\n\nYour new OTP is: {otp}\n\nThis OTP is valid for 10 minutes.",
+                settings.DEFAULT_FROM_EMAIL,
+                [signup_data['email']],
+                fail_silently=False,
+                html_message=html_message
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'A new OTP has been sent to your email.'})
+
+        except Exception as e:
+            logger.error(f"Error in ResendSignupOTPView: {e}")
+            return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
+
 class DashboardView(TemplateView):
     template_name = 'user_dashboard/base.html'
 
@@ -497,9 +713,19 @@ class LoginView(TemplateView):
                 )
                 return render(request, template_to_use)
             
+            if user.is_first_login:
+                # Store temporary auth for the T&C and OTP flow
+                request.session['pre_auth_user_id'] = user.user_id.hex
+                return JsonResponse({'status': 'redirect', 'url': reverse('accept_terms')})
+            
             # Login successful: Invalidate old sessions and create a new one.
-            request.session.flush() # Clears the old session data.
-            UserSession.objects.filter(user=user).delete()
+            request.session.flush()
+            
+            # Determine if "remember me" was checked
+            if remember_me:
+                request.session.set_expiry(30 * 24 * 60 * 60) # 30 days
+            else:
+                request.session.set_expiry(0) # Session expires when browser closes
 
             # Create a new session record
             if not request.session.session_key:
@@ -507,11 +733,6 @@ class LoginView(TemplateView):
             session_key = request.session.session_key
 
             expires_at = timezone.now() + datetime.timedelta(days=30) if remember_me else timezone.now() + datetime.timedelta(seconds=settings.SESSION_COOKIE_AGE)
-            
-            if remember_me:
-                request.session.set_expiry(30 * 24 * 60 * 60) # 30 days
-            else:
-                request.session.set_expiry(0) # Session expires when browser closes
 
             user_session = UserSession.objects.create(
                 user=user,
@@ -546,11 +767,118 @@ class LoginView(TemplateView):
             return redirect('/user/dashboard/')
             
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             print(f"Error during login: {str(e)}")
             messages.error(request, f'Error during login: {str(e)}')
-            return render(request, self.get_template_names()[0])
+            return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
+
+class AcceptTermsView(TemplateView):
+    template_name = 'user_dashboard/accept_terms.html'
+
+    def get(self, request, *args, **kwargs):
+        if 'pre_auth_user_id' not in request.session:
+            return redirect('login')
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_agreement'] = UserAgreement.objects.filter(is_active=True).first()
+        return context
+
+@method_decorator(csrf_exempt, name='dispatch')
+class HandleAcceptTermsView(View):
+    def post(self, request, *args, **kwargs):
+        if 'pre_auth_user_id' not in request.session:
+            return redirect('login')
+        
+        user_id = request.session['pre_auth_user_id']
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return redirect('login')
+
+        # Generate OTP
+        otp = ''.join(random.choices(string.digits, k=6))
+        request.session['first_login_otp'] = otp
+        request.session['first_login_otp_expires_at'] = (timezone.now() + timezone.timedelta(minutes=10)).isoformat()
+
+        # Send OTP email
+        try:
+            send_mail(
+                'Verify Your Login',
+                f'Your One-Time Password (OTP) for completing your login is: {otp}',
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send OTP to {user.email}: {e}")
+            messages.error(request, "Failed to send OTP. Please try again.")
+            return redirect('accept_terms')
+
+        return redirect('verify_first_login_otp')
+
+class VerifyFirstLoginOtpView(TemplateView):
+    template_name = 'user_dashboard/verify_first_login_otp.html'
+
+    def get(self, request, *args, **kwargs):
+        if 'pre_auth_user_id' not in request.session or 'first_login_otp' not in request.session:
+            return redirect('login')
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        otp_entered = request.POST.get('otp')
+        
+        if 'pre_auth_user_id' not in request.session or 'first_login_otp' not in request.session:
+            messages.error(request, 'Session expired. Please log in again.')
+            return redirect('login')
+
+        if timezone.now() > datetime.datetime.fromisoformat(request.session['first_login_otp_expires_at']):
+            messages.error(request, 'OTP has expired. Please try again.')
+            return render(request, self.template_name)
+
+        if request.session['first_login_otp'] != otp_entered:
+            messages.error(request, 'Invalid OTP. Please try again.')
+            return render(request, self.template_name)
+
+        # OTP is correct, finalize login
+        try:
+            user = User.objects.get(user_id=request.session['pre_auth_user_id'])
+            
+            # Update user
+            user.is_first_login = False
+            user.save()
+
+            # Save agreement acceptance
+            agreement = UserAgreement.objects.filter(is_active=True).first()
+            if agreement:
+                UserAgreementAcceptance.objects.create(
+                    user=user,
+                    agreement=agreement,
+                    agreement_title=agreement.title,
+                    agreement_content=agreement.content,
+                    ip_address=get_client_ip(request)
+                )
+
+            # Create final user session
+            request.session.flush()
+            expires_at = timezone.now() + timezone.timedelta(days=1) # 1 day session
+            user_session = UserSession.objects.create(
+                user=user,
+                session_key=request.session.session_key,
+                expires_at=expires_at,
+            )
+            request.session['user_session_key'] = user_session.session_key
+
+            messages.success(request, 'Login successful!')
+            return redirect('dashboard')
+
+        except User.DoesNotExist:
+            messages.error(request, 'User not found. Please log in again.')
+            return redirect('login')
+        except Exception as e:
+            logger.error(f"Error during OTP verification: {e}")
+            messages.error(request, 'An unexpected error occurred.')
+            return redirect('login')
 
 class ForgotPasswordRequestView(View):
     def get(self, request):
@@ -1394,6 +1722,126 @@ class NotificationSettingsView(View):
         user.save()
         messages.success(request, 'Your notification settings have been updated.')
         return redirect('user_settings')
+
+class VerifyProfilingOtpView(View):
+    template_name = 'user_dashboard/verify_profiling_otp.html'
+
+    def get(self, request):
+        if 'profiling_user_id' not in request.session:
+            messages.error(request, 'No active profiling session found. Please start the process again.')
+            return redirect('plans_and_pricing')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        user_id = request.session.get('profiling_user_id')
+        if not user_id:
+            messages.error(request, 'Your session has expired. Please start again.')
+            return redirect('plans_and_pricing')
+
+        submitted_otp = request.POST.get('otp')
+        session_otp = request.session.get('profiling_otp')
+        otp_expiry_str = request.session.get('profiling_otp_expiry')
+
+        if not all([submitted_otp, session_otp, otp_expiry_str]):
+            return render(request, self.template_name, {'error': 'Invalid request. Please try again.'})
+
+        otp_expiry = timezone.datetime.fromisoformat(otp_expiry_str)
+
+        if timezone.now() > otp_expiry:
+            # Clear session keys
+            del request.session['profiling_otp']
+            del request.session['profiling_otp_expiry']
+            del request.session['profiling_user_id']
+            return render(request, self.template_name, {'error': 'OTP has expired. Please request a new one.'})
+
+        if submitted_otp == session_otp:
+            # OTP is correct, mark as verified for the next step
+            request.session['profile_verification_complete'] = True
+            
+            # OTP is used, clear it from session
+            del request.session['profiling_otp']
+            del request.session['profiling_otp_expiry']
+
+            return redirect('complete_profile')
+        else:
+            return render(request, self.template_name, {'error': 'Invalid OTP. Please try again.'})
+
+
+class CompleteProfileView(View):
+    template_name = 'user_dashboard/complete_profile.html'
+    
+    def get(self, request):
+        if not request.session.get('profile_verification_complete'):
+            messages.error(request, 'Please verify your OTP before completing your profile.')
+            return redirect('verify_profiling_otp')
+
+        user_id = request.session.get('profiling_user_id')
+        if not user_id:
+            messages.error(request, 'Session expired. Please start the process again.')
+            return redirect('plans_and_pricing')
+
+        try:
+            user = User.objects.get(user_id=user_id)
+            if user.password:
+                messages.info(request, 'You have already completed your profile setup. Please log in.')
+                return redirect('login')
+        except User.DoesNotExist:
+            messages.error(request, 'User not found. Please contact support.')
+            return redirect('plans_and_pricing')
+
+        return render(request, self.template_name)
+
+    def post(self, request):
+        if not request.session.get('profile_verification_complete'):
+            messages.error(request, 'Please verify your OTP before completing your profile.')
+            return redirect('verify_profiling_otp')
+
+        user_id = request.session.get('profiling_user_id')
+        if not user_id:
+            messages.error(request, 'Session expired. Please start the process again.')
+            return redirect('plans_and_pricing')
+            
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            messages.error(request, 'User not found. Please contact support.')
+            return redirect('plans_and_pricing')
+
+        if user.password:
+            messages.info(request, 'You have already completed your profile setup. Please log in.')
+            return redirect('login')
+            
+        name = request.POST.get('name', '').strip()
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not all([name, password, confirm_password]):
+            return render(request, self.template_name, {'error': 'Please fill in all fields.', 'name': name})
+        
+        if password != confirm_password:
+            return render(request, self.template_name, {'error': 'Passwords do not match.', 'name': name})
+
+        user.name = name
+        user.password = make_password(password)
+        user.is_first_login = False
+        user.save()
+
+        # Clean up session
+        del request.session['profile_verification_complete']
+        del request.session['profiling_user_id']
+
+        session = UserSession.objects.create(
+            user=user,
+            session_key=str(uuid.uuid4()),
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            expires_at=timezone.now() + timezone.timedelta(days=30)
+        )
+        request.session['user_session_id'] = session.id
+        request.session['user_id'] = user.user_id
+
+        messages.success(request, 'Your profile has been set up successfully. Welcome to 1Matrix!')
+        return redirect('dashboard')
 
 
 

@@ -1,0 +1,40 @@
+{% extends 'onematrix/base.html' %}
+{% load static %}
+
+{% block title %}Payment Successful - OneMatrix{% endblock %}
+
+{% block desktop_content %}
+<div class="max-w-4xl mx-auto px-4 py-12 text-center">
+    <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        <div class="flex justify-center mb-6">
+            <div class="bg-green-100 p-4 rounded-full">
+                <svg class="w-12 h-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Payment Successful!</h1>
+        
+        {% if message %}
+            <p class="text-gray-600 text-lg mb-8">{{ message }}</p>
+        {% endif %}
+        
+        {% if order_id %}
+            <div class="bg-gray-50 rounded-lg p-4 mb-8">
+                <p class="text-sm text-gray-500">Your Order ID</p>
+                <p class="text-lg font-mono text-gray-800 tracking-wider">{{ order_id }}</p>
+            </div>
+        {% endif %}
+        
+        {% if show_profiling_link %}
+            <a href="{% url 'verify_profiling_otp' %}" class="inline-block bg-gray-800 text-white font-semibold py-3 px-8 rounded-lg text-lg hover:bg-black transition-transform transform hover:scale-105 shadow-lg">
+                Enter Verification Code
+            </a>
+        {% else %}
+            <a href="{% url 'home' %}" class="inline-block bg-gray-800 text-white font-semibold py-3 px-8 rounded-lg text-lg hover:bg-black transition-transform transform hover:scale-105 shadow-lg">
+                Back to Home
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

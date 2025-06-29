@@ -7,9 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', 'Poppins', sans-serif;
+            font-family: 'Quicksand', sans-serif;
             background-color: #f9fafb;
         }
         @media (max-width: 768px) {
@@ -110,8 +113,27 @@
               </div>
               {% endif %}
               
-              <form class="space-y-4" action="/user/signup/" method="post">
+              {% if is_google_auth %}
+              <div class="mb-4 bg-blue-100 text-blue-700 p-3 rounded-md text-sm">
+                Please complete your profile to continue with Google Sign-in
+              </div>
+              {% endif %}
+
+              <form class="space-y-4" id="signup-form">
                 {% csrf_token %}
+                <!-- Add hidden field for user agreement ID -->
+                {% if user_agreement %}
+                <input type="hidden" name="user_agreement_id" value="{{ user_agreement.id }}">
+                {% endif %}
+                
+                <!-- Full Name -->
+                <div>
+                  <label class="mb-1 block text-xs text-gray-600">Full Name</label>
+                  <div class="relative">
+                    <input type="text" name="full_name" class="w-full rounded-md border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="Laura Kardashian" value="{{ google_auth_name|default:'' }}" {% if google_auth_name %}readonly{% endif %} required>
+                  </div>
+                </div>
+
                 <!-- Phone Number -->
                 <div>
                   <label class="mb-1 block text-xs text-gray-600">Phone number</label>
@@ -131,12 +153,26 @@
                   </div>
                 </div>
                 
+                <!-- GST Number (Optional) -->
+                <div>
+                  <label class="mb-1 block text-xs text-gray-600">GST Number (Optional)</label>
+                  <div class="relative">
+                    <input type="text" name="gst_number" class="w-full rounded-md border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="e.g. 29ABCDE1234F1Z5">
+                    <div class="absolute inset-y-0 right-0 items-center pr-3 hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                  </div>
+                   <p class="mt-1 text-xs text-red-500 hidden">Invalid GST Number format.</p>
+                </div>
+                
                 <!-- Name and Username -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="mb-1 block text-xs text-gray-600">Email</label>
                     <div class="relative">
-                      <input type="email" name="email" class="w-full rounded-md border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="laura@example.com" required>
+                      <input type="email" name="email" class="w-full rounded-md border border-gray-300 bg-gray-50 py-2 px-3 text-sm text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="laura@example.com" value="{{ google_auth_email|default:'' }}" {% if google_auth_email %}readonly{% endif %} required>
                       <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-500 hidden" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -147,6 +183,7 @@
                 </div>
                 
                 <!-- Password -->
+                {% if not is_google_auth %}
                 <div>
                   <label class="mb-1 block text-xs text-gray-600">Password</label>
                   <div class="relative">
@@ -158,12 +195,16 @@
                       </svg>
                     </div>
                   </div>
-                  <p class="mt-1 text-[10px] text-gray-500">At least 12 characters with uppercase, lowercase, numbers, and symbols.</p>
+                  <p class="mt-1 text-[10px] text-gray-500">At least 8 characters with uppercase, lowercase, numbers, and symbols.</p>
                 </div>
+                {% endif %}
                 
                 <!-- Submit Button -->
                 <div>
-                  <button type="submit" class="w-full rounded-md bg-gray-800 py-2.5 text-sm text-white font-medium transition duration-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">Continue</button>
+                  <button type="submit" id="submit-button" class="w-full rounded-md bg-gray-800 py-2.5 text-sm text-white font-medium transition duration-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:bg-gray-400">
+                    <span class="button-text">{% if is_google_auth %}Complete Registration{% else %}Continue{% endif %}</span>
+                    <div class="loader hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>
+                  </button>
                 </div>
                 
                 <!-- Login Link -->
@@ -205,6 +246,61 @@
           </div>
         </div>
       </div>
+
+    <!-- Terms and Conditions Modal -->
+    <div id="terms-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-75 transition-opacity duration-300 opacity-0">
+        <div class="transform scale-95 transition-transform duration-300 w-full max-w-2xl">
+            <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800">{% if user_agreement %}{{ user_agreement.title }}{% else %}Terms and Conditions{% endif %}</h3>
+                </div>
+                <div id="terms-content" class="p-6 max-h-[60vh] overflow-y-auto text-gray-600 space-y-4">
+                    {% if user_agreement %}
+                        {{ user_agreement.content|safe }}
+                    {% else %}
+                        <p>By signing up, you agree to our terms and conditions and privacy policy.</p>
+                    {% endif %}
+                </div>
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end items-center space-x-4">
+                    <button id="decline-terms" class="px-6 py-2 text-sm font-medium text-gray-600 rounded-md border border-gray-300 hover:bg-gray-100 transition">Decline</button>
+                    <button id="accept-terms" class="px-6 py-2 text-sm font-medium text-white bg-gray-800 rounded-md hover:bg-gray-700 transition">Accept & Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Modal -->
+    <div id="otp-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
+        <div class="transform bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 md:p-8 transition-transform duration-300 scale-95">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 text-center">Verify Your Email</h2>
+            <p class="text-center text-gray-600 mt-2 text-sm">An OTP has been sent to your email address. Please enter it below.</p>
+            <div id="otp-error" class="hidden mt-4 bg-red-100 text-red-700 p-3 rounded-md text-sm"></div>
+            <div id="otp-success" class="hidden mt-4 bg-green-100 text-green-700 p-3 rounded-md text-sm"></div>
+            
+            <form id="otp-form" class="mt-6">
+                <div class="flex justify-center space-x-1 sm:space-x-2">
+                    <input type="text" maxlength="1" class="otp-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent" required>
+                    <input type="text" maxlength="1" class="otp-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent" required>
+                    <input type="text" maxlength="1" class="otp-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent" required>
+                    <input type="text" maxlength="1" class="otp-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent" required>
+                    <input type="text" maxlength="1" class="otp-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent" required>
+                    <input type="text" maxlength="1" class="otp-input w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent" required>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" id="verify-otp-button" class="w-full rounded-[12px] bg-gray-800 py-3 text-sm text-white font-medium transition duration-300 hover:bg-gray-700 disabled:bg-gray-400">
+                        <span class="button-text">Verify & Create Account</span>
+                        <div class="loader hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>
+                    </button>
+                </div>
+            </form>
+            <div class="text-center mt-4 text-xs text-gray-600">
+                Didn't receive the code? 
+                <button id="resend-otp" class="text-blue-600 hover:underline disabled:text-gray-400 disabled:cursor-not-allowed">Resend OTP</button>
+                <span id="resend-timer" class="hidden">in 60s</span>
+            </div>
+        </div>
+    </div>
+
       <script>
         // Password visibility toggle
         function togglePasswordVisibility() {
@@ -255,6 +351,358 @@
               this.classList.remove('bg-gray-100');
             }
           }
+        });
+
+        // GSTIN Validation
+        function isValidGstin(gstin) {
+            if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstin)) {
+                return false;
+            }
+            const stateCode = parseInt(gstin.substring(0, 2), 10);
+            if (stateCode < 1 || stateCode > 37) {
+                return false;
+            }
+            const gstinChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            let total = 0;
+            for (let i = 0; i < 14; i++) {
+                const char = gstin[i];
+                const val = gstinChars.indexOf(char);
+                const weight = (i % 2) + 1;
+                if (weight === 1) {
+                    total += val;
+                } else {
+                    const res = val * 2;
+                    total += Math.floor(res / 36) + (res % 36);
+                }
+            }
+            const checksumVal = (36 - (total % 36)) % 36;
+            const checksumChar = gstinChars[checksumVal];
+            return gstin[14] === checksumChar;
+        }
+
+        document.querySelector('input[name="gst_number"]').addEventListener('blur', function() {
+            const gstin = this.value.trim().toUpperCase();
+            this.value = gstin; // Set to uppercase
+            const container = this.parentElement;
+            const iconContainer = container.querySelector('.absolute');
+            const errorMsg = container.nextElementSibling;
+
+            if (gstin.length === 0) {
+                this.classList.remove('border-red-300', 'border-green-300', 'focus:border-blue-500', 'focus:ring-1', 'focus:ring-blue-500');
+                if (iconContainer) iconContainer.classList.add('hidden');
+                if (errorMsg) errorMsg.classList.add('hidden');
+                return;
+            }
+
+            if (isValidGstin(gstin)) {
+                this.classList.add('border-green-300');
+                this.classList.remove('border-red-300');
+                if (iconContainer) iconContainer.classList.remove('hidden');
+                if (errorMsg) errorMsg.classList.add('hidden');
+            } else {
+                this.classList.add('border-red-300');
+                this.classList.remove('border-green-300');
+                if (iconContainer) iconContainer.classList.add('hidden');
+                if (errorMsg) errorMsg.classList.remove('hidden');
+            }
+        });
+
+        // New Signup Flow
+        document.addEventListener('DOMContentLoaded', () => {
+            const signupForm = document.getElementById('signup-form');
+            const submitButton = document.getElementById('submit-button');
+            
+            // Modals
+            const termsModal = document.getElementById('terms-modal');
+            const otpModal = document.getElementById('otp-modal');
+
+            // Terms Modal Elements
+            const termsContent = document.getElementById('terms-content');
+            const acceptTermsBtn = document.getElementById('accept-terms');
+            const declineTermsBtn = document.getElementById('decline-terms');
+
+            // OTP Modal Elements
+            const otpForm = document.getElementById('otp-form');
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const verifyOtpBtn = document.getElementById('verify-otp-button');
+            const resendOtpBtn = document.getElementById('resend-otp');
+            const resendTimerSpan = document.getElementById('resend-timer');
+            const otpErrorDiv = document.getElementById('otp-error');
+            const otpSuccessDiv = document.getElementById('otp-success');
+
+            // Utility to toggle loader
+            const toggleLoader = (button, show) => {
+                const buttonText = button.querySelector('.button-text');
+                const loader = button.querySelector('.loader');
+                if (show) {
+                    buttonText.classList.add('hidden');
+                    loader.classList.remove('hidden');
+                    button.disabled = true;
+                } else {
+                    buttonText.classList.remove('hidden');
+                    loader.classList.add('hidden');
+                    button.disabled = false;
+                }
+            };
+
+            // Show/Hide Modals with animation
+            const showModal = (modal) => {
+                if (!modal) return; // Guard against null modal
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    const transformElement = modal.querySelector('.transform');
+                    if (transformElement) {
+                        transformElement.classList.remove('scale-95');
+                    }
+                }, 10);
+                document.body.style.overflow = 'hidden';
+            };
+
+            const hideModal = (modal) => {
+                if (!modal) return; // Guard against null modal
+                modal.classList.add('opacity-0');
+                const transformElement = modal.querySelector('.transform');
+                if (transformElement) {
+                    transformElement.classList.add('scale-95');
+                }
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }, 300);
+            };
+            
+            // --- Signup Form Submission ---
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (validateSignupForm()) {
+                    // Check if terms modal is available
+                    if (termsModal) {
+                        showModal(termsModal);
+                    } else {
+                        // If terms modal isn't available, proceed directly
+                        await submitSignupForm();
+                    }
+                }
+            });
+
+            const validateSignupForm = () => {
+                // Basic frontend validation
+                const name = signupForm.querySelector('input[name="full_name"]').value;
+                const email = signupForm.querySelector('input[name="email"]').value;
+                const phone = signupForm.querySelector('input[name="mobile_number"]').value;
+                const passwordInput = signupForm.querySelector('input[name="password"]');
+                const isGoogleAuth = {{ is_google_auth|yesno:"true,false" }};
+                const gstInput = signupForm.querySelector('input[name="gst_number"]');
+
+                const password = passwordInput ? passwordInput.value : null;
+
+                if (!name || !email || !phone) {
+                    alert('Please fill in all required fields.');
+                    return false;
+                }
+                if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+                    alert('Please enter a valid 10-digit phone number.');
+                    return false;
+                }
+                if (gstInput.value.length > 0 && !isValidGstin(gstInput.value.toUpperCase())) {
+                    alert('Please enter a valid GST number or leave the field empty.');
+                    return false;
+                }
+                if (!isGoogleAuth && !password) {
+                    alert('Please provide a password.');
+                    return false;
+                }
+                if (!isGoogleAuth && password.length < 8) {
+                    alert('Password must be at least 8 characters long.');
+                    return false;
+                }
+                return true;
+            };
+
+            // Extracted signup form submission logic
+            const submitSignupForm = async () => {
+                toggleLoader(submitButton, true);
+
+                const formData = new FormData(signupForm);
+                const data = Object.fromEntries(formData.entries());
+
+                try {
+                    const response = await fetch('/user/signup/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': data.csrfmiddlewaretoken
+                        },
+                        body: JSON.stringify({
+                            full_name: data.full_name,
+                            email: data.email,
+                            mobile_number: data.mobile_number,
+                            password: data.password || null,
+                            gst_number: data.gst_number || null,
+                            user_agreement_id: data.user_agreement_id || null
+                        })
+                    });
+
+                    const result = await response.json();
+                    toggleLoader(submitButton, false);
+
+                    if (response.ok) {
+                        if (otpModal) {
+                            showModal(otpModal);
+                            startResendTimer();
+                        } else {
+                            alert('Account created successfully. Please check your email for verification.');
+                            window.location.href = '/user/login/';
+                        }
+                    } else {
+                        alert(`Error: ${result.message || 'Something went wrong'}`);
+                    }
+                } catch (error) {
+                    toggleLoader(submitButton, false);
+                    alert('An unexpected error occurred. Please try again.');
+                    console.error('Signup error:', error);
+                }
+            };
+
+            // --- Terms & Conditions Modal Logic ---
+            if (declineTermsBtn) {
+                declineTermsBtn.addEventListener('click', () => hideModal(termsModal));
+            }
+
+            if (acceptTermsBtn) {
+                acceptTermsBtn.addEventListener('click', async () => {
+                    hideModal(termsModal);
+                    await submitSignupForm();
+                });
+            }
+
+            // --- OTP Modal Logic ---
+            if (otpInputs && otpInputs.length > 0) {
+                otpInputs.forEach((input, index) => {
+                    input.addEventListener('input', () => {
+                        if (input.value.length === 1 && index < otpInputs.length - 1) {
+                            otpInputs[index + 1].focus();
+                        }
+                    });
+
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
+                            otpInputs[index - 1].focus();
+                        }
+                    });
+                });
+            }
+            
+            if (otpForm) {
+                otpForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    toggleLoader(verifyOtpBtn, true);
+
+                    const otp = Array.from(otpInputs).map(input => input.value).join('');
+                    if (otp.length !== 6) {
+                        showOtpMessage('Please enter a valid 6-digit OTP.', 'error');
+                        toggleLoader(verifyOtpBtn, false);
+                        return;
+                    }
+                    const csrfToken = signupForm.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+                    try {
+                        const response = await fetch('/user/verify-signup-otp/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: JSON.stringify({ otp: otp })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                            hideModal(otpModal);
+                            if (result.status === 'success_redirect') {
+                                alert(result.message);
+                                window.location.href = result.redirect_url;
+                            } else {
+                                alert(result.message);
+                                window.location.href = '/user/login/';
+                            }
+                        } else {
+                            showOtpMessage(result.message || 'Invalid OTP. Please try again.', 'error');
+                        }
+                    } catch (error) {
+                        showOtpMessage('An unexpected error occurred.', 'error');
+                        console.error('OTP verification error:', error);
+                    } finally {
+                        toggleLoader(verifyOtpBtn, false);
+                    }
+                });
+            }
+
+            if (resendOtpBtn) {
+                resendOtpBtn.addEventListener('click', async () => {
+                    resendOtpBtn.disabled = true;
+                    showOtpMessage('Sending a new OTP...', 'success');
+                    const csrfToken = signupForm.querySelector('input[name="csrfmiddlewaretoken"]').value;
+                    
+                    try {
+                        const response = await fetch('/user/resend-signup-otp/', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken 
+                            }
+                        });
+
+                        const result = await response.json();
+                        if (response.ok) {
+                            showOtpMessage(result.message, 'success');
+                            startResendTimer();
+                        } else {
+                            showOtpMessage(result.message || 'Failed to resend OTP.', 'error');
+                            resendOtpBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        showOtpMessage('Failed to resend OTP.', 'error');
+                        resendOtpBtn.disabled = false;
+                    }
+                });
+            }
+
+            const showOtpMessage = (message, type = 'error') => {
+                if (!otpErrorDiv || !otpSuccessDiv) return;
+                
+                otpErrorDiv.classList.add('hidden');
+                otpSuccessDiv.classList.add('hidden');
+
+                const targetDiv = type === 'error' ? otpErrorDiv : otpSuccessDiv;
+                targetDiv.textContent = message;
+                targetDiv.classList.remove('hidden');
+            };
+            
+            let timer;
+            const startResendTimer = () => {
+                if (!resendOtpBtn || !resendTimerSpan) return;
+                
+                let timeLeft = 60;
+                resendOtpBtn.disabled = true;
+                resendTimerSpan.classList.remove('hidden');
+
+                // Clear any existing timer
+                if (timer) clearInterval(timer);
+
+                timer = setInterval(() => {
+                    timeLeft--;
+                    resendTimerSpan.textContent = `in ${timeLeft}s`;
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        resendTimerSpan.classList.add('hidden');
+                        resendOtpBtn.disabled = false;
+                    }
+                }, 1000);
+            };
+
         });
       </script>
 </body>

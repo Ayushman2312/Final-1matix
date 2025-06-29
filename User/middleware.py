@@ -103,11 +103,13 @@ class UserAuthMiddleware:
             'upi-payment' in current_path or
             'masteradmin' in current_path or
             'alavi07' in current_path or
+            'onematrix' in current_path or
             'onboarding' in current_path or
             'employee' in current_path or
             'mark-attendance' in current_path or
             'forgot-password' in current_path or
             'reset-password' in current_path or
+            'plans-and-pricing' in current_path or
             'verify-otp' in current_path or
             'attend' in current_path or
             # Include website public paths

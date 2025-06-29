@@ -1,0 +1,56 @@
+{% extends 'user_dashboard/base_auth.html' %}
+{% load static %}
+
+{% block title %}Accept Terms & Conditions{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-2xl w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Terms & Conditions
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Please read and accept our terms and conditions to continue.
+      </p>
+    </div>
+    
+    {% if user_agreement %}
+    <div id="agreement-content" class="h-96 overflow-y-scroll border border-gray-200 rounded-lg p-4 bg-gray-50 text-sm text-gray-700 prose">
+      <h3 class="text-xl font-bold mb-4">{{ user_agreement.title }}</h3>
+      {{ user_agreement.content|safe }}
+    </div>
+
+    <form id="accept-form" method="POST" action="{% url 'handle_accept_terms' %}">
+      {% csrf_token %}
+      <button id="accept-btn" type="submit" disabled
+        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-400 cursor-not-allowed">
+        I Accept
+      </button>
+    </form>
+    {% else %}
+    <div class="text-center text-red-500">
+        <p>Could not load the user agreement at this time. Please try again later.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const agreementContent = document.getElementById('agreement-content');
+    const acceptBtn = document.getElementById('accept-btn');
+
+    if (agreementContent && acceptBtn) {
+        agreementContent.addEventListener('scroll', function() {
+            // Check if the user has scrolled to the bottom
+            if (agreementContent.scrollHeight - agreementContent.scrollTop <= agreementContent.clientHeight + 5) {
+                acceptBtn.disabled = false;
+                acceptBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                acceptBtn.classList.add('bg-gray-800', 'hover:bg-gray-900');
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

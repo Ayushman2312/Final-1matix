@@ -415,7 +415,7 @@
         
         // Function to setup document checkboxes
         function setupDocumentCheckboxes() {
-            const documentTypes = ['hiringAgreement', 'handbook', 'hrPolicies', 'trainingMaterial'];
+            const documentTypes = ['hiringAgreement', 'handbook', 'hrPolicies', 'trainingMaterial', 'folder'];
             
             documentTypes.forEach(type => {
                 const checkbox = document.getElementById(`${type}Checkbox`);
@@ -550,7 +550,7 @@
                                     <select id="hiringAgreementSelect" class="mt-1 w-full text-sm border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-gray-600 disabled:bg-gray-100 disabled:text-gray-400" disabled>
                                         <option value="" disabled selected>Select Agreement</option>
                                         {% for agreement in hiring_agreements %}
-                                        <option value="{{ agreement.agreement_id }}">{{ agreement.name }}</option>
+                                        <option value="{{ agreement.hiring_agreement_id }}">{{ agreement.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -599,6 +599,22 @@
                                         <option value="" disabled selected>Select Training Material</option>
                                         {% for material in training_materials %}
                                         <option value="{{ material.material_id }}">{{ material.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Folder Documents -->
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="folderCheckbox" type="checkbox" class="document-checkbox w-4 h-4 text-[#7B3DF3] border-gray-300 rounded focus:ring-[#7B3DF3]">
+                                </div>
+                                <div class="ml-3">
+                                    <label for="folderCheckbox" class="text-sm font-medium text-gray-700">Folder Documents</label>
+                                    <select id="folderSelect" class="mt-1 w-full text-sm border border-gray-300 rounded-md py-1.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#7B3DF3] focus:border-[#7B3DF3] text-gray-600 disabled:bg-gray-100 disabled:text-gray-400" disabled>
+                                        <option value="" disabled selected>Select Folder</option>
+                                        {% for folder in folders %}
+                                        <option value="{{ folder.folder_id }}">{{ folder.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>

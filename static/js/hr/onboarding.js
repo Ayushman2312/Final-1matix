@@ -194,11 +194,13 @@ function sendInvitation() {
     const handbookCheckbox = document.getElementById('handbookCheckbox');
     const hrPoliciesCheckbox = document.getElementById('hrPoliciesCheckbox');
     const trainingMaterialCheckbox = document.getElementById('trainingMaterialCheckbox');
+    const folderCheckbox = document.getElementById('folderCheckbox');
     
     const hiringAgreementSelect = document.getElementById('hiringAgreementSelect');
     const handbookSelect = document.getElementById('handbookSelect');
     const hrPoliciesSelect = document.getElementById('hrPoliciesSelect');
     const trainingMaterialSelect = document.getElementById('trainingMaterialSelect');
+    const folderSelect = document.getElementById('folderSelect');
     const photoUpload = document.getElementById('photoUpload');
     
     // Debug log to check field values
@@ -213,7 +215,8 @@ function sendInvitation() {
         hiringAgreement: hiringAgreementCheckbox && hiringAgreementCheckbox.checked ? hiringAgreementSelect.value : 'Not selected',
         handbook: handbookCheckbox && handbookCheckbox.checked ? handbookSelect.value : 'Not selected',
         hrPolicies: hrPoliciesCheckbox && hrPoliciesCheckbox.checked ? hrPoliciesSelect.value : 'Not selected',
-        trainingMaterial: trainingMaterialCheckbox && trainingMaterialCheckbox.checked ? trainingMaterialSelect.value : 'Not selected'
+        trainingMaterial: trainingMaterialCheckbox && trainingMaterialCheckbox.checked ? trainingMaterialSelect.value : 'Not selected',
+        folder: folderCheckbox && folderCheckbox.checked ? folderSelect.value : 'Not selected'
     });
     
     // Validate required fields
@@ -347,6 +350,16 @@ function sendInvitation() {
             name: trainingMaterialSelect.options[trainingMaterialSelect.selectedIndex].text
         });
         console.log('Adding training material:', trainingMaterialSelect.value);
+    }
+    
+    if (folderCheckbox && folderCheckbox.checked && folderSelect && folderSelect.value) {
+        formData.append('folder', folderSelect.value);
+        additionalDocuments.push({
+            type: 'folder',
+            id: folderSelect.value,
+            name: folderSelect.options[folderSelect.selectedIndex].text
+        });
+        console.log('Adding folder:', folderSelect.value);
     }
     
     // Add all additional documents as a JSON string

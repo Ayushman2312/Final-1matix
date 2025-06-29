@@ -10,6 +10,11 @@ urlpatterns = [
     path('agents/', AgentsView.as_view(), name='agents'),
     path('subscription/', SubscriptionView.as_view(), name='subscription'),
     path('apps/', AppsView.as_view(), name='apps'),
+    path('create_app/', CreateAppView.as_view(), name='create_app'),
+    path('update_app/', UpdateAppView.as_view(), name='update_app'),
+    path('delete_app/', DeleteAppView.as_view(), name='delete_app'),
+    path('toggle_app_status/', ToggleAppStatusView.as_view(), name='toggle_app_status'),
+    path('app/<int:app_id>/', GetAppView.as_view(), name='get_app'),
     path('feedbacks/', FeedbacksView.as_view(), name='feedbacks'),
     path('users/', UsersView.as_view(), name='users'),
     path('customer_support/', CustomerSupportView.as_view(), name='customer_support'),
@@ -84,6 +89,9 @@ urlpatterns = [
     path('beesuggest-agreement/', BeesuggestAgreementView.as_view(), name='beesuggest_agreement'),
     path('beesuggest-agreement/set-active/', SetActiveBeesuggestAgreementView.as_view(), name='set_active_beesuggest_agreement'),
     path('beesuggest-agreement/delete/', DeleteBeesuggestAgreementView.as_view(), name='delete_beesuggest_agreement'),
+    path('user-agreement/', UserAgreementView.as_view(), name='user_agreement'),
+    path('user-agreement/set-active/', SetActiveUserAgreementView.as_view(), name='set_active_user_agreement'),
+    path('user-agreement/delete/', DeleteUserAgreementView.as_view(), name='delete_user_agreement'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

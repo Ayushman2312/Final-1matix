@@ -721,9 +721,151 @@ class AppsView(TemplateView):
         context['total_meetings'] = Meeting.objects.filter(is_active=True).count()
         context['departments'] = Policy.objects.all()
         context['support_departments'] = SupportDepartment.objects.all()
+        # Include apps in the context
+        context['apps'] = Apps.objects.all().order_by('-created_at')
         logger.debug("Returning context data")
         return context
-    
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateAppView(View):
+    """View to create a new app."""
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        url_keyword = request.POST.get('url_keyword', '').strip()
+        is_active = request.POST.get('is_active') == 'true'
+
+        if not name or not description:
+            messages.error(request, 'Name and description are required.')
+            return redirect('/masteradmin/apps/')
+            
+        try:
+            Apps.objects.create(
+                name=name,
+                description=description,
+                url_keyword=url_keyword if url_keyword else None,
+                is_active=is_active
+            )
+            messages.success(request, f'App "{name}" created successfully.')
+        except IntegrityError:
+            messages.error(request, f'An app with the name "{name}" or URL keyword "{url_keyword}" already exists.')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {e}')
+            
+        return redirect('/masteradmin/apps/')
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class UpdateAppView(View):
+    """View to update an existing app."""
+    def post(self, request, *args, **kwargs):
+        app_id = request.POST.get('app_id')
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        url_keyword = request.POST.get('url_keyword', '').strip()
+        is_active = request.POST.get('is_active') == 'true'
+        
+        if not all([app_id, name, description]):
+            messages.error(request, 'Missing required fields.')
+            return redirect('/masteradmin/apps/')
+            
+        try:
+            app = Apps.objects.get(id=app_id)
+            app.name = name
+            app.description = description
+            app.url_keyword = url_keyword if url_keyword else None
+            app.is_active = is_active
+            app.save()
+            messages.success(request, f'App "{name}" updated successfully.')
+        except Apps.DoesNotExist:
+            messages.error(request, 'App not found.')
+        except IntegrityError:
+            messages.error(request, f'An app with the name "{name}" or URL keyword "{url_keyword}" already exists.')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {e}')
+            
+        return redirect('/masteradmin/apps/')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteAppView(View):
+    def post(self, request, *args, **kwargs):
+        logger.info("Processing app deletion request")
+        try:
+            app_id = request.POST.get('app_id')
+            
+            if not app_id:
+                logger.error("App ID is required")
+                messages.error(request, 'App ID is required')
+                return redirect('/masteradmin/apps/')
+            
+            app = Apps.objects.get(id=app_id)
+            app_name = app.name
+            
+            # Check if app is used in any subscriptions
+            subscriptions_using_app = Subscription.objects.filter(features=app)
+            if subscriptions_using_app.exists():
+                logger.warning(f"Cannot delete app {app_name} as it is used in {subscriptions_using_app.count()} subscription(s)")
+                messages.error(request, f'Cannot delete "{app_name}" as it is being used in {subscriptions_using_app.count()} subscription plan(s).')
+                return redirect('/masteradmin/apps/')
+                
+            app.delete()
+            logger.info(f"Deleted app: {app_name}")
+            messages.success(request, f'App "{app_name}" has been deleted successfully.')
+            
+        except Apps.DoesNotExist:
+            logger.error(f"App with ID {app_id} not found")
+            messages.error(request, f'App not found.')
+        except Exception as e:
+            logger.error(f"Error deleting app: {str(e)}")
+            messages.error(request, f'Error deleting app: {str(e)}')
+            
+        return redirect('apps')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ToggleAppStatusView(View):
+    def post(self, request, *args, **kwargs):
+        logger.info("Processing app status toggle request")
+        try:
+            app_id = request.POST.get('app_id')
+            current_status = request.POST.get('current_status')
+            
+            if not app_id:
+                logger.error("App ID is required")
+                messages.error(request, 'App ID is required')
+                return redirect('apps')
+            
+            app = Apps.objects.get(id=app_id)
+            app.is_active = not (current_status == 'active')
+            app.save()
+            
+            new_status = "activated" if app.is_active else "deactivated"
+            logger.info(f"Toggled app status: {app.name} is now {new_status}")
+            messages.success(request, f'App "{app.name}" has been {new_status} successfully.')
+            
+        except Apps.DoesNotExist:
+            logger.error(f"App with ID {app_id} not found")
+            messages.error(request, f'App not found.')
+        except Exception as e:
+            logger.error(f"Error toggling app status: {str(e)}")
+            messages.error(request, f'Error changing app status: {str(e)}')
+            
+        return redirect('apps')
+
+class GetAppView(View):
+    def get(self, request, app_id, *args, **kwargs):
+        try:
+            app = Apps.objects.get(id=app_id)
+            data = {
+                'id': app.id,
+                'name': app.name,
+                'description': app.description,
+                'url_keyword': app.url_keyword,
+                'is_active': app.is_active,
+            }
+            return JsonResponse({'status': 'success', 'app': data})
+        except Apps.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'App not found'}, status=404)
+
 class FeedbacksView(TemplateView):
     template_name = "masteradmin/feedbacks.html"
 
@@ -820,7 +962,7 @@ class SalesView(TemplateView):
         return context
 
 class CreateSubscriptionView(TemplateView):
-    template_name = "masteradmin/subscription.html"
+    template_name = "masteradmin/create_subscription.html"
 
     def get_context_data(self, **kwargs):
         logger.info("Getting context data for CreateSubscriptionView")
@@ -829,6 +971,7 @@ class CreateSubscriptionView(TemplateView):
         context['total_meetings'] = Meeting.objects.filter(is_active=True).count()
         context['departments'] = Policy.objects.all()
         context['support_departments'] = SupportDepartment.objects.all()
+        context['apps'] = Apps.objects.all()
         logger.debug("Returning context data")
         return context
     
@@ -841,10 +984,8 @@ class CreateSubscriptionView(TemplateView):
             name = data.get('name')
             if not name:
                 logger.error("Name field is missing")
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Name is required'
-                }, status=400)
+                messages.error(request, 'Name is required')
+                return redirect('create_subscription')
             
             # Create subscription with all model fields
             subscription = Subscription.objects.create(
@@ -854,47 +995,110 @@ class CreateSubscriptionView(TemplateView):
                 users=int(data.get('users', 1)), 
                 max_users=int(data.get('max_users', 4)),
                 validity_days=int(data.get('validity_days', 30)),
-                discount=float(data.get('discount', 0)),
+                discount=float(data.get('discount', 0)) if data.get('discount') else None,
                 additional_user_cost=float(data.get('additional_user_cost', 1000)),
                 is_active=True,
                 paused=False
             )
             logger.info(f"Created subscription: {subscription.name}")
 
-            # Handle features/apps - only add selected ones
-            # Get features from request data
-            selected_features = data.get('features', [])
+            # Process app features and their limits
+            selected_features = request.POST.getlist('features[]')
             if selected_features:
-                try:
-                    # Convert string to list if needed
-                    if isinstance(selected_features, str):
-                        selected_features = json.loads(selected_features)
+                logger.debug(f"Processing {len(selected_features)} selected apps")
+                
+                # Filter valid feature IDs and add to subscription
+                valid_features = Apps.objects.filter(id__in=selected_features)
+                subscription.features.set(valid_features)
+                
+                # Process app limits for each selected app
+                for app_id in selected_features:
+                    limit_type = request.POST.get(f'limit_type_{app_id}')
                     
-                    # Filter valid feature IDs and add to subscription
-                    valid_features = Apps.objects.filter(id__in=selected_features)
-                    subscription.features.set(valid_features)
-                    logger.debug(f"Added {valid_features.count()} features to subscription")
-                except json.JSONDecodeError:
-                    logger.error("Invalid features data format")
-                except Exception as e:
-                    logger.error(f"Error setting features: {str(e)}")
+                    if limit_type == 'Limited':
+                        # Process limited type
+                        credits = request.POST.get(f'app_credits_{app_id}')
+                        daily_limit = request.POST.get(f'app_daily_limit_{app_id}')
+                        price = request.POST.get(f'app_price_{app_id}')
+                        
+                        # Convert to appropriate types
+                        credits = int(credits) if credits else None
+                        daily_limit = int(daily_limit) if daily_limit else None
+                        price = float(price) if price else 0
+                        
+                        AppSubscriptionLimit.objects.create(
+                            subscription=subscription,
+                            app_id=app_id,
+                            limit_type='Limited',
+                            credits=credits,
+                            daily_limit=daily_limit,
+                            price=price
+                        )
+                        logger.debug(f"Added limited app settings for app {app_id}")
+                    
+                    elif limit_type == 'Unlimited':
+                        # Process unlimited type
+                        price = request.POST.get(f'app_unlimited_price_{app_id}')
+                        price = float(price) if price else 0
+                        
+                        AppSubscriptionLimit.objects.create(
+                            subscription=subscription,
+                            app_id=app_id,
+                            limit_type='Unlimited',
+                            credits=None,
+                            daily_limit=None,
+                            price=price
+                        )
+                        logger.debug(f"Added unlimited app settings for app {app_id}")
+            
+            # Process coupons
+            coupon_names = request.POST.getlist('coupon_name[]')
+            coupon_codes = request.POST.getlist('coupon_code[]')
+            coupon_discount_types = request.POST.getlist('coupon_discount_type[]')
+            coupon_rates = request.POST.getlist('coupon_rate[]')
+            coupon_number_of_uses = request.POST.getlist('coupon_number_of_uses[]')
+            coupon_expiry_dates = request.POST.getlist('coupon_expiry_date[]')
+            
+            # Create coupons
+            for i in range(len(coupon_names)):
+                if i < len(coupon_codes) and coupon_names[i] and coupon_codes[i]:
+                    discount_type = coupon_discount_types[i] if i < len(coupon_discount_types) else 'Flat'
+                    rate = float(coupon_rates[i]) if i < len(coupon_rates) and coupon_rates[i] else 0
+                    uses = int(coupon_number_of_uses[i]) if i < len(coupon_number_of_uses) and coupon_number_of_uses[i] else 1
+                    
+                    # Handle expiry date
+                    expiry_date = None
+                    if i < len(coupon_expiry_dates) and coupon_expiry_dates[i]:
+                        try:
+                            expiry_date = coupon_expiry_dates[i]
+                        except Exception as e:
+                            logger.error(f"Error parsing expiry date: {str(e)}")
+                    
+                    # Create the coupon
+                    coupon = Coupons.objects.create(
+                        name=coupon_names[i],
+                        code=coupon_codes[i],
+                        discount_type=discount_type,
+                        rate=rate,
+                        number_of_uses=uses,
+                        expiry_date=expiry_date
+                    )
+                    
+                    # Associate coupon with subscription
+                    subscription.coupons.add(coupon)
+                    logger.debug(f"Created and added coupon: {coupon.name}")
 
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Subscription created successfully'
-            })
+            messages.success(request, 'Subscription created successfully')
+            return redirect('subscription')
+            
         except ValueError as e:
             logger.error(f"Invalid numeric values: {str(e)}")
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Invalid numeric values provided'
-            }, status=400)
+            messages.error(request, f'Invalid numeric values provided: {str(e)}')
+            return redirect('create_subscription')
         except Exception as e:
             logger.error(f"Error creating subscription: {str(e)}")
-            return JsonResponse({
-                'status': 'error', 
-                'message': str(e)
-            }, status=400)
+            messages.error(request, f'Error creating subscription: {str(e)}')
+            return redirect('create_subscription')
 
 # HTML Template Usage:
 # Form: <form method="POST" action="{% url 'delete_subscription' subscription.id %}">
@@ -3708,3 +3912,99 @@ class DeleteBeesuggestAgreementView(View):
         except Exception as e:
             messages.error(request, f'An error occurred: {e}')
         return redirect('beesuggest_agreement')
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            agreement_id = data.get('agreement_id')
+            
+            agreement = BeesuggestAgreement.objects.get(id=agreement_id)
+            agreement.delete()
+            
+            return JsonResponse({'status': 'success', 'message': 'Agreement deleted successfully.'})
+        
+        except BeesuggestAgreement.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Agreement not found.'}, status=404)
+        
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+class UserAgreementView(View):
+    """
+    View for masteradmin to create or update the User Agreement.
+    Ensures that there is only one active agreement.
+    """
+    template_name = 'masteradmin/user_agreement.html'
+
+    def get(self, request, *args, **kwargs):
+        agreements = UserAgreement.objects.all().order_by('-created_at')
+        active_agreement = UserAgreement.objects.filter(is_active=True).first()
+        
+        context = {
+            'agreements': agreements,
+            'active_agreement': active_agreement,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        
+        if not title or not content:
+            messages.error(request, 'Title and content are required.')
+            return redirect('user_agreement')
+
+        # Create new agreement
+        new_agreement = UserAgreement.objects.create(title=title, content=content)
+        
+        # Set all other agreements to inactive
+        UserAgreement.objects.exclude(id=new_agreement.id).update(is_active=False)
+        
+        # Set the new agreement to active
+        new_agreement.is_active = True
+        new_agreement.save()
+        
+        messages.success(request, 'New user agreement created and set as active.')
+        return redirect('user_agreement')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SetActiveUserAgreementView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            agreement_id = data.get('agreement_id')
+            
+            # Deactivate all other agreements
+            UserAgreement.objects.all().update(is_active=False)
+            
+            # Activate the selected agreement
+            agreement = UserAgreement.objects.get(id=agreement_id)
+            agreement.is_active = True
+            agreement.save()
+            
+            return JsonResponse({'status': 'success', 'message': 'Agreement set as active.'})
+        
+        except UserAgreement.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Agreement not found.'}, status=404)
+        
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteUserAgreementView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            agreement_id = data.get('agreement_id')
+            
+            agreement = UserAgreement.objects.get(id=agreement_id)
+            agreement.delete()
+            
+            return JsonResponse({'status': 'success', 'message': 'Agreement deleted successfully.'})
+        
+        except UserAgreement.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Agreement not found.'}, status=404)
+        
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

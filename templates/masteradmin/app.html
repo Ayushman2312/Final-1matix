@@ -1,161 +1,427 @@
 {% extends 'masteradmin/base.html' %}
 {% load static %}
+
 {% block content %}
-            <!-- Quick Action Buttons -->
-            <div class="flex sm:grid sm:grid-cols-6 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
-                {% for app_num in '123456'|make_list %}
-                <div class="relative flex-none w-32 sm:w-auto">
-                    <button onclick="showApp{{app_num}}" class="w-full bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
-                        <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#{% cycle '4CAF50' '2196F3' 'FF9800' 'E91E63' '9C27B0' '00BCD4' %}]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                {% with forloop.counter as counter %}
-                                {% if counter == 1 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                {% elif counter == 2 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                {% elif counter == 3 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                {% elif counter == 4 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                {% elif counter == 5 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                {% else %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                                {% endif %}
-                                {% endwith %}
-                            </svg>
-                        </div>
-                        <span class="text-[rgb(237,226,226,1)] text-xs">App {{app_num}}</span>
-                    </button>
-                    <div class="absolute top-2 right-2">
-                        <button onclick="showAppOptions('app{{app_num}}')" class="text-white hover:text-gray-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                {% endfor %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Breadcrumb -->
+    <div class="flex items-center mb-8 text-sm">
+        <a href="{% url 'masteradmin_dashboard' %}" class="text-gray-400 hover:text-white transition-colors">Dashboard</a>
+        <svg class="h-4 w-4 mx-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        <span class="text-white font-medium">Apps Management</span>
+    </div>
+
+    <!-- Page Title with Animation -->
+    <div class="mb-8 animate__animated animate__fadeIn">
+        <h1 class="text-3xl font-bold text-white flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-[#9C27B0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+            Apps Management
+        </h1>
+        <p class="text-gray-400 mt-2">Create and manage apps that can be included in subscription plans.</p>
+    </div>
+
+    <!-- Alert Messages -->
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}bg-green-900{% elif message.tags == 'error' %}bg-red-900{% else %}bg-blue-900{% endif %} text-white px-4 py-3 rounded-lg flex items-center justify-between mb-4">
+            <div class="flex items-center">
+                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {% if message.tags == 'success' %}
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    {% elif message.tags == 'error' %}
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    {% else %}
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    {% endif %}
+                </svg>
+                <span>{{ message }}</span>
             </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-white">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-            <div class="flex sm:grid sm:grid-cols-6 gap-3 mb-4 overflow-x-auto sm:overflow-x-visible no-scrollbar">
-                {% for app_num in '789101112'|make_list %}
-                <div class="relative flex-none w-32 sm:w-auto">
-                    <button onclick="showApp{{app_num}}" class="w-full bg-[#212121] rounded-xl p-3 hover:shadow-xl transition-all duration-300 text-center hover:bg-[#2a2a2a]">
-                        <div class="w-8 h-8 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#{% cycle '4CAF50' '2196F3' 'FF9800' 'E91E63' '9C27B0' '00BCD4' %}]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                {% with forloop.counter as counter %}
-                                {% if counter == 1 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                {% elif counter == 2 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                {% elif counter == 3 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                {% elif counter == 4 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                {% elif counter == 5 %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                                {% else %}
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                {% endif %}
-                                {% endwith %}
-                            </svg>
-                        </div>
-                        <span class="text-[rgb(237,226,226,1)] text-xs">App {{app_num}}</span>
+    <div class="flex flex-col sm:flex-row gap-6">
+        <!-- App List Section (2/3 width) -->
+        <div class="sm:w-2/3 bg-[#1A1A1A] rounded-xl shadow-2xl overflow-hidden border border-gray-800">
+            <div class="bg-gradient-to-r from-[#2C2C2C] to-[#1A1A1A] px-6 py-4 border-b border-gray-800 flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-white">All Apps</h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-400">{{ apps|length }} apps</span>
+                    <button id="refreshAppList" class="bg-[#333333] hover:bg-[#444444] text-white rounded-lg p-1.5 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
                     </button>
-                    <div class="absolute top-2 right-2">
-                        <button onclick="showAppOptions('app{{app_num}}')" class="text-white hover:text-gray-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                        </button>
-                    </div>
                 </div>
-                {% endfor %}
             </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{% static 'js/script.js' %}?v=2"></script>
-    <script>
-        function showAppOptions(appId) {
-            Swal.fire({
-                title: '<h2 class="text-xl font-semibold mb-4">App Management</h2>',
-                html: `
-                    <div class="space-y-4">
-                        <button onclick="showTemporaryDown('${appId}')" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <span>Set Temporary Downtime</span>
-                        </button>
-                        
-                        <button onclick="showMaintenance('${appId}')" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            </svg>
-                            <span>Schedule Maintenance</span>
-                        </button>
-                    </div>
-                `,
-                showConfirmButton: false,
-                showCloseButton: true,
-                background: '#2a2a2a',
-                color: '#ffffff',
-                customClass: {
-                    container: 'app-options-modal',
-                    popup: 'rounded-xl shadow-2xl',
-                    closeButton: 'focus:outline-none hover:text-gray-300'
-                },
-                buttonsStyling: false
-            });
-        }
-
-        function showTemporaryDown(appId) {
-            // Add your logic here to handle the temporary downtime
-            Swal.fire({
-                icon: 'success',
-                title: 'Temporary Downtime',
-                text: 'App has been set to temporary downtime',
-                background: '#2a2a2a',
-                color: '#ffffff',
-                customClass: {
-                    popup: 'rounded-xl shadow-2xl'
-                }
-            });
-        }
-
-        function showMaintenance(appId) {
-            Swal.fire({
-                title: '<h2 class="text-xl font-semibold mb-4">Schedule Maintenance</h2>',
-                html: `
-                    <div class="space-y-6">
-                        <div class="relative">
-                            <label class="block text-sm font-medium mb-2 text-gray-300">Maintenance Date & Time</label>
-                            <input type="datetime-local" id="maintenanceDate" class="w-full p-3 rounded-lg bg-[#363636] border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
-                        </div>
-                        <div class="relative">
-                            <label class="block text-sm font-medium mb-2 text-gray-300">Maintenance Details</label>
-                            <textarea id="maintenanceDetails" class="w-full p-3 rounded-lg bg-[#363636] border border-gray-600 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 resize-none" rows="4" placeholder="Enter maintenance details..."></textarea>
+            
+            <!-- Search Box -->
+            <div class="p-4 border-b border-gray-800">
+                <input type="text" id="appSearchInput" placeholder="Search apps..." 
+                    class="w-full bg-[#212121] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#9C27B0] focus:border-transparent transition-all duration-300">
+            </div>
+            
+            <!-- Apps List -->
+            <div class="divide-y divide-gray-800 max-h-[600px] overflow-y-auto" id="appsList">
+                {% if apps %}
+                    {% for app in apps %}
+                    <div class="app-item p-4 hover:bg-[#212121] transition-colors duration-200" data-app-id="{{ app.id }}" data-app-name="{{ app.name }}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-grow pr-4">
+                                <h3 class="text-white font-medium text-lg">{{ app.name }}</h3>
+                                <p class="text-gray-400 mt-1 text-sm line-clamp-2">{{ app.description }}</p>
+                                <div class="mt-2 text-xs text-gray-500">
+                                    <span>Created: {{ app.created_at|date:"M d, Y" }}</span>
+                                    {% if app.is_active %}
+                                    <span class="ml-4 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-100">
+                                        Active
+                                    </span>
+                                    {% else %}
+                                    <span class="ml-4 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-100">
+                                        Inactive
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="edit-app-btn bg-[#2196F3] hover:bg-[#1976D2] text-white rounded-lg p-2 transition-colors" data-app-id="{{ app.id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </button>
+                                <button class="toggle-app-status-btn {% if app.is_active %}bg-[#F44336] hover:bg-[#D32F2F]{% else %}bg-[#4CAF50] hover:bg-[#388E3C]{% endif %} text-white rounded-lg p-2 transition-colors" data-app-id="{{ app.id }}" data-status="{% if app.is_active %}active{% else %}inactive{% endif %}">
+                                    {% if app.is_active %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {% else %}
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    {% endif %}
+                                </button>
+                                <button class="delete-app-btn bg-[#F44336] hover:bg-[#D32F2F] text-white rounded-lg p-2 transition-colors" data-app-id="{{ app.id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                `,
-                confirmButtonText: 'Schedule Maintenance',
-                showCancelButton: true,
-                background: '#2a2a2a',
-                color: '#ffffff',
-                customClass: {
-                    confirmButton: 'bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 mr-2',
-                    cancelButton: 'bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300',
-                    popup: 'rounded-xl shadow-2xl'
-                },
-                buttonsStyling: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const maintenanceDate = document.getElementById('maintenanceDate').value;
-                    const maintenanceDetails = document.getElementById('maintenanceDetails').value;
-                    // Add your logic here
-                }
+                    {% endfor %}
+                {% else %}
+                    <div class="p-6 text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                        </svg>
+                        <p class="mt-4 text-gray-400">No apps available. Create your first app using the form.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- App Form Section (1/3 width) -->
+        <div class="sm:w-1/3 bg-[#1A1A1A] rounded-xl shadow-2xl overflow-hidden border border-gray-800 h-fit">
+            <div class="bg-gradient-to-r from-[#2C2C2C] to-[#1A1A1A] px-6 py-4 border-b border-gray-800">
+                <h2 class="text-xl font-semibold text-white">Create App</h2>
+            </div>
+            
+            <form id="appForm" action="{% url 'create_app' %}" method="post" class="p-6 space-y-6">
+                {% csrf_token %}
+                <input type="hidden" id="appId" name="app_id">
+                
+                <div>
+                    <label for="appName" class="block text-sm font-medium text-gray-300 mb-1">App Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="appName" name="name" required
+                        class="w-full bg-[#2a2a2a] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#9C27B0] focus:border-transparent transition-all duration-300"
+                        placeholder="Enter app name">
+                </div>
+                
+                <div>
+                    <label for="appDescription" class="block text-sm font-medium text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
+                    <textarea id="appDescription" name="description" rows="4" required
+                        class="w-full bg-[#2a2a2a] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#9C27B0] focus:border-transparent transition-all duration-300"
+                        placeholder="Enter app description"></textarea>
+                </div>
+                
+                <div>
+                    <label for="appUrlKeyword" class="block text-sm font-medium text-gray-300 mb-1">URL Keyword</label>
+                    <input type="text" id="appUrlKeyword" name="url_keyword"
+                        class="w-full bg-[#2a2a2a] text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#9C27B0] focus:border-transparent transition-all duration-300"
+                        placeholder="e.g., 'invoicing'">
+                    <p class="text-xs text-gray-500 mt-1">A unique keyword in this app's URLs to control access.</p>
+                </div>
+                
+                <div class="flex items-center">
+                    <label class="flex items-center cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" id="isActive" name="is_active" value="true" class="sr-only" checked>
+                            <div class="block bg-gray-600 w-12 h-6 rounded-full"></div>
+                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition"></div>
+                        </div>
+                        <div class="ml-3 text-gray-300 text-sm font-medium">Active</div>
+                    </label>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" id="resetFormBtn" class="px-4 py-2 bg-[#424242] text-white rounded-lg hover:bg-[#4f4f4f] transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submitAppBtn" class="px-4 py-2 bg-gradient-to-r from-[#9C27B0] to-[#7B1FA2] text-white rounded-lg hover:from-[#8E24AA] hover:to-[#6A1B9A] transition-all focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-lg">
+                        Create App
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center">
+        <div class="bg-[#1A1A1A] rounded-xl p-6 w-96 animate__animated animate__fadeIn shadow-2xl border border-gray-700">
+            <h3 class="text-xl font-semibold text-white mb-4">Confirm Deletion</h3>
+            <p class="text-gray-300 mb-6">Are you sure you want to delete the app "<span id="deleteAppName" class="font-semibold text-white"></span>"? This action cannot be undone.</p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancelDeleteBtn" class="px-4 py-2 bg-[#424242] text-white rounded-lg hover:bg-[#4f4f4f] transition-colors">
+                    Cancel
+                </button>
+                <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle switch styling
+        document.getElementById('isActive').addEventListener('change', function() {
+            const dot = document.querySelector('.dot');
+            if (this.checked) {
+                dot.classList.add('transform', 'translate-x-6');
+            } else {
+                dot.classList.remove('transform', 'translate-x-6');
+            }
+        });
+        
+        // Initialize UI
+        updateToggleSwitch();
+        
+        // Edit App
+        document.querySelectorAll('.edit-app-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const appId = this.dataset.appId;
+                editApp(appId);
             });
+        });
+        
+        // Delete App
+        document.querySelectorAll('.delete-app-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const appId = this.dataset.appId;
+                const appItem = document.querySelector(`.app-item[data-app-id="${appId}"]`);
+                const appName = appItem ? appItem.dataset.appName : 'this app';
+                
+                document.getElementById('deleteAppName').textContent = appName;
+                document.getElementById('confirmDeleteBtn').dataset.appId = appId;
+                
+                document.getElementById('deleteModal').classList.remove('hidden');
+                document.getElementById('deleteModal').classList.add('flex');
+            });
+        });
+        
+        // Cancel Delete
+        document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            document.getElementById('deleteModal').classList.remove('flex');
+        });
+        
+        // Confirm Delete
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            const appId = this.dataset.appId;
+            deleteApp(appId);
+        });
+        
+        // Reset Form
+        document.getElementById('resetFormBtn').addEventListener('click', function() {
+            resetForm();
+        });
+        
+        // Toggle App Status
+        document.querySelectorAll('.toggle-app-status-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const appId = this.dataset.appId;
+                const currentStatus = this.dataset.status;
+                toggleAppStatus(appId, currentStatus);
+            });
+        });
+        
+        // Search functionality
+        document.getElementById('appSearchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterApps(searchTerm);
+        });
+    });
+    
+    function updateToggleSwitch() {
+        const isActiveCheckbox = document.getElementById('isActive');
+        const dot = document.querySelector('.dot');
+        
+        if (isActiveCheckbox.checked) {
+            dot.classList.add('transform', 'translate-x-6');
+        } else {
+            dot.classList.remove('transform', 'translate-x-6');
         }
-    </script>
+    }
+    
+    function editApp(appId) {
+        // Fetch app details via AJAX
+        fetch(`/masteradmin/app/${appId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const app = data.app;
+                    document.getElementById('appId').value = app.id;
+                    document.getElementById('appName').value = app.name;
+                    document.getElementById('appDescription').value = app.description;
+                    document.getElementById('appUrlKeyword').value = app.url_keyword || '';
+                    document.getElementById('isActive').checked = app.is_active;
+                    updateToggleSwitch();
+                    
+                    // Update form submission text and action
+                    document.getElementById('submitAppBtn').textContent = 'Update App';
+                    document.getElementById('appForm').action = '/masteradmin/update_app/';
+                }
+            })
+            .catch(error => console.error('Error fetching app details:', error));
+    }
+    
+    function deleteApp(appId) {
+        // Submit delete request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/masteradmin/delete_app/';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        const appIdInput = document.createElement('input');
+        appIdInput.type = 'hidden';
+        appIdInput.name = 'app_id';
+        appIdInput.value = appId;
+        
+        form.appendChild(csrfInput);
+        form.appendChild(appIdInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    function resetForm() {
+        document.getElementById('appForm').reset();
+        document.getElementById('appId').value = '';
+        document.getElementById('isActive').checked = true;
+        updateToggleSwitch();
+        
+        // Reset form submission text and action
+        document.getElementById('submitAppBtn').textContent = 'Create App';
+        document.getElementById('appForm').action = '/masteradmin/create_app/';
+    }
+    
+    function toggleAppStatus(appId, currentStatus) {
+        // Submit status toggle request
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/masteradmin/toggle_app_status/';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        const appIdInput = document.createElement('input');
+        appIdInput.type = 'hidden';
+        appIdInput.name = 'app_id';
+        appIdInput.value = appId;
+        
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'current_status';
+        statusInput.value = currentStatus;
+        
+        form.appendChild(csrfInput);
+        form.appendChild(appIdInput);
+        form.appendChild(statusInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    function filterApps(searchTerm) {
+        const appItems = document.querySelectorAll('.app-item');
+        let hasVisibleItems = false;
+        
+        appItems.forEach(item => {
+            const appName = item.dataset.appName.toLowerCase();
+            if (appName.includes(searchTerm)) {
+                item.style.display = 'block';
+                hasVisibleItems = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Show or hide no results message
+        const noResultsElement = document.getElementById('noResults');
+        if (!hasVisibleItems) {
+            if (!noResultsElement) {
+                const noResults = document.createElement('div');
+                noResults.id = 'noResults';
+                noResults.className = 'p-6 text-center';
+                noResults.innerHTML = `
+                    <p class="text-gray-400">No apps matching "${searchTerm}" found.</p>
+                `;
+                document.getElementById('appsList').appendChild(noResults);
+            }
+        } else if (noResultsElement) {
+            noResultsElement.remove();
+        }
+    }
+</script>
+
+<style>
+    /* Custom toggle switch styling */
+    input:checked ~ .dot {
+        transform: translateX(100%);
+        background-color: #4CAF50;
+    }
+    
+    /* Hide scrollbar but allow scrolling */
+    .no-scrollbar {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Line clamp for multiline text truncation */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
 {% endblock %}

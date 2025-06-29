@@ -232,6 +232,8 @@ class OnboardingView(TemplateView):
         context['hiring_agreements'] = HiringAgreement.objects.filter(user=user)
         context['handbooks'] = Handbook.objects.filter(user=user)
         context['training_materials'] = TrainingMaterial.objects.filter(user=user)
+        # Add folders to the context
+        context['folders'] = Folder.objects.filter(user=user)
         
         # Add leave types, deductions and allowances for the modal
         context['leave_types'] = LeaveType.objects.filter(is_active=True, user=user)
@@ -1814,6 +1816,7 @@ class OnboardingInvitationView(View):
                 handbook_id = request.POST.get('handbook')
                 hr_policies_id = request.POST.get('hr_policies')
                 training_material_id = request.POST.get('training_material')
+                folder_id = request.POST.get('folder')  # Add folder ID
                 policies_json = request.POST.get('policies')
                 
                 # Parse policies JSON if present
@@ -1821,7 +1824,7 @@ class OnboardingInvitationView(View):
                 
                 # Log information about the document selections for debugging
                 logger.info(f"Processing onboarding invitation for {name} ({email})")
-                logger.info(f"Selected documents: offer_letter={offer_letter_id}, hiring_agreement={hiring_agreement_id}, handbook={handbook_id}, hr_policies={hr_policies_id}, training_material={training_material_id}")
+                logger.info(f"Selected documents: offer_letter={offer_letter_id}, hiring_agreement={hiring_agreement_id}, handbook={handbook_id}, hr_policies={hr_policies_id}, training_material={training_material_id}, folder={folder_id}")
                 
                 # Get photo if uploaded
                 photo = request.FILES.get('photo')
@@ -1841,36 +1844,23 @@ class OnboardingInvitationView(View):
                 handbook_id = data.get('handbook')
                 hr_policies_id = data.get('hr_policies')
                 training_material_id = data.get('training_material')
+                folder_id = data.get('folder')  # Add folder ID
                 policies = data.get('policies', [])
                 
                 # No photo in JSON request
                 photo = None
             else:
                 # Regular form submission
-                data = request.POST
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Unsupported content type'
+                }, status=400)
                 
-                # Get form data
-                company_id = data.get('company')
-                name = data.get('name')
-                email = data.get('email')
-                department_id = data.get('department')
-                designation_id = data.get('designation')
-                role_id = data.get('role')
-                offer_letter_id = data.get('offer_letter')
-                hiring_agreement_id = data.get('hiring_agreement')
-                handbook_id = data.get('handbook')
-                hr_policies_id = data.get('hr_policies')
-                training_material_id = data.get('training_material')
-                policies = data.get('policies', [])
-                
-                # No photo in regular form post
-                photo = None
-            
             # Validate required fields
             if not company_id or not name or not email:
                 return JsonResponse({
                     'success': False,
-                    'message': 'Missing required fields: company, name, email'
+                    'message': 'Company, name, and email are required fields'
                 }, status=400)
             
             # Get company instance
@@ -1882,7 +1872,11 @@ class OnboardingInvitationView(View):
                     'message': 'Company not found'
                 }, status=404)
             
-            # Get department, designation, role instances if provided
+            # Generate a unique URL token for the form link
+            token = str(uuid.uuid4())
+            form_link = f"{request.scheme}://{request.get_host()}/hr/onboarding/form/{token}/"
+            
+            # Get instances of related models if IDs are provided
             department = None
             designation = None
             role = None
@@ -1945,6 +1939,16 @@ class OnboardingInvitationView(View):
                 except TrainingMaterial.DoesNotExist:
                     logger.warning(f"Training material with ID {training_material_id} not found")
             
+            # Get folder instance if provided
+            folder = None
+            if folder_id:
+                try:
+                    folder = Folder.objects.get(folder_id=folder_id)
+                    logger.info(f"Found folder: {folder.name} with ID {folder_id}")
+                except Folder.DoesNotExist:
+                    logger.warning(f"Folder with ID {folder_id} not found")
+            
+            # Parse additional documents if provided
             # Generate a unique form link with token
             token = str(uuid.uuid4())
             form_link = f"{request.scheme}://{request.get_host()}/hr/onboarding/form/{token}/"
@@ -1985,6 +1989,7 @@ class OnboardingInvitationView(View):
             logger.info(f"  - Handbook: {handbook.name if handbook else 'None'}")
             logger.info(f"  - HR Policies: {hr_policies.name if hr_policies else 'None'}")
             logger.info(f"  - Training Material: {training_material.name if training_material else 'None'}")
+            logger.info(f"  - Folder: {folder.name if folder else 'None'}")
             
             # Send email
             logger.info(f"Attempting to send invitation email to {email}")
@@ -2118,6 +2123,26 @@ class OnboardingInvitationView(View):
                     pdf_content = generate_pdf_from_html(invitation.training_material_template.content)
                     if pdf_content:
                         email.attach(f"{invitation.training_material_template.name}.pdf", pdf_content, 'application/pdf')
+
+                # Attach folder content if available in additional_documents
+                if invitation.additional_documents:
+                    for doc_info in invitation.additional_documents:
+                        if doc_info.get('type') == 'folder':
+                            folder_id = doc_info.get('id')
+                            if folder_id:
+                                try:
+                                    folder = Folder.objects.get(folder_id=folder_id)
+                                    if folder.json_data:
+                                        # Convert folder data to PDF
+                                        folder_content = f"<h1>{folder.name}</h1><div>{json.dumps(folder.json_data, indent=2)}</div>"
+                                        pdf_content = generate_pdf_from_html(folder_content)
+                                        if pdf_content:
+                                            email.attach(f"{folder.name}.pdf", pdf_content, 'application/pdf')
+                                            logger.info(f"Attached folder: {folder.name} to email")
+                                except Folder.DoesNotExist:
+                                    logger.warning(f"Folder with ID {folder_id} not found for attachment")
+                                except Exception as e:
+                                    logger.error(f"Error attaching folder: {str(e)}", exc_info=True)
 
                 # Attach additional documents
                 if invitation.additional_documents:

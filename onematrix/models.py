@@ -51,3 +51,32 @@ class ContactUs(models.Model):
         verbose_name = "Contact Us"
         verbose_name_plural = "Contact Us"
 
+
+class Payment(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('PROCESSING', 'Processing'),
+        ('SUCCESS', 'Success'),
+        ('FAILED', 'Failed'),
+    ]
+
+    user = models.ForeignKey('User.User', on_delete=models.SET_NULL, null=True, blank=True)
+    order_id = models.CharField(max_length=255, unique=True)
+    payment_id = models.CharField(max_length=255, null=True, blank=True)
+    subscription_plan = models.ForeignKey('masteradmin.Subscription', on_delete=models.SET_NULL, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
+    customer_email = models.EmailField()
+    customer_phone = models.CharField(max_length=20)
+    excluded_apps = models.ManyToManyField('app.Apps', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    webhook_payload = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Payment for {self.order_id} - {self.status}"
+
+    class Meta:
+        ordering = ['-created_at']
+

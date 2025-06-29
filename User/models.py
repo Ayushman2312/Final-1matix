@@ -25,6 +25,8 @@ class User(models.Model):
     is_active = models.BooleanField(default=True)
     is_suspended = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    is_first_login = models.BooleanField(default=True)
+    excluded_apps = models.ManyToManyField('app.Apps', blank=True, help_text="Apps that the user has chosen to exclude from their plan.")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -53,6 +55,29 @@ class User(models.Model):
         if not hasattr(self, 'password'):
             return False
         return django_check_password(raw_password, self.password)
+
+    def has_app_access(self, app):
+        """
+        Check if a user has access to a specific app.
+        """
+        # 1. Check if the app is globally disabled by an admin
+        if app.is_temporarily_disabled:
+            return False
+
+        # 2. Check if the user has an active subscription plan
+        if not self.subscription_plan:
+            return False
+
+        # 3. Check if the app is part of the user's subscription plan features
+        if not self.subscription_plan.features.filter(pk=app.pk).exists():
+            return False
+            
+        # 4. Check if the user has personally excluded this app
+        if self.excluded_apps.filter(pk=app.pk).exists():
+            return False
+            
+        # If all checks pass, the user has access
+        return True
 
 class UserPolicy(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -195,3 +220,21 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"Password reset token for {self.user.name}"
+
+class UserAgreementAcceptance(models.Model):
+    """Model to track which agreement a user accepted during signup"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='agreement_acceptances')
+    agreement = models.ForeignKey('masteradmin.UserAgreement', on_delete=models.SET_NULL, null=True)
+    agreement_title = models.CharField(max_length=255)  # Store title in case agreement is deleted
+    agreement_content = models.TextField()  # Store content in case agreement is deleted
+    accepted_at = models.DateTimeField(auto_now_add=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.agreement_title} - {self.accepted_at}"
+    
+    class Meta:
+        verbose_name = "User Agreement Acceptance"
+        verbose_name_plural = "User Agreement Acceptances"
+        ordering = ['-accepted_at']

@@ -1,0 +1,98 @@
+2025-06-28 17:59:04,427 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-28 18:52:22,642 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-28 23:27:40,331 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-28 23:27:46,488 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-28 23:52:29,217 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-28 23:52:33,731 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-28 23:53:43,190 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 00:17:16,302 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 00:17:19,880 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:826
+2025-06-29 00:19:29,202 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:826
+2025-06-29 00:20:05,633 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:826
+2025-06-29 00:21:03,544 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:826
+2025-06-29 00:21:31,836 [INFO] Getting context data for UsersView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:773
+2025-06-29 00:22:01,093 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-29 00:22:04,456 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 00:22:22,785 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:22:24,771 [INFO] Getting context data for SalesView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:813
+2025-06-29 00:22:40,244 [INFO] Getting context data for FeedbacksView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:731
+2025-06-29 00:22:45,977 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 00:22:47,596 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:826
+2025-06-29 00:22:56,846 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:826
+2025-06-29 00:32:02,611 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:981
+2025-06-29 00:32:17,842 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:33:25,360 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:33:25,379 [INFO] Created app: AI Listing Creator with ID: 1 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:33:26,002 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:33:31,312 [INFO] Getting app details for ID: 1 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:857
+2025-06-29 00:34:03,827 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:34:03,842 [INFO] Created app: Beesuggest with ID: 2 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:34:04,303 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:34:29,492 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:34:29,511 [INFO] Created app: Fee Calculator with ID: 3 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:34:30,048 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:34:47,342 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:34:47,351 [INFO] Created app: HRMS with ID: 4 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:34:47,559 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:35:12,979 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:35:12,990 [INFO] Created app: Invoicing with ID: 5 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:35:13,160 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:35:42,898 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:35:42,915 [INFO] Created app: Product Card with ID: 6 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:35:43,165 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:36:38,944 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:36:38,962 [INFO] Created app: LeadX with ID: 7 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:36:41,689 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:37:17,998 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:37:18,016 [INFO] Created app: TrendIQ with ID: 8 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:37:18,491 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:37:38,444 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:37:38,461 [INFO] Created app: Website with ID: 9 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:37:38,713 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:38:27,408 [INFO] Processing app creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:732
+2025-06-29 00:38:27,424 [INFO] Created app: Business Analytics with ID: 10 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:748
+2025-06-29 00:38:27,536 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:38:40,525 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:38:45,748 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:38:47,900 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:38:48,293 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 00:38:49,246 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:981
+2025-06-29 00:38:49,915 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 00:38:51,964 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:981
+2025-06-29 00:40:54,218 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:981
+2025-06-29 00:44:23,827 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 00:45:05,696 [INFO] Processing subscription creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:992
+2025-06-29 00:45:05,713 [INFO] Created subscription: Test - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:1016
+2025-06-29 00:45:06,438 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 00:46:06,252 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 01:51:35,819 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 01:51:41,834 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 01:51:43,769 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:981
+2025-06-29 01:53:23,609 [INFO] Processing subscription creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:992
+2025-06-29 01:53:23,621 [INFO] Created subscription: Test 2 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:1016
+2025-06-29 01:53:23,921 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 01:54:33,556 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:981
+2025-06-29 01:56:38,144 [INFO] Processing subscription creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:992
+2025-06-29 01:56:38,156 [INFO] Created subscription: Test 3 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:1016
+2025-06-29 01:56:38,720 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 02:41:07,531 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 15:55:29,125 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 18:01:58,557 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-29 18:02:01,695 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 18:02:06,712 [INFO] Processing app status toggle request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:828
+2025-06-29 18:02:06,726 [INFO] Toggled app status: Business Analytics is now deactivated - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:843
+2025-06-29 18:02:06,756 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 18:02:09,747 [INFO] Processing app status toggle request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:828
+2025-06-29 18:02:09,759 [INFO] Toggled app status: Business Analytics is now activated - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:843
+2025-06-29 18:02:09,790 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 18:02:11,201 [INFO] Getting app details for ID: 10 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:857
+2025-06-29 18:02:22,822 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-29 18:17:55,454 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 18:25:27,036 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 18:25:28,029 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 18:25:38,502 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-29 18:38:17,065 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-29 18:38:19,926 [INFO] Getting context data for CreateSubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:968
+2025-06-29 18:40:19,143 [INFO] Processing subscription creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:979
+2025-06-29 18:40:19,160 [INFO] Created subscription: Final 1 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:1003
+2025-06-29 18:40:20,380 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700

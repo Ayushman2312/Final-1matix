@@ -1,0 +1,579 @@
+{% extends 'onematrix/base.html' %}
+{% load static %}
+
+{% block title %}Plans & Pricing - OneMatrix{% endblock %}
+
+{% block desktop_content %}
+
+
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-5xl mx-auto">
+    <!-- Pricing Header -->
+    <div class="text-center mb-12">
+      <p class="text-sm font-semibold text-gray-600 mb-2">Find your plans</p>
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+        Find the <span class="text-gray-600">Right Plan.</span>
+      </h1>
+      <p class="text-gray-600 max-w-lg mx-auto text-sm">
+        Create your own website with OneMatrix page building platform.
+      </p>
+      
+      <!-- Billing Toggle -->
+      <div class="flex items-center justify-center mt-5">
+        <span class="text-gray-500 text-sm mr-2">Billed yearly</span>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="billing-toggle" class="sr-only peer" checked>
+          <div class="w-10 h-5 bg-gray-300 rounded-full peer peer-checked:bg-gray-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all"></div>
+        </label>
+        <span class="text-gray-500 text-sm ml-2">Billed monthly</span>
+      </div>
+    </div>
+    
+    <!-- Pricing Cards Container -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-[2.7rem]">
+      {% comment %}
+      Note: For optimal performance, sort subscriptions by created_at in the view
+      {% endcomment %}
+      {% for subscription in subscriptions %}
+      <div class="relative rounded-xl overflow-hidden shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl 
+        {% if forloop.counter == 2 %}
+        bg-gray-800 text-white
+        {% else %}
+        bg-white text-gray-800 border border-gray-200
+        {% endif %}" data-plan-id="{{ subscription.id }}">
+        
+        <!-- Popular Tag -->
+        {% if forloop.counter == 2 %}
+        <div class="absolute top-4 right-3 bg-gray-200 text-gray-900 rounded-full px-2 py-0.5 text-xs font-bold flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
+          Popular
+        </div>
+        {% endif %}
+        
+        <!-- Creation Date Tag -->
+        {% if subscription.created_at %}
+        <div class="absolute top-4 left-3 bg-gray-200 bg-opacity-80 text-gray-900 rounded-full px-2 py-0.5 text-xs font-bold">
+          Added: {{ subscription.created_at|date:"M d, Y" }}
+        </div>
+        {% endif %}
+        
+        <!-- Plan Header -->
+        <div class="px-5 pt-6">
+          <h3 class="text-lg font-bold mb-1">{{ subscription.name }}</h3>
+          <p class="text-xl font-bold mb-1">
+            <span class="text-2xl original-price">₹{{ subscription.price_monthly }}</span>
+            <span class="text-2xl discounted-price hidden"></span>
+            <span class="text-xs font-normal opacity-75">/month</span>
+          </p>
+          {% if subscription.discount %}
+          <p class="text-xs mb-3 opacity-80">Save {{ subscription.discount }}% with annual billing</p>
+          {% else %}
+          <p class="text-xs mb-3 opacity-80">&nbsp;</p>
+          {% endif %}
+        </div>
+        
+        <!-- Plan Features -->
+        <div class="px-5 py-4 bg-opacity-10 {% if forloop.counter == 2 %}bg-black{% else %}bg-white{% endif %}">
+          <div class="text-xs mb-4 {% if forloop.counter == 2 %}text-white{% else %}text-gray-700{% endif %}">
+            <span class="font-semibold">Select apps:</span> 
+            <span class="app-toggle-counter ml-1">You can disable up to 2 apps</span>
+          </div>
+          <ul class="space-y-3 app-list">
+            <!-- Default Features -->
+            
+            <!-- App Features -->
+            {% if subscription.apps_data %}
+              {% for app in subscription.apps_data %}
+              <li class="flex items-center justify-between app-item text-sm" data-app-id="{{ app.id }}" data-app-price="{{ app.price|default:'0' }}">
+                <div class="flex items-center">
+                  <label class="relative inline-flex items-center cursor-pointer mr-4">
+                    <input type="checkbox" class="sr-only peer app-toggle" checked>
+                    <div class="w-8 h-4 bg-gray-200 rounded-full peer 
+                      {% if forloop.parentloop.counter == 2 %}
+                      peer-checked:bg-gray-500
+                      {% else %}
+                      peer-checked:bg-gray-600
+                      {% endif %} 
+                      peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all"></div>
+                  </label>
+                  <span>{{ app.name }}</span>
+                </div>
+                <span class="font-medium bg-opacity-20 bg-gray-200 px-2 py-0.5 rounded-md text-xs">
+                  {% if app.limit_type == 'Limited' %}
+                    {% if app.credits %}
+                    {{ app.credits }} credits
+                    {% endif %}
+                  {% else %}
+                    Unlimited
+                  {% endif %}
+                </span>
+              </li>
+              {% endfor %}
+            {% else %}
+              {% if subscription.features.all %}
+                {% for app in subscription.features.all %}
+                <li class="flex items-center justify-between app-item text-sm" data-app-id="{{ app.id }}" data-app-price="{{ app.price|default:'0' }}">
+                  <div class="flex items-center">
+                    <label class="relative inline-flex items-center cursor-pointer mr-2">
+                      <input type="checkbox" class="sr-only peer app-toggle" checked>
+                      <div class="w-8 h-4 bg-gray-200 rounded-full peer 
+                        {% if forloop.parentloop.counter == 2 %}
+                        peer-checked:bg-gray-500
+                        {% else %}
+                        peer-checked:bg-gray-600
+                        {% endif %} 
+                        peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all"></div>
+                    </label>
+                    <span>{{ app.name }}</span>
+                  </div>
+                  <span class="font-medium bg-opacity-20 bg-gray-200 px-2 py-0.5 rounded-md text-xs">Included</span>
+                </li>
+                {% endfor %}
+              {% endif %}
+            {% endif %}
+          </ul>
+        </div>
+        
+        <!-- Call to Action -->
+        <div class="px-5 py-6 text-center">
+          <button class="select-plan-btn inline-block w-full px-5 py-2 rounded-lg font-medium text-sm transition-all 
+            {% if forloop.counter == 2 %}
+            bg-white text-gray-800 hover:bg-gray-100
+            {% else %}
+            bg-gray-700 text-white hover:bg-gray-800
+            {% endif %}">
+            Sign up For This
+          </button>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center col-span-3 py-12">
+        <h3 class="text-xl font-bold text-gray-700">No subscription plans available right now</h3>
+        <p class="text-gray-500 mt-2 text-sm">Please check back later for our upcoming plans</p>
+      </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Additional Information -->
+    <div class="mt-14 text-center">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">All plans include</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-5 max-w-4xl mx-auto">
+        <div class="p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <h3 class="font-semibold text-gray-800 text-sm">Secure Platform</h3>
+          <p class="text-gray-600 text-xs">Highest security standards</p>
+        </div>
+        <div class="p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+          </svg>
+          <h3 class="font-semibold text-gray-800 text-sm">Cloud Storage</h3>
+          <p class="text-gray-600 text-xs">Access files from anywhere</p>
+        </div>
+        <div class="p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <h3 class="font-semibold text-gray-800 text-sm">24/7 Support</h3>
+          <p class="text-gray-600 text-xs">Help when you need it</p>
+        </div>
+        <div class="p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <h3 class="font-semibold text-gray-800 text-sm">Regular Updates</h3>
+          <p class="text-gray-600 text-xs">Always up to date</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="mt-14">
+      <h2 class="text-xl font-bold text-center text-gray-800 mb-6">Frequently Asked Questions</h2>
+      <div class="max-w-2xl mx-auto divide-y divide-gray-200">
+        <div class="py-4">
+          <details class="group">
+            <summary class="flex justify-between items-center font-medium cursor-pointer text-sm">
+              <span>Can I switch plans later?</span>
+              <svg class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <p class="text-gray-600 mt-2 text-xs">Yes, you can upgrade or downgrade your plan at any time. When upgrading, we'll prorate the remaining days in your current plan. When downgrading, the new plan will take effect at the end of your current billing cycle.</p>
+          </details>
+        </div>
+        
+        <div class="py-4">
+          <details class="group">
+            <summary class="flex justify-between items-center font-medium cursor-pointer text-sm">
+              <span>How does the 30-day trial work?</span>
+              <svg class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <p class="text-gray-600 mt-2 text-xs">You get full access to all features in your selected plan for 30 days. No credit card required to start. We'll send you a reminder before the trial ends, and you can cancel anytime during the trial period.</p>
+          </details>
+        </div>
+        
+        <div class="py-4">
+          <details class="group">
+            <summary class="flex justify-between items-center font-medium cursor-pointer text-sm">
+              <span>What happens if I exceed my plan limits?</span>
+              <svg class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <p class="text-gray-600 mt-2 text-xs">If you exceed your plan limits, you'll still have access to all features but may experience reduced performance. We'll notify you when you're approaching your limits, and you can choose to upgrade your plan at any time.</p>
+          </details>
+        </div>
+        
+        <div class="py-4">
+          <details class="group">
+            <summary class="flex justify-between items-center font-medium cursor-pointer text-sm">
+              <span>Do you offer discounts for non-profits or educational institutions?</span>
+              <svg class="w-4 h-4 text-gray-500 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <p class="text-gray-600 mt-2 text-xs">Yes, we offer special pricing for qualified non-profit organizations and educational institutions. Please contact our sales team for more information and verification process.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Details Modal -->
+<div id="user-details-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hidden transition-opacity duration-300">
+  <div id="modal-content" class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 transform scale-95 opacity-0 transition-all duration-300">
+    <div class="flex justify-between items-start">
+      <h2 class="text-2xl font-bold text-gray-900">Almost there!</h2>
+      <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <p class="mt-2 text-sm text-gray-600">Provide your details to continue.</p>
+    
+    <div id="modal-error-message" class="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded-lg hidden">
+      <strong>Error:</strong> <span id="modal-error-text"></span>
+    </div>
+
+    <form id="user-details-form" class="mt-6 space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="plan" id="selected-plan-id">
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+        <input type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+      </div>
+      
+      <div>
+        <label for="phone" class="block text-sm font-medium text-gray-700">Mobile Number</label>
+        <input type="tel" id="phone" name="phone" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+      </div>
+      
+      <div class="pt-4 flex items-center justify-end space-x-3">
+        <button type="button" id="cancel-btn" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button type="submit" id="proceed-btn" class="px-5 py-2.5 text-sm font-medium text-white bg-gray-800 hover:bg-black rounded-lg transition-colors flex items-center">
+          <span>Proceed to Payment</span>
+          <svg id="loader" class="animate-spin -mr-1 ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Billing Toggle Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Billing toggle functionality
+    const billingToggle = document.getElementById('billing-toggle');
+    const yearlyElements = document.querySelectorAll('.yearly-price');
+    const monthlyElements = document.querySelectorAll('.monthly-price');
+    
+    function updatePriceDisplay() {
+      const isMonthly = billingToggle.checked;
+      
+      yearlyElements.forEach(el => {
+        el.classList.toggle('hidden', isMonthly);
+      });
+      
+      monthlyElements.forEach(el => {
+        el.classList.toggle('hidden', !isMonthly);
+      });
+    }
+    
+    billingToggle.addEventListener('change', updatePriceDisplay);
+    updatePriceDisplay();
+
+    // App toggle functionality
+    const MAX_DISABLED_APPS = 2;
+    
+    // Track disabled apps count for each plan
+    const planDisabledApps = {};
+    
+    // Initialize plan data
+    document.querySelectorAll('[data-plan-id]').forEach(planCard => {
+      const planId = planCard.dataset.planId;
+      planDisabledApps[planId] = 0;
+      
+      // Store original price
+      const originalPriceEl = planCard.querySelector('.original-price');
+      if (originalPriceEl) {
+        originalPriceEl.dataset.originalPrice = parseFloat(originalPriceEl.textContent.replace('₹', ''));
+      }
+    });
+    
+    // Handle app toggle changes
+    document.querySelectorAll('.app-toggle').forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const appItem = this.closest('.app-item');
+        const planCard = this.closest('[data-plan-id]');
+        const planId = planCard.dataset.planId;
+        const appPrice = parseFloat(appItem.dataset.appPrice || 0);
+        
+        if (this.checked) {
+          // App enabled
+          planDisabledApps[planId]--;
+          appItem.classList.remove('opacity-50');
+          updatePlanPrice(planCard, appPrice, true);
+        } else {
+          // App disabled - check if we can disable more apps
+          if (planDisabledApps[planId] >= MAX_DISABLED_APPS) {
+            this.checked = true; // Prevent unchecking
+            return;
+          }
+          
+          planDisabledApps[planId]++;
+          appItem.classList.add('opacity-50');
+          updatePlanPrice(planCard, appPrice, false);
+        }
+        
+        // Update counter text
+        updateDisabledCounter(planCard, planId);
+      });
+    });
+    
+    // Update disabled counter text
+    function updateDisabledCounter(planCard, planId) {
+      const counter = planCard.querySelector('.app-toggle-counter');
+      const remaining = MAX_DISABLED_APPS - planDisabledApps[planId];
+      
+      if (remaining === 0) {
+        counter.textContent = `Maximum apps disabled (${MAX_DISABLED_APPS})`;
+        counter.classList.add('text-red-400');
+      } else {
+        counter.textContent = `You can disable ${remaining} more app${remaining !== 1 ? 's' : ''}`;
+        counter.classList.remove('text-red-400');
+      }
+    }
+    
+    // Update plan price
+    function updatePlanPrice(planCard, appPrice, isAdding) {
+      const originalPriceEl = planCard.querySelector('.original-price');
+      const discountedPriceEl = planCard.querySelector('.discounted-price');
+      
+      if (!originalPriceEl || appPrice <= 0) return;
+      
+      const originalPrice = parseFloat(originalPriceEl.dataset.originalPrice);
+      let currentPrice;
+      
+      if (discountedPriceEl.classList.contains('hidden')) {
+        // First time calculating a discount
+        currentPrice = originalPrice;
+        discountedPriceEl.textContent = `₹${originalPrice}`;
+      } else {
+        currentPrice = parseFloat(discountedPriceEl.textContent.replace('₹', ''));
+      }
+      
+      // Calculate new price
+      const newPrice = isAdding ? 
+        currentPrice + appPrice : 
+        currentPrice - appPrice;
+      
+      // Only show discounted price if it's different from original
+      if (newPrice !== originalPrice) {
+        discountedPriceEl.textContent = `₹${newPrice.toFixed(2)}`;
+        originalPriceEl.classList.add('line-through', 'text-opacity-70', 'text-lg');
+        discountedPriceEl.classList.remove('hidden');
+      } else {
+        originalPriceEl.classList.remove('line-through', 'text-opacity-70', 'text-lg');
+        discountedPriceEl.classList.add('hidden');
+      }
+      
+      // Update the href of the select plan button to include disabled apps
+      updateSelectPlanUrl(planCard, planId);
+    }
+    
+    // Update the plan selection URL to include disabled apps
+    function updateSelectPlanUrl(planCard, planId) {
+      const selectBtn = planCard.querySelector('.select-plan-btn');
+      if (!selectBtn) return;
+      
+      let baseUrl = new URL(selectBtn.href);
+      baseUrl.pathname = "/onematrix/create-payment-session/";
+      baseUrl.searchParams.set('plan', planId);
+      
+      // Add disabled apps to URL
+      const disabledApps = [];
+      planCard.querySelectorAll('.app-item').forEach(appItem => {
+        const toggle = appItem.querySelector('.app-toggle');
+        const appId = appItem.dataset.appId;
+        
+        if (!toggle.checked && appId) {
+          disabledApps.push(appId);
+        }
+      });
+      
+      if (disabledApps.length > 0) {
+        baseUrl.searchParams.set('disabled_apps', disabledApps.join(','));
+      } else {
+        baseUrl.searchParams.delete('disabled_apps');
+      }
+      
+      selectBtn.href = baseUrl.toString();
+    }
+
+    // --- New Modal and Payment Logic ---
+
+    const modal = document.getElementById('user-details-modal');
+    const modalContent = document.getElementById('modal-content');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const userDetailsForm = document.getElementById('user-details-form');
+    const selectedPlanIdInput = document.getElementById('selected-plan-id');
+    const proceedBtn = document.getElementById('proceed-btn');
+    const loader = document.getElementById('loader');
+    const modalErrorMessage = document.getElementById('modal-error-message');
+    const modalErrorText = document.getElementById('modal-error-text');
+
+    function showModal(planId) {
+      selectedPlanIdInput.value = planId;
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95', 'opacity-0');
+      }, 10);
+    }
+
+    function hideModal() {
+      modalContent.classList.add('scale-95', 'opacity-0');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        userDetailsForm.reset();
+        hideError();
+      }, 300);
+    }
+    
+    function showError(message) {
+      modalErrorText.textContent = message;
+      modalErrorMessage.classList.remove('hidden');
+    }
+
+    function hideError() {
+      modalErrorMessage.classList.add('hidden');
+    }
+
+    document.querySelectorAll('.select-plan-btn').forEach(button => {
+      button.addEventListener('click', function(event) {
+        event.preventDefault();
+        const planCard = this.closest('[data-plan-id]');
+        const planId = planCard.dataset.planId;
+        showModal(planId);
+      });
+    });
+
+    closeModalBtn.addEventListener('click', hideModal);
+    cancelBtn.addEventListener('click', hideModal);
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        hideModal();
+      }
+    });
+
+    userDetailsForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      hideError();
+      
+      const planId = selectedPlanIdInput.value;
+      const planCard = document.querySelector(`[data-plan-id="${planId}"]`);
+      
+      const disabledApps = [];
+      planCard.querySelectorAll('.app-item').forEach(appItem => {
+        const toggle = appItem.querySelector('.app-toggle');
+        const appId = appItem.dataset.appId;
+        
+        if (!toggle.checked && appId) {
+          disabledApps.push(appId);
+        }
+      });
+      
+      const formData = new FormData(userDetailsForm);
+      if (disabledApps.length > 0) {
+        formData.append('disabled_apps', disabledApps.join(','));
+      }
+
+      const csrfToken = formData.get('csrfmiddlewaretoken');
+
+      loader.classList.remove('hidden');
+      proceedBtn.disabled = true;
+
+      fetch("{% url 'create_payment_session' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': csrfToken
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(err => {
+            throw new Error(err.error || `Server error: ${response.status}`);
+          }).catch(() => {
+            throw new Error(`Server error: ${response.status}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.payment_session_id) {
+          const cashfree = Cashfree({
+            mode: "{{ cashfree_environment|default:'sandbox' }}" // or "production"
+          });
+          let checkoutOptions = {
+            paymentSessionId: data.payment_session_id,
+            redirectTarget: "_self"
+          };
+          cashfree.checkout(checkoutOptions);
+        } else {
+          showError(data.error || 'Could not create payment session. Please try again.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError('An unexpected error occurred. Please check your connection and try again.');
+      })
+      .finally(() => {
+        loader.classList.add('hidden');
+        proceedBtn.disabled = false;
+      });
+    });
+
+  });
+</script>
+
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+
+{% endblock %} 
