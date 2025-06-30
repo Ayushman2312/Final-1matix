@@ -100,3 +100,7 @@ local_settings.py
 # Backup files
 *.bak
 *.backup 
+
+cert.crt
+cert.key
+
