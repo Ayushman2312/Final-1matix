@@ -82,7 +82,11 @@
                                 <p class="text-gray-400 mt-1 text-sm line-clamp-2">{{ app.description }}</p>
                                 <div class="mt-2 text-xs text-gray-500">
                                     <span>Created: {{ app.created_at|date:"M d, Y" }}</span>
-                                    {% if app.is_active %}
+                                    {% if app.is_temporarily_disabled %}
+                                    <span class="ml-4 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-900 text-yellow-100">
+                                        Temporarily Disabled
+                                    </span>
+                                    {% elif app.is_active %}
                                     <span class="ml-4 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-900 text-green-100">
                                         Active
                                     </span>
@@ -99,14 +103,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                     </svg>
                                 </button>
-                                <button class="toggle-app-status-btn {% if app.is_active %}bg-[#F44336] hover:bg-[#D32F2F]{% else %}bg-[#4CAF50] hover:bg-[#388E3C]{% endif %} text-white rounded-lg p-2 transition-colors" data-app-id="{{ app.id }}" data-status="{% if app.is_active %}active{% else %}inactive{% endif %}">
-                                    {% if app.is_active %}
+                                <button class="toggle-app-status-btn {% if app.is_temporarily_disabled %}bg-[#4CAF50] hover:bg-[#388E3C]{% else %}bg-[#F44336] hover:bg-[#D32F2F]{% endif %} text-white rounded-lg p-2 transition-colors" data-app-id="{{ app.id }}">
+                                    {% if app.is_temporarily_disabled %}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                     </svg>
                                     {% else %}
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                     </svg>
                                     {% endif %}
                                 </button>
@@ -261,8 +265,7 @@
         document.querySelectorAll('.toggle-app-status-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const appId = this.dataset.appId;
-                const currentStatus = this.dataset.status;
-                toggleAppStatus(appId, currentStatus);
+                toggleAppStatus(appId);
             });
         });
         
@@ -336,14 +339,14 @@
         
         // Reset form submission text and action
         document.getElementById('submitAppBtn').textContent = 'Create App';
-        document.getElementById('appForm').action = '/masteradmin/create_app/';
+        document.getElementById('appForm').action = "{% url 'create_app' %}";
     }
     
-    function toggleAppStatus(appId, currentStatus) {
+    function toggleAppStatus(appId) {
         // Submit status toggle request
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/masteradmin/toggle_app_status/';
+        form.action = "/masteradmin/toggle_app_status/";
         
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
@@ -355,14 +358,8 @@
         appIdInput.name = 'app_id';
         appIdInput.value = appId;
         
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'current_status';
-        statusInput.value = currentStatus;
-        
         form.appendChild(csrfInput);
         form.appendChild(appIdInput);
-        form.appendChild(statusInput);
         document.body.appendChild(form);
         form.submit();
     }

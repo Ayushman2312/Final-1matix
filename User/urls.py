@@ -19,6 +19,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('accept-terms/', AcceptTermsView.as_view(), name='accept_terms'),
     path('handle-accept-terms/', HandleAcceptTermsView.as_view(), name='handle_accept_terms'),
+    path('verify-accept-terms-otp/', VerifyAcceptTermsOtpView.as_view(), name='verify_accept_terms_otp'),
     path('verify-first-login-otp/', VerifyFirstLoginOtpView.as_view(), name='verify_first_login_otp'),
     path('debug-session/', DebugSessionView.as_view(), name='debug_session'),
     path('logout/', Logout, name='logout'),

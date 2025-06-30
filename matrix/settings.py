@@ -85,6 +85,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'masteradmin.middleware.AppMaintenanceMiddleware',
     'User.middleware.UserAuthMiddleware',
     'website.middleware.CustomDomainMiddleware',
     'website.middleware.NoCacheMiddleware',

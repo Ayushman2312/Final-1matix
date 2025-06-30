@@ -675,59 +675,61 @@ class LoginView(TemplateView):
     
     def post(self, request, *args, **kwargs):
         try:
-            # Get form data
-            email = request.POST.get('email', '')
-            password = request.POST.get('password', '')
-            remember_me = request.POST.get('remember_me') == 'on'
-            
-            # Determine which template to use based on device
-            template_to_use = self.get_template_names()[0]
+            # We are expecting a JSON request because of our frontend script
+            data = json.loads(request.body)
+            email_or_mobile = data.get('email_or_mobile', '')
+            password = data.get('password', '')
+            remember_me = data.get('remember_me') == 'on'
             
             # Basic validation
-            if not email or not password:
-                messages.error(request, 'Please fill all required fields')
-                return render(request, template_to_use)
+            if not email_or_mobile or not password:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Please provide both email/mobile and password.'
+                }, status=400)
             
-            # Check if user exists in our custom User model (not Django auth)
+            # Check if user exists
             try:
-                user = User.objects.get(email=email)
+                # Allow login with either email or phone number
+                user = User.objects.get(Q(email=email_or_mobile) | Q(phone=email_or_mobile))
             except User.DoesNotExist:
-                messages.error(request, 'Invalid email or password')
                 LoginActivity.objects.create(
                     user=None,
-                    ip_address=request.META.get('REMOTE_ADDR'),
+                    ip_address=get_client_ip(request),
                     user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
                     status='Failed'
                 )
-                return render(request, template_to_use)
+                return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'}, status=401)
             
             # Check password
             from django.contrib.auth.hashers import check_password
-            if not hasattr(user, 'password') or not check_password(password, user.password):
-                messages.error(request, 'Invalid email or password')
+            if not hasattr(user, 'password') or not user.password or not check_password(password, user.password):
                 LoginActivity.objects.create(
                     user=user,
-                    ip_address=request.META.get('REMOTE_ADDR'),
+                    ip_address=get_client_ip(request),
                     user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
                     status='Failed'
                 )
-                return render(request, template_to_use)
+                return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'}, status=401)
             
+            # Check if user account is active
+            if hasattr(user, 'is_suspended') and user.is_suspended or not user.is_active:
+                return JsonResponse({'status': 'error', 'message': 'Your account is inactive or suspended. Please contact support.'}, status=403)
+
             if user.is_first_login:
                 # Store temporary auth for the T&C and OTP flow
-                request.session['pre_auth_user_id'] = user.user_id.hex
+                request.session['pre_login_user_id'] = user.user_id.hex
+                # The frontend will redirect to this URL
                 return JsonResponse({'status': 'redirect', 'url': reverse('accept_terms')})
             
             # Login successful: Invalidate old sessions and create a new one.
             request.session.flush()
             
-            # Determine if "remember me" was checked
             if remember_me:
                 request.session.set_expiry(30 * 24 * 60 * 60) # 30 days
             else:
                 request.session.set_expiry(0) # Session expires when browser closes
 
-            # Create a new session record
             if not request.session.session_key:
                 request.session.create()
             session_key = request.session.session_key
@@ -737,7 +739,7 @@ class LoginView(TemplateView):
             user_session = UserSession.objects.create(
                 user=user,
                 session_key=session_key,
-                ip_address=request.META.get('REMOTE_ADDR'),
+                ip_address=get_client_ip(request),
                 user_agent=request.META.get('HTTP_USER_AGENT'),
                 is_remembered=remember_me,
                 expires_at=expires_at
@@ -745,37 +747,40 @@ class LoginView(TemplateView):
 
             LoginActivity.objects.create(
                 user=user,
-                ip_address=request.META.get('REMOTE_ADDR'),
+                ip_address=get_client_ip(request),
                 user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
                 status='Success'
             )
 
-            # Set session variables
             request.session['user_session_id'] = str(user_session.id)
             
-            # Debug print - you can remove this after debugging
-            print(f"User login successful: {user.name} (Session ID: {user_session.id})")
-            
-            # Check if there's a next URL to redirect to
             next_url = request.session.get('next_url')
+            redirect_url = reverse('dashboard')
             if next_url:
-                del request.session['next_url']
-                messages.success(request, f'Welcome back, {user.name}!')
-                return redirect(next_url)
+                try:
+                    # Clean the session from the next_url
+                    del request.session['next_url']
+                except KeyError:
+                    pass # It might have been popped already
+                redirect_url = next_url
             
-            messages.success(request, f'Welcome back, {user.name}!')
-            return redirect('/user/dashboard/')
+            return JsonResponse({
+                'status': 'success', 
+                'message': f'Welcome back, {user.name}!',
+                'redirect_url': redirect_url
+            })
             
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid request format.'}, status=400)
         except Exception as e:
-            print(f"Error during login: {str(e)}")
-            messages.error(request, f'Error during login: {str(e)}')
+            logger.error(f"Error during login: {e}")
             return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
 
 class AcceptTermsView(TemplateView):
     template_name = 'user_dashboard/accept_terms.html'
 
     def get(self, request, *args, **kwargs):
-        if 'pre_auth_user_id' not in request.session:
+        if 'pre_login_user_id' not in request.session:
             return redirect('login')
         return super().get(request, *args, **kwargs)
 
@@ -787,48 +792,142 @@ class AcceptTermsView(TemplateView):
 @method_decorator(csrf_exempt, name='dispatch')
 class HandleAcceptTermsView(View):
     def post(self, request, *args, **kwargs):
-        if 'pre_auth_user_id' not in request.session:
-            return redirect('login')
+        if 'pre_login_user_id' not in request.session:
+            return JsonResponse({'status': 'error', 'message': 'Session expired. Please log in again.'}, status=400)
         
-        user_id = request.session['pre_auth_user_id']
+        user_id = request.session['pre_login_user_id']
         try:
             user = User.objects.get(user_id=user_id)
         except User.DoesNotExist:
-            return redirect('login')
+            return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
 
-        # Generate OTP
-        otp = ''.join(random.choices(string.digits, k=6))
-        request.session['first_login_otp'] = otp
-        request.session['first_login_otp_expires_at'] = (timezone.now() + timezone.timedelta(minutes=10)).isoformat()
-
-        # Send OTP email
         try:
+            data = json.loads(request.body)
+            agreement_id = data.get('agreement_id')
+            
+            if not agreement_id:
+                return JsonResponse({'status': 'error', 'message': 'Agreement ID is missing.'}, status=400)
+
+            # Ensure the agreement exists before proceeding
+            agreement = UserAgreement.objects.get(id=agreement_id, is_active=True)
+
+            # Generate OTP
+            otp = ''.join(random.choices(string.digits, k=6))
+            
+            # Store necessary info in session for verification
+            request.session['accept_terms_otp'] = otp
+            request.session['accept_terms_otp_expires_at'] = (timezone.now() + timezone.timedelta(minutes=10)).isoformat()
+            request.session['agreement_id_for_acceptance'] = agreement_id
+            
+            # Send OTP email
+            html_message = render_to_string('user_dashboard/email/signup_otp_email.html', {'otp': otp, 'user_name': user.name})
             send_mail(
-                'Verify Your Login',
-                f'Your One-Time Password (OTP) for completing your login is: {otp}',
+                'Verify Your Login to 1Matrix',
+                f'Hi {user.name},\n\nYour One-Time Password (OTP) to finalize your login is: {otp}\n\nThis OTP is valid for 10 minutes.',
                 settings.DEFAULT_FROM_EMAIL,
                 [user.email],
                 fail_silently=False,
+                html_message=html_message
             )
+
+            return JsonResponse({
+                'status': 'success', 
+                'redirect_url': reverse('verify_accept_terms_otp')
+            })
+
+        except UserAgreement.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Invalid agreement.'}, status=400)
         except Exception as e:
-            logger.error(f"Failed to send OTP to {user.email}: {e}")
-            messages.error(request, "Failed to send OTP. Please try again.")
-            return redirect('accept_terms')
+            logger.error(f"Error in HandleAcceptTermsView: {e}")
+            return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
 
-        return redirect('verify_first_login_otp')
 
-class VerifyFirstLoginOtpView(TemplateView):
-    template_name = 'user_dashboard/verify_first_login_otp.html'
+class VerifyAcceptTermsOtpView(TemplateView):
+    template_name = 'user_dashboard/verify_accept_terms_otp.html'
 
     def get(self, request, *args, **kwargs):
-        if 'pre_auth_user_id' not in request.session or 'first_login_otp' not in request.session:
+        if 'pre_login_user_id' not in request.session:
+            messages.error(request, 'Session expired. Please start the login process again.')
             return redirect('login')
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         otp_entered = request.POST.get('otp')
         
-        if 'pre_auth_user_id' not in request.session or 'first_login_otp' not in request.session:
+        # Validate session data
+        if 'pre_login_user_id' not in request.session or 'accept_terms_otp' not in request.session:
+            messages.error(request, 'Session expired. Please log in again.')
+            return redirect('login')
+
+        otp_expiry = timezone.datetime.fromisoformat(request.session['accept_terms_otp_expires_at'])
+        if timezone.now() > otp_expiry:
+            messages.error(request, 'OTP has expired. Please try accepting the terms again.')
+            return redirect('accept_terms')
+
+        if request.session['accept_terms_otp'] != otp_entered:
+            messages.error(request, 'Invalid OTP. Please try again.')
+            return render(request, self.template_name)
+
+        # OTP is correct, finalize login and agreement acceptance
+        try:
+            user = User.objects.get(user_id=request.session['pre_login_user_id'])
+            agreement = UserAgreement.objects.get(id=request.session['agreement_id_for_acceptance'])
+            
+            # Update user policy and is_first_login status
+            user.user_policy = agreement.content
+            user.is_first_login = False
+            user.save()
+
+            # Save formal agreement acceptance record
+            UserAgreementAcceptance.objects.create(
+                user=user,
+                agreement=agreement,
+                agreement_title=agreement.title,
+                agreement_content=agreement.content,
+                ip_address=get_client_ip(request)
+            )
+
+            # Create final user session
+            request.session.flush() # Start with a clean session
+            
+            if not request.session.session_key:
+                request.session.create()
+
+            expires_at = timezone.now() + timezone.timedelta(days=30)
+            user_session = UserSession.objects.create(
+                user=user,
+                session_key=request.session.session_key,
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                expires_at=expires_at
+            )
+            request.session['user_session_id'] = str(user_session.id)
+            request.session['user_id'] = str(user.user_id)
+
+            messages.success(request, 'Login successful! Welcome to 1Matrix.')
+            return redirect('dashboard')
+
+        except (User.DoesNotExist, UserAgreement.DoesNotExist):
+            messages.error(request, 'An error occurred while finalizing your login. Please try again.')
+            return redirect('login')
+        except Exception as e:
+            logger.error(f"Error during OTP verification for terms acceptance: {e}")
+            messages.error(request, 'An unexpected server error occurred.')
+            return redirect('login')
+
+
+class VerifyFirstLoginOtpView(TemplateView):
+    template_name = 'user_dashboard/verify_first_login_otp.html'
+
+    def get(self, request, *args, **kwargs):
+        if 'pre_verified_user_id' not in request.session:
+            return redirect('login')
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        otp_entered = request.POST.get('otp')
+        
+        if 'pre_verified_user_id' not in request.session or 'first_login_otp' not in request.session:
             messages.error(request, 'Session expired. Please log in again.')
             return redirect('login')
 
@@ -842,7 +941,7 @@ class VerifyFirstLoginOtpView(TemplateView):
 
         # OTP is correct, finalize login
         try:
-            user = User.objects.get(user_id=request.session['pre_auth_user_id'])
+            user = User.objects.get(user_id=request.session['pre_verified_user_id'])
             
             # Update user
             user.is_first_login = False

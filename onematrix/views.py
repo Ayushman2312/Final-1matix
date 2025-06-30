@@ -22,13 +22,15 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 import string
 import random
-from User.models import User, PasswordResetToken
+from User.models import User, PasswordResetToken, UserAppCredit, UserAgreementAcceptance
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta
 import logging
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
+from django.contrib.auth import login
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 
@@ -741,8 +743,35 @@ def cashfree_webhook(request):
                         excluded_app_names = list(payment.excluded_apps.values_list('name', flat=True))
                         log_info(f"Transferring {len(excluded_app_names)} excluded apps to user {user.id}: {excluded_app_names}")
                         user.excluded_apps.set(payment.excluded_apps.all())
-
+                    
                     user.save()
+                    payment.save()
+
+                    # --- New Logic: Assign Credits and Validity ---
+                    subscription = payment.subscription_plan
+                    apps_in_plan = subscription.features.all()
+                    
+                    if payment.excluded_apps.exists():
+                        apps_in_plan = apps_in_plan.exclude(id__in=payment.excluded_apps.all().values_list('id', flat=True))
+
+                    for app in apps_in_plan:
+                        try:
+                            app_limit = AppSubscriptionLimit.objects.get(subscription=subscription, app=app)
+                            credits = app_limit.credits if app_limit.limit_type == 'Limited' else -1 # -1 for unlimited
+                        except AppSubscriptionLimit.DoesNotExist:
+                            credits = -1 # Default to unlimited if no specific limit is set
+
+                        UserAppCredit.objects.update_or_create(
+                            user=user,
+                            app=app,
+                            defaults={
+                                'credits_remaining': credits,
+                                'valid_until': timezone.now().date() + timedelta(days=subscription.validity_days)
+                            }
+                        )
+                        log_info(f"Assigned credits for app '{app.name}' to user {user.id}. Credits: {'Unlimited' if credits == -1 else credits}, Valid until: {timezone.now().date() + timedelta(days=subscription.validity_days)}")
+                    # --- End New Logic ---
+                    
                     log_info(f"User {user.id} saved.")
                     payment.save()
                     log_info(f"Payment {payment.id} saved with status SUCCESS.")
@@ -825,6 +854,32 @@ def payment_success(request):
                         
                         user.save()
                         payment.save()
+                        
+                        # --- New Logic: Assign Credits and Validity (Fallback) ---
+                        subscription = payment.subscription_plan
+                        apps_in_plan = subscription.features.all()
+                        
+                        if payment.excluded_apps.exists():
+                            apps_in_plan = apps_in_plan.exclude(id__in=payment.excluded_apps.all().values_list('id', flat=True))
+
+                        for app in apps_in_plan:
+                            try:
+                                app_limit = AppSubscriptionLimit.objects.get(subscription=subscription, app=app)
+                                credits = app_limit.credits if app_limit.limit_type == 'Limited' else -1
+                            except AppSubscriptionLimit.DoesNotExist:
+                                credits = -1
+
+                            UserAppCredit.objects.update_or_create(
+                                user=user,
+                                app=app,
+                                defaults={
+                                    'credits_remaining': credits,
+                                    'valid_until': timezone.now().date() + timedelta(days=subscription.validity_days)
+                                }
+                            )
+                            log_info(f"FALLBACK: Assigned credits for app '{app.name}' to user {user.id}. Credits: {'Unlimited' if credits == -1 else credits}, Valid until: {timezone.now().date() + timedelta(days=subscription.validity_days)}")
+                        # --- End New Logic ---
+
                         log_info(f"Fallback successfully updated user {user.id} and payment {payment.id}.")
                     else:
                         log_error(f"Fallback could not find user for payment {payment.id}.")
@@ -874,14 +929,14 @@ def payment_success(request):
 
     # Redirect to the profile completion page.
     log_info(f"Redirecting user {user.id} to profile setup with token {token.token}")
-    return redirect('/onematrix/complete-profile-setup', token=token.token)
+    return redirect(f'/complete-profile-setup/{token.token}/')
 
 def complete_profile_setup(request, token):
     logger = logging.getLogger(__name__)
     
     try:
         # Verify that the user is in the profiling flow via token
-        profile_token = ProfileSetupToken.objects.get(token=token)
+        profile_token = ProfileSetupToken.objects.select_related('user').get(token=token)
     except ProfileSetupToken.DoesNotExist:
         messages.error(request, "Invalid or expired profile setup link. Please check your email or restart the payment process.")
         return redirect('plans_and_pricing')
@@ -893,41 +948,133 @@ def complete_profile_setup(request, token):
 
     user = profile_token.user
 
+    # The POST logic is now handled by dedicated AJAX views. This block will only be
+    # hit if JavaScript is disabled, in which case we show an error.
     if request.method == 'POST':
-        otp = request.POST.get('otp', '').strip()
-        password = request.POST.get('password')
-        password_confirm = request.POST.get('password_confirm')
+        logger.warning(f"POST request received on complete_profile_setup for token {token}, which should be handled by AJAX.")
+        messages.error(request, "There was a problem with the submission. Please enable JavaScript and try again.")
+    
+    # For GET request or if POST fails due to disabled JS
+    active_agreement = UserAgreement.objects.filter(is_active=True).order_by('-updated_at').first()
 
-        # --- OTP Validation ---
-        if otp != profile_token.otp:
-            messages.error(request, "Invalid verification code.")
-            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
-
-        # --- Password Validation ---
-        if not password or not password_confirm or len(password) < 8:
-            messages.error(request, "Please enter a password of at least 8 characters.")
-            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
-        
-        if password != password_confirm:
-            messages.error(request, "Passwords do not match.")
-            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
-
-        # --- Finalize User Profile ---
-        user.set_password(password)
-        user.is_profile_complete = True
-        user.save()
-
-        # Clean up the token
-        profile_token.delete()
-
-        messages.success(request, "Your profile has been updated successfully! You can now log in.")
-        return redirect('/user/login')
-
-    return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
+    return render(request, 'onematrix/profile_setup.html', {
+        'user_email': user.email,
+        'user_phone': user.phone,
+        'token': token,
+        'agreement': active_agreement,
+    })
 
 def payment_failure(request):
     order_id = request.GET.get('order_id')
     # You can add more logic here to retrieve payment details and show a more informative message.
     messages.error(request, "Your payment was not successful. Please try again or contact our support team if the issue persists.")
     return render(request, 'onematrix/payment_failure.html', {'order_id': order_id})
+
+@require_POST
+@csrf_exempt
+def accept_agreement_and_send_otp(request):
+    logger = logging.getLogger(__name__)
+    try:
+        data = json.loads(request.body)
+        token = data.get('token')
+        name = data.get('name', '').strip()
+        password = data.get('password')
+
+        if not all([token, name, password]):
+            return JsonResponse({'status': 'error', 'message': 'Missing required fields.'}, status=400)
+
+        profile_token = ProfileSetupToken.objects.select_related('user').get(token=token)
+        if profile_token.is_expired():
+            return JsonResponse({'status': 'error', 'message': 'Your session has expired. Please refresh and try again.'}, status=400)
+
+        user = profile_token.user
+        otp = ''.join(random.choices(string.digits, k=6))
+        
+        # Store necessary data in session to finalize after OTP verification
+        request.session['profile_setup_data'] = {
+            'user_id': str(user.user_id),
+            'token': token,
+            'name': name,
+            'password': make_password(password),
+            'otp': otp,
+            'otp_expires_at': (timezone.now() + timedelta(minutes=10)).isoformat(),
+        }
+
+        send_mail(
+            'Your 1Matrix Account Final Verification',
+            f'Hi {name},\n\nYour One-Time Password (OTP) to complete your profile setup is: {otp}\n\nThis OTP is valid for 10 minutes.',
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"Sent profile setup OTP to {user.email} for token {token}")
+        return JsonResponse({'status': 'success', 'message': 'OTP sent to your email.'})
+
+    except ProfileSetupToken.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Invalid session. Please refresh the page.'}, status=404)
+    except Exception as e:
+        logger.error(f"Error in accept_agreement_and_send_otp: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
+
+
+@require_POST
+@csrf_exempt
+def verify_profile_otp_and_finalize(request):
+    logger = logging.getLogger(__name__)
+    try:
+        data = json.loads(request.body)
+        submitted_otp = data.get('otp')
+        
+        profile_data = request.session.get('profile_setup_data')
+
+        if not profile_data or not submitted_otp:
+            return JsonResponse({'status': 'error', 'message': 'Session expired. Please start over.'}, status=400)
+
+        if timezone.now() > datetime.fromisoformat(profile_data['otp_expires_at']):
+            return JsonResponse({'status': 'error', 'message': 'OTP has expired. Please try again.'}, status=400)
+
+        if profile_data['otp'] != submitted_otp:
+            return JsonResponse({'status': 'error', 'message': 'Invalid OTP provided.'}, status=400)
+            
+        # --- Finalize User Profile ---
+        user = User.objects.get(user_id=profile_data['user_id'])
+        user.name = profile_data['name']
+        user.password = profile_data['password']
+        user.is_profile_complete = True
+        user.save()
+
+        # Save agreement acceptance
+        active_agreement = UserAgreement.objects.filter(is_active=True).order_by('-version').first()
+        if active_agreement:
+            # You need a function to get the client's IP, let's assume one exists or add it.
+            # For now, let's just use a placeholder.
+            client_ip = request.META.get('REMOTE_ADDR')
+            UserAgreementAcceptance.objects.create(
+                user=user,
+                agreement=active_agreement,
+                ip_address=client_ip
+            )
+
+        # Clean up the token and session
+        ProfileSetupToken.objects.filter(token=profile_data['token']).delete()
+        del request.session['profile_setup_data']
+
+        # Log the user in
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+        logger.info(f"User {user.email} completed profile setup successfully.")
+        messages.success(request, "Your profile has been updated successfully! Welcome to 1Matrix.")
+        
+        return JsonResponse({
+            'status': 'success', 
+            'message': 'Profile setup complete!',
+            'redirect_url': '/user/dashboard/' # Or wherever you want to redirect
+        })
+
+    except User.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'User not found. Please contact support.'}, status=404)
+    except Exception as e:
+        logger.error(f"Error in verify_profile_otp_and_finalize: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
 

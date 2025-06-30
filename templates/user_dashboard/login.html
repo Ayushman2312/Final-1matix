@@ -67,7 +67,7 @@
               </div>
               {% endif %}
               
-              <form class="space-y-4" action="/user/login/" method="post">
+              <form class="space-y-4" id="login-form" action="/user/login/" method="post">
                 {% csrf_token %}
                 
                 {% if next_url %}
@@ -168,6 +168,59 @@
             `;
           }
         }
+
+        document.getElementById('login-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Note: The form has an input with name="email", but the view expects "email_or_mobile"
+            // We will rename the key before sending.
+            data.email_or_mobile = data.email;
+            delete data.email;
+
+            const responseContainer = document.createElement('div');
+            responseContainer.className = 'mb-4';
+            form.prepend(responseContainer);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': data.csrfmiddlewaretoken
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    window.location.href = result.redirect_url;
+                } else if (result.status === 'redirect') {
+                    window.location.href = result.url;
+                } else if (result.status === 'otp_required') {
+                    // Handle OTP requirement, e.g., show an OTP modal or redirect to an OTP page
+                    // For now, redirecting to a placeholder URL
+                    window.location.href = '/user/verify-first-login-otp/';
+                } else {
+                    responseContainer.innerHTML = `
+                        <div class="bg-red-100 text-red-700 p-3 rounded-md mb-2 text-sm">
+                            ${result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                responseContainer.innerHTML = `
+                    <div class="bg-red-100 text-red-700 p-3 rounded-md mb-2 text-sm">
+                        An unexpected error occurred. Please try again.
+                    </div>
+                `;
+            }
+        });
       </script>
 </body>
 </html>

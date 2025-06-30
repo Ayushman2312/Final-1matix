@@ -1,4 +1,4 @@
-{% extends 'user_dashboard/base_auth.html' %}
+{% extends 'user_dashboard/base.html' %}
 {% load static %}
 
 {% block title %}Accept Terms & Conditions{% endblock %}
@@ -23,11 +23,13 @@
 
     <form id="accept-form" method="POST" action="{% url 'handle_accept_terms' %}">
       {% csrf_token %}
+      <input type="hidden" name="agreement_id" value="{{ user_agreement.id }}">
       <button id="accept-btn" type="submit" disabled
         class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-400 cursor-not-allowed">
         I Accept
       </button>
     </form>
+    <div id="response-message" class="mt-4"></div>
     {% else %}
     <div class="text-center text-red-500">
         <p>Could not load the user agreement at this time. Please try again later.</p>
@@ -42,12 +44,63 @@ document.addEventListener('DOMContentLoaded', function() {
     const acceptBtn = document.getElementById('accept-btn');
 
     if (agreementContent && acceptBtn) {
-        agreementContent.addEventListener('scroll', function() {
-            // Check if the user has scrolled to the bottom
-            if (agreementContent.scrollHeight - agreementContent.scrollTop <= agreementContent.clientHeight + 5) {
-                acceptBtn.disabled = false;
-                acceptBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                acceptBtn.classList.add('bg-gray-800', 'hover:bg-gray-900');
+        // Check if the content is small enough to not require scrolling
+        if (agreementContent.scrollHeight <= agreementContent.clientHeight) {
+            // Content fits without scrolling, enable the button immediately
+            acceptBtn.disabled = false;
+            acceptBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            acceptBtn.classList.add('bg-gray-800', 'hover:bg-gray-900');
+        } else {
+            // Content requires scrolling, enable button only after scrolling to bottom
+            agreementContent.addEventListener('scroll', function() {
+                // Check if the user has scrolled to the bottom
+                if (agreementContent.scrollHeight - agreementContent.scrollTop <= agreementContent.clientHeight + 5) {
+                    acceptBtn.disabled = false;
+                    acceptBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    acceptBtn.classList.add('bg-gray-800', 'hover:bg-gray-900');
+                }
+            });
+        }
+    }
+
+    const acceptForm = document.getElementById('accept-form');
+    if (acceptForm) {
+        acceptForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const responseMessageContainer = document.getElementById('response-message');
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': data.csrfmiddlewaretoken
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    window.location.href = result.redirect_url;
+                } else {
+                    responseMessageContainer.innerHTML = `
+                        <div class="bg-red-100 text-red-700 p-3 rounded-md mb-2 text-sm">
+                            ${result.message}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                responseMessageContainer.innerHTML = `
+                    <div class="bg-red-100 text-red-700 p-3 rounded-md mb-2 text-sm">
+                        An unexpected error occurred. Please try again.
+                    </div>
+                `;
             }
         });
     }

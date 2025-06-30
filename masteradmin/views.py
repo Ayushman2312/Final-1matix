@@ -824,30 +824,23 @@ class DeleteAppView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class ToggleAppStatusView(View):
     def post(self, request, *args, **kwargs):
-        logger.info("Processing app status toggle request")
+        app_id = request.POST.get('app_id')
         try:
-            app_id = request.POST.get('app_id')
-            current_status = request.POST.get('current_status')
-            
-            if not app_id:
-                logger.error("App ID is required")
-                messages.error(request, 'App ID is required')
-                return redirect('apps')
-            
             app = Apps.objects.get(id=app_id)
-            app.is_active = not (current_status == 'active')
+            # Toggle the is_temporarily_disabled status
+            app.is_temporarily_disabled = not app.is_temporarily_disabled
             app.save()
             
-            new_status = "activated" if app.is_active else "deactivated"
-            logger.info(f"Toggled app status: {app.name} is now {new_status}")
-            messages.success(request, f'App "{app.name}" has been {new_status} successfully.')
+            status_text = "disabled" if app.is_temporarily_disabled else "enabled"
+            messages.success(request, f'The app "{app.name}" has been temporarily {status_text}.')
+            logger.info(f'App "{app.name}" (ID: {app_id}) has been temporarily {status_text}.')
             
         except Apps.DoesNotExist:
-            logger.error(f"App with ID {app_id} not found")
-            messages.error(request, f'App not found.')
+            messages.error(request, 'The specified app could not be found.')
+            logger.error(f'Attempted to toggle status for non-existent app with ID: {app_id}')
         except Exception as e:
-            logger.error(f"Error toggling app status: {str(e)}")
-            messages.error(request, f'Error changing app status: {str(e)}')
+            messages.error(request, f'An unexpected error occurred: {e}')
+            logger.critical(f'An unexpected error occurred while toggling app status for ID {app_id}: {e}', exc_info=True)
             
         return redirect('apps')
 

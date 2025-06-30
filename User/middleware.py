@@ -1,7 +1,8 @@
 from django.shortcuts import redirect
 from django.contrib import messages
-from .models import UserSession
+from .models import UserSession, UserAgreementAcceptance
 from django.utils import timezone
+from masteradmin.models import UserAgreement
 
 class UserAuthMiddleware:
     def __init__(self, get_response):
@@ -167,4 +168,25 @@ class UserAuthMiddleware:
         
         # For all other paths, proceed with the request
         response = self.get_response(request)
+        
+        # Check if user needs to accept terms (only for authenticated users on non-public pages)
+        if is_user_authenticated and hasattr(request, 'user') and request.user and not is_public_path and not is_admin_path:
+            try:
+                # Get the most recent active agreement
+                latest_agreement = UserAgreement.objects.filter(is_active=True).latest('created_at')
+                
+                # Check if the user has already accepted this version
+                has_accepted = UserAgreementAcceptance.objects.filter(
+                    user=request.user,
+                    agreement=latest_agreement
+                ).exists()
+
+                if not has_accepted:
+                    # Inject a flag into the request context
+                    request.show_terms_popup = True
+                    
+            except UserAgreement.DoesNotExist:
+                # If no active agreement exists, do nothing
+                pass
+        
         return response

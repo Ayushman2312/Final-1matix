@@ -1,0 +1,53 @@
+{% extends 'user_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Verify Your Login{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Final Verification Step
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        We've sent a One-Time Password (OTP) to your email address. Please enter it below to complete your login.
+      </p>
+    </div>
+    
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} p-3 rounded-md mb-2 text-sm">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form class="mt-8 space-y-6" id="otp-form" method="POST" action="{% url 'verify_accept_terms_otp' %}">
+      {% csrf_token %}
+      <div class="rounded-md shadow-sm -space-y-px">
+        <div>
+          <label for="otp" class="sr-only">OTP</label>
+          <input id="otp" name="otp" type="text" required
+                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                 placeholder="Enter OTP">
+        </div>
+      </div>
+
+      <div>
+        <button type="submit"
+                class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Verify and Log In
+        </button>
+      </div>
+    </form>
+    <div class="text-center text-sm">
+        <a href="{% url 'login' %}" class="font-medium text-indigo-600 hover:text-indigo-500">
+            Cancel and return to login
+        </a>
+    </div>
+  </div>
+</div>
+{% endblock %} 

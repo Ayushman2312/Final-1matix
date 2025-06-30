@@ -26,6 +26,7 @@ class User(models.Model):
     is_suspended = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_first_login = models.BooleanField(default=True)
+    is_profile_complete = models.BooleanField(default=False)
     excluded_apps = models.ManyToManyField('app.Apps', blank=True, help_text="Apps that the user has chosen to exclude from their plan.")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -38,7 +39,7 @@ class User(models.Model):
     # 2FA Settings
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = models.CharField(max_length=255, null=True, blank=True)
-    
+    last_login = models.DateTimeField(blank=True, null=True, default=None)
     # Notification Settings
     email_notifications = models.BooleanField(default=True)
     sms_notifications = models.BooleanField(default=False)
@@ -64,8 +65,8 @@ class User(models.Model):
         if app.is_temporarily_disabled:
             return False
 
-        # 2. Check if the user has an active subscription plan
-        if not self.subscription_plan:
+        # 2. Check if the user has an active subscription plan and completed profile
+        if not self.subscription_plan or not self.is_active or not self.is_profile_complete:
             return False
 
         # 3. Check if the app is part of the user's subscription plan features
@@ -76,6 +77,20 @@ class User(models.Model):
         if self.excluded_apps.filter(pk=app.pk).exists():
             return False
             
+        # 5. Check for credits and validity
+        try:
+            app_credit = self.app_credits.get(app=app)
+            
+            if app_credit.valid_until < timezone.now().date():
+                return False # Subscription for this app has expired
+                
+            # If credits are not null and not -1 (unlimited), check if they are > 0
+            if app_credit.credits_remaining is not None and app_credit.credits_remaining != -1 and app_credit.credits_remaining <= 0:
+                return False # Out of credits
+
+        except UserAppCredit.DoesNotExist:
+            return False # No credit record found, so no access
+
         # If all checks pass, the user has access
         return True
 
@@ -89,6 +104,22 @@ class UserPolicy(models.Model):
     def __str__(self):
         return self.name
     
+class UserAppCredit(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='app_credits')
+    app = models.ForeignKey('app.Apps', on_delete=models.CASCADE)
+    credits_remaining = models.IntegerField(null=True, blank=True, help_text="Null or -1 for unlimited credits.")
+    valid_until = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'app')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        credits_display = "Unlimited" if self.credits_remaining is None or self.credits_remaining == -1 else self.credits_remaining
+        return f"{self.user.email} - {self.app.name} - Credits: {credits_display}"
+
 class UserArticle(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
@@ -187,7 +218,7 @@ class QuickNote(models.Model):
 
 class LoginActivity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_activities')
-    ip_address = models.GenericIPAddressField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20) # e.g., 'Success', 'Failed'

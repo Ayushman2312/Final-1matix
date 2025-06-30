@@ -1,4 +1,5 @@
 {% load static %}
+{% load app_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,35 +98,61 @@
 
             <!-- Apps Section -->
             <div class="px-4 space-y-1">
-                <a href="/fee_calculator/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                {% get_app_status 'fee_calculator' as fee_calculator_status %}
+                <a href="/fee_calculator/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 {% if fee_calculator_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}">
                     <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                     <span class="ml-3 sidebar-text">Fee Calculator</span>
+                    {% if fee_calculator_status.is_temporarily_disabled %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                    </svg>
+                    {% endif %}
                 </a>
 
-                <a href="/listing_creater/ai-chat/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                {% get_app_status 'listing_creater' as listing_creater_status %}
+                <a href="/listing_creater/ai-chat/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 {% if listing_creater_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}">
                     <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                     <span class="ml-3 sidebar-text">AI Listing Creater</span>
+                    {% if listing_creater_status.is_temporarily_disabled %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                    </svg>
+                    {% endif %}
                 </a>
-                <a href="{% url 'product_form' %}" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                
+                {% get_app_status 'beesuggest' as beesuggest_status %}
+                <a href="{% url 'product_form' %}" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 {% if beesuggest_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}">
                     <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     <span class="ml-3 sidebar-text">BeeSuggest</span>
+                    {% if beesuggest_status.is_temporarily_disabled %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                    </svg>
+                    {% endif %}
                 </a>
 
                 <div class="relative">
-                    <button onclick="toggleDropdown(this)" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 w-full">
+                    {% get_app_status 'hr' as hr_status %}
+                    <button onclick="toggleDropdown(this)" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 w-full {% if hr_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}" {% if hr_status.is_temporarily_disabled %}disabled{% endif %}>
                         <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                         <span class="ml-3 sidebar-text">HR Management</span>
+                        {% if hr_status.is_temporarily_disabled %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
                         <svg class="w-4 h-4 ml-auto transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
+                        {% endif %}
                     </button>
                     <div class="hidden mt-1 ml-8 space-y-1">
                         <a href="/hr/company/" class="block px-4 py-2 text-sm text-white rounded-lg">Company</a>
@@ -139,14 +166,21 @@
 
                 <!-- Invoicing -->
                 <div class="relative">
-                    <button onclick="toggleDropdown(this)" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 w-full">
+                    {% get_app_status 'invoicing' as invoicing_status %}
+                    <button onclick="toggleDropdown(this)" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 w-full {% if invoicing_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}" {% if invoicing_status.is_temporarily_disabled %}disabled{% endif %}>
                         <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span class="ml-3 sidebar-text">Invoicing</span>
+                        {% if invoicing_status.is_temporarily_disabled %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
                         <svg class="w-4 h-4 ml-auto transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
+                        {% endif %}
                     </button>
                     <div class="hidden mt-1 ml-8 space-y-1">
                         <a href="/invoicing/companies/" class="block px-4 py-2 text-sm text-white rounded-lg">Company</a>
@@ -157,11 +191,17 @@
 
                 <!-- Settings -->
                 <div class="relative">
-                    <a href="/product_card/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                    {% get_app_status 'product_card' as product_card_status %}
+                    <a href="/product_card/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 {% if product_card_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}">
                         <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
                         <span class="ml-3 sidebar-text">Product Card</span>
+                        {% if product_card_status.is_temporarily_disabled %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                        </svg>
+                        {% endif %}
                     </a>
                 </div>
 
@@ -226,14 +266,21 @@
                 <!-- Other existing sidebar navigation items can remain here with updated styling -->
                 <!-- Just maintaining the rest as is with style updates -->
                 <div class="relative">
-                    <button onclick="toggleDropdown(this)" class="w-full flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                    {% get_app_status 'website' as website_status %}
+                    <button onclick="toggleDropdown(this)" class="w-full flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 {% if website_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}" {% if website_status.is_temporarily_disabled %}disabled{% endif %}>
                         <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                         </svg>
                         <span class="ml-3 sidebar-text">Website</span>
+                        {% if website_status.is_temporarily_disabled %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                        </svg>
+                        {% else %}
                         <svg class="h-4 w-4 ml-auto transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
+                        {% endif %}
                     </button>
                     <div class="hidden mt-1 ml-8 space-y-1">
                         <a href="{% url 'website_dashboard' %}" class="block px-4 py-2 text-sm text-white hover:text-white hover:bg-[#6931D3] rounded-lg">Dashboard</a>
@@ -246,19 +293,25 @@
                         {% endif %}
                     </div>
                 </div>
-                <a href="{% url 'data_miner' %}" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                {% get_app_status 'data_miner' as data_miner_status %}
+                <a href="/data_miner/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200 {% if data_miner_status.is_temporarily_disabled %}opacity-50 pointer-events-none{% endif %}">
                     <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657a8 8 0 01-11.314 0m11.314 0a8 8 0 00-11.314 0m11.314 0L21 21M5 5l-2 2m2-2l2-2m-2 2l-2-2m2 2l2 2" />
                     </svg>
-                    <span class="ml-3 sidebar-text">LeadX</span>
+                    <span class="ml-3 sidebar-text">Data Miner</span>
+                     {% if data_miner_status.is_temporarily_disabled %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-auto" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                    </svg>
+                    {% endif %}
                 </a>
                 <a href="/trends/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
                     <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
-                    <span class="ml-3 sidebar-text">TrendIQ</span>
+                    <span class="ml-3 sidebar-text">Trends</span>
                 </a>
-                <a href="/business_analytics/dashboard/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
+                 <a href="/business_analytics/" class="flex items-center px-4 py-3 text-sm rounded-lg text-white hover:bg-[#6931D3] transition-all duration-200">
                     <svg class="h-5 w-5 min-w-[1.25rem]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
@@ -2308,5 +2361,23 @@
             }
         });
     </script>
+
+    {% if request.show_terms_popup %}
+        <!-- Your modal HTML here -->
+        <div id="terms-popup" class="modal">
+            <div class="modal-content">
+                <h2>Please Accept Our Updated Terms of Service</h2>
+                <p>...</p>
+                <form action="/user/accept-terms/" method="post">
+                    {% csrf_token %}
+                    <button type="submit">I Accept</button>
+                </form>
+            </div>
+        </div>
+        <script>
+            // Your Javascript to show the modal
+            document.getElementById('terms-popup').style.display = 'block';
+        </script>
+    {% endif %}
 </body>
 </html>

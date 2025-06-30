@@ -96,3 +96,9 @@
 2025-06-29 18:40:19,143 [INFO] Processing subscription creation request - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:979
 2025-06-29 18:40:19,160 [INFO] Created subscription: Final 1 - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:1003
 2025-06-29 18:40:20,380 [INFO] Getting context data for SubscriptionView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:700
+2025-06-30 16:41:30,512 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-30 16:41:36,702 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-30 22:08:31,800 [INFO] Getting context data for MasterAdminView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:535
+2025-06-30 22:08:35,335 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718
+2025-06-30 22:08:39,513 [INFO] App "Business Analytics" (ID: 10) has been temporarily enabled. - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:836
+2025-06-30 22:08:39,525 [INFO] Getting context data for AppsView - C:\Users\hp5cd\OneDrive\Desktop\1matrix\1matrix\masteradmin\views.py:718

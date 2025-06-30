@@ -375,14 +375,25 @@
         const toggleIcon = document.getElementById('toggleIcon');
         const formBtn = document.getElementById('toggleFormBtn');
 
+        // Ensure formSection exists before proceeding
+        if (!formSection) {
+            console.error('Form section element not found');
+            return;
+        }
+
+        // More reliable way to check if the form is open
         const isOpen = formSection.style.maxHeight && formSection.style.maxHeight !== '0px';
 
         if (forceOpen) {
-            if (!isOpen) {
-                formSection.style.maxHeight = formSection.scrollHeight + "px";
-                toggleIcon.style.transform = 'rotate(180deg)';
-                formBtn.classList.add('bg-blue-600');
-            }
+            // Always ensure the form is open when forceOpen is true
+            formSection.style.maxHeight = formSection.scrollHeight + "px";
+            toggleIcon.style.transform = 'rotate(180deg)';
+            formBtn.classList.add('bg-blue-600');
+            
+            // Ensure the form is visible in the viewport
+            setTimeout(() => {
+                formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         } else {
             if (isOpen) {
                 formSection.style.maxHeight = '0px';
@@ -392,6 +403,11 @@
                 formSection.style.maxHeight = formSection.scrollHeight + "px";
                 toggleIcon.style.transform = 'rotate(180deg)';
                 formBtn.classList.add('bg-blue-600');
+                
+                // Ensure the form is visible in the viewport when opened
+                setTimeout(() => {
+                    formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
             }
         }
     }
