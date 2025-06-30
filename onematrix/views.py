@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, DetailView
 from invoicing.models import Recipent, Invoice
-from .models import FAQCategory, FAQItem, ContactUs, Payment
+from .models import FAQCategory, FAQItem, ContactUs, Payment, ProfileSetupToken
 from rest_framework import viewsets, permissions
 from .serializers import FAQCategorySerializer, FAQItemSerializer
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
@@ -28,6 +28,8 @@ from django.utils import timezone
 from datetime import timedelta
 import logging
 from decimal import Decimal, InvalidOperation
+from datetime import datetime
+
 # Create your views here.
 
 # It is recommended to store your API keys in environment variables
@@ -39,10 +41,63 @@ from decimal import Decimal, InvalidOperation
 # CASHFREE_SECRET_KEY = "YOUR_SECRET_KEY"
 # CASHFREE_ENVIRONMENT = "sandbox"  # or "production"
 
+
+def convert_to_json_serializable(data):
+    """
+    Recursively converts any datetime objects in a dict to ISO strings.
+    """
+    if isinstance(data, dict):
+        return {k: convert_to_json_serializable(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [convert_to_json_serializable(v) for v in data]
+    elif isinstance(data, datetime):
+        return data.isoformat()
+    else:
+        return data
+    
+def log_error(message, extra=None, **kwargs):
+    if extra is None:
+        extra = {}
+    logger.error(f"[OneMatrix] {message}", extra=extra, **kwargs)
+
+
+# Configure logger for OneMatrix views
+logger = logging.getLogger('onematrix')
+
+def log_info(message, extra=None):
+    """Helper function to log information with consistent formatting"""
+    if extra is None:
+        extra = {}
+    logger.info(f"[OneMatrix] {message}", extra=extra)
+
+def log_error(message, extra=None):
+    """Helper function to log errors with consistent formatting"""
+    if extra is None:
+        extra = {}
+    logger.error(f"[OneMatrix] {message}", extra=extra)
+
+def log_debug(message, extra=None):
+    """Helper function to log debug information with consistent formatting"""
+    if extra is None:
+        extra = {}
+    logger.debug(f"[OneMatrix] {message}", extra=extra)
+
+def log_warning(message, extra=None):
+    """Helper function to log warnings with consistent formatting"""
+    if extra is None:
+        extra = {}
+    logger.warning(f"[OneMatrix] {message}", extra=extra)
+
+
 Cashfree.XClientId = getattr(settings, 'CASHFREE_APP_ID', "956605704b2e8d84efba1d2a1e506659")
 Cashfree.XClientSecret = getattr(settings, 'CASHFREE_SECRET_KEY', "cfsk_ma_prod_9c4245f2a1d88ddd7e0062511746ed8c_dc5a9c17")
-CASHFREE_ENVIRONMENT = getattr(settings, 'CASHFREE_ENVIRONMENT', 'PRODUCTION')
+CASHFREE_ENVIRONMENT = getattr(settings, 'CASHFREE_ENVIRONMENT', 'production')
 Cashfree.XEnvironment = Cashfree.SANDBOX if CASHFREE_ENVIRONMENT == 'sandbox' else Cashfree.PRODUCTION
+
+# Cashfree.XClientId = "956605704b2e8d84efba1d2a1e506659"
+# Cashfree.XClientSecret = "cfsk_ma_test_0c2b7ebca198a28a94dbef99bf4644a8_92ac8754"
+# Cashfree.XEnvironment = Cashfree.SANDBOX
+# CASHFREE_ENVIRONMENT = 'sandbox'
 
 def is_mobile(request):
     """Detect if the request is coming from a mobile device"""
@@ -544,91 +599,180 @@ def create_payment_session(request):
             order_meta=order_meta,
         )
         logger.info(f"Prepared Cashfree CreateOrderRequest: {create_order_request.to_dict()}")
-
-        logger.info("Sending request to Cashfree API")
         api_response = Cashfree().PGCreateOrder("2023-08-01", create_order_request)
-        
-        logger.info("Successfully received response from Cashfree API.")
+
         payment_session_id = api_response.data.payment_session_id
         logger.info(f"Payment session ID: {payment_session_id}")
-        
+
+        logger.info("Successfully received response from Cashfree API.")
+           
         logger.info("Returning payment session ID to client")
         return JsonResponse({'payment_session_id': payment_session_id})
 
     except Exception as e:
         logger.error(f"Fatal error in create_payment_session: {str(e)}", exc_info=True)
         return JsonResponse({'error': 'An unexpected error occurred. Our team has been notified.'}, status=500)
+
+def send_profiling_email_if_needed(request, payment):
+    """
+    Sends the profiling setup email if it hasn't been sent for a given payment.
+    This function is idempotent and safe to call multiple times.
+    """
+    logger = logging.getLogger(__name__)
+
+    if not payment or payment.status != 'SUCCESS' or payment.profiling_email_sent:
+        status_log = f"Payment status: {payment.status}" if payment else "No payment object"
+        sent_log = f"Email sent flag: {payment.profiling_email_sent}" if payment else "N/A"
+        logger.info(f"Skipping profiling email for Order {payment.order_id}. {status_log}, {sent_log}")
+        return
+
+    user = payment.user
+    if not user:
+        logger.error(f"Cannot send profiling email for Order {payment.order_id}: User not found.")
+        return
+
+    logger.info(f"Attempting to send profiling email for Order {payment.order_id} to {user.email}")
+    
+    otp = ''.join(random.choices(string.digits, k=6))
+    token, created = ProfileSetupToken.objects.update_or_create(
+        user=user,
+        defaults={'otp': otp, 'expires_at': timezone.now() + timedelta(minutes=15)}
+    )
+
+    complete_profile_url = request.build_absolute_uri(f'/complete-profile-setup/{token.token}/')
+
+    try:
+        send_mail(
+            'Your 1Matrix Account Verification and Profile Setup',
+            f'Thank you for subscribing to 1Matrix!\n\n'
+            f'Please complete your profile setup by clicking the link below:\n'
+            f'{complete_profile_url}\n\n'
+            f'Your verification code is: {otp}\n\n'
+            f'This link and code will expire in 15 minutes.\n',
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+        
+        payment.profiling_email_sent = True
+        payment.save(update_fields=['profiling_email_sent'])
+        
+        logger.info(f"Successfully sent profiling email for Order {payment.order_id} and marked as sent.")
+        messages.success(request, 'Your payment was successful! We have sent a setup link to your email.')
+        
+    except Exception as e:
+        logger.error(f"Failed to send profiling email for Order {payment.order_id} to {user.email}: {e}")
+        messages.warning(request, "Your payment was successful, but we had an issue sending the setup email. Please contact support.")
+
 @csrf_exempt
 def cashfree_webhook(request):
+    log_info("Cashfree webhook received.")
     if request.method == "POST":
         signature = request.headers.get('x-webhook-signature')
         timestamp = request.headers.get('x-webhook-timestamp')
         raw_body = request.body
 
+        log_info(f"Webhook headers: signature={'present' if signature else 'missing'}, timestamp={'present' if timestamp else 'missing'}")
+
         if not signature or not timestamp:
+            log_warning("Webhook signature or timestamp missing.")
             return HttpResponse("Webhook signature or timestamp missing", status=400)
 
         try:
+            # Verify signature first
             Cashfree().PGVerifyWebhookSignature(signature, raw_body, timestamp)
+            log_info("Webhook signature verified successfully.")
+
             payload = json.loads(raw_body)
+            log_debug(f"Webhook payload: {payload}")
             
             order_data = payload.get('data', {}).get('order', {})
             order_id = order_data.get('order_id')
             order_status = order_data.get('order_status')
+            log_info(f"Processing webhook for order_id: {order_id} with status: {order_status}")
 
             if not order_id:
+                log_error("Order ID missing in webhook payload.")
                 return HttpResponse("Order ID missing in webhook", status=400)
 
             try:
                 payment = Payment.objects.get(order_id=order_id)
+                log_info(f"Found payment object (ID: {payment.id}) for order_id: {order_id}")
             except Payment.DoesNotExist:
-                # This order was not initiated by our system.
+                log_error(f"Payment record not found for order_id: {order_id}. This order may not have been initiated by our system.")
                 return HttpResponse("Payment record not found", status=404)
 
-            # Prevent reprocessing successful payments
-            if payment.status == 'SUCCESS':
-                return HttpResponse("Webhook already processed", status=200)
+            # Idempotency check: Prevent reprocessing successful or failed payments
+            if payment.status in ['SUCCESS', 'FAILED']:
+                log_warning(f"Webhook for order_id: {order_id} already processed. Current status: {payment.status}. Ignoring.")
+                return HttpResponse(f"Webhook already processed with status {payment.status}", status=200)
 
-            payment.webhook_payload = payload
+            api_data_dict = convert_to_json_serializable(payload)
+            payment.webhook_payload = api_data_dict
+            payment.save()
+            
             
             if order_status == 'PAID':
+                log_info(f"Order {order_id} is PAID. Updating status to SUCCESS.")
                 if not payment.user:
                     customer_details = payload.get('data', {}).get('customer_details', {})
                     customer_email = customer_details.get('customer_email')
+                    log_info(f"Payment object for order {order_id} has no user. Trying to find user by email: {customer_email}")
                     user = User.objects.filter(email=customer_email).first()
                     if user:
                         payment.user = user
+                        log_info(f"Found and assigned user {user.id} to payment {payment.id}")
+                    else:
+                        log_warning(f"Could not find a user with email {customer_email} for order {order_id}")
                 
                 payment.status = 'SUCCESS'
                 payment.payment_id = payload.get('data', {}).get('payment', {}).get('cf_payment_id')
                 
                 user = payment.user
                 if user:
+                    log_info(f"Updating user profile for user: {user.email} (ID: {user.id})")
                     user.is_active = True
                     user.subscription_plan = payment.subscription_plan
                     user.last_payment_date = timezone.now().date()
                     user.last_payment_amount = payment.amount
                     user.last_payment_status = 'SUCCESS'
 
-                    # Transfer excluded apps from payment to user
                     if payment.excluded_apps.exists():
+                        excluded_app_names = list(payment.excluded_apps.values_list('name', flat=True))
+                        log_info(f"Transferring {len(excluded_app_names)} excluded apps to user {user.id}: {excluded_app_names}")
                         user.excluded_apps.set(payment.excluded_apps.all())
 
                     user.save()
+                    log_info(f"User {user.id} saved.")
+                    payment.save()
+                    log_info(f"Payment {payment.id} saved with status SUCCESS.")
 
-            elif order_status in ['PAYMENT_FAILED', 'TERMINATED']:
+                    log_info(f"Calling send_profiling_email_if_needed for order {order_id}")
+                    send_profiling_email_if_needed(request, payment)
+                else:
+                    log_error(f"Cannot update user profile for order {order_id} because no user is associated with the payment.")
+                    payment.save() # Still save the payment status
+                    log_info(f"Payment {payment.id} saved with status SUCCESS (no user found).")
+
+
+            elif order_status in ['PAYMENT_FAILED', 'TERMINATED', 'CANCELLED']:
+                log_warning(f"Order {order_id} status is {order_status}. Updating payment status to FAILED.")
                 payment.status = 'FAILED'
-
-            payment.save()
+                payment.save()
+                log_info(f"Payment {payment.id} for order {order_id} saved with status FAILED.")
+            
+            else:
+                log_info(f"Received unhandled order status '{order_status}' for order {order_id}. No action taken.")
 
         except Exception as e:
-            logger = logging.getLogger(__name__)
-            logger.error(f"Error processing webhook: {e}", exc_info=True)
             # The exception could be a verification error or any other processing error
+            log_error(f"Error processing webhook: {e}", extra={'exc_info': True})
             return HttpResponse("Error processing webhook", status=400)
 
+        log_info(f"Webhook for order {order_id} processed successfully.")
         return HttpResponse(status=200)
     
+    log_warning("Webhook received with invalid request method.")
     return HttpResponse("Invalid request method", status=405)
 
 def payment_success(request):
@@ -639,70 +783,115 @@ def payment_success(request):
 
     try:
         payment = Payment.objects.get(order_id=order_id)
-        # Check for terminal states first
+        
         if payment.status == 'FAILED':
             messages.error(request, "Your payment has failed. Please try again or contact support.")
             return redirect('plans_and_pricing')
 
+        # Fallback for when webhook is delayed or not working (e.g., in local dev)
         if payment.status != 'SUCCESS':
-            # This handles both PENDING and PROCESSING states.
-            # The webhook should ideally be faster, but this is a safe fallback.
-            messages.warning(request, "Your payment is still processing. This page will refresh automatically. We will notify you once it's complete.")
-            return render(request, 'onematrix/payment_processing.html', {'order_id': order_id})
+            log_info(f"Payment {order_id} status is '{payment.status}'. Verifying with Cashfree as a fallback.")
+            try:
+                # API call to verify payment status
+                api_response = Cashfree().PGFetchOrder("2023-08-01", order_id)
+                
+                if api_response.data and api_response.data.order_status == 'PAID':
+                    log_info(f"Cashfree confirms order {order_id} is PAID. Processing success logic.")
+                    
+                    # Convert the API response to be JSON serializable before saving
+                    serializable_payload = convert_to_json_serializable(api_response.data.to_dict())
+
+                    # Safely extract the payment ID from the payments array in the response
+                    cf_payment_id = None
+                    if 'payments' in serializable_payload and serializable_payload['payments']:
+                        # Get the payment ID from the first payment in the list
+                        cf_payment_id = serializable_payload['payments'][0].get('cf_payment_id')
+
+                    # This block mimics the webhook's success logic.
+                    payment.status = 'SUCCESS'
+                    payment.webhook_payload = serializable_payload
+                    payment.payment_id = cf_payment_id
+
+                    user = payment.user
+                    if user:
+                        user.is_active = True
+                        user.subscription_plan = payment.subscription_plan
+                        user.last_payment_date = timezone.now().date()
+                        user.last_payment_amount = payment.amount
+                        user.last_payment_status = 'SUCCESS'
+
+                        if payment.excluded_apps.exists():
+                            user.excluded_apps.set(payment.excluded_apps.all())
+                        
+                        user.save()
+                        payment.save()
+                        log_info(f"Fallback successfully updated user {user.id} and payment {payment.id}.")
+                    else:
+                        log_error(f"Fallback could not find user for payment {payment.id}.")
+                        payment.save()
+                
+                elif api_response.data and api_response.data.order_status in ['PAYMENT_FAILED', 'TERMINATED', 'CANCELLED']:
+                    log_warning(f"Cashfree confirms order {order_id} has failed. Updating status.")
+                    payment.status = 'FAILED'
+                    payment.save()
+                    messages.error(request, "Your payment has failed. Please try again or contact support.")
+                    return redirect('plans_and_pricing')
+
+                else:
+                    # Status is still processing
+                    log_info(f"Cashfree confirms order {order_id} is still processing. Showing processing page.")
+                    messages.warning(request, "Your payment is still processing. This page will refresh automatically. We will notify you once it's complete.")
+                    return render(request, 'onematrix/payment_processing.html', {'order_id': order_id})
+
+            except Exception as e:
+                log_error(f"Error verifying payment status for {order_id} with Cashfree: {e}", exc_info=True)
+                messages.error(request, "We couldn't verify your payment status at the moment. Please contact support if you have been charged.")
+                return redirect('plans_and_pricing')
+
 
     except Payment.DoesNotExist:
         messages.error(request, "Invalid Order ID. Your payment record was not found.")
         return redirect('plans_and_pricing')
 
+    # --- Proceed only if payment status is now SUCCESS ---
+    if payment.status != 'SUCCESS':
+        # This case should be rare, but it's a final safeguard.
+        log_warning(f"Payment {order_id} is still not in SUCCESS state after checks. Displaying processing page.")
+        messages.warning(request, "Your payment is still processing. This page will refresh automatically.")
+        return render(request, 'onematrix/payment_processing.html', {'order_id': order_id})
+        
+    # At this point, payment status is SUCCESS.
+    # The webhook or the fallback should have already sent the email, but this is a final check.
+    log_info(f"Payment {order_id} is SUCCESS. Ensuring profiling email is sent.")
+    send_profiling_email_if_needed(request, payment)
+
     user = payment.user
-    if not user:
-         messages.error(request, "There was an issue associating your payment with an account. Please contact support.")
+    token = ProfileSetupToken.objects.filter(user=user).order_by('-created_at').first()
+
+    if not user or not token:
+         messages.error(request, "There was an issue initiating your profile setup. Please contact support.")
          return redirect('contact-us')
 
-    # Generate a 6-digit OTP for profiling and send email
-    otp = ''.join(random.choices(string.digits, k=6))
-    otp_expiry = timezone.now() + timedelta(minutes=10)
-    
-    # Store OTP info in session for the verification step
-    request.session['profiling_otp'] = otp
-    request.session['profiling_otp_expiry'] = otp_expiry.isoformat()
-    request.session['profiling_user_id'] = user.user_id
-    
-    try:
-        send_mail(
-            'Your 1Matrix Account Verification Code',
-            f'Thank you for subscribing to 1Matrix!\n\n'
-            f'Your verification code is: {otp}\n\n'
-            f'This code will expire in 10 minutes.\n\n'
-            f'Please use this code to complete your profile setup.',
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-            fail_silently=False,
-        )
-        messages.success(request, 'Your payment was successful! We have sent a verification code to your email to complete your account setup.')
-    except Exception as e:
-        logger.error(f"Failed to send profiling OTP email to {user.email}: {e}")
-        messages.warning(request, "Your payment was successful, but we couldn't send the verification email. Please contact support to complete your account setup.")
+    # Redirect to the profile completion page.
+    log_info(f"Redirecting user {user.id} to profile setup with token {token.token}")
+    return redirect('/onematrix/complete-profile-setup', token=token.token)
 
-    # Redirect to the profile completion page
-    return redirect('complete_profile_setup')
-
-def complete_profile_setup(request):
+def complete_profile_setup(request, token):
     logger = logging.getLogger(__name__)
     
-    # Verify that the user is in the profiling flow via session
-    profiling_user_id = request.session.get('profiling_user_id')
-    if not profiling_user_id:
-        messages.error(request, "Invalid session. Please start the payment process again.")
+    try:
+        # Verify that the user is in the profiling flow via token
+        profile_token = ProfileSetupToken.objects.get(token=token)
+    except ProfileSetupToken.DoesNotExist:
+        messages.error(request, "Invalid or expired profile setup link. Please check your email or restart the payment process.")
         return redirect('plans_and_pricing')
 
-    try:
-        user = User.objects.get(user_id=profiling_user_id)
-    except User.DoesNotExist:
-        messages.error(request, "User not found. Please contact support.")
-        # Clear session to prevent reuse
-        request.session.flush()
+    if profile_token.is_expired():
+        messages.error(request, "Your profile setup link has expired. Please restart the payment process to get a new one.")
+        profile_token.delete()
         return redirect('plans_and_pricing')
+
+    user = profile_token.user
 
     if request.method == 'POST':
         otp = request.POST.get('otp', '').strip()
@@ -710,47 +899,31 @@ def complete_profile_setup(request):
         password_confirm = request.POST.get('password_confirm')
 
         # --- OTP Validation ---
-        session_otp = request.session.get('profiling_otp')
-        session_otp_expiry_str = request.session.get('profiling_otp_expiry')
-        
-        if not session_otp or not session_otp_expiry_str:
-            messages.error(request, "Your session has expired. Please try again.")
-            return redirect('plans_and_pricing')
-            
-        session_otp_expiry = timezone.datetime.fromisoformat(session_otp_expiry_str)
-
-        if timezone.now() > session_otp_expiry:
-            messages.error(request, "The verification code has expired. Please restart the process.")
-            # Clear session and guide user
-            request.session.flush()
-            return redirect('plans_and_pricing')
-
-        if otp != session_otp:
+        if otp != profile_token.otp:
             messages.error(request, "Invalid verification code.")
-            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email})
+            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
 
         # --- Password Validation ---
         if not password or not password_confirm or len(password) < 8:
             messages.error(request, "Please enter a password of at least 8 characters.")
-            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email})
+            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
         
         if password != password_confirm:
             messages.error(request, "Passwords do not match.")
-            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email})
+            return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
 
         # --- Finalize User Profile ---
-        user.set_password(password)  # Hashes the password
-        user.is_profile_complete = True # Assuming you add this field to your User model
+        user.set_password(password)
+        user.is_profile_complete = True
         user.save()
 
-        # Clean up session
-        request.session.flush()
+        # Clean up the token
+        profile_token.delete()
 
         messages.success(request, "Your profile has been updated successfully! You can now log in.")
-        # Redirect to your login page
-        return redirect('account_login') # Assuming you have a login URL named 'account_login'
+        return redirect('/user/login')
 
-    return render(request, 'onematrix/profile_setup.html', {'user_email': user.email})
+    return render(request, 'onematrix/profile_setup.html', {'user_email': user.email, 'token': token})
 
 def payment_failure(request):
     order_id = request.GET.get('order_id')

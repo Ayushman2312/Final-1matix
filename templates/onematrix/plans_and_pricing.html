@@ -502,10 +502,10 @@
       }
     });
 
-    userDetailsForm.addEventListener('submit', function(event) {
+    userDetailsForm.addEventListener('submit', async function(event) {
       event.preventDefault();
       hideError();
-      
+
       const planId = selectedPlanIdInput.value;
       const planCard = document.querySelector(`[data-plan-id="${planId}"]`);
       
@@ -529,51 +529,58 @@
       loader.classList.remove('hidden');
       proceedBtn.disabled = true;
 
-      fetch("{% url 'create_payment_session' %}", {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': csrfToken
-        }
-      })
-      .then(response => {
+      try {
+        const response = await fetch("/onematrix/create-payment-session/", {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken
+          }
+        });
+
         if (!response.ok) {
-          return response.json().then(err => {
+          try {
+            const err = await response.json();
             throw new Error(err.error || `Server error: ${response.status}`);
-          }).catch(() => {
+          } catch (e) {
             throw new Error(`Server error: ${response.status}`);
-          });
+          }
         }
-        return response.json();
-      })
-      .then(data => {
+
+        const data = await response.json();
+
         if (data.payment_session_id) {
-          const cashfree = Cashfree({
-            mode: "{{ cashfree_environment|default:'sandbox' }}" // or "production"
+          const { load } = await import('https://esm.sh/@cashfreepayments/cashfree-js');
+          const cashfree = await load({
+            mode: "{{ cashfree_environment|default:'production' }}"
           });
+          
           let checkoutOptions = {
             paymentSessionId: data.payment_session_id,
             redirectTarget: "_self"
           };
-          cashfree.checkout(checkoutOptions);
+          cashfree.checkout(checkoutOptions).then(function(result) {
+            if (result.error) {
+              showError(`Error: ${result.error.message}`);
+            }
+            if (result.redirect) {
+              console.log("Redirecting to Cashfree");
+            }
+          });
         } else {
           showError(data.error || 'Could not create payment session. Please try again.');
         }
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error:', error);
         showError('An unexpected error occurred. Please check your connection and try again.');
-      })
-      .finally(() => {
+      } finally {
         loader.classList.add('hidden');
         proceedBtn.disabled = false;
-      });
+      }
     });
 
   });
 </script>
-
-<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 
 {% endblock %} 

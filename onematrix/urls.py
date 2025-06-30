@@ -33,6 +33,6 @@ urlpatterns = [
     path('payment/success/', payment_success, name='payment_success'),
     path('payment/failure/', payment_failure, name='payment_failure'),
     path('payment/webhook/', cashfree_webhook, name='cashfree_webhook'),
-    path('complete-profile-setup/', complete_profile_setup, name='complete_profile_setup'),
+    path('complete-profile-setup/<uuid:token>/', complete_profile_setup, name='complete_profile_setup_with_token'),
 ]
 

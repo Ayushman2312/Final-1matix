@@ -1,4 +1,7 @@
 from django.db import models
+import uuid
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 
@@ -68,15 +71,35 @@ class Payment(models.Model):
     currency = models.CharField(max_length=10)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
     customer_email = models.EmailField()
-    customer_phone = models.CharField(max_length=20)
+    customer_phone = models.CharField(max_length=20, blank=True, null=True)
     excluded_apps = models.ManyToManyField('app.Apps', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    webhook_payload = models.JSONField(null=True, blank=True)
+    webhook_payload = models.JSONField(blank=True, null=True)
+    profiling_email_sent = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Payment for {self.order_id} - {self.status}"
+        return f"Payment {self.id} for Order {self.order_id}"
 
     class Meta:
         ordering = ['-created_at']
+
+
+class ProfileSetupToken(models.Model):
+    user = models.OneToOneField('User.User', on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.expires_at = timezone.now() + timedelta(minutes=15)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Profile Setup Token for {self.user.email}"
 

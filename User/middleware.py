@@ -104,6 +104,9 @@ class UserAuthMiddleware:
             'masteradmin' in current_path or
             'alavi07' in current_path or
             'onematrix' in current_path or
+            'complete-profile-setup' in current_path or
+            'accept-terms' in current_path or
+            'payment' in current_path or
             'onboarding' in current_path or
             'employee' in current_path or
             'mark-attendance' in current_path or

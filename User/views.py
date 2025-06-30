@@ -971,7 +971,7 @@ class ResetPasswordView(View):
             )
 
             messages.info(request, 'An OTP has been sent to your email for final verification.')
-            return redirect('verify_otp')
+            return redirect('verify-otp')
 
         except PasswordResetToken.DoesNotExist:
             messages.error(request, 'Invalid password reset link.')
@@ -1013,7 +1013,7 @@ class VerifyOtpView(View):
             del request.session['reset_password_token']
 
             messages.success(request, 'Your password has been reset successfully. Please log in.')
-            return redirect('login')
+            return redirect('/user/login/')
 
         except User.DoesNotExist:
             messages.error(request, 'An error occurred. Please try again.')
