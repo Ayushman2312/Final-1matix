@@ -30,3 +30,5 @@ admin.site.register(EmployeeNotification)
 admin.site.register(SupportNotification)
 admin.site.register(WhatsOnMindReadStatus)
 admin.site.register(AI_Prompt)
+admin.site.register(UserAgreement)
+
